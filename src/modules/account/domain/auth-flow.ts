@@ -25,8 +25,11 @@ const MESSAGES: Record<string, string> = {
   PASSWORD_TOO_SHORT: "Use at least 8 characters for your password.",
   PASSWORD_TOO_LONG: "Use 128 characters or fewer for your password.",
   INVALID_EMAIL: "That doesn't look like an email address.",
-  INVALID_TOKEN:
-    "This link has expired or was already used. Ask for a new one below.",
+  INVALID_OTP:
+    "That code isn't right. Check the latest email from ScopeLock and try again.",
+  OTP_EXPIRED: "This code has expired. Send a new one and use that instead.",
+  TOO_MANY_ATTEMPTS:
+    "Too many wrong codes. Send a new one and use that instead.",
   TOO_MANY_REQUESTS:
     "Too many attempts in a short time. Wait a minute, then try again.",
 };

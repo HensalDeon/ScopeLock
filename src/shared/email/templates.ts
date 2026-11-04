@@ -1,35 +1,62 @@
+import { CODE_TTL_MINUTES } from "@/shared/auth/codes";
 import type { EmailContent } from "./layout";
 
 /** Account emails. Short, plain, and specific — like a person wrote them. */
 
-export function verifyEmailTemplate(name: string, url: string): EmailContent {
-  return {
-    preview: "One click and your account is confirmed.",
-    heading: "Confirm your email",
-    paragraphs: [
-      `Hi ${firstName(name)},`,
-      "Please confirm this is your email address. We'll use it for approval and payment notifications, so it needs to reach you.",
-    ],
-    action: { label: "Confirm email", url },
-    footnote:
-      "This link works for 1 hour. If you didn't create a ScopeLock account, you can ignore this email.",
-  };
-}
+export type CodePurpose =
+  "email-verification" | "forget-password" | "sign-in" | "change-email";
 
-export function resetPasswordTemplate(name: string, url: string): EmailContent {
-  return {
-    preview: "Use this link to choose a new password.",
-    heading: "Reset your password",
-    paragraphs: [
-      `Hi ${firstName(name)},`,
-      "Someone asked to reset the password for your ScopeLock account. If that was you, choose a new one below.",
-    ],
-    action: { label: "Choose a new password", url },
-    footnote:
-      "This link works for 1 hour. If you didn't ask for this, your password hasn't changed and you can ignore this email.",
-  };
-}
+const NEVER_SHARE =
+  "Never share this code. ScopeLock will never call or message you to ask for it.";
 
-function firstName(name: string): string {
-  return name.trim().split(/\s+/)[0] || "there";
+/**
+ * The email that carries a one-time code. The code goes in the subject too,
+ * so it can be read straight from the phone notification.
+ */
+export function codeEmail(
+  purpose: CodePurpose,
+  code: string,
+): { subject: string; content: EmailContent } {
+  const expiry = `The code works for ${CODE_TTL_MINUTES} minutes.`;
+
+  if (purpose === "forget-password") {
+    return {
+      subject: `${code} is your ScopeLock password reset code`,
+      content: {
+        preview: `Enter it on the reset page. It works for ${CODE_TTL_MINUTES} minutes.`,
+        heading: "Reset your password",
+        paragraphs: [
+          "Someone asked to reset the password for the ScopeLock account on this email. If that was you, enter this code on the reset page.",
+        ],
+        code,
+        footnote: `${expiry} If you didn't ask for this, your password hasn't changed and you can ignore this email. ${NEVER_SHARE}`,
+      },
+    };
+  }
+
+  if (purpose === "email-verification") {
+    return {
+      subject: `${code} is your ScopeLock confirmation code`,
+      content: {
+        preview: `Enter it in ScopeLock to confirm your email. It works for ${CODE_TTL_MINUTES} minutes.`,
+        heading: "Confirm your email",
+        paragraphs: [
+          "Enter this code in ScopeLock to confirm your email address. We'll send approval and payment notifications here, so it needs to reach you.",
+        ],
+        code,
+        footnote: `${expiry} If you didn't create a ScopeLock account, you can ignore this email. ${NEVER_SHARE}`,
+      },
+    };
+  }
+
+  return {
+    subject: `${code} is your ScopeLock code`,
+    content: {
+      preview: `It works for ${CODE_TTL_MINUTES} minutes.`,
+      heading: "Your ScopeLock code",
+      paragraphs: ["Enter this code in ScopeLock to continue."],
+      code,
+      footnote: `${expiry} If you didn't ask for this, you can ignore this email. ${NEVER_SHARE}`,
+    },
+  };
 }

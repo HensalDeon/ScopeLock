@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
     <>
       <AuthHeading
         title="Reset your password"
-        description="Enter the email you signed up with and we'll send you a link to choose a new password."
+        description="Enter the email you signed up with. We'll send a 6-digit code so you can choose a new password."
       />
       <ForgotPasswordForm />
       <p className="mt-8 text-sm text-muted-foreground">

@@ -183,7 +183,7 @@ Each phase ends with something working and deployed. We finish and check one pha
 ### Phase 1: Auth & workspace
 
 - [x] Typed collections helper + index setup script (`npm run db:indexes`)
-- [x] Better Auth: email/password, password reset, email verification, sessions, protected `(app)` layout. Google sign-in is ready and switches on when `GOOGLE_CLIENT_ID/SECRET` are set.
+- [x] Better Auth: email/password, password reset and email verification by 6-digit emailed code (hashed, 10 min, 5 tries), sessions, protected `(app)` layout. Google sign-in is ready and switches on when `GOOGLE_CLIENT_ID/SECRET` are set.
 - [x] Workspace created at onboarding with the real business name (organization plugin), instead of an auto-named one at sign-up
 - [x] Onboarding: business name, how you work, WhatsApp number, live "what your client sees" preview
 - [x] App shell: sidebar/nav, mobile layout, settings page
@@ -302,11 +302,12 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 ## 7. Progress log
 
-| Date       | Phase    | Notes                                                                                                                                                                                                                                                          |
-| ---------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-11-04 | Planning | Plan created. DB: MongoDB Atlas. PWA added. Hosting: Vercel free now, Hostinger later.                                                                                                                                                                         |
-| 2026-11-04 | Phase 0  | Next.js 16.4 scaffold (Cache Components on), shadcn (Radix), shared utils + 21 tests, PWA manifest/icons, health route, standalone build verified locally. Waiting on Atlas URI + Vercel deploy.                                                               |
-| 2026-11-04 | Brand    | Logo chosen: **Focus Lock** (corner brackets framing a green core = agreed scope, locked in). Lowercase `scopelock` wordmark. Name kept: ScopeLock. Client portal will lead with the freelancer's branding + small "Powered by scopelock".                     |
-| 2026-11-04 | Phase 1  | Better Auth on MongoDB, proxy + server-side session checks, onboarding, app shell, settings. 56 unit tests; 26-step browser run (sign-up → onboarding → settings → verify email → sign-out → sign-in → password reset) passes.                                 |
-| 2026-11-04 | Phase 1B | Marketing site: landing, pricing, terms, privacy, refunds, contact, share image, sitemap, robots. Pro ₹499, Agency ₹1,999. Business details are placeholders in `legal` config.                                                                                |
-| 2026-11-04 | Phase 1B | Polish: Lenis eased scrolling on marketing pages (wheel + in-page links; touch and reduced-motion stay native), graph-paper `GridBackdrop` in hero and final CTA with pointer-lit lines on desktop, header blur removed. Scroll at 60fps with 4x CPU throttle. |
+| Date       | Phase    | Notes                                                                                                                                                                                                                                                                  |
+| ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-04 | Planning | Plan created. DB: MongoDB Atlas. PWA added. Hosting: Vercel free now, Hostinger later.                                                                                                                                                                                 |
+| 2026-11-04 | Phase 0  | Next.js 16.4 scaffold (Cache Components on), shadcn (Radix), shared utils + 21 tests, PWA manifest/icons, health route, standalone build verified locally. Waiting on Atlas URI + Vercel deploy.                                                                       |
+| 2026-11-04 | Brand    | Logo chosen: **Focus Lock** (corner brackets framing a green core = agreed scope, locked in). Lowercase `scopelock` wordmark. Name kept: ScopeLock. Client portal will lead with the freelancer's branding + small "Powered by scopelock".                             |
+| 2026-11-04 | Phase 1  | Better Auth on MongoDB, proxy + server-side session checks, onboarding, app shell, settings. 56 unit tests; 26-step browser run (sign-up → onboarding → settings → verify email → sign-out → sign-in → password reset) passes.                                         |
+| 2026-11-04 | Phase 1B | Marketing site: landing, pricing, terms, privacy, refunds, contact, share image, sitemap, robots. Pro ₹499, Agency ₹1,999. Business details are placeholders in `legal` config.                                                                                        |
+| 2026-11-04 | Phase 1B | Polish: Lenis eased scrolling on marketing pages (wheel + in-page links; touch and reduced-motion stay native), graph-paper `GridBackdrop` in hero and final CTA with pointer-lit lines on desktop, header blur removed. Scroll at 60fps with 4x CPU throttle.         |
+| 2026-11-05 | Phase 1  | Email links replaced by 6-digit codes (Better Auth emailOTP): forgot password is email → code + new password → signed in; verify email is a code box in the app bar (soft verification kept). Codes hashed, 10 min, 5 tries, 6/min per IP. 15-step browser run passes. |

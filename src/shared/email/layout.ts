@@ -6,6 +6,8 @@ export type EmailContent = {
   heading: string;
   paragraphs: string[];
   action?: { label: string; url: string };
+  /** A one-time code, shown large and easy to copy. */
+  code?: string;
   /** Small print under the button, e.g. expiry or "didn't ask for this?". */
   footnote?: string;
 };
@@ -41,6 +43,10 @@ export function renderEmail(content: EmailContent, appUrl: string) {
        <p style="margin:0 0 24px;font-size:13px;line-height:20px;color:${muted};">Button not working? Paste this link into your browser:<br><span style="color:${ink};word-break:break-all;">${escape(content.action.url)}</span></p>`
     : "";
 
+  const code = content.code
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 24px;"><tr><td style="background:#f5f6f8;border:1px solid ${line};border-radius:8px;padding:14px 22px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:30px;line-height:36px;font-weight:600;letter-spacing:8px;color:${ink};">${escape(content.code)}</td></tr></table>`
+    : "";
+
   const footnote = content.footnote
     ? `<p style="margin:0;font-size:13px;line-height:20px;color:${muted};">${escape(content.footnote)}</p>`
     : "";
@@ -63,6 +69,7 @@ export function renderEmail(content: EmailContent, appUrl: string) {
       <tr><td style="padding:24px 32px 32px;">
         <h1 style="margin:0 0 16px;font-size:20px;line-height:28px;font-weight:600;color:${ink};">${escape(content.heading)}</h1>
         ${paragraphs}
+        ${code}
         ${action}
         ${footnote}
       </td></tr>
@@ -76,6 +83,7 @@ export function renderEmail(content: EmailContent, appUrl: string) {
     content.heading,
     "",
     ...content.paragraphs.flatMap((p) => [p, ""]),
+    ...(content.code ? [`Your code: ${content.code}`, ""] : []),
     ...(content.action
       ? [`${content.action.label}: ${content.action.url}`, ""]
       : []),

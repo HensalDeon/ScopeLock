@@ -1,2 +1,2 @@
 export { sendEmail } from "./send";
-export { resetPasswordTemplate, verifyEmailTemplate } from "./templates";
+export { codeEmail, type CodePurpose } from "./templates";

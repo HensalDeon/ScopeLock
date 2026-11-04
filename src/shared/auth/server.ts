@@ -2,14 +2,12 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { nextCookies } from "better-auth/next-js";
+import { emailOTP } from "better-auth/plugins/email-otp";
 import { organization } from "better-auth/plugins/organization";
 import { db, mongoClient } from "@/shared/db/client";
-import {
-  resetPasswordTemplate,
-  sendEmail,
-  verifyEmailTemplate,
-} from "@/shared/email";
+import { codeEmail, sendEmail } from "@/shared/email";
 import { env, isGoogleAuthEnabled } from "@/shared/lib/env";
+import { CODE_LENGTH, CODE_MAX_ATTEMPTS, CODE_TTL_MINUTES } from "./codes";
 import { findDefaultWorkspaceId } from "./membership";
 
 const e = env();
@@ -29,26 +27,16 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     autoSignIn: true,
+    // Password resets use emailed codes (emailOTP below), not links.
     revokeSessionsOnPasswordReset: true,
-    sendResetPassword: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Reset your ScopeLock password",
-        content: resetPasswordTemplate(user.name, url),
-      });
-    },
   },
 
+  // Verification is soft: people can use the app straight away and confirm
+  // with the code from the sign-up email. The emailOTP plugin supplies the
+  // sender, so no sendVerificationEmail here (ours would override it).
   emailVerification: {
     sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Confirm your email for ScopeLock",
-        content: verifyEmailTemplate(user.name, url),
-      });
-    },
+    autoSignInAfterVerification: false,
   },
 
   socialProviders: isGoogleAuthEnabled()
@@ -85,6 +73,21 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    emailOTP({
+      otpLength: CODE_LENGTH,
+      expiresIn: CODE_TTL_MINUTES * 60,
+      allowedAttempts: CODE_MAX_ATTEMPTS,
+      storeOTP: "hashed",
+      overrideDefaultEmailVerification: true,
+      // Per IP, per route. Each code also dies after CODE_MAX_ATTEMPTS wrong
+      // guesses. Kept above the default of 3 because Indian mobile carriers
+      // put many people behind one shared IP (CGNAT).
+      rateLimit: { window: 60, max: 6 },
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        const { subject, content } = codeEmail(type, otp);
+        await sendEmail({ to: email, subject, content });
+      },
+    }),
     organization({
       allowUserToCreateOrganization: true,
       organizationLimit: 5,
