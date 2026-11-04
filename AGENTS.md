@@ -23,3 +23,12 @@ Read `docs/PLAN.md` first — it is the source of truth for product rules, data 
 - **Brand:** "Focus Lock" mark. All logo/icon/loader geometry lives in `src/shared/ui/brand/geometry.ts`; use `<Logo />`, `<LogoMark />`, `<BrandLoader />` / `<PageLoader />`, never hand-drawn copies. Brand colours: `brand`, `brand-bright`, `brand-ink` Tailwind tokens.
 - **Env vars:** add to `src/shared/lib/env.ts` (Zod) and `.env.example`.
 - Before finishing a task run `npm run check` (typecheck + lint + tests) and `npm run build`.
+
+## Voice and UI (keep ScopeLock from looking generated)
+
+- **Copy:** plain and specific, written like a person who knows freelancing in India. Sentence case. No exclamation marks, no emoji, no "Welcome back!", "Unlock", "Supercharge", "Seamless", "Effortless", "Elevate". Buttons say exactly what happens ("Create workspace", "Send reset link"). Errors say what went wrong and what to do next.
+- **Use real product content as the design:** rupee amounts in `formatINR`, CR numbers, client names, dates like "18 Nov, 3:42 pm". Never lorem ipsum, never placeholder slogans.
+- **No generic AI looks:** no gradient heroes, no glowing blobs, no `rounded-2xl` + shadow on every block, no centered-everything marketing layouts inside the app, no icon-in-a-circle feature grids.
+- **Visual system:** ink navy (`primary`) for actions, emerald (`brand`) only for "approved / done / money recovered", amber (`warning`) for "waiting". Neutrals are the slate-tinted tokens in `globals.css`. Numbers use `tabular-nums`. Small uppercase labels use `font-mono` with letter-spacing.
+- **States:** every async UI has a pending label ("Saving…"), every list has a real empty state that says what will appear and how to add the first item.
+- Check new screens at 390px wide: no horizontal scroll.

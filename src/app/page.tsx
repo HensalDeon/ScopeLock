@@ -1,5 +1,6 @@
 import { site } from "@/shared/config/site";
 import { Logo } from "@/shared/ui/brand";
+import Link from "next/link";
 import { Button } from "@/shared/ui/button";
 
 export default function Home() {
@@ -15,9 +16,14 @@ export default function Home() {
         {site.description}
       </p>
 
-      <Button size="lg" disabled>
-        Coming soon
-      </Button>
+      <div className="flex flex-wrap justify-center gap-3">
+        <Button asChild size="lg">
+          <Link href="/sign-up">Create an account</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
+          <Link href="/sign-in">Sign in</Link>
+        </Button>
+      </div>
     </main>
   );
 }

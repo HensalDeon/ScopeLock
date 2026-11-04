@@ -182,11 +182,14 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 ### Phase 1: Auth & workspace
 
-- [ ] Typed collections helper + index setup script (moved from Phase 0, built along with the first collections)
-- [ ] Better Auth: email/password + Google, sessions, protected `(app)` layout
-- [ ] Workspace auto-created at sign-up (organization plugin)
-- [ ] Onboarding: business name, logo upload (R2), phone
-- [ ] App shell: sidebar/nav, mobile layout
+- [x] Typed collections helper + index setup script (`npm run db:indexes`)
+- [x] Better Auth: email/password, password reset, email verification, sessions, protected `(app)` layout. Google sign-in is ready and switches on when `GOOGLE_CLIENT_ID/SECRET` are set.
+- [x] Workspace created at onboarding with the real business name (organization plugin), instead of an auto-named one at sign-up
+- [x] Onboarding: business name, how you work, WhatsApp number, live "what your client sees" preview
+- [x] App shell: sidebar/nav, mobile layout, settings page
+- [x] Emails over SMTP when configured, printed to the terminal otherwise
+- [ ] Logo upload, moved to Phase 3 (needs a Cloudflare R2 bucket; first shown on the client portal)
+- [ ] Google OAuth keys + SMTP provider (config only, no code)
 
 **Done when:** I can sign up, finish onboarding and see an empty dashboard.
 
@@ -201,6 +204,8 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 ### Phase 3: Client portal & baseline approval
 
+- [ ] Business logo upload (Cloudflare R2), shown on the portal
+- [ ] Require a confirmed account email before a portal link can be sent
 - [ ] Secret portal link (random token, only the hash stored) + copy button + WhatsApp share (`wa.me` link with a message ready to send)
 - [ ] Public portal `/c/[token]`: business branding, project summary, deliverables, milestones
 - [ ] Approve / Reject with name + email + optional comment
@@ -289,3 +294,4 @@ Each phase ends with something working and deployed. We finish and check one pha
 | 2026-11-04 | Planning | Plan created. DB: MongoDB Atlas. PWA added. Hosting: Vercel free now, Hostinger later.                                                                                                                                                     |
 | 2026-11-04 | Phase 0  | Next.js 16.4 scaffold (Cache Components on), shadcn (Radix), shared utils + 21 tests, PWA manifest/icons, health route, standalone build verified locally. Waiting on Atlas URI + Vercel deploy.                                           |
 | 2026-11-04 | Brand    | Logo chosen: **Focus Lock** (corner brackets framing a green core = agreed scope, locked in). Lowercase `scopelock` wordmark. Name kept: ScopeLock. Client portal will lead with the freelancer's branding + small "Powered by scopelock". |
+| 2026-11-04 | Phase 1  | Better Auth on MongoDB, proxy + server-side session checks, onboarding, app shell, settings. 56 unit tests; 26-step browser run (sign-up → onboarding → settings → verify email → sign-out → sign-in → password reset) passes.             |

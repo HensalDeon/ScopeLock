@@ -9,10 +9,10 @@ export async function GET() {
   await connection(); // always run per request, never prerendered
 
   try {
-    const db = await pingDb();
+    const ping = await pingDb();
     return Response.json({
       status: "ok",
-      db: { status: "up", latencyMs: db.latencyMs },
+      db: { status: "up", latencyMs: ping.latencyMs },
       time: new Date().toISOString(),
     });
   } catch (error) {
