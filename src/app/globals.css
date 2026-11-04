@@ -275,3 +275,32 @@
     opacity: 0.45;
   }
 }
+
+/* ─── Long-form legal text ─────────────────────────────────────────────── */
+.legal-prose {
+  display: grid;
+  gap: 0.9rem;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--foreground);
+}
+.legal-prose p,
+.legal-prose li {
+  text-wrap: pretty;
+}
+.legal-prose ul {
+  display: grid;
+  gap: 0.45rem;
+  padding-left: 1.15rem;
+  list-style: disc;
+}
+.legal-prose li::marker {
+  color: var(--muted-foreground);
+}
+.legal-prose strong {
+  font-weight: 600;
+}
+.legal-prose a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

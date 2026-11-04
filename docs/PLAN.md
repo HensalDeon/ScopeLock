@@ -193,6 +193,19 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 **Done when:** I can sign up, finish onboarding and see an empty dashboard.
 
+### Phase 1B: Marketing site
+
+- [x] Landing page: pitch, how it works, client view, payments, evidence, pricing, FAQ, final CTA
+- [x] Product visuals built as coded components (no screenshots), matching the real UI
+- [x] `/pricing` with plan comparison. Plans live in one config (`modules/billing/domain/plans.ts`), made dynamic in Phase 8
+- [x] Legal drafts: `/terms`, `/privacy`, `/refunds`, `/contact` (Razorpay requirement), filled from one `legal` config in `src/shared/config/site.ts`
+- [ ] Legal pages reviewed by a lawyer / CA before launch
+- [x] SEO: per-page metadata, share image, `sitemap.xml`, `robots.txt`, structured data
+- [x] CTAs: "Start free" → sign-up; plan buttons → `/sign-up?plan=…` (plan choice is used in Phase 8)
+- [ ] Fill in registered business name, address, contact email, grievance officer; buy domain
+
+**Done when:** the site is something I'd proudly share, and every Razorpay-required page exists.
+
 ### Phase 2: Clients & projects (baseline scope)
 
 - [ ] Clients CRUD
@@ -295,3 +308,4 @@ Each phase ends with something working and deployed. We finish and check one pha
 | 2026-11-04 | Phase 0  | Next.js 16.4 scaffold (Cache Components on), shadcn (Radix), shared utils + 21 tests, PWA manifest/icons, health route, standalone build verified locally. Waiting on Atlas URI + Vercel deploy.                                           |
 | 2026-11-04 | Brand    | Logo chosen: **Focus Lock** (corner brackets framing a green core = agreed scope, locked in). Lowercase `scopelock` wordmark. Name kept: ScopeLock. Client portal will lead with the freelancer's branding + small "Powered by scopelock". |
 | 2026-11-04 | Phase 1  | Better Auth on MongoDB, proxy + server-side session checks, onboarding, app shell, settings. 56 unit tests; 26-step browser run (sign-up → onboarding → settings → verify email → sign-out → sign-in → password reset) passes.             |
+| 2026-11-04 | Phase 1B | Marketing site: landing, pricing, terms, privacy, refunds, contact, share image, sitemap, robots. Pro ₹499, Agency ₹1,999. Business details are placeholders in `legal` config.                                                            |
