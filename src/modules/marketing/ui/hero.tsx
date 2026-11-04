@@ -3,12 +3,14 @@ import Link from "next/link";
 import { formatINR, paise } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { GridBackdrop } from "./grid-backdrop";
 import { Container } from "./primitives";
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden border-b">
-      <Container className="grid items-center gap-14 py-16 sm:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16 lg:py-24">
+      <GridBackdrop />
+      <Container className="relative grid items-center gap-14 py-16 sm:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16 lg:py-24">
         <div className="grid content-start gap-7">
           <p className="w-fit rounded-full border bg-canvas px-3 py-1 text-[13px] text-muted-foreground">
             For freelancers and agencies in India

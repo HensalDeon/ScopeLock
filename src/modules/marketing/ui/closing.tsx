@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/shared/ui/button";
 import { Faq, PRODUCT_FAQ } from "./faq";
+import { GridBackdrop } from "./grid-backdrop";
 import { PricingCards } from "./pricing";
 import { Container, SectionHeading } from "./primitives";
 
@@ -38,8 +39,9 @@ export function FinalCta() {
   return (
     <section>
       <Container className="py-20 lg:py-28">
-        <div className="grid gap-8 rounded-2xl border bg-canvas px-6 py-12 sm:px-12 sm:py-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <div className="grid max-w-2xl gap-4">
+        <div className="relative grid gap-8 overflow-hidden rounded-2xl border bg-canvas px-6 py-12 sm:px-12 sm:py-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <GridBackdrop />
+          <div className="relative grid max-w-2xl gap-4">
             <h2 className="text-[32px] leading-[1.08] font-semibold tracking-[-0.035em] text-balance sm:text-[42px]">
               Your next &ldquo;small change&rdquo; is worth ₹12,000. Charge for
               it.
@@ -48,7 +50,11 @@ export function FinalCta() {
               Free for 2 projects. Set up in about two minutes.
             </p>
           </div>
-          <Button asChild size="lg" className="h-11 w-fit px-6 text-[15px]">
+          <Button
+            asChild
+            size="lg"
+            className="relative h-11 w-fit px-6 text-[15px]"
+          >
             <Link href="/sign-up">Start free</Link>
           </Button>
         </div>

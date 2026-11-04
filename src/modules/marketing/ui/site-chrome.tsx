@@ -12,7 +12,7 @@ const NAV = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-40 border-b bg-background">
       <Container className="flex h-16 items-center justify-between gap-6">
         <Link href="/" aria-label={`${site.name} home`} className="rounded-md">
           <Logo className="text-[19px]" />
