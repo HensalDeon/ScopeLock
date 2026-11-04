@@ -7,6 +7,8 @@
 @theme inline {
   --color-brand: var(--brand);
   --color-brand-ink: var(--brand-ink);
+  --color-brand-bright: var(--brand-bright);
+  --color-brand-tile-frame: var(--brand-tile-frame);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -52,8 +54,10 @@
 
 :root {
   /* ScopeLock brand */
-  --brand: #10b981;
+  --brand: #0e9f6e;
+  --brand-bright: #34d399;
   --brand-ink: #0b1220;
+  --brand-tile-frame: #f2f5f8;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -90,7 +94,9 @@
 
 .dark {
   --brand: #34d399;
-  --brand-ink: #131d33;
+  --brand-bright: #34d399;
+  --brand-ink: #0d1422;
+  --brand-tile-frame: #f2f5f8;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -136,103 +142,86 @@
   }
 }
 
-/* ─── ScopeLock loader: "scope locked" ──────────────────────────────────────
-   Brackets close in → shackle drops & clicks → keyhole pops → fade → repeat. */
+/* ─── ScopeLock loader: "focus lock" ───────────────────────────────────────
+   Brackets snap inward → core lands with a small overshoot → hold → release. */
 .sl-loader {
   overflow: visible;
   --sl-duration: 2.2s;
   --sl-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.sl-loader path {
+.sl-loader path,
+.sl-loader rect {
   transform-box: fill-box;
   transform-origin: center;
   animation-duration: var(--sl-duration);
   animation-timing-function: var(--sl-ease);
   animation-iteration-count: infinite;
 }
-.sl-loader-left {
-  animation-name: sl-left;
+.sl-loader-tl {
+  animation-name: sl-tl;
 }
-.sl-loader-right {
-  animation-name: sl-right;
+.sl-loader-br {
+  animation-name: sl-br;
 }
-.sl-loader-shackle {
-  animation-name: sl-shackle;
-}
-.sl-loader-keyhole {
-  animation-name: sl-keyhole;
+.sl-loader-core {
+  animation-name: sl-core;
 }
 
-@keyframes sl-left {
+@keyframes sl-tl {
   0% {
-    transform: translateX(-7px);
+    transform: translate(-6px, -6px);
     opacity: 0;
   }
-  22%,
-  84% {
-    transform: translateX(0);
+  30% {
+    transform: translate(0.8px, 0.8px);
+    opacity: 1;
+  }
+  38%,
+  80% {
+    transform: none;
     opacity: 1;
   }
   100% {
-    transform: translateX(0);
+    transform: translate(-6px, -6px);
     opacity: 0;
   }
 }
-@keyframes sl-right {
+@keyframes sl-br {
   0% {
-    transform: translateX(7px);
+    transform: translate(6px, 6px);
     opacity: 0;
   }
-  22%,
-  84% {
-    transform: translateX(0);
+  30% {
+    transform: translate(-0.8px, -0.8px);
+    opacity: 1;
+  }
+  38%,
+  80% {
+    transform: none;
     opacity: 1;
   }
   100% {
-    transform: translateX(0);
+    transform: translate(6px, 6px);
     opacity: 0;
   }
 }
-@keyframes sl-shackle {
+@keyframes sl-core {
   0%,
-  16% {
-    transform: translateY(-9px);
+  22% {
+    transform: scale(0.2);
     opacity: 0;
   }
-  28% {
-    transform: translateY(-9px);
-    opacity: 1;
-  }
-  40% {
-    transform: translateY(1px);
-  }
-  45%,
-  84% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-}
-@keyframes sl-keyhole {
-  0%,
   44% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  54% {
-    transform: scale(1.2);
+    transform: scale(1.14);
     opacity: 1;
   }
-  62%,
-  84% {
+  52%,
+  80% {
     transform: scale(1);
     opacity: 1;
   }
   100% {
-    transform: scale(1);
+    transform: scale(0.2);
     opacity: 0;
   }
 }
@@ -260,7 +249,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sl-loader path {
+  .sl-loader path,
+  .sl-loader rect {
     animation: none;
   }
   .sl-loader {

@@ -7,7 +7,7 @@ export const contentType = "image/png";
 
 export default function AppleIcon() {
   return new ImageResponse(
-    <OgMark size={180} glyphScale={0.68} rounded={false} />,
+    <OgMark size={180} glyphScale={0.62} rounded={false} />,
     size,
   );
 }

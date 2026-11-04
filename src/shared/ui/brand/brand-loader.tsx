@@ -1,9 +1,9 @@
 import { cn } from "@/shared/lib/utils";
-import { MARK_STROKE, MARK_VIEWBOX, markPaths } from "./geometry";
+import { MARK_STROKE, MARK_VIEWBOX, markCore, markPaths } from "./geometry";
 
 /**
- * Animated ScopeLock loader — "scope locked":
- * the brackets close in, the shackle drops and clicks shut, the keyhole appears.
+ * Animated ScopeLock loader — "focus lock":
+ * the brackets snap inward and the core lands, like a camera confirming focus.
  * Pure SVG + CSS (keyframes in globals.css), no JS. Respects reduced motion.
  */
 export function BrandLoader({
@@ -27,29 +27,22 @@ export function BrandLoader({
         viewBox={MARK_VIEWBOX}
         aria-hidden
         className={cn(
-          "sl-loader text-brand",
-          size === "sm" && "size-6",
-          size === "md" && "size-12",
-          size === "lg" && "size-20",
+          "sl-loader text-foreground",
+          size === "sm" && "size-5",
+          size === "md" && "size-10",
+          size === "lg" && "size-14",
         )}
       >
         <g
           fill="none"
           stroke="currentColor"
           strokeWidth={MARK_STROKE}
-          strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path className="sl-loader-shackle" d={markPaths.shackle} />
-          <path className="sl-loader-left" d={markPaths.bracketLeft} />
-          <path className="sl-loader-right" d={markPaths.bracketRight} />
-          <path
-            className="sl-loader-keyhole"
-            d={markPaths.keyhole}
-            fill="currentColor"
-            stroke="none"
-          />
+          <path className="sl-loader-tl" d={markPaths.bracketTopLeft} />
+          <path className="sl-loader-br" d={markPaths.bracketBottomRight} />
         </g>
+        <rect {...markCore} className="sl-loader-core fill-brand" />
       </svg>
       <span
         className={cn(

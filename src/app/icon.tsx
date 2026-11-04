@@ -3,11 +3,11 @@ import { OgMark } from "@/shared/ui/brand/og-mark";
 
 /** Favicon + PWA icons, served at /icon/32, /icon/192, /icon/512, /icon/maskable. */
 const icons = {
-  "32": { size: 32, glyphScale: 0.86, rounded: true },
-  "192": { size: 192, glyphScale: 0.74, rounded: true },
-  "512": { size: 512, glyphScale: 0.74, rounded: true },
+  "32": { size: 32, glyphScale: 0.84, rounded: true },
+  "192": { size: 192, glyphScale: 0.68, rounded: true },
+  "512": { size: 512, glyphScale: 0.68, rounded: true },
   // Maskable: full-bleed background, mark inside the 80% safe zone.
-  maskable: { size: 512, glyphScale: 0.58, rounded: false },
+  maskable: { size: 512, glyphScale: 0.56, rounded: false },
 } as const;
 
 type IconId = keyof typeof icons;

@@ -7,7 +7,7 @@ export const site = {
   url: process.env.APP_URL ?? "http://localhost:3000",
   // Keep in sync with src/shared/ui/brand/geometry.ts and globals.css (--brand, --brand-ink).
   colors: {
-    brand: "#10B981",
+    brand: "#0E9F6E",
     ink: "#0B1220",
     background: "#FFFFFF",
   },

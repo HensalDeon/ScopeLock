@@ -1,45 +1,57 @@
 import { cn } from "@/shared/lib/utils";
-import { MARK_STROKE, MARK_VIEWBOX, markPaths } from "./geometry";
+import { MARK_STROKE, MARK_VIEWBOX, markCore, markPaths } from "./geometry";
 
 type LogoMarkProps = {
   /**
-   * `tile`  — emerald mark on an ink rounded square (app-icon style, default)
-   * `plain` — the mark alone, coloured by `currentColor` / `text-*`
+   * `plain` — brackets in the current text colour, core in brand green (default)
+   * `tile`  — app-icon style: light brackets + bright core on an ink rounded square
    */
-  variant?: "tile" | "plain";
+  variant?: "plain" | "tile";
   className?: string;
+  /** Accessible name. Pass "" when the mark sits next to the wordmark. */
   title?: string;
 };
 
+function Glyph({ coreClassName }: { coreClassName: string }) {
+  return (
+    <>
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={MARK_STROKE}
+        strokeLinejoin="round"
+      >
+        <path d={markPaths.bracketTopLeft} />
+        <path d={markPaths.bracketBottomRight} />
+      </g>
+      <rect {...markCore} className={coreClassName} />
+    </>
+  );
+}
+
 export function LogoMark({
-  variant = "tile",
+  variant = "plain",
   className,
   title = "ScopeLock",
 }: LogoMarkProps) {
-  const glyph = (
-    <g
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={MARK_STROKE}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={markPaths.shackle} />
-      <path d={markPaths.bracketLeft} />
-      <path d={markPaths.bracketRight} />
-      <path d={markPaths.keyhole} fill="currentColor" stroke="none" />
-    </g>
-  );
+  const a11y = title
+    ? ({ role: "img", "aria-label": title } as const)
+    : ({ "aria-hidden": true } as const);
 
-  if (variant === "plain") {
+  if (variant === "tile") {
     return (
       <svg
         viewBox={MARK_VIEWBOX}
-        role="img"
-        aria-label={title}
-        className={cn("size-8", className)}
+        {...a11y}
+        className={cn("size-8 shrink-0", className)}
       >
-        {glyph}
+        <rect width="48" height="48" rx="11" className="fill-brand-ink" />
+        <g
+          className="text-brand-tile-frame"
+          transform="translate(7.68 7.68) scale(0.68)"
+        >
+          <Glyph coreClassName="fill-brand-bright" />
+        </g>
       </svg>
     );
   }
@@ -47,14 +59,10 @@ export function LogoMark({
   return (
     <svg
       viewBox={MARK_VIEWBOX}
-      role="img"
-      aria-label={title}
-      className={cn("size-8 shrink-0", className)}
+      {...a11y}
+      className={cn("size-8 shrink-0 text-foreground", className)}
     >
-      <rect width="48" height="48" rx="11" className="fill-brand-ink" />
-      <g className="text-brand" transform="translate(2.4 2.4) scale(0.9)">
-        {glyph}
-      </g>
+      <Glyph coreClassName="fill-brand" />
     </svg>
   );
 }

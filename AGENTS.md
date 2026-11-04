@@ -20,5 +20,6 @@ Read `docs/PLAN.md` first — it is the source of truth for product rules, data 
 - **Secret links:** store only `hashToken(token)`, never the raw token.
 - **Next.js here has Cache Components on:** data is dynamic by default; session/cookie reads must sit inside `<Suspense>`; use `"use cache"` deliberately. Check `node_modules/next/dist/docs/` before using an API.
 - **Portability:** must keep running on a plain Node server (`output: "standalone"`, Hostinger later). No `@vercel/*` packages, no Edge runtime.
+- **Brand:** "Focus Lock" mark. All logo/icon/loader geometry lives in `src/shared/ui/brand/geometry.ts`; use `<Logo />`, `<LogoMark />`, `<BrandLoader />` / `<PageLoader />`, never hand-drawn copies. Brand colours: `brand`, `brand-bright`, `brand-ink` Tailwind tokens.
 - **Env vars:** add to `src/shared/lib/env.ts` (Zod) and `.env.example`.
 - Before finishing a task run `npm run check` (typecheck + lint + tests) and `npm run build`.

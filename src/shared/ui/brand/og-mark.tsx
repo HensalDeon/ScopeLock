@@ -1,15 +1,21 @@
-import { brandColors, MARK_STROKE, MARK_VIEWBOX, markPaths } from "./geometry";
+import {
+  brandColors,
+  MARK_STROKE,
+  MARK_VIEWBOX,
+  markCore,
+  markPaths,
+} from "./geometry";
 
 /**
- * The ScopeLock mark for `next/og` ImageResponse (app icons, favicon,
- * social images). Inline styles only — Tailwind isn't available there.
+ * The ScopeLock app-icon tile for `next/og` ImageResponse (favicon, PWA icons,
+ * iOS icon, social images). Inline styles only — Tailwind isn't available there.
  *
  * @param glyphScale  share of the canvas the mark fills (maskable icons need more padding)
  * @param rounded     rounded-square tile (false for full-bleed maskable / iOS icons)
  */
 export function OgMark({
   size,
-  glyphScale = 0.7,
+  glyphScale = 0.68,
   rounded = true,
 }: {
   size: number;
@@ -17,8 +23,8 @@ export function OgMark({
   rounded?: boolean;
 }) {
   const glyph = Math.round(size * glyphScale);
-  // Thicker strokes at favicon sizes so the mark stays crisp.
-  const stroke = size <= 48 ? MARK_STROKE * 1.25 : MARK_STROKE;
+  // Slightly heavier brackets at favicon sizes so the mark stays crisp.
+  const stroke = size <= 48 ? MARK_STROKE * 1.12 : MARK_STROKE;
 
   return (
     <div
@@ -34,30 +40,20 @@ export function OgMark({
     >
       <svg width={glyph} height={glyph} viewBox={MARK_VIEWBOX}>
         <path
-          d={markPaths.shackle}
+          d={markPaths.bracketTopLeft}
           fill="none"
-          stroke={brandColors.brand}
+          stroke={brandColors.tileFrame}
           strokeWidth={stroke}
-          strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d={markPaths.bracketLeft}
+          d={markPaths.bracketBottomRight}
           fill="none"
-          stroke={brandColors.brand}
+          stroke={brandColors.tileFrame}
           strokeWidth={stroke}
-          strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path
-          d={markPaths.bracketRight}
-          fill="none"
-          stroke={brandColors.brand}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path d={markPaths.keyhole} fill={brandColors.brand} />
+        <rect {...markCore} fill={brandColors.brandBright} />
       </svg>
     </div>
   );

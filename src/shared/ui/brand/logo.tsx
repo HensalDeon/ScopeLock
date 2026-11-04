@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils";
 import { LogoMark } from "./logo-mark";
 
-/** Mark + "ScopeLock" wordmark. */
+/** Focus Lock mark + lowercase "scopelock" wordmark. */
 export function Logo({
   className,
   markClassName,
@@ -12,14 +12,13 @@ export function Logo({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight",
+        "inline-flex items-center gap-2 text-xl font-semibold tracking-[-0.035em] text-foreground",
         className,
       )}
     >
-      <LogoMark className={cn("size-8", markClassName)} title="" />
-      <span>
-        Scope<span className="text-brand">Lock</span>
-      </span>
+      <LogoMark title="" className={cn("size-[1.3em]", markClassName)} />
+      <span>scopelock</span>
+      <span className="sr-only">ScopeLock</span>
     </span>
   );
 }

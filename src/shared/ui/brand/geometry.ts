@@ -1,31 +1,34 @@
 /**
- * ScopeLock mark geometry — the single source of truth for the logo, the
- * loader and the generated app icons.
+ * ScopeLock mark — "Focus Lock".
  *
- * Concept: two square brackets `[ ]` (= scope) form the body of a padlock,
- * topped by a shackle, with a keyhole inside. "Your scope, locked."
+ * Two corner brackets frame a solid core, the way a camera locks focus on a
+ * subject. The brackets are the agreed scope; the green core is the work
+ * inside it, locked in.
  *
+ * Single source of truth for the logo, the loader and the generated app icons.
  * All coordinates live in a 48×48 viewBox.
  */
 export const MARK_VIEWBOX = "0 0 48 48";
-export const MARK_STROKE = 3.6;
+export const MARK_STROKE = 5;
 
 export const markPaths = {
-  /** `[` — left half of the lock body */
-  bracketLeft: "M17 21H10.5V41H18.5",
-  /** `]` — right half of the lock body */
-  bracketRight: "M31 21H37.5V41H29.5",
-  /** padlock shackle, its legs land on the brackets' top arms */
-  shackle: "M17 21V14.5a7 7 0 0 1 14 0V21",
-  /** keyhole: round head + tapered stem */
-  keyhole:
-    "M24 25.2a3.3 3.3 0 0 1 1.65 6.16l.75 4.14a.9.9 0 0 1-.89 1.06h-3.02a.9.9 0 0 1-.89-1.06l.75-4.14A3.3 3.3 0 0 1 24 25.2Z",
+  /** top-left focus bracket */
+  bracketTopLeft: "M8.5 21V12.5a4 4 0 0 1 4-4H21",
+  /** bottom-right focus bracket */
+  bracketBottomRight: "M39.5 27v8.5a4 4 0 0 1-4 4H27",
 } as const;
 
+/** the locked core */
+export const markCore = { x: 18, y: 18, width: 12, height: 12, rx: 3 } as const;
+
 export const brandColors = {
-  /** Emerald — "approved", money recovered */
-  brand: "#10B981",
+  /** Emerald for light surfaces — "approved", money recovered */
+  brand: "#0E9F6E",
+  /** Brighter emerald for dark surfaces and the app icon */
+  brandBright: "#34D399",
   /** Deep ink navy — trust, contracts */
   ink: "#0B1220",
+  /** Bracket colour on the dark app-icon tile */
+  tileFrame: "#F2F5F8",
   paper: "#FFFFFF",
 } as const;
