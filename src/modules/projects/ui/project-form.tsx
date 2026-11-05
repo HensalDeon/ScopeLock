@@ -305,13 +305,17 @@ export function ProjectForm({
                 }
               />
             ) : (
-              <button
-                type="button"
-                onClick={() => setAddingClient(true)}
-                className="w-fit self-start text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-              >
-                Client not listed? Add them here
-              </button>
+              // Wrapped: Field stretches its direct children to full width,
+              // which centred the button's text.
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setAddingClient(true)}
+                  className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  Client not listed? Add them here
+                </button>
+              </div>
             )}
           </Field>
 

@@ -10,6 +10,7 @@ import {
   proposalFormDefaults,
 } from "@/modules/projects";
 import { FreshOnEachVisit } from "@/shared/ui/fresh-on-each-visit";
+import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
 export const metadata: Metadata = { title: "New project" };
@@ -19,6 +20,9 @@ export default function NewProjectPage({
 }: PageProps<"/projects/new">) {
   return (
     <PageContainer>
+      <BackLink href="/projects" className="mb-3">
+        Projects
+      </BackLink>
       <PageHeader
         title="New project"
         description="Write down the scope you agreed with your client. You'll send it to them for approval next."

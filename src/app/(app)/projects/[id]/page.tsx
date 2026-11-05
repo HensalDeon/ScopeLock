@@ -13,6 +13,7 @@ import {
 import { getProjectOrNotFound } from "@/modules/projects/server";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatPhone } from "@/shared/lib/phone";
+import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
 import { PageContainer } from "@/shared/ui/page";
 
@@ -41,12 +42,7 @@ async function ProjectDetail({
   return (
     <div className="grid gap-8">
       <div className="grid gap-3">
-        <Link
-          href="/projects"
-          className="w-fit text-sm text-muted-foreground hover:text-foreground"
-        >
-          ← Projects
-        </Link>
+        <BackLink href="/projects">Projects</BackLink>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid min-w-0 gap-1.5">
             <div className="flex flex-wrap items-center gap-3">

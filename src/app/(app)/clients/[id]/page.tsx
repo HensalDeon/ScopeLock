@@ -8,6 +8,7 @@ import { ProjectList } from "@/modules/projects";
 import { listProjectsForClient } from "@/modules/projects/server";
 import { formatDate } from "@/shared/lib/dates";
 import { formatPhone, whatsappLink } from "@/shared/lib/phone";
+import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
 import { EmptyState } from "@/shared/ui/list-states";
 import { PageContainer, Section } from "@/shared/ui/page";
@@ -39,12 +40,7 @@ async function ClientDetail({
   return (
     <div className="grid gap-8">
       <div className="grid gap-3">
-        <Link
-          href="/clients"
-          className="w-fit text-sm text-muted-foreground hover:text-foreground"
-        >
-          ← Clients
-        </Link>
+        <BackLink href="/clients">Clients</BackLink>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="grid min-w-0 gap-1">
             <h1 className="text-2xl font-semibold tracking-[-0.02em]">

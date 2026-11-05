@@ -125,6 +125,7 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - Anything that reads the session, headers or cookies renders inside `<Suspense>` with a skeleton that has the same shape.
 - No `"use cache"` on workspace data in Phase 2. If it's added later, key and tag it by `workspaceId` and call `updateTag` in actions. Never pass a raw portal token into a cached function, because it becomes a stored cache key.
 - Lists have a real empty state: what will appear here and how to add the first item.
+- Every inner page (detail, new, edit) starts with a `BackLink` to its parent ("← Projects", "← Back to project"). Phones and the installed app have no reliable browser Back button.
 - Bad ids and missing records call `notFound()`. Unexpected failures fall through to `app/error.tsx`.
 - **Visited pages stay alive.** With Cache Components, Next keeps up to 3 visited pages hidden (React `<Activity>`) and restores their state on return. Decide per piece of state:
   - Transient UI (dropdowns, popovers, confirm dialogs) resets when hidden, with a `useLayoutEffect` cleanup that closes it.

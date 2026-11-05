@@ -13,6 +13,7 @@ import {
 import { getProjectOrNotFound } from "@/modules/projects/server";
 import { paiseToRupees } from "@/shared/lib/money";
 import { joinLines } from "@/shared/lib/text-lines";
+import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
 export const metadata: Metadata = { title: "Edit project" };
@@ -22,11 +23,29 @@ export default function EditProjectPage({
 }: PageProps<"/projects/[id]/edit">) {
   return (
     <PageContainer>
+      <div className="mb-3">
+        <Suspense fallback={<BackLink href="/projects">Projects</BackLink>}>
+          <BackToProject params={params} />
+        </Suspense>
+      </div>
       <PageHeader title="Edit project" />
       <Suspense fallback={<div className="h-[36rem] rounded-xl bg-canvas" />}>
         <Form params={params} />
       </Suspense>
     </PageContainer>
+  );
+}
+
+async function BackToProject({
+  params,
+}: {
+  params: PageProps<"/projects/[id]/edit">["params"];
+}) {
+  const { id } = await params;
+  return (
+    <BackLink href={`/projects/${encodeURIComponent(id)}` as Route}>
+      Back to project
+    </BackLink>
   );
 }
 
