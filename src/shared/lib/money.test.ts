@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { allocate, formatINR, paise, rupeesToPaise, sum } from "./money";
+import {
+  allocate,
+  formatINR,
+  formatMoney,
+  minor,
+  paise,
+  parseAmount,
+  rupeesToPaise,
+  sum,
+} from "./money";
 
 describe("rupeesToPaise", () => {
   it.each([
@@ -46,5 +55,38 @@ describe("allocate", () => {
     expect(() => allocate(paise(100), [])).toThrow();
     expect(() => allocate(paise(100), [0, 0])).toThrow();
     expect(() => allocate(paise(100), [-1, 2])).toThrow();
+  });
+});
+
+describe("formatMoney (other currencies)", () => {
+  it.each([
+    ["USD", 1_200_000, "$12,000"],
+    ["USD", 1_234_567_800, "$12,345,678"],
+    ["EUR", 240_050, "€2,400.50"],
+    ["GBP", 99_900, "£999"],
+    ["CAD", 95_000, "CA$950"],
+    ["AUD", 10_000, "A$100"],
+    ["AED", 1_500_000, "AED 15,000"],
+    ["SGD", 250_000, "SGD 2,500"],
+  ] as const)("%s %i → %s", (currency, amount, expected) => {
+    expect(formatMoney(minor(amount), currency).replace(/\s/g, " ")).toBe(
+      expected,
+    );
+  });
+
+  it("keeps Indian grouping only for rupees", () => {
+    expect(formatMoney(minor(10_000_000), "INR")).toBe("₹1,00,000");
+    expect(formatMoney(minor(10_000_000), "USD")).toBe("$100,000");
+  });
+});
+
+describe("parseAmount", () => {
+  it("accepts the common currency symbols people paste", () => {
+    expect(parseAmount("$ 1,250.5")).toBe(125_050);
+    expect(parseAmount("€2,400.50")).toBe(240_050);
+    // European "2.400" (two thousand four hundred) is ambiguous: rejected,
+    // rather than silently read as 2.40.
+    expect(() => parseAmount("€2.400")).toThrow(RangeError);
+    expect(() => parseAmount("20000x")).toThrow(RangeError);
   });
 });

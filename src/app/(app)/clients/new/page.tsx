@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ClientForm } from "@/modules/clients";
+import { requireWorkspace } from "@/modules/workspace/server";
 import { safeNextPath } from "@/shared/auth/redirect";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
@@ -31,13 +32,17 @@ async function Form({
 }: {
   searchParams: PageProps<"/clients/new">["searchParams"];
 }) {
-  const { next } = await searchParams;
+  const [{ next }, { workspace }] = await Promise.all([
+    searchParams,
+    requireWorkspace(),
+  ]);
   const back = typeof next === "string" ? safeNextPath(next, "") : "";
   return (
     <ClientForm
       mode="create"
       next={back}
       cancelHref={back === "/projects/new" ? "/projects/new" : "/clients"}
+      defaultCurrency={workspace.currency}
     />
   );
 }

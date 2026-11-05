@@ -22,6 +22,7 @@ function toClient(doc: ClientDoc): Client {
     company: doc.company ?? null,
     email: doc.email ?? null,
     phone: doc.phone ?? null,
+    currency: doc.currency ?? null,
     archivedAt: doc.archivedAt ?? null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,

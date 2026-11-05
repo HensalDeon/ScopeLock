@@ -33,6 +33,7 @@ async function SettingsContent() {
             businessName: workspace.businessName,
             businessType: workspace.businessType,
             phone: workspace.phone ? formatPhone(workspace.phone) : "",
+            currency: workspace.currency,
           }}
         />
       </Section>

@@ -14,6 +14,7 @@ const newId = () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`;
 function rahulsProject(clientId = new ObjectId()): repo.ProjectData {
   const input = projectInputSchema.parse({
     clientId: clientId.toHexString(),
+    currency: "INR",
     name: "Website redesign",
     description: "",
     items: JSON.stringify([
@@ -33,6 +34,7 @@ function rahulsProject(clientId = new ObjectId()): repo.ProjectData {
   const plan = buildProjectPlan(input, newId);
   return {
     clientId,
+    currency: input.currency,
     name: input.name,
     description: input.description,
     billingModel: input.billingModel,

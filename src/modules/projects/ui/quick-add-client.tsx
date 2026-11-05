@@ -46,7 +46,12 @@ export function QuickAddClient({
       const result = await quickAddClient(IDLE, data);
       setServerState(result);
       if (result.status === "success" && result.id) {
-        onAdded({ id: result.id, label: result.message ?? values.name });
+        // New clients follow the workspace default currency.
+        onAdded({
+          id: result.id,
+          label: result.message ?? values.name,
+          currency: null,
+        });
       }
     });
   }

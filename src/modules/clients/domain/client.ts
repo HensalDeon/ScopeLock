@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  optionalCurrencyField,
+  type CurrencyCode,
+} from "@/shared/lib/currency";
 import { optionalPhoneField } from "@/shared/lib/phone";
 
 export const CLIENT_NAME_MAX_LENGTH = 120;
@@ -12,6 +16,8 @@ export type Client = {
   email: string | null;
   /** E.164, e.g. +919876543210. */
   phone: string | null;
+  /** Default currency for this client's new projects; null = workspace default. */
+  currency: CurrencyCode | null;
   /** Archived clients are hidden from lists and pickers; history keeps them. */
   archivedAt: Date | null;
   createdAt: Date;
@@ -19,7 +25,13 @@ export type Client = {
 };
 
 /** Fields of the add/edit client form. */
-export const CLIENT_FIELDS = ["name", "company", "email", "phone"] as const;
+export const CLIENT_FIELDS = [
+  "name",
+  "company",
+  "email",
+  "phone",
+  "currency",
+] as const;
 export type ClientField = (typeof CLIENT_FIELDS)[number];
 
 const optionalText = (max: number, label: string) =>
@@ -51,6 +63,8 @@ export const clientInputSchema = z.object({
   company: optionalText(CLIENT_COMPANY_MAX_LENGTH, "company name"),
   email: optionalEmail,
   phone: optionalPhoneField,
+  // Optional so older forms (and the quick-add panel) can leave it out.
+  currency: optionalCurrencyField.optional().transform((v) => v ?? null),
 });
 
 export type ClientInput = z.output<typeof clientInputSchema>;

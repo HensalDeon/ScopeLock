@@ -72,6 +72,7 @@ export function toProposalDocument(
         }
       : null,
     reference: projectReference(project),
+    currency: project.currency,
     title: p.title ?? project.name,
     subtitle: p.subtitle ?? project.description,
     issuedOn: project.updatedAt,

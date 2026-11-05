@@ -7,6 +7,7 @@ const rahul = {
   company: "Mehta Interiors",
   email: "rahul@mehtainteriors.in",
   phone: "+919876543210",
+  currency: null,
 };
 
 describe("clients repository", () => {

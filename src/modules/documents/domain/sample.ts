@@ -1,4 +1,4 @@
-import { paise } from "@/shared/lib/money";
+import { minor } from "@/shared/lib/money";
 import type { ProposalDocumentData } from "./document-data";
 import { STARTER_PROPOSAL_DEFAULTS, type ProposalDefaults } from "./defaults";
 
@@ -23,6 +23,7 @@ export function sampleProposal(
       phone: "+919876543210",
     },
     reference: "P-SAMPLE",
+    currency: "INR",
     title: "Website design & development proposal",
     subtitle:
       "A custom 5-page website for Mehta Interiors: design, build and launch.",
@@ -48,14 +49,14 @@ export function sampleProposal(
           "Featured projects",
           "Client testimonials",
         ],
-        amount: paise(2_000_000),
+        amount: minor(2_000_000),
       },
       {
         id: "s2",
         title: "About page",
         description: null,
         includes: ["Your story and team", "Process and values"],
-        amount: paise(1_200_000),
+        amount: minor(1_200_000),
       },
       {
         id: "s3",
@@ -65,14 +66,14 @@ export function sampleProposal(
           "Residential and commercial services",
           "Enquiry call to action",
         ],
-        amount: paise(1_600_000),
+        amount: minor(1_600_000),
       },
       {
         id: "s4",
         title: "Portfolio page",
         description: null,
         includes: ["Filterable project gallery", "Before and after views"],
-        amount: paise(2_000_000),
+        amount: minor(2_000_000),
       },
       {
         id: "s5",
@@ -82,24 +83,24 @@ export function sampleProposal(
           "Enquiry form with spam protection",
           "Map, WhatsApp and call buttons",
         ],
-        amount: paise(1_200_000),
+        amount: minor(1_200_000),
       },
     ],
-    total: paise(8_000_000),
+    total: minor(8_000_000),
     billingModel: "milestones",
     milestones: [
-      { id: "m1", name: "Advance", percent: 30, amount: paise(2_400_000) },
+      { id: "m1", name: "Advance", percent: 30, amount: minor(2_400_000) },
       {
         id: "m2",
         name: "Design approved",
         percent: 30,
-        amount: paise(2_400_000),
+        amount: minor(2_400_000),
       },
       {
         id: "m3",
         name: "Before launch",
         percent: 40,
-        amount: paise(3_200_000),
+        amount: minor(3_200_000),
       },
     ],
     timeline: [
@@ -130,14 +131,14 @@ export function sampleProposal(
         id: "a1",
         title: "Extra page",
         description: "Same design system",
-        amount: paise(600_000),
+        amount: minor(600_000),
         unit: "/ page",
       },
       {
         id: "a2",
         title: "Hindi version",
         description: "Bilingual site",
-        amount: paise(1_500_000),
+        amount: minor(1_500_000),
         unit: null,
       },
     ],

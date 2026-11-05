@@ -1,5 +1,5 @@
 import { joinLines } from "@/shared/lib/text-lines";
-import { paiseToRupees } from "@/shared/lib/money";
+import { toMajor } from "@/shared/lib/money";
 import type { ProposalContent } from "../domain/proposal";
 import type { ProposalFormValue, ProposalSectionId } from "./proposal-sections";
 
@@ -45,7 +45,7 @@ export function proposalFormDefaults(p: ProposalContent): ProposalFormDefaults {
       id: a.id,
       title: a.title,
       description: a.description ?? "",
-      amount: String(paiseToRupees(a.amount)),
+      amount: String(toMajor(a.amount)),
       unit: a.unit ?? "",
     })),
     clientProvides: joinLines(p.clientProvides),

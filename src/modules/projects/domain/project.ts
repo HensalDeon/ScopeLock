@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { paise, type Paise } from "@/shared/lib/money";
+import { currencyField, type CurrencyCode } from "@/shared/lib/currency";
+import { minor, type Minor } from "@/shared/lib/money";
 import {
   BILLING_MODELS,
   buildMilestones,
@@ -46,11 +47,11 @@ export function isEditable(status: ProjectStatus): boolean {
 }
 
 export type ProjectTotals = {
-  baseline: Paise;
-  approvedChanges: Paise;
-  pendingChanges: Paise;
-  paid: Paise;
-  due: Paise;
+  baseline: Minor;
+  approvedChanges: Minor;
+  pendingChanges: Minor;
+  paid: Minor;
+  due: Minor;
 };
 
 export type Project = {
@@ -58,12 +59,13 @@ export type Project = {
   clientId: string;
   name: string;
   description: string | null;
-  currency: "INR";
+  /** Every amount on the project is in this currency. Locked once sent. */
+  currency: CurrencyCode;
   status: ProjectStatus;
   billingModel: BillingModel;
   baseline: {
     items: ScopeItem[];
-    total: Paise;
+    total: Minor;
     approvedAt: Date | null;
   };
   milestones: Milestone[];
@@ -86,6 +88,7 @@ export const PROJECT_DESCRIPTION_MAX_LENGTH = 2000;
 /** Fields of the project form. `items` and `milestones` are JSON strings. */
 export const PROJECT_FIELDS = [
   "clientId",
+  "currency",
   "name",
   "description",
   "items",
@@ -119,6 +122,7 @@ export const projectInputSchema = z
     clientId: z
       .string()
       .regex(/^[0-9a-f]{24}$/i, "Choose who this project is for."),
+    currency: currencyField,
     name: z
       .string()
       .trim()
@@ -191,7 +195,7 @@ export function buildProjectPlan(
   newId: () => string,
 ): {
   items: ScopeItem[];
-  total: Paise;
+  total: Minor;
   milestones: Milestone[];
   proposal: ProposalContent;
 } {
@@ -215,12 +219,12 @@ export function buildProjectPlan(
   };
 }
 
-export function emptyTotals(baseline: Paise): ProjectTotals {
+export function emptyTotals(baseline: Minor): ProjectTotals {
   return {
     baseline,
-    approvedChanges: paise(0),
-    pendingChanges: paise(0),
-    paid: paise(0),
-    due: paise(0),
+    approvedChanges: minor(0),
+    pendingChanges: minor(0),
+    paid: minor(0),
+    due: minor(0),
   };
 }

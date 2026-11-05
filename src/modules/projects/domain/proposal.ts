@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type { Paise } from "@/shared/lib/money";
+import type { Minor } from "@/shared/lib/money";
 import { linesField } from "@/shared/lib/text-lines";
-import { rupeeAmountField } from "./scope";
+import { amountField } from "./scope";
 
 /**
  * The optional "proposal" sections around the priced scope: what turns a list
@@ -20,7 +20,7 @@ export type Addon = {
   id: string;
   title: string;
   description: string | null;
-  amount: Paise;
+  amount: Minor;
   unit: string | null;
 };
 
@@ -150,7 +150,7 @@ export const proposalInputSchema = z.object({
           .min(1, "Name the add-on.")
           .max(L.addonTitle, `Keep it under ${L.addonTitle} characters.`),
         description: optionalText(L.addonDescription, "description"),
-        amount: rupeeAmountField,
+        amount: amountField,
         unit: optionalText(L.unit, "unit"),
       }),
     )

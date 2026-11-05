@@ -15,6 +15,7 @@ describe("clientInputSchema", () => {
       company: "Mehta Interiors",
       email: "rahul@mehtainteriors.in",
       phone: "+919876543210",
+      currency: null,
     });
   });
 
@@ -26,7 +27,13 @@ describe("clientInputSchema", () => {
         email: "",
         phone: "",
       }),
-    ).toEqual({ name: "Asha", company: null, email: null, phone: null });
+    ).toEqual({
+      name: "Asha",
+      company: null,
+      email: null,
+      phone: null,
+      currency: null,
+    });
   });
 
   it("explains what's wrong, per field", () => {
@@ -55,5 +62,20 @@ describe("client labels", () => {
     ).toBe("Rahul Mehta · Mehta Interiors");
     expect(clientLabel({ name: "Asha Rao", company: null })).toBe("Asha Rao");
     expect(clientFirstName({ name: "Rahul Mehta" })).toBe("Rahul");
+  });
+});
+
+describe("client currency", () => {
+  it("is optional: empty means the workspace default", () => {
+    const base = { name: "John Carter", company: "", email: "", phone: "" };
+    expect(
+      clientInputSchema.parse({ ...base, currency: "" }).currency,
+    ).toBeNull();
+    expect(clientInputSchema.parse({ ...base, currency: "USD" }).currency).toBe(
+      "USD",
+    );
+    expect(
+      clientInputSchema.safeParse({ ...base, currency: "BTC" }).success,
+    ).toBe(false);
   });
 });

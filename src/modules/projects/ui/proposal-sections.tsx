@@ -2,6 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import { useId } from "react";
+import { CURRENCY_INFO, type CurrencyCode } from "@/shared/lib/currency";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { FieldDescription, FieldLabel } from "@/shared/ui/field";
@@ -79,6 +80,8 @@ export function proposalToJson(v: ProposalFormValue): string {
 
 type Props = {
   value: ProposalFormValue;
+  /** The project's currency, for add-on prices. */
+  currency: CurrencyCode;
   onChange: (update: (v: ProposalFormValue) => ProposalFormValue) => void;
   /** Error to show for a path under "proposal." (e.g. "highlights.0.value"). */
   errorFor: (path: string, touchKey?: string) => string | undefined;
@@ -96,6 +99,7 @@ export function ProposalSections({
   errorFor,
   touch,
   edited,
+  currency,
 }: Props) {
   const uid = useId();
   const inactive = PROPOSAL_SECTIONS.filter(
@@ -443,10 +447,10 @@ export function ProposalSections({
                     aria-hidden
                     className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-sm text-muted-foreground"
                   >
-                    ₹
+                    {CURRENCY_INFO[currency].symbol}
                   </span>
                   <Input
-                    aria-label={`Add-on ${i + 1} price, in rupees`}
+                    aria-label={`Add-on ${i + 1} price, in ${currency}`}
                     inputMode="decimal"
                     placeholder="0"
                     value={addon.amount}
@@ -461,7 +465,10 @@ export function ProposalSections({
                       )
                     }
                     {...field(`addons.${i}.amount`, `${addon.key}.amount`)}
-                    className="h-9 bg-background pl-6 tabular-nums"
+                    className="h-9 bg-background tabular-nums"
+                    style={{
+                      paddingLeft: `calc(0.9rem + ${CURRENCY_INFO[currency].symbol.length}ch)`,
+                    }}
                   />
                 </div>
                 <Input

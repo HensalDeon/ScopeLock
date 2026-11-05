@@ -11,6 +11,8 @@ import {
   FieldSet,
   FieldTitle,
 } from "@/shared/ui/field";
+import type { CurrencyCode } from "@/shared/lib/currency";
+import { CurrencySelect } from "@/shared/ui/currency-select";
 import { Input } from "@/shared/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import {
@@ -31,8 +33,11 @@ export function WorkspaceFields({
   onChange,
   onBlur,
   errorFor,
+  showCurrency = false,
 }: {
   values: WorkspaceValues;
+  /** Settings only; onboarding starts everyone on INR. */
+  showCurrency?: boolean;
   onChange: (field: WorkspaceField, value: string) => void;
   onBlur: (field: WorkspaceField) => void;
   errorFor: (field: WorkspaceField) => string | undefined;
@@ -121,6 +126,26 @@ export function WorkspaceFields({
         </FieldDescription>
         {errorFor("phone") && <FieldError>{errorFor("phone")}</FieldError>}
       </Field>
+      {showCurrency && (
+        <Field data-invalid={Boolean(errorFor("currency")) || undefined}>
+          <FieldLabel htmlFor={`${uid}-currency`}>Default currency</FieldLabel>
+          <CurrencySelect
+            id={`${uid}-currency`}
+            name="currency"
+            className="w-full sm:w-72"
+            value={values.currency as CurrencyCode}
+            onChange={(value) => onChange("currency", value)}
+            onBlur={() => onBlur("currency")}
+          />
+          <FieldDescription>
+            For new clients and projects. Each client and project can use its
+            own.
+          </FieldDescription>
+          {errorFor("currency") && (
+            <FieldError>{errorFor("currency")}</FieldError>
+          )}
+        </Field>
+      )}
     </>
   );
 }

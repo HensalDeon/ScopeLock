@@ -9,6 +9,7 @@ describe("workspace profile repository", () => {
       businessName: "Pixel & Code Studio",
       businessType: "studio",
       phone: "+919876543210",
+      currency: "INR",
     });
     const created = await getWorkspaceProfile("ws_1");
     expect(created).toMatchObject({
@@ -21,6 +22,7 @@ describe("workspace profile repository", () => {
       businessName: "Pixel and Code",
       businessType: "agency",
       phone: null,
+      currency: "USD",
     });
     const updated = await getWorkspaceProfile("ws_1");
     expect(updated).toMatchObject({

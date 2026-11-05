@@ -3,12 +3,14 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useActionState, useId, useRef, useState, useTransition } from "react";
+import { currencyLabel, type CurrencyCode } from "@/shared/lib/currency";
 import { IDLE } from "@/shared/lib/form-state";
 import {
   focusFirstInvalid,
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
 import { Button } from "@/shared/ui/button";
+import { CurrencySelect } from "@/shared/ui/currency-select";
 import {
   Field,
   FieldDescription,
@@ -31,7 +33,13 @@ import {
 } from "../server/actions";
 
 type Values = Record<ClientField, string>;
-const EMPTY: Values = { name: "", company: "", email: "", phone: "" };
+const EMPTY: Values = {
+  name: "",
+  company: "",
+  email: "",
+  phone: "",
+  currency: "",
+};
 
 /**
  * Add or edit a client. Fields are checked as the person goes (same rules as
@@ -39,9 +47,13 @@ const EMPTY: Values = { name: "", company: "", email: "", phone: "" };
  * message, and only enables Save when something actually changed.
  */
 export function ClientForm(
-  props:
+  props: (
     | { mode: "create"; next?: string; cancelHref: Route }
-    | { mode: "edit"; clientId: string; defaults: Values },
+    | { mode: "edit"; clientId: string; defaults: Values }
+  ) & {
+    /** The workspace default, shown as "Use my default (INR)". */
+    defaultCurrency: CurrencyCode;
+  },
 ) {
   // Unique per instance: visited pages stay mounted, so two copies of
   // this form can be in the document at once (CONVENTIONS §5).
@@ -170,6 +182,28 @@ export function ClientForm(
             )}
           </Field>
         </div>
+
+        <Field data-invalid={Boolean(form.errorFor("currency")) || undefined}>
+          <FieldLabel htmlFor={`${uid}-currency`}>Bills in</FieldLabel>
+          <CurrencySelect
+            id={`${uid}-currency`}
+            name="currency"
+            className="w-full sm:w-72"
+            value={values.currency as CurrencyCode | ""}
+            defaultOption={`Use my default (${currencyLabel(props.defaultCurrency)})`}
+            onChange={(currency) => {
+              setValues((v) => ({ ...v, currency }));
+              form.edited("currency");
+            }}
+            onBlur={() => form.touch("currency")}
+          />
+          <FieldDescription>
+            New projects for this client start in this currency.
+          </FieldDescription>
+          {form.errorFor("currency") && (
+            <FieldError>{form.errorFor("currency")}</FieldError>
+          )}
+        </Field>
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" disabled={pending || !canSave}>

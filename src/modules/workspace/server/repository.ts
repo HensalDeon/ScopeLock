@@ -17,7 +17,7 @@ function toWorkspaceProfile(doc: WorkspaceProfileDoc): WorkspaceProfile {
     businessName: doc.businessName,
     businessType: doc.businessType,
     phone: doc.phone ?? null,
-    currency: doc.currency,
+    currency: doc.currency ?? "INR",
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
@@ -42,8 +42,8 @@ export async function saveWorkspaceProfile(
         businessName: details.businessName,
         businessType: details.businessType,
         phone: details.phone,
+        currency: details.currency,
       },
-      $setOnInsert: { currency: "INR" },
     },
     { upsert: true },
   );

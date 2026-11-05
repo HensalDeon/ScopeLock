@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { allocate, paise, type Paise } from "@/shared/lib/money";
+import { allocate, minor, type Minor } from "@/shared/lib/money";
 
 export const BILLING_MODELS = ["upfront", "milestones"] as const;
 export type BillingModel = (typeof BILLING_MODELS)[number];
@@ -13,7 +13,7 @@ export type Milestone = {
   name: string;
   /** Whole percent of the baseline, 1–100. */
   percent: number;
-  baseAmount: Paise;
+  baseAmount: Minor;
   order: number;
 };
 
@@ -89,9 +89,9 @@ export function percentTotal(
  * so the amounts always add up to the total exactly (no lost paise).
  */
 export function splitByMilestones(
-  total: Paise,
+  total: Minor,
   milestones: readonly { percent: number }[],
-): Paise[] {
+): Minor[] {
   return allocate(
     total,
     milestones.map((m) => m.percent),
@@ -100,7 +100,7 @@ export function splitByMilestones(
 
 /** Builds stored milestones: ids, order and each one's share of the total. */
 export function buildMilestones(
-  total: Paise,
+  total: Minor,
   inputs: readonly MilestoneInput[],
   newId: () => string,
 ): Milestone[] {
@@ -109,7 +109,7 @@ export function buildMilestones(
     id: input.id ?? newId(),
     name: input.name,
     percent: input.percent,
-    baseAmount: amounts[index] ?? paise(0),
+    baseAmount: amounts[index] ?? minor(0),
     order: index,
   }));
 }

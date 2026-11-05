@@ -2,7 +2,7 @@ import { Check, X } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { formatDate } from "@/shared/lib/dates";
 import { initialsOf } from "@/shared/lib/initials";
-import { formatINR } from "@/shared/lib/money";
+import { formatMoney, type Minor } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import type { ProposalDocumentData } from "../domain/document-data";
@@ -283,6 +283,7 @@ function buildSections(
   headingFont: string,
 ): Section[] {
   const sections: Section[] = [];
+  const money = (amount: Minor) => formatMoney(amount, data.currency);
   const paragraphs = (text: string) =>
     text
       .split(/\n{2,}/)
@@ -327,7 +328,7 @@ function buildSections(
                 {item.title}
               </h3>
               <p className="shrink-0 text-sm font-semibold tabular-nums">
-                {formatINR(item.amount)}
+                {money(item.amount)}
               </p>
             </div>
             {item.description && (
@@ -370,7 +371,7 @@ function buildSections(
               <tr key={item.id} className="border-b border-[#ece9e3]">
                 <td className="py-2 pr-3">{item.title}</td>
                 <td className="py-2 text-right tabular-nums">
-                  {formatINR(item.amount)}
+                  {money(item.amount)}
                 </td>
               </tr>
             ))}
@@ -379,7 +380,7 @@ function buildSections(
             <tr>
               <td className="pt-2.5 font-semibold">Total</td>
               <td className="pt-2.5 text-right font-semibold tabular-nums">
-                {formatINR(data.total)}
+                {money(data.total)}
               </td>
             </tr>
           </tfoot>
@@ -394,7 +395,7 @@ function buildSections(
               headingFont,
             )}
           >
-            {formatINR(data.total)}
+            {money(data.total)}
           </p>
           <p className="mt-1 text-xs text-(--doc-cover-muted)">
             For the scope above. Anything extra is quoted separately before work
@@ -427,7 +428,7 @@ function buildSections(
               </td>
               <td className="py-2.5 text-right tabular-nums">100%</td>
               <td className="py-2.5 text-right font-semibold tabular-nums">
-                {formatINR(data.total)}
+                {money(data.total)}
               </td>
             </tr>
           ) : (
@@ -436,7 +437,7 @@ function buildSections(
                 <td className="py-2.5 pr-3 font-semibold">{m.name}</td>
                 <td className="py-2.5 text-right tabular-nums">{m.percent}%</td>
                 <td className="py-2.5 text-right font-semibold tabular-nums">
-                  {formatINR(m.amount)}
+                  {money(m.amount)}
                 </td>
               </tr>
             ))
@@ -520,7 +521,7 @@ function buildSections(
                   </td>
                   <td className="py-2.5 text-right whitespace-nowrap tabular-nums">
                     <strong className="font-semibold">
-                      {formatINR(addon.amount)}
+                      {money(addon.amount)}
                     </strong>
                     {addon.unit && (
                       <span className="ml-1 text-xs text-[#6b6f78]">

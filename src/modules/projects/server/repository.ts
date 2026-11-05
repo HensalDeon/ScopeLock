@@ -2,7 +2,8 @@ import "server-only";
 import type { ObjectId } from "mongodb";
 import { COLLECTIONS } from "@/shared/db/names";
 import { scopedCollection, type WorkspaceOwned } from "@/shared/db/scoped";
-import { paise } from "@/shared/lib/money";
+import { DEFAULT_CURRENCY, type CurrencyCode } from "@/shared/lib/currency";
+import { minor } from "@/shared/lib/money";
 import type { BillingModel, Milestone } from "../domain/billing";
 import type { Project, ProjectStatus, ProjectTotals } from "../domain/project";
 import { EMPTY_PROPOSAL, type ProposalContent } from "../domain/proposal";
@@ -13,7 +14,8 @@ type ProjectDoc = WorkspaceOwned & {
   clientId: ObjectId;
   name: string;
   description: string | null;
-  currency: "INR";
+  /** Missing on projects created before multi-currency: INR. */
+  currency?: CurrencyCode;
   status: ProjectStatus;
   billingModel: BillingModel;
   baseline: {
@@ -31,6 +33,7 @@ type ProjectDoc = WorkspaceOwned & {
 /** The writable part of a project; the rest is set by the repository. */
 export type ProjectData = {
   clientId: ObjectId;
+  currency: CurrencyCode;
   name: string;
   description: string | null;
   billingModel: BillingModel;
@@ -44,7 +47,7 @@ export type ProjectData = {
 const projects = (workspaceId: string) =>
   scopedCollection<ProjectDoc>(COLLECTIONS.projects, workspaceId);
 
-// Amounts come back from MongoDB as plain numbers; paise() re-checks they're
+// Amounts come back from MongoDB as plain numbers; minor() re-checks they're
 // safe integers so a corrupt document fails loudly instead of miscounting.
 function toProject(doc: ProjectDoc): Project {
   return {
@@ -52,7 +55,7 @@ function toProject(doc: ProjectDoc): Project {
     clientId: doc.clientId.toHexString(),
     name: doc.name,
     description: doc.description ?? null,
-    currency: doc.currency,
+    currency: doc.currency ?? DEFAULT_CURRENCY,
     status: doc.status,
     billingModel: doc.billingModel,
     baseline: {
@@ -60,29 +63,29 @@ function toProject(doc: ProjectDoc): Project {
         ...item,
         description: item.description ?? null,
         includes: item.includes ?? [],
-        amount: paise(item.amount),
+        amount: minor(item.amount),
       })),
-      total: paise(doc.baseline.total),
+      total: minor(doc.baseline.total),
       approvedAt: doc.baseline.approvedAt ?? null,
     },
     milestones: [...doc.milestones]
       .sort((a, b) => a.order - b.order)
-      .map((m) => ({ ...m, baseAmount: paise(m.baseAmount) })),
+      .map((m) => ({ ...m, baseAmount: minor(m.baseAmount) })),
     proposalSaved: doc.proposal !== undefined,
     proposal: {
       ...EMPTY_PROPOSAL,
       ...doc.proposal,
       addons: (doc.proposal?.addons ?? []).map((a) => ({
         ...a,
-        amount: paise(a.amount),
+        amount: minor(a.amount),
       })),
     },
     totals: {
-      baseline: paise(doc.totals.baseline),
-      approvedChanges: paise(doc.totals.approvedChanges),
-      pendingChanges: paise(doc.totals.pendingChanges),
-      paid: paise(doc.totals.paid),
-      due: paise(doc.totals.due),
+      baseline: minor(doc.totals.baseline),
+      approvedChanges: minor(doc.totals.approvedChanges),
+      pendingChanges: minor(doc.totals.pendingChanges),
+      paid: minor(doc.totals.paid),
+      due: minor(doc.totals.due),
     },
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -92,6 +95,7 @@ function toProject(doc: ProjectDoc): Project {
 function toFields(data: ProjectData) {
   return {
     clientId: data.clientId,
+    currency: data.currency,
     name: data.name,
     description: data.description,
     billingModel: data.billingModel,
@@ -135,7 +139,7 @@ export async function insertProject(
     clientId: data.clientId,
     name: data.name,
     description: data.description,
-    currency: "INR",
+    currency: data.currency,
     status: "draft",
     billingModel: data.billingModel,
     baseline: {

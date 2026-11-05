@@ -10,6 +10,7 @@ import {
   proposalFormDefaults,
 } from "@/modules/projects";
 import { FreshOnEachVisit } from "@/shared/ui/fresh-on-each-visit";
+import { requireWorkspace } from "@/modules/workspace/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
@@ -39,10 +40,11 @@ async function Form({
 }: {
   searchParams: PageProps<"/projects/new">["searchParams"];
 }) {
-  const [{ client }, clients, settings] = await Promise.all([
+  const [{ client }, clients, settings, { workspace }] = await Promise.all([
     searchParams,
     listClients(),
     getDocumentSettings(),
+    requireWorkspace(),
   ]);
   const preselected =
     typeof client === "string" && clients.some((c) => c.id === client)
@@ -55,10 +57,19 @@ async function Form({
     <FreshOnEachVisit>
       <ProjectForm
         mode="create"
-        clients={clients.map((c) => ({ id: c.id, label: clientLabel(c) }))}
+        clients={clients.map((c) => ({
+          id: c.id,
+          label: clientLabel(c),
+          currency: c.currency,
+        }))}
+        defaultCurrency={workspace.currency}
         cancelHref="/projects"
         defaults={{
           clientId: preselected,
+          // The chosen client's currency, else the workspace default.
+          currency:
+            clients.find((c) => c.id === preselected)?.currency ??
+            workspace.currency,
           name: "",
           description: "",
           items: [],

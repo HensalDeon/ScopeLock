@@ -1,4 +1,4 @@
-import { formatINR } from "@/shared/lib/money";
+import { formatMoney } from "@/shared/lib/money";
 import type { Project } from "../domain/project";
 
 /** The agreed scope as the client will see it: lines, notes and the total. */
@@ -22,14 +22,16 @@ export function ScopeTable({ project }: { project: Project }) {
                 </p>
               )}
             </div>
-            <p className="text-sm tabular-nums">{formatINR(item.amount)}</p>
+            <p className="text-sm tabular-nums">
+              {formatMoney(item.amount, project.currency)}
+            </p>
           </li>
         ))}
       </ol>
       <div className="flex items-baseline justify-between gap-4 border-t bg-canvas px-4 py-3.5 sm:px-5">
         <p className="text-sm font-medium">Agreed total</p>
         <p className="text-lg font-semibold tabular-nums">
-          {formatINR(project.baseline.total)}
+          {formatMoney(project.baseline.total, project.currency)}
         </p>
       </div>
     </div>
@@ -47,7 +49,7 @@ export function MilestoneTable({ project }: { project: Project }) {
             <p className="text-sm text-muted-foreground">Before work starts</p>
           </div>
           <p className="text-sm font-medium tabular-nums">
-            {formatINR(project.baseline.total)}
+            {formatMoney(project.baseline.total, project.currency)}
           </p>
         </div>
       </div>
@@ -70,7 +72,7 @@ export function MilestoneTable({ project }: { project: Project }) {
             {milestone.percent}%
           </p>
           <p className="min-w-[5.5rem] text-right text-sm font-medium tabular-nums">
-            {formatINR(milestone.baseAmount)}
+            {formatMoney(milestone.baseAmount, project.currency)}
           </p>
         </li>
       ))}

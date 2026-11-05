@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  CURRENCIES,
+  DEFAULT_CURRENCY,
+  type CurrencyCode,
+} from "@/shared/lib/currency";
 import { optionalPhoneField } from "@/shared/lib/phone";
 
 export const BUSINESS_TYPES = ["freelancer", "studio", "agency"] as const;
@@ -20,6 +25,7 @@ export const WORKSPACE_FIELDS = [
   "businessName",
   "businessType",
   "phone",
+  "currency",
 ] as const;
 export type WorkspaceField = (typeof WORKSPACE_FIELDS)[number];
 
@@ -30,7 +36,8 @@ export type WorkspaceProfile = {
   businessType: BusinessType;
   /** E.164, e.g. +919876543210. Shown to clients on approval pages. */
   phone: string | null;
-  currency: "INR";
+  /** Default for new clients and projects. */
+  currency: CurrencyCode;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -62,6 +69,11 @@ export const workspaceDetailsSchema = z.object({
     error: "Choose how you work.",
   }),
   phone: optionalPhoneField,
+  // Not asked at onboarding (blank → INR); changed in Settings.
+  currency: z
+    .union([z.literal(""), z.enum(CURRENCIES)])
+    .optional()
+    .transform((value) => value || DEFAULT_CURRENCY),
 });
 
 export type WorkspaceDetailsInput = z.input<typeof workspaceDetailsSchema>;

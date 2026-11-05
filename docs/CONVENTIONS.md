@@ -72,7 +72,7 @@ Then:
   - Embedded items (scope lines, milestones) get `randomUUID()` ids.
 - **Multi-document writes** that must agree (approval + status + payment line) go in `withTransaction()`. Pass `{ session }` to every write. Don't send emails inside a transaction, because it can retry.
 - **State changes are atomic:** `findOneAndUpdate({ _id, status: "sent" }, { $set: { status: "approved" } })`. If it returns `null`, someone else got there first.
-- **Money** is integer paise (`Paise`), always. Use `allocate()` for splits and `formatINR()` for display.
+- **Money** is integer minor units (`Minor`; `Paise` for rupee-only code), always. The currency lives on the record (a project's `currency`), and amounts are never summed across currencies. Use `allocate()` for splits, `parseAmount()` for input and `formatMoney(amount, currency)` for display.
 
 ## 4. Server actions
 

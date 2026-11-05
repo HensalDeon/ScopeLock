@@ -1,68 +1,97 @@
+import { CURRENCY_INFO, DEFAULT_CURRENCY, type CurrencyCode } from "./currency";
+
 /**
  * Money helpers.
  *
- * RULE: all amounts are stored and calculated as integer **paise**
- * (₹1 = 100 paise). Never use floating-point rupees in business logic.
+ * RULE: amounts are stored and calculated as integers in the currency's
+ * minor unit (paise for INR, cents for USD; every supported currency has
+ * 100 minor units to one major). Never use floating-point amounts in
+ * business logic. The currency travels with the record (a project's
+ * `currency`), not with each number.
  */
 
-declare const paiseBrand: unique symbol;
-/** An integer amount in paise. */
-export type Paise = number & { readonly [paiseBrand]: true };
+declare const minorBrand: unique symbol;
+/** An integer amount in minor units of some currency. */
+export type Minor = number & { readonly [minorBrand]: true };
+/** Minor units of INR. Same type; the name documents rupee-only code. */
+export type Paise = Minor;
 
-export function isPaise(value: unknown): value is Paise {
+export function isMinor(value: unknown): value is Minor {
   return typeof value === "number" && Number.isSafeInteger(value);
 }
 
-export function paise(value: number): Paise {
+export function minor(value: number): Minor {
   if (!Number.isSafeInteger(value)) {
-    throw new RangeError(`Paise must be a safe integer, got ${value}`);
+    throw new RangeError(`Amounts must be safe integers, got ${value}`);
   }
-  return value as Paise;
+  return value as Minor;
 }
 
-export const ZERO = paise(0);
+/** Rupee-only code (plan prices, marketing). */
+export const paise = minor;
+export const isPaise = isMinor;
+
+export const ZERO = minor(0);
 
 /**
- * Parses rupees typed by a user ("80,000", "1499.50", 250) into paise.
- * Allows at most 2 decimal places. Throws on invalid input.
+ * Parses an amount typed by a person ("80,000", "1499.50", "$ 250") into
+ * minor units. Allows at most 2 decimal places. Throws on invalid input.
  */
-export function rupeesToPaise(input: string | number): Paise {
+export function parseAmount(input: string | number): Minor {
   const raw = typeof input === "number" ? String(input) : input;
-  const cleaned = raw.replace(/[₹,\s]/g, "");
+  const cleaned = raw.replace(/[₹$€£,\s]/g, "");
   const match = /^(-)?(\d+)(?:\.(\d{1,2}))?$/.exec(cleaned);
   if (!match) {
-    throw new RangeError(`Invalid rupee amount: "${input}"`);
+    throw new RangeError(`Invalid amount: "${input}"`);
   }
-  const [, sign, whole, fraction = ""] = match;
+  const [, sign, whole = "0", fraction = ""] = match;
   const value = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
-  return paise(sign ? -value : value);
+  return minor(sign ? -value : value);
 }
 
-/** Converts paise to rupees as a number — for display/inputs only, never for maths. */
-export function paiseToRupees(amount: Paise): number {
+/** Major units as a number, for prefilling inputs only, never for maths. */
+export function toMajor(amount: Minor): number {
   return amount / 100;
 }
 
-const inrWhole = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
-const inrWithPaise = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+export const rupeesToPaise = parseAmount;
+export const paiseToRupees = toMajor;
 
-/** Formats paise as Indian rupees: 8000000 → "₹80,000", 149950 → "₹1,499.50". */
-export function formatINR(amount: Paise): string {
-  const formatter = amount % 100 === 0 ? inrWhole : inrWithPaise;
-  return formatter.format(amount / 100);
+const formatters = new Map<string, Intl.NumberFormat>();
+function formatter(currency: CurrencyCode, withMinor: boolean) {
+  const key = `${currency}:${withMinor}`;
+  let f = formatters.get(key);
+  if (!f) {
+    f = new Intl.NumberFormat(CURRENCY_INFO[currency].locale, {
+      style: "currency",
+      currency,
+      currencyDisplay: "symbol",
+      minimumFractionDigits: withMinor ? 2 : 0,
+      maximumFractionDigits: withMinor ? 2 : 0,
+    });
+    formatters.set(key, f);
+  }
+  return f;
 }
 
-export function sum(amounts: readonly Paise[]): Paise {
-  return paise(amounts.reduce<number>((total, a) => total + a, 0));
+/**
+ * Formats an amount in its currency, dropping ".00" on whole amounts:
+ * ₹80,000 · ₹1,23,45,678 (Indian grouping) · $12,000 · €2,400.50 · CA$950.
+ */
+export function formatMoney(
+  amount: Minor,
+  currency: CurrencyCode = DEFAULT_CURRENCY,
+): string {
+  return formatter(currency, amount % 100 !== 0).format(amount / 100);
+}
+
+/** Formats paise as Indian rupees: 8000000 → "₹80,000", 149950 → "₹1,499.50". */
+export function formatINR(amount: Minor): string {
+  return formatMoney(amount, "INR");
+}
+
+export function sum(amounts: readonly Minor[]): Minor {
+  return minor(amounts.reduce<number>((total, a) => total + a, 0));
 }
 
 /**
@@ -70,7 +99,7 @@ export function sum(amounts: readonly Paise[]): Paise {
  * percentages 30/30/40) so that the parts ALWAYS add up exactly to `total`.
  * Leftover paise from rounding go to the largest remainders first.
  */
-export function allocate(total: Paise, weights: readonly number[]): Paise[] {
+export function allocate(total: Minor, weights: readonly number[]): Minor[] {
   if (total < 0) throw new RangeError("total must not be negative");
   if (weights.length === 0) throw new RangeError("weights must not be empty");
   if (weights.some((w) => !Number.isFinite(w) || w < 0)) {
@@ -95,5 +124,5 @@ export function allocate(total: Paise, weights: readonly number[]): Paise[] {
     remainder -= 1;
   }
 
-  return parts.map(paise);
+  return parts.map(minor);
 }

@@ -50,6 +50,7 @@ async function toProjectData(
   const plan = buildProjectPlan(input, randomUUID);
   return {
     clientId: parseObjectId(client.id) as ObjectId,
+    currency: input.currency,
     name: input.name,
     description: input.description,
     billingModel: input.billingModel,

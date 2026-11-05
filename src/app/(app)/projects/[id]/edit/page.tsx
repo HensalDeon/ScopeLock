@@ -11,8 +11,9 @@ import {
   proposalFormDefaults,
 } from "@/modules/projects";
 import { getProjectOrNotFound } from "@/modules/projects/server";
-import { paiseToRupees } from "@/shared/lib/money";
+import { toMajor } from "@/shared/lib/money";
 import { joinLines } from "@/shared/lib/text-lines";
+import { requireWorkspace } from "@/modules/workspace/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
@@ -55,19 +56,25 @@ async function Form({
   params: PageProps<"/projects/[id]/edit">["params"];
 }) {
   const { id } = await params;
-  const [project, clients, settings] = await Promise.all([
+  const [project, clients, settings, { workspace }] = await Promise.all([
     getProjectOrNotFound(id),
     listClients(),
     getDocumentSettings(),
+    requireWorkspace(),
   ]);
   if (!isEditable(project.status)) redirect(`/projects/${project.id}`);
 
   // Keep an archived client selectable on its own project.
-  const options = clients.map((c) => ({ id: c.id, label: clientLabel(c) }));
+  const options = clients.map((c) => ({
+    id: c.id,
+    label: clientLabel(c),
+    currency: c.currency,
+  }));
   if (project.client && !options.some((o) => o.id === project.clientId)) {
     options.push({
       id: project.clientId,
       label: `${clientLabel(project.client)} (archived)`,
+      currency: project.client.currency,
     });
   }
 
@@ -79,9 +86,11 @@ async function Form({
       mode="edit"
       projectId={project.id}
       clients={options}
+      defaultCurrency={workspace.currency}
       cancelHref={`/projects/${project.id}` as Route}
       defaults={{
         clientId: project.clientId,
+        currency: project.currency,
         name: project.name,
         description: project.description ?? "",
         items: project.baseline.items.map((item) => ({
@@ -89,7 +98,7 @@ async function Form({
           title: item.title,
           description: item.description ?? "",
           includes: joinLines(item.includes),
-          amount: String(paiseToRupees(item.amount)),
+          amount: String(toMajor(item.amount)),
         })),
         billingModel: project.billingModel,
         milestones: project.milestones.map((m) => ({

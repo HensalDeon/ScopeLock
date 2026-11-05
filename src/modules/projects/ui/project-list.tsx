@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { clientLabel } from "@/modules/clients";
 import { formatDate } from "@/shared/lib/dates";
-import { formatINR } from "@/shared/lib/money";
+import { formatMoney } from "@/shared/lib/money";
 import type { Project } from "../domain/project";
 import { ProjectStatusBadge } from "./project-status-badge";
 
@@ -35,7 +35,7 @@ export function ProjectList({
               </p>
             </div>
             <p className="text-right text-sm font-medium tabular-nums">
-              {formatINR(project.baseline.total)}
+              {formatMoney(project.baseline.total, project.currency)}
             </p>
             <ProjectStatusBadge
               status={project.status}

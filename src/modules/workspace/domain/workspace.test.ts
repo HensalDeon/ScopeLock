@@ -22,6 +22,8 @@ describe("workspaceDetailsSchema", () => {
       businessName: "Hensal Deon",
       businessType: "freelancer",
       phone: "+919876543210",
+      // Not asked at onboarding: defaults to rupees.
+      currency: "INR",
     });
   });
 

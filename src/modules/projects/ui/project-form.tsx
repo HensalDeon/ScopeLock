@@ -4,7 +4,8 @@ import { Plus, X } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useActionState, useId, useRef, useState, useTransition } from "react";
-import { formatINR } from "@/shared/lib/money";
+import { CURRENCY_INFO, type CurrencyCode } from "@/shared/lib/currency";
+import { formatMoney } from "@/shared/lib/money";
 import { IDLE } from "@/shared/lib/form-state";
 import {
   focusFirstInvalid,
@@ -12,6 +13,7 @@ import {
 } from "@/shared/lib/use-form-validation";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { CurrencySelect } from "@/shared/ui/currency-select";
 import {
   Field,
   FieldDescription,
@@ -65,6 +67,7 @@ type MilestoneRow = { key: string; id?: string; name: string; percent: string };
 
 export type ProjectFormDefaults = {
   clientId: string;
+  currency: CurrencyCode;
   name: string;
   description: string;
   items: {
@@ -79,7 +82,12 @@ export type ProjectFormDefaults = {
   proposal: ProposalFormDefaults;
 };
 
-export type ClientOption = { id: string; label: string };
+export type ClientOption = {
+  id: string;
+  label: string;
+  /** The client's own currency; null follows the workspace default. */
+  currency: CurrencyCode | null;
+};
 
 let rowCounter = 0;
 const rowKey = () => `row-${++rowCounter}`;
@@ -124,12 +132,15 @@ export function ProjectForm({
   projectId,
   clients: initialClients,
   defaults,
+  defaultCurrency,
   cancelHref,
 }: {
   mode: "create" | "edit";
   projectId?: string;
   clients: ClientOption[];
   defaults: ProjectFormDefaults;
+  /** Workspace default, for clients without their own currency. */
+  defaultCurrency: CurrencyCode;
   cancelHref: Route;
 }) {
   // Unique per instance: visited pages stay mounted, so two copies of
@@ -143,6 +154,17 @@ export function ProjectForm({
 
   const [clients, setClients] = useState(initialClients);
   const [clientId, setClientId] = useState(defaults.clientId);
+  const [currency, setCurrency] = useState<CurrencyCode>(defaults.currency);
+  // Follows the chosen client's currency until the person picks one.
+  const [currencyChosen, setCurrencyChosen] = useState(mode === "edit");
+  const followClient = (id: string, list: ClientOption[] = clients) => {
+    if (currencyChosen) return;
+    const client = list.find((c) => c.id === id);
+    setCurrency(client?.currency ?? defaultCurrency);
+  };
+  const symbol = CURRENCY_INFO[currency].symbol;
+  const money = (amount: Parameters<typeof formatMoney>[0]) =>
+    formatMoney(amount, currency);
   // Controlled: React resets uncontrolled inputs after a form action, which
   // would clear them on a validation error.
   const [name, setName] = useState(defaults.name);
@@ -180,6 +202,7 @@ export function ProjectForm({
   );
   const values = {
     clientId,
+    currency,
     name,
     description,
     items: itemsJson,
@@ -270,6 +293,7 @@ export function ProjectForm({
                 value={clientId}
                 onChange={(e) => {
                   setClientId(e.target.value);
+                  followClient(e.target.value);
                   form.edited("clientId");
                 }}
                 onBlur={() => form.touch("clientId")}
@@ -292,12 +316,12 @@ export function ProjectForm({
             {addingClient ? (
               <QuickAddClient
                 onAdded={(client) => {
-                  setClients((list) =>
-                    [...list, client].sort((a, b) =>
-                      a.label.localeCompare(b.label),
-                    ),
+                  const next = [...clients, client].sort((a, b) =>
+                    a.label.localeCompare(b.label),
                   );
+                  setClients(next);
                   setClientId(client.id);
+                  followClient(client.id, next);
                   setAddingClient(false);
                 }}
                 onCancel={
@@ -317,6 +341,28 @@ export function ProjectForm({
                 </button>
               </div>
             )}
+          </Field>
+
+          <Field data-invalid={Boolean(err("currency")) || undefined}>
+            <FieldLabel htmlFor={`${uid}-currency`}>Currency</FieldLabel>
+            <CurrencySelect
+              id={`${uid}-currency`}
+              name="currency"
+              className="w-full sm:w-72"
+              value={currency}
+              onChange={(value) => {
+                if (!value) return;
+                setCurrency(value);
+                setCurrencyChosen(true);
+                form.edited("currency");
+              }}
+              onBlur={() => form.touch("currency")}
+            />
+            <FieldDescription>
+              Your client sees and pays every amount in this currency. It
+              can&apos;t change once the proposal is sent.
+            </FieldDescription>
+            {err("currency") && <FieldError>{err("currency")}</FieldError>}
           </Field>
 
           <Field data-invalid={Boolean(err("name")) || undefined}>
@@ -417,10 +463,10 @@ export function ProjectForm({
                         aria-hidden
                         className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-sm text-muted-foreground"
                       >
-                        ₹
+                        {symbol}
                       </span>
                       <Input
-                        aria-label={`Amount for deliverable ${index + 1}, in rupees`}
+                        aria-label={`Amount for deliverable ${index + 1}, in ${currency}`}
                         inputMode="decimal"
                         placeholder="0"
                         value={item.amount}
@@ -430,7 +476,10 @@ export function ProjectForm({
                         }}
                         onBlur={() => form.touch(`${item.key}.amount`)}
                         aria-invalid={Boolean(amountError) || undefined}
-                        className="h-9 pl-6 tabular-nums"
+                        className="h-9 tabular-nums"
+                        style={{
+                          paddingLeft: `calc(0.9rem + ${symbol.length}ch)`,
+                        }}
                       />
                     </div>
                     <Button
@@ -571,7 +620,7 @@ export function ProjectForm({
                 className="text-lg font-semibold tabular-nums"
                 aria-live="polite"
               >
-                {formatINR(total)}
+                {money(total)}
               </span>
             </p>
           </div>
@@ -629,7 +678,7 @@ export function ProjectForm({
             <p className="text-sm text-muted-foreground">
               The client pays{" "}
               <span className="font-medium text-foreground tabular-nums">
-                {formatINR(total)}
+                {money(total)}
               </span>{" "}
               before work starts.
             </p>
@@ -715,7 +764,7 @@ export function ProjectForm({
                         </div>
                         <p className="hidden text-right text-sm tabular-nums sm:block">
                           {amounts?.[index] !== undefined
-                            ? formatINR(amounts[index])
+                            ? money(amounts[index])
                             : "–"}
                         </p>
                         <Button
@@ -736,7 +785,7 @@ export function ProjectForm({
                       </div>
                       {amounts?.[index] !== undefined && (
                         <p className="mt-1 text-sm text-muted-foreground tabular-nums sm:hidden">
-                          {formatINR(amounts[index])}
+                          {money(amounts[index])}
                         </p>
                       )}
                       {(nameError || percentError) && (
@@ -809,6 +858,7 @@ export function ProjectForm({
         description="Optional sections your client sees around the scope. Add what helps, leave out the rest."
       >
         <ProposalSections
+          currency={currency}
           value={proposal}
           onChange={setProposal}
           errorFor={(path, touchKey) =>

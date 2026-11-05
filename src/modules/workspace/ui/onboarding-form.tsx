@@ -14,6 +14,7 @@ export function OnboardingForm({ suggestedName }: { suggestedName: string }) {
       businessName: suggestedName,
       businessType: "",
       phone: "",
+      currency: "",
     });
 
   return (

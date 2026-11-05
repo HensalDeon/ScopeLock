@@ -21,7 +21,12 @@
 10. **Client-facing documents carry the freelancer's brand.**
     - The proposal (quotation), change orders and invoices share one document style, set in Settings → Documents: template, accent colour, cover image and logo.
     - The client approves exactly what they see, so the approval snapshot includes the full proposal content.
-11. **Invoices follow Indian norms.**
+11. **Each project has one currency.**
+    - Supported: INR, USD, EUR, GBP, AED, CAD, AUD and SGD, all two-decimal, so amounts stay integer minor units.
+    - The workspace has a default (INR), and each client can have their own.
+    - A project picks up its client's currency and is locked once sent. Its CRs, payments and invoices use the same currency.
+    - Totals are never added across currencies.
+12. **Invoices follow Indian norms.**
     - Every invoice gets a sequential number that never repeats.
     - GST lines appear only when the freelancer has added a GSTIN.
     - The final invoice shows the original scope, approved changes, payments and balance.
@@ -127,9 +132,9 @@ src/
 
 `invoicing`: `{ prefix: 'INV', nextNumber, gstin?, stateCode?, sac: '998314', legalName?, address? }`. Numbers come from an atomic `$inc`, so they never repeat or skip.
 
-**`clients`**: name, company, email, phone (WhatsApp).
+**`clients`**: name, company, email, phone (WhatsApp), `currency?` (default for their projects; null = workspace default).
 
-**`projects`**:
+**`projects`** (`currency`: one of the supported codes; every amount below is minor units of it):
 
 ```ts
 { clientId, name, description, currency,
@@ -295,6 +300,17 @@ The client approves what they see, so the scope has to read like a proper propos
 
 **Done when:** Rahul's project preview looks as good as my Estimator proposal, in my brand colour, on desktop and phone.
 
+### Phase 3A+: Multi-currency
+
+- [x] Currencies: INR, USD, EUR, GBP, AED, CAD, AUD, SGD. Money is integer minor units (`Minor`), formatted per currency (Indian grouping for ₹, international for the rest).
+- [x] Workspace default currency (Settings → Business), defaulting to INR; not asked at onboarding
+- [x] Client "Bills in" currency (optional; empty = workspace default)
+- [x] Project currency: picked up from the client, changeable while a draft, locked once sent. Older projects read as INR.
+- [x] Project form, tables, project list and the Classic proposal use the project's currency and symbol
+- [x] Ambiguous amounts like "2.400" are rejected instead of guessed
+
+**Done when:** a USD client's project shows "$2,400.50" everywhere, split 30/30/40 in cents, and INR projects are unchanged.
+
 ### Phase 3B: Client portal & baseline approval
 
 - [ ] Portal uses the Phase 3A document as the approval page
@@ -303,7 +319,7 @@ The client approves what they see, so the scope has to read like a proper propos
 - [ ] Secret portal link (random token, only the hash stored) + copy button + WhatsApp share (`wa.me` link with a message ready to send)
 - [ ] Public portal `/c/[token]`: the Classic document in the freelancer's style, with an approval panel
 - [ ] Approve / Reject with name + email + optional comment
-- [ ] Approval record with a snapshot of everything shown (scope and proposal sections), hash, IP and user agent. The baseline locks and the project becomes `active`.
+- [ ] Approval record with a snapshot of everything shown (scope, proposal sections and **currency**), hash, IP and user agent. The baseline locks and the project becomes `active`.
 - [ ] Email to the freelancer on decision
 - [ ] Rate limiting + token revoke/regenerate
 - [ ] Security (see `docs/CONVENTIONS.md` §6): token format check + identical 404s, approve/reject resolve everything from the token, atomic status change + approval insert in one transaction, unique index per approved subject, `emailVerified` enforced in the send action
@@ -327,7 +343,7 @@ The client approves what they see, so the scope has to read like a proper propos
 
 - [ ] Settings → payment methods (UPI, QR upload, bank, link, other; set a default)
 - [ ] Payments generated from milestones + approved CR lines (domain function with tests)
-- [ ] Mark a milestone as due → portal shows the amount + methods + **UPI QR code with the amount filled in**
+- [ ] Mark a milestone as due → portal shows the amount + methods + **UPI QR code with the amount filled in** (UPI only for INR projects; foreign-currency projects offer SWIFT bank details, PayPal, Wise or a payment link)
 - [ ] Client "I've paid" → method, UTR, date, screenshot (R2: private bucket, random keys, png/jpeg/webp only with magic-byte check, ≤ 5 MB, signed URLs)
 - [ ] Freelancer confirms "Received" / "Not received", or marks it received directly
 - [ ] Emails: payment due (to client), client says paid (to freelancer), confirmed (to client)
@@ -337,6 +353,7 @@ The client approves what they see, so the scope has to read like a proper propos
   - optional GSTIN with state, and SAC code (default 998314, IT design and development).
 - [ ] Each payment request becomes a numbered invoice (atomic counter, so numbers never repeat or skip). Issued invoices are immutable; mistakes are fixed by cancelling the invoice and issuing a new one.
 - [ ] GST only when a GSTIN is set: CGST + SGST 9% + 9% within the same state, IGST 18% across states (domain function with tests)
+- [ ] Foreign-currency invoices as export of services: zero-rated under LUT, with the "supply meant for export under LUT without payment of IGST" declaration (wording confirmed by a CA)
 - [ ] Final invoice includes the project statement: original scope, approved CRs, payments received, balance due
 - [ ] Invoice page in the client portal, same document style as the proposal
 
@@ -352,7 +369,7 @@ The client approves what they see, so the scope has to read like a proper propos
 
 ### Phase 7: Dashboard & polish
 
-- [ ] Dashboard: **"Revenue recovered"** (approved CRs this month/all time), pending approvals, payments due, payments to confirm
+- [ ] Dashboard: **"Revenue recovered"** (approved CRs this month/all time), pending approvals, payments due, payments to confirm. Totals are shown per currency (₹2,40,000 · $3,200), never summed across currencies.
 - [ ] Reminders: resend approval/payment links
 - [ ] Empty states, loading states, errors, mobile QA
 - [ ] PWA polish: service worker, offline fallback page, "Install app" prompt, iOS home-screen support
@@ -418,3 +435,4 @@ The client approves what they see, so the scope has to read like a proper propos
 | 2026-11-05 | Polish    | Back links on every inner page (edit project → back to project, new project, add client) via a shared `BackLink`; "Client not listed?" link left-aligned (the form field was stretching it).                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 2026-11-05 | Phase 3A  | Logo + cover image upload built on Cloudflare R2 (aws4fetch, private bucket, signed URLs cached per hour). Browser resizes to WebP (strips EXIF); server checks real file bytes, caps 4 MB (Vercel limit), stores under `ws/<id>/<kind>/<random>`; replacing or removing deletes the old object. "Photo" cover style with a dark layer; logo on a white plate on dark covers. Switched off until R2 env vars are set.                                                                                                                                                                                                                                              |
 | 2026-11-05 | Phase 3A  | Uploads verified live against the R2 bucket (18 checks: upload, signed URLs, replace deletes old object, remove, 5 MB and fake-image rejection). Fixed 411 Length Required on larger files (send raw bytes after signing). Photo cover layer deepened so text stays readable on bright photos. Phase 3A complete.                                                                                                                                                                                                                                                                                                                                                  |
+| 2026-11-05 | Phase 3A+ | Multi-currency: 8 two-decimal currencies; `Minor` units + `formatMoney`; workspace default (Settings), client "Bills in", project currency following the client until chosen. Form, tables, list and Classic proposal format per currency. Plan updated for UPI (INR only), export invoices under LUT, per-currency dashboard totals, currency in approval snapshots. 187 unit + 21 integration tests; 18-step currency browser run plus all earlier suites pass.                                                                                                                                                                                                  |

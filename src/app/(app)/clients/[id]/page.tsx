@@ -6,6 +6,7 @@ import { ArchiveClientButton, ClientForm } from "@/modules/clients";
 import { getClientOrNotFound } from "@/modules/clients/server";
 import { ProjectList } from "@/modules/projects";
 import { listProjectsForClient } from "@/modules/projects/server";
+import { requireWorkspace } from "@/modules/workspace/server";
 import { formatDate } from "@/shared/lib/dates";
 import { formatPhone, whatsappLink } from "@/shared/lib/phone";
 import { BackLink } from "@/shared/ui/back-link";
@@ -31,9 +32,10 @@ async function ClientDetail({
   params: PageProps<"/clients/[id]">["params"];
 }) {
   const { id } = await params;
-  const [client, projects] = await Promise.all([
+  const [client, projects, { workspace }] = await Promise.all([
     getClientOrNotFound(id),
     listProjectsForClient(id),
+    requireWorkspace(),
   ]);
   const archived = client.archivedAt !== null;
 
@@ -51,6 +53,7 @@ async function ClientDetail({
                 client.company,
                 client.phone && formatPhone(client.phone),
                 client.email,
+                client.currency && `Bills in ${client.currency}`,
               ]
                 .filter(Boolean)
                 .join(" · ") || "No contact details yet"}
@@ -108,11 +111,13 @@ async function ClientDetail({
           <ClientForm
             mode="edit"
             clientId={client.id}
+            defaultCurrency={workspace.currency}
             defaults={{
               name: client.name,
               company: client.company ?? "",
               email: client.email ?? "",
               phone: client.phone ? formatPhone(client.phone) : "",
+              currency: client.currency ?? "",
             }}
           />
         </Section>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatINR, paise } from "@/shared/lib/money";
+import { formatINR, minor } from "@/shared/lib/money";
 import { percentTotal, splitByMilestones } from "./billing";
 import { buildProjectPlan, isEditable, projectInputSchema } from "./project";
 import { draftTotal } from "./scope";
@@ -11,6 +11,7 @@ const newId = () => `id-${++counter}`;
 /** The project from the plan's "done when": Rahul, ₹80,000, 5 pages, 30/30/40. */
 const rahul = {
   clientId: CLIENT,
+  currency: "INR",
   name: "Website redesign",
   description: "5-page site for Mehta Interiors",
   items: JSON.stringify([
@@ -78,7 +79,7 @@ describe("projectInputSchema", () => {
     expect(issues).toEqual([
       ["items.0.title", "Describe the deliverable."],
       ["items.1.amount", "Use numbers only, like 12000 or 12,000.50."],
-      ["items.2.amount", "The amount must be more than ₹0."],
+      ["items.2.amount", "The amount must be more than 0."],
     ]);
   });
 
@@ -119,7 +120,7 @@ describe("buildProjectPlan", () => {
   });
 
   it("never loses a paisa on awkward splits", () => {
-    const total = paise(1_000_01); // ₹1,000.01
+    const total = minor(1_000_01); // ₹1,000.01
     const parts = splitByMilestones(total, [
       { percent: 33 },
       { percent: 33 },
@@ -168,5 +169,29 @@ describe("helpers", () => {
     expect(percentTotal([{ percent: 30 }, { percent: 70 }])).toBe(100);
     expect(isEditable("draft")).toBe(true);
     expect(isEditable("awaiting_approval")).toBe(false);
+  });
+});
+
+describe("project currency", () => {
+  it("is required and must be supported", () => {
+    const { currency: _drop, ...noCurrency } = rahul;
+    void _drop;
+    expect(projectInputSchema.safeParse(noCurrency).success).toBe(false);
+    expect(
+      projectInputSchema.safeParse({ ...rahul, currency: "BTC" }).success,
+    ).toBe(false);
+  });
+
+  it("splits a USD project the same way: cents, never lost", () => {
+    const plan = buildProjectPlan(
+      projectInputSchema.parse({
+        ...rahul,
+        currency: "USD",
+        items: JSON.stringify([{ title: "Website", amount: "2,400.01" }]),
+      }),
+      newId,
+    );
+    expect(plan.total).toBe(240_001);
+    expect(plan.milestones.reduce((a, m) => a + m.baseAmount, 0)).toBe(240_001);
   });
 });

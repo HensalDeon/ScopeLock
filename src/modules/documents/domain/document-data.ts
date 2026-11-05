@@ -1,4 +1,5 @@
-import type { Paise } from "@/shared/lib/money";
+import type { CurrencyCode } from "@/shared/lib/currency";
+import type { Minor } from "@/shared/lib/money";
 
 /**
  * Everything a proposal document shows, as plain data. Pages build it from
@@ -22,6 +23,8 @@ export type ProposalDocumentData = {
     phone: string | null;
   } | null;
   reference: string;
+  /** Every amount in the document is in this currency. */
+  currency: CurrencyCode;
   title: string;
   subtitle: string | null;
   issuedOn: Date;
@@ -34,11 +37,11 @@ export type ProposalDocumentData = {
     title: string;
     description: string | null;
     includes: string[];
-    amount: Paise;
+    amount: Minor;
   }[];
-  total: Paise;
+  total: Minor;
   billingModel: "upfront" | "milestones";
-  milestones: { id: string; name: string; percent: number; amount: Paise }[];
+  milestones: { id: string; name: string; percent: number; amount: Minor }[];
   timeline: {
     id: string;
     phase: string;
@@ -50,7 +53,7 @@ export type ProposalDocumentData = {
     id: string;
     title: string;
     description: string | null;
-    amount: Paise;
+    amount: Minor;
     unit: string | null;
   }[];
   clientProvides: string[];

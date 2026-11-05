@@ -7,6 +7,7 @@ const newId = () => `id-${++n}`;
 
 const base = {
   clientId: "6728f0c2a1b2c3d4e5f60718",
+  currency: "INR",
   name: "Website redesign",
   description: "",
   items: JSON.stringify([

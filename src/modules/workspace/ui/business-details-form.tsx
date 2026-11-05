@@ -18,7 +18,7 @@ export function BusinessDetailsForm({ initial }: { initial: WorkspaceValues }) {
         {state.status === "error" && state.message && (
           <FormAlert>{state.message}</FormAlert>
         )}
-        <WorkspaceFields {...fieldProps} />
+        <WorkspaceFields {...fieldProps} showCurrency />
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" disabled={pending || !form.isDirty}>
             {pending ? "Saving…" : "Save changes"}

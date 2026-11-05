@@ -1,43 +1,40 @@
 import { z } from "zod";
 import { linesField } from "@/shared/lib/text-lines";
-import {
-  formatINR,
-  paise,
-  rupeesToPaise,
-  sum,
-  type Paise,
-} from "@/shared/lib/money";
+import { minor, parseAmount, sum, type Minor } from "@/shared/lib/money";
 
-/** One deliverable in the agreed scope: "Home page — ₹12,000". */
+/**
+ * One deliverable in the agreed scope: "Home page — ₹12,000". Amounts are
+ * minor units of the project's currency.
+ */
 export type ScopeItem = {
   id: string;
   title: string;
   description: string | null;
   /** "What's included" bullet points shown under the line. */
   includes: string[];
-  amount: Paise;
+  amount: Minor;
 };
 
 export const SCOPE_LIMITS = {
   maxItems: 50,
   titleMax: 160,
   descriptionMax: 500,
-  /** ₹1 crore per line is far above any real deliverable, and catches typos. */
-  maxItemAmount: paise(1_00_00_000 * 100),
+  /** 1 crore (10 million) per line, in any currency: catches typos. */
+  maxItemAmount: minor(1_00_00_000 * 100),
   maxIncludes: 20,
   includeMax: 200,
 } as const;
 
-/** Rupees as typed ("12,000", "1499.50") → paise, with a person-friendly error. */
-export const rupeeAmountField = z.string().transform((raw, ctx) => {
+/** An amount as typed ("12,000", "1499.50") → minor units, with a person-friendly error. */
+export const amountField = z.string().transform((raw, ctx) => {
   const value = raw.trim();
   if (!value) {
     ctx.addIssue({ code: "custom", message: "Enter an amount." });
     return z.NEVER;
   }
-  let amount: Paise;
+  let amount: Minor;
   try {
-    amount = rupeesToPaise(value);
+    amount = parseAmount(value);
   } catch {
     ctx.addIssue({
       code: "custom",
@@ -48,14 +45,14 @@ export const rupeeAmountField = z.string().transform((raw, ctx) => {
   if (amount <= 0) {
     ctx.addIssue({
       code: "custom",
-      message: "The amount must be more than ₹0.",
+      message: "The amount must be more than 0.",
     });
     return z.NEVER;
   }
   if (amount > SCOPE_LIMITS.maxItemAmount) {
     ctx.addIssue({
       code: "custom",
-      message: `Keep each line under ${formatINR(SCOPE_LIMITS.maxItemAmount)}.`,
+      message: "Keep each line under 1,00,00,000.",
     });
     return z.NEVER;
   }
@@ -93,12 +90,12 @@ export const scopeItemInputSchema = z.object({
         label: "point",
       }),
     ),
-  amount: rupeeAmountField,
+  amount: amountField,
 });
 
 export type ScopeItemInput = z.output<typeof scopeItemInputSchema>;
 
-export function scopeTotal(items: readonly Pick<ScopeItem, "amount">[]): Paise {
+export function scopeTotal(items: readonly Pick<ScopeItem, "amount">[]): Minor {
   return sum(items.map((item) => item.amount));
 }
 
@@ -106,14 +103,14 @@ export function scopeTotal(items: readonly Pick<ScopeItem, "amount">[]): Paise {
  * Live total for the form while typing: lines that don't parse yet count as
  * zero, so the number updates without throwing on half-typed input.
  */
-export function draftTotal(amounts: readonly string[]): Paise {
+export function draftTotal(amounts: readonly string[]): Minor {
   return sum(
     amounts.map((raw) => {
       try {
-        const value = rupeesToPaise(raw);
-        return value > 0 ? value : paise(0);
+        const value = parseAmount(raw);
+        return value > 0 ? value : minor(0);
       } catch {
-        return paise(0);
+        return minor(0);
       }
     }),
   );
