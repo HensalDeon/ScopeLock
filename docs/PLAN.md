@@ -171,12 +171,12 @@ Each phase ends with something working and deployed. We finish and check one pha
 - [x] Folder structure from §3
 - [x] Typed env vars (Zod), `.env.example`
 - [x] MongoDB Atlas connection helper (cached client) + `/api/health`
-- [ ] Verify the health check against a real Atlas cluster (needs `MONGODB_URI`)
+- [x] Verify the health check against a real Atlas cluster (`/api/health` reports the database up, locally and on Vercel)
 - [x] `money` util (paise ↔ ₹ formatting, `Intl` en-IN), `hash` util, secure `token` util
 - [x] Vitest set up for domain logic
 - [x] PWA basics: web manifest, app icons, theme colour, installable
 - [x] `output: "standalone"` (portable to Hostinger later)
-- [ ] First commit + push to GitHub + deploy to Vercel
+- [x] First commit + push to GitHub + deploy to Vercel (`dev` branch, preview at scopelock-test.vercel.app)
 
 **Done when:** the app deploys and a health page confirms it can reach the database.
 
@@ -188,8 +188,8 @@ Each phase ends with something working and deployed. We finish and check one pha
 - [x] Onboarding: business name, how you work, WhatsApp number, live "what your client sees" preview
 - [x] App shell: sidebar/nav, mobile layout, settings page
 - [x] Emails over SMTP when configured, printed to the terminal otherwise
-- [ ] Logo upload, moved to Phase 3 (needs a Cloudflare R2 bucket; first shown on the client portal)
-- [ ] Google OAuth keys + SMTP provider (config only, no code)
+- [x] ~~Logo upload~~: moved to Phase 3 (needs a Cloudflare R2 bucket; first shown on the client portal)
+- [x] Google OAuth keys + SMTP provider for development (Google sign-in on Vercel, Gmail SMTP). Production SMTP on the real domain is a Phase 8 item.
 
 **Done when:** I can sign up, finish onboarding and see an empty dashboard.
 
@@ -199,10 +199,9 @@ Each phase ends with something working and deployed. We finish and check one pha
 - [x] Product visuals built as coded components (no screenshots), matching the real UI
 - [x] `/pricing` with plan comparison. Plans live in one config (`modules/billing/domain/plans.ts`), made dynamic in Phase 8
 - [x] Legal drafts: `/terms`, `/privacy`, `/refunds`, `/contact` (Razorpay requirement), filled from one `legal` config in `src/shared/config/site.ts`
-- [ ] Legal pages reviewed by a lawyer / CA before launch
 - [x] SEO: per-page metadata, share image, `sitemap.xml`, `robots.txt`, structured data
 - [x] CTAs: "Start free" → sign-up; plan buttons → `/sign-up?plan=…` (plan choice is used in Phase 8)
-- [ ] Fill in registered business name, address, contact email, grievance officer; buy domain
+- [x] ~~Lawyer review, business details, domain~~: moved to the Phase 8 launch checklist (not needed to build the product)
 
 **Done when:** the site is something I'd proudly share, and every Razorpay-required page exists.
 
@@ -274,10 +273,12 @@ Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `
 
 ### Phase 8: Launch
 
-- [ ] Landing page (pitch: _"How much extra work did you do last month without charging?"_)
-- [ ] Plans + limits: **Free** (2 active projects) · **Pro** (~₹499–999/month) · **Agency** (₹1,999, 15 projects, team later)
+- [x] Landing page (pitch: _"How much extra work did you do last month without charging?"_): built in Phase 1B
+- [ ] Plan limits enforced: **Free** (2 active projects) · **Pro** (₹499/month, 6 projects) · **Agency** (₹1,999/month, 15 projects, team later)
 - [ ] Razorpay Subscriptions + webhook → plan limits applied in `billing` module (HMAC verified over the raw body, idempotent on event id)
-- [ ] Terms, Privacy, Refund policy pages
+- [ ] Terms, Privacy, Refund policy pages: drafts exist (Phase 1B); fill in registered business name, address, contact email, GSTIN and grievance officer in the `legal` config
+- [ ] Legal pages reviewed by a lawyer / CA
+- [ ] Buy the domain; set `APP_URL`, Google OAuth URLs and the email sender to it
 - [ ] Sentry, basic analytics, Atlas backups check
 - [ ] SMTP configured in production; `APP_URL` is the real https domain; `CLIENT_IP_HEADER` set for the host (nginx → `x-real-ip`)
 - [ ] Playwright end-to-end suite in CI (sign-up → onboarding → scope → CR → approve → pay)
