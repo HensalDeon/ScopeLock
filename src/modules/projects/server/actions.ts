@@ -56,6 +56,7 @@ async function toProjectData(
     items: plan.items,
     total: plan.total,
     milestones: plan.milestones,
+    proposal: plan.proposal,
     totals: emptyTotals(plan.total),
   };
 }

@@ -10,3 +10,8 @@ export {
   listProjectsForClient,
   type ProjectWithClient,
 } from "./server/queries";
+export {
+  getProposalDocument,
+  projectReference,
+  toProposalDocument,
+} from "./server/document";

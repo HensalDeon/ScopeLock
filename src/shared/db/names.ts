@@ -17,6 +17,7 @@ export const COLLECTIONS = {
   workspaceProfiles: "workspaceProfiles",
   clients: "clients",
   projects: "projects",
+  documentSettings: "documentSettings",
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

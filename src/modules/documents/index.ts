@@ -1,0 +1,25 @@
+/**
+ * Documents module: public, client-safe API. Templates, document style and
+ * default proposal text. Server-only settings queries are in ./server.ts.
+ */
+export type { ProposalDocumentData } from "./domain/document-data";
+export {
+  defaultsToFormValues,
+  PROPOSAL_DEFAULTS_FIELDS,
+  proposalDefaultsSchema,
+  STARTER_PROPOSAL_DEFAULTS,
+  type ProposalDefaults,
+} from "./domain/defaults";
+export {
+  ACCENT_PRESETS,
+  COVER_STYLE_LABELS,
+  COVER_STYLES,
+  DEFAULT_DOCUMENT_STYLE,
+  documentStyleSchema,
+  styleToFormValues,
+  type DocumentStyle,
+} from "./domain/style";
+export { sampleProposal } from "./domain/sample";
+export { ClassicDocument } from "./ui/classic-document";
+export { ProposalDefaultsForm } from "./ui/defaults-form";
+export { DocumentStyleEditor } from "./ui/style-editor";

@@ -112,13 +112,17 @@ src/
   url?, instructions?, isDefault }
 ```
 
-`documentStyle` (Settings → Documents, applies to every client-facing document):
+**`documentSettings`** (one per workspace, owned by the `documents` module; defaults apply until saved): `style` (below) and `defaults` (`terms[]`, `exclusions[]`, `clientProvides[]` pre-filled into new projects).
+
+`style` (Settings → Documents, applies to every client-facing document):
 
 ```ts
 { template: 'classic',            // more templates later
-  accent: '#0E9F6E',              // validated hex; text colour picked for contrast
-  coverImageKey?,                 // R2 object key; dark overlay keeps text readable
-  showLogo: true, fontStyle: 'serif' | 'sans' }
+  accent: '#b08d57',              // validated hex; text shades derived for ≥ 4.5:1 contrast
+  cover: 'dark' | 'accent' | 'light', coverPattern: true,
+  headingFont: 'serif' | 'sans', showLogo: true,
+  coverImageKey?                  // R2 object key, when uploads arrive; dark overlay keeps text readable
+}
 ```
 
 `invoicing`: `{ prefix: 'INV', nextNumber, gstin?, stateCode?, sac: '998314', legalName?, address? }`. Numbers come from an atomic `$inc`, so they never repeat or skip.
@@ -257,7 +261,7 @@ Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `
 
 The client approves what they see, so the scope has to read like a proper proposal. This follows the layout of my Estimator quotation builder, not a plain table.
 
-- [ ] Project form: optional sections added with one click, so simple projects stay simple:
+- [x] Project form: optional sections added with one click, so simple projects stay simple:
   - title and subtitle;
   - overview with a highlighted note;
   - highlight stats;
@@ -268,8 +272,8 @@ The client approves what they see, so the scope has to read like a proper propos
   - optional add-ons;
   - terms;
   - valid until.
-- [ ] Default terms and "not included" lists saved in Settings, so they're pre-filled on every new project
-- [ ] Document template **Classic**, one React component used for the in-app preview, the client portal and print:
+- [x] Default terms and "not included" lists saved in Settings, so they're pre-filled on every new project
+- [x] Document template **Classic**, one React component used for the in-app preview, the client portal and print:
   - cover with brand, title and prepared for/by;
   - highlights strip;
   - numbered sections;
@@ -280,14 +284,14 @@ The client approves what they see, so the scope has to read like a proper propos
   - add-ons;
   - needs and exclusions;
   - terms.
-- [ ] Settings → Documents, with a live preview:
+- [x] Settings → Documents, with a live preview:
   - accent colour (presets plus custom, with a readable-text check);
-  - cover style (solid, pattern, or uploaded image with an overlay);
+  - cover style (dark, accent or light, with optional rings; uploaded image comes with R2);
   - logo on or off;
   - serif or sans headings.
-- [ ] "Preview as client" on the project page
-- [ ] Print-ready A4 page: browser "Save as PDF", page breaks, a footer with page numbers. No PDF server needed.
-- [ ] Business logo and cover image upload (Cloudflare R2: private bucket, png/jpeg/webp, ≤ 5 MB, signed URLs)
+- [x] "Preview as client" on the project page
+- [x] Print-ready A4 page: browser "Save as PDF", page breaks, a footer with page numbers. No PDF server needed.
+- [ ] Business logo and cover image upload (Cloudflare R2: private bucket, png/jpeg/webp, ≤ 5 MB, signed URLs). Waiting on an R2 bucket; initials show until then.
 
 **Done when:** Rahul's project preview looks as good as my Estimator proposal, in my brand colour, on desktop and phone.
 
@@ -408,3 +412,4 @@ The client approves what they see, so the scope has to read like a proper propos
 | 2026-11-05 | Hardening | Pre-Phase-2 audit (independent security + architecture reviews, findings verified against library source). Unused Better Auth HTTP routes disabled; email-OTP sign-up off; 1 workspace/account, deletion off; security headers + static CSP; client-IP header for rate limits; codes never logged in prod; https `APP_URL` enforced in prod; fresh-session + role checks on writes. `scopedCollection` + `withTransaction` + `workspaceAction` + `FormState`; client-safe `index.ts` / server-only `server.ts` per module; lint-enforced boundaries; stricter tsconfig; error/404 pages; integration tests on in-memory Mongo; CI workflow; `docs/CONVENTIONS.md`. |
 | 2026-11-05 | Phase 2   | Clients and projects modules on `scopedCollection` + `workspaceAction`. Rahul's ₹80,000, 5-page, 30/30/40 project creates with exact ₹24,000/₹24,000/₹32,000 milestones. Unique form ids per instance (`useId`, Activity keeps pages mounted); India-time dates; signed-in pages noindex. 119 unit + 17 integration tests; 36-step browser run passes.                                                                                                                                                                                                                                                                                                             |
 | 2026-11-05 | Planning  | Added Phase 3A (proposal content + Classic document template + Settings → Documents customiser, modelled on my Estimator builder) before the portal (now 3B). Invoices with numbering and optional GST moved into Phase 5; PDFs in Phase 6 reuse the same template.                                                                                                                                                                                                                                                                                                                                                                                                |
+| 2026-11-05 | Phase 3A  | Proposal sections (overview, highlights, scope bullet points, timeline, add-ons, needs, exclusions, terms, valid until) on projects; `documents` module with the Classic template (one component for settings preview, "Preview as client" and A4 print), Settings → Documents (accent presets + custom with contrast guarantee, dark/accent/light cover, rings, serif/sans, initials) and default text. Logo/cover upload waits for R2. 157 unit + 19 integration tests; 27-step browser run plus all earlier suites pass.                                                                                                                                        |

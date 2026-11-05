@@ -38,6 +38,7 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
   [COLLECTIONS.clients]: [
     { key: { workspaceId: 1, archivedAt: 1, nameLower: 1 } },
   ],
+  [COLLECTIONS.documentSettings]: [{ key: { workspaceId: 1 }, unique: true }],
   [COLLECTIONS.projects]: [
     { key: { workspaceId: 1, updatedAt: -1 } },
     { key: { workspaceId: 1, clientId: 1, updatedAt: -1 } },

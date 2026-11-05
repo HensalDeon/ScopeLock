@@ -3,9 +3,14 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { clientLabel } from "@/modules/clients";
 import { listClients } from "@/modules/clients/server";
-import { isEditable, ProjectForm } from "@/modules/projects";
+import {
+  isEditable,
+  ProjectForm,
+  proposalFormDefaults,
+} from "@/modules/projects";
 import { getProjectOrNotFound } from "@/modules/projects/server";
 import { paiseToRupees } from "@/shared/lib/money";
+import { joinLines } from "@/shared/lib/text-lines";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
 export const metadata: Metadata = { title: "Edit project" };
@@ -61,6 +66,7 @@ async function Form({
           id: item.id,
           title: item.title,
           description: item.description ?? "",
+          includes: joinLines(item.includes),
           amount: String(paiseToRupees(item.amount)),
         })),
         billingModel: project.billingModel,
@@ -69,6 +75,7 @@ async function Form({
           name: m.name,
           percent: String(m.percent),
         })),
+        proposal: proposalFormDefaults(project.proposal),
       }}
     />
   );

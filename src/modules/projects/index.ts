@@ -8,7 +8,12 @@ export {
   type Project,
   type ProjectStatus,
 } from "./domain/project";
+export { EMPTY_PROPOSAL, type ProposalContent } from "./domain/proposal";
 export { DeleteProjectButton } from "./ui/delete-project-button";
+export {
+  indiaDatePlusDays,
+  proposalFormDefaults,
+} from "./ui/proposal-form-defaults";
 export { MilestoneTable, ScopeTable } from "./ui/project-plan";
 export {
   ProjectForm,

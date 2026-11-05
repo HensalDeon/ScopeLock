@@ -11,6 +11,12 @@ import {
   type Milestone,
 } from "./billing";
 import {
+  buildProposal,
+  EMPTY_PROPOSAL,
+  proposalInputSchema,
+  type ProposalContent,
+} from "./proposal";
+import {
   SCOPE_LIMITS,
   scopeItemInputSchema,
   scopeTotal,
@@ -61,6 +67,8 @@ export type Project = {
     approvedAt: Date | null;
   };
   milestones: Milestone[];
+  /** Optional proposal sections (overview, timeline, terms…). */
+  proposal: ProposalContent;
   totals: ProjectTotals;
   createdAt: Date;
   updatedAt: Date;
@@ -77,6 +85,7 @@ export const PROJECT_FIELDS = [
   "items",
   "billingModel",
   "milestones",
+  "proposal",
 ] as const;
 export type ProjectField = (typeof PROJECT_FIELDS)[number];
 
@@ -135,6 +144,12 @@ export const projectInputSchema = z
     milestones: jsonField(
       z.array(milestoneInputSchema).max(MILESTONE_LIMITS.max),
     ),
+    // Optional: older clients (and tests) may not send it.
+    proposal: z
+      .string()
+      .optional()
+      .transform((raw) => raw || "{}")
+      .pipe(jsonField(proposalInputSchema.partial())),
   })
   .superRefine((input, ctx) => {
     if (input.billingModel !== "milestones") return;
@@ -165,17 +180,20 @@ export type ProjectInput = z.output<typeof projectInputSchema>;
  * models the same way later.
  */
 export function buildProjectPlan(
-  input: Pick<ProjectInput, "items" | "billingModel" | "milestones">,
+  input: Pick<ProjectInput, "items" | "billingModel" | "milestones"> &
+    Partial<Pick<ProjectInput, "proposal">>,
   newId: () => string,
 ): {
   items: ScopeItem[];
   total: Paise;
   milestones: Milestone[];
+  proposal: ProposalContent;
 } {
   const items: ScopeItem[] = input.items.map((item) => ({
     id: item.id ?? newId(),
     title: item.title,
     description: item.description,
+    includes: item.includes,
     amount: item.amount,
   }));
   const total = scopeTotal(items);
@@ -187,6 +205,7 @@ export function buildProjectPlan(
     items,
     total,
     milestones: buildMilestones(total, milestoneInputs, newId),
+    proposal: buildProposal({ ...EMPTY_PROPOSAL, ...input.proposal }, newId),
   };
 }
 

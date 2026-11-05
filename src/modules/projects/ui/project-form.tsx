@@ -41,6 +41,13 @@ import {
   updateProject,
   type ProjectFormState,
 } from "../server/actions";
+import type { ProposalFormDefaults } from "./proposal-form-defaults";
+import {
+  ProposalSections,
+  proposalRowKey,
+  proposalToJson,
+  type ProposalFormValue,
+} from "./proposal-sections";
 import { QuickAddClient } from "./quick-add-client";
 
 type ItemRow = {
@@ -48,8 +55,11 @@ type ItemRow = {
   id?: string;
   title: string;
   description: string;
+  /** "What's included" bullet points, one per line. */
+  includes: string;
   amount: string;
   showNote: boolean;
+  showIncludes: boolean;
 };
 type MilestoneRow = { key: string; id?: string; name: string; percent: string };
 
@@ -57,9 +67,16 @@ export type ProjectFormDefaults = {
   clientId: string;
   name: string;
   description: string;
-  items: { id?: string; title: string; description: string; amount: string }[];
+  items: {
+    id?: string;
+    title: string;
+    description: string;
+    includes: string;
+    amount: string;
+  }[];
   billingModel: BillingModel;
   milestones: { id?: string; name: string; percent: string }[];
+  proposal: ProposalFormDefaults;
 };
 
 export type ClientOption = { id: string; label: string };
@@ -68,13 +85,22 @@ let rowCounter = 0;
 const rowKey = () => `row-${++rowCounter}`;
 
 const toItemRows = (items: ProjectFormDefaults["items"]): ItemRow[] =>
-  (items.length ? items : [{ title: "", description: "", amount: "" }]).map(
-    (item) => ({
-      ...item,
-      key: rowKey(),
-      showNote: Boolean(item.description),
-    }),
-  );
+  (items.length
+    ? items
+    : [{ title: "", description: "", includes: "", amount: "" }]
+  ).map((item) => ({
+    ...item,
+    key: rowKey(),
+    showNote: Boolean(item.description),
+    showIncludes: Boolean(item.includes),
+  }));
+
+const withRowKeys = (p: ProposalFormDefaults): ProposalFormValue => ({
+  ...p,
+  highlights: p.highlights.map((h) => ({ ...h, key: proposalRowKey() })),
+  timeline: p.timeline.map((s) => ({ ...s, key: proposalRowKey() })),
+  addons: p.addons.map((a) => ({ ...a, key: proposalRowKey() })),
+});
 
 const toMilestoneRows = (
   milestones: { id?: string; name: string; percent: string | number }[],
@@ -124,6 +150,9 @@ export function ProjectForm({
   const [addingClient, setAddingClient] = useState(initialClients.length === 0);
   const [items, setItems] = useState(() => toItemRows(defaults.items));
   const [billingModel, setBillingModel] = useState(defaults.billingModel);
+  const [proposal, setProposal] = useState(() =>
+    withRowKeys(defaults.proposal),
+  );
   const [milestones, setMilestones] = useState(() =>
     toMilestoneRows(
       defaults.billingModel === "milestones" && defaults.milestones.length
@@ -135,13 +164,15 @@ export function ProjectForm({
   // What the server receives, built from state; validated live with the
   // server's own schema (see useFormValidation).
   const itemsJson = JSON.stringify(
-    items.map(({ id, title, description, amount }) => ({
+    items.map(({ id, title, description, includes, amount }) => ({
       id,
       title,
       description,
+      includes,
       amount,
     })),
   );
+  const proposalJson = proposalToJson(proposal);
   const milestonesJson = JSON.stringify(
     billingModel === "milestones"
       ? milestones.map(({ id, name, percent }) => ({ id, name, percent }))
@@ -154,6 +185,7 @@ export function ProjectForm({
     items: itemsJson,
     billingModel,
     milestones: milestonesJson,
+    proposal: proposalJson,
   };
   const [savedValues] = useState(values);
   const formRef = useRef<HTMLFormElement>(null);
@@ -216,6 +248,7 @@ export function ProjectForm({
       )}
       <input type="hidden" name="items" value={itemsJson} />
       <input type="hidden" name="milestones" value={milestonesJson} />
+      <input type="hidden" name="proposal" value={proposalJson} />
 
       {state.status === "error" && state.message && (
         <FormAlert>{state.message}</FormAlert>
@@ -348,6 +381,10 @@ export function ProjectForm({
                 `items.${index}.amount`,
                 `${item.key}.amount`,
               );
+              const includesError = err(
+                `items.${index}.includes`,
+                `${item.key}.includes`,
+              );
               const noteError = err(
                 `items.${index}.description`,
                 `${item.key}.description`,
@@ -413,10 +450,10 @@ export function ProjectForm({
                       {titleError ?? amountError}
                     </p>
                   )}
-                  {item.showNote ? (
+                  {item.showNote && (
                     <Textarea
                       aria-label={`Note for deliverable ${index + 1}`}
-                      placeholder="What's included, e.g. up to 2 rounds of changes"
+                      placeholder="A sentence about this deliverable"
                       rows={2}
                       value={item.description}
                       maxLength={SCOPE_LIMITS.descriptionMax}
@@ -428,19 +465,65 @@ export function ProjectForm({
                       aria-invalid={Boolean(noteError) || undefined}
                       className="mt-2"
                     />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => updateItem(item.key, { showNote: true })}
-                      className="mt-2 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                    >
-                      Add a note
-                    </button>
                   )}
                   {noteError && (
                     <p role="alert" className="mt-1 text-sm text-destructive">
                       {noteError}
                     </p>
+                  )}
+                  {item.showIncludes && (
+                    <>
+                      <Textarea
+                        aria-label={`What's included in deliverable ${index + 1}, one per line`}
+                        placeholder={
+                          "Hero with call to action\nServices highlight\nTestimonials"
+                        }
+                        rows={3}
+                        value={item.includes}
+                        onChange={(e) => {
+                          updateItem(item.key, { includes: e.target.value });
+                          form.edited(`items.${index}.includes`);
+                        }}
+                        onBlur={() => form.touch(`${item.key}.includes`)}
+                        aria-invalid={Boolean(includesError) || undefined}
+                        className="mt-2"
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        One point per line. Shown as a checklist under this
+                        line.
+                      </p>
+                    </>
+                  )}
+                  {includesError && (
+                    <p role="alert" className="mt-1 text-sm text-destructive">
+                      {includesError}
+                    </p>
+                  )}
+                  {(!item.showNote || !item.showIncludes) && (
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                      {!item.showNote && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateItem(item.key, { showNote: true })
+                          }
+                          className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Add a note
+                        </button>
+                      )}
+                      {!item.showIncludes && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateItem(item.key, { showIncludes: true })
+                          }
+                          className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Add bullet points
+                        </button>
+                      )}
+                    </div>
                   )}
                 </li>
               );
@@ -467,8 +550,10 @@ export function ProjectForm({
                     key: rowKey(),
                     title: "",
                     description: "",
+                    includes: "",
                     amount: "",
                     showNote: false,
+                    showIncludes: false,
                   },
                 ])
               }
@@ -712,6 +797,22 @@ export function ProjectForm({
             </div>
           )}
         </div>
+      </FormSection>
+
+      {/* ── Proposal sections ────────────────────────────────────────── */}
+      <FormSection
+        title="Make it a proposal"
+        description="Optional sections your client sees around the scope. Add what helps, leave out the rest."
+      >
+        <ProposalSections
+          value={proposal}
+          onChange={setProposal}
+          errorFor={(path, touchKey) =>
+            err(`proposal.${path}`, `proposal.${touchKey ?? path}`)
+          }
+          touch={form.touch}
+          edited={(path) => form.edited(`proposal.${path}`)}
+        />
       </FormSection>
 
       <div className="flex flex-wrap items-center gap-3 border-t pt-6">

@@ -1,4 +1,4 @@
-import { Pencil } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -68,14 +68,22 @@ async function ProjectDetail({
               </p>
             )}
           </div>
-          {editable && (
-            <Button asChild variant="outline">
-              <Link href={`/projects/${project.id}/edit`}>
-                <Pencil aria-hidden />
-                Edit scope
+          <div className="flex flex-wrap gap-2">
+            {editable && (
+              <Button asChild variant="outline">
+                <Link href={`/projects/${project.id}/edit`}>
+                  <Pencil aria-hidden />
+                  Edit scope
+                </Link>
+              </Button>
+            )}
+            <Button asChild>
+              <Link href={`/projects/${project.id}/preview`}>
+                <Eye aria-hidden />
+                Preview as client
               </Link>
             </Button>
-          )}
+          </div>
         </div>
         {project.description && (
           <p className="max-w-prose text-[15px] leading-relaxed text-pretty">

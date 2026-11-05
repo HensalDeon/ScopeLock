@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { linesField } from "@/shared/lib/text-lines";
 import {
   formatINR,
   paise,
@@ -12,6 +13,8 @@ export type ScopeItem = {
   id: string;
   title: string;
   description: string | null;
+  /** "What's included" bullet points shown under the line. */
+  includes: string[];
   amount: Paise;
 };
 
@@ -21,6 +24,8 @@ export const SCOPE_LIMITS = {
   descriptionMax: 500,
   /** ₹1 crore per line is far above any real deliverable, and catches typos. */
   maxItemAmount: paise(1_00_00_000 * 100),
+  maxIncludes: 20,
+  includeMax: 200,
 } as const;
 
 /** Rupees as typed ("12,000", "1499.50") → paise, with a person-friendly error. */
@@ -77,6 +82,17 @@ export const scopeItemInputSchema = z.object({
     )
     .optional()
     .transform((value) => value || null),
+  includes: z
+    .string()
+    .optional()
+    .transform((value) => value ?? "")
+    .pipe(
+      linesField({
+        maxItems: SCOPE_LIMITS.maxIncludes,
+        maxLength: SCOPE_LIMITS.includeMax,
+        label: "point",
+      }),
+    ),
   amount: rupeeAmountField,
 });
 

@@ -5,18 +5,17 @@ import { BusinessDetailsForm } from "@/modules/workspace";
 import { formatPhone } from "@/shared/lib/phone";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { Badge } from "@/shared/ui/badge";
-import { PageContainer, PageHeader, Section } from "@/shared/ui/page";
+import { Section } from "@/shared/ui/page";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default function SettingsPage() {
   return (
-    <PageContainer>
-      <PageHeader title="Settings" />
+    <div className="max-w-4xl">
       <Suspense fallback={<div className="h-96 rounded-xl bg-canvas" />}>
         <SettingsContent />
       </Suspense>
-    </PageContainer>
+    </div>
   );
 }
 

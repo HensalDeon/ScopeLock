@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { clientLabel } from "@/modules/clients";
 import { listClients } from "@/modules/clients/server";
-import { ProjectForm } from "@/modules/projects";
+import { getDocumentSettings } from "@/modules/documents/server";
+import {
+  EMPTY_PROPOSAL,
+  indiaDatePlusDays,
+  ProjectForm,
+  proposalFormDefaults,
+} from "@/modules/projects";
 import { FreshOnEachVisit } from "@/shared/ui/fresh-on-each-visit";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
@@ -29,9 +35,10 @@ async function Form({
 }: {
   searchParams: PageProps<"/projects/new">["searchParams"];
 }) {
-  const [{ client }, clients] = await Promise.all([
+  const [{ client }, clients, settings] = await Promise.all([
     searchParams,
     listClients(),
+    getDocumentSettings(),
   ]);
   const preselected =
     typeof client === "string" && clients.some((c) => c.id === client)
@@ -53,6 +60,12 @@ async function Form({
           items: [],
           billingModel: "milestones",
           milestones: [],
+          // Start from the workspace's standard text (Settings → Documents).
+          proposal: proposalFormDefaults({
+            ...EMPTY_PROPOSAL,
+            ...settings.defaults,
+            validUntil: indiaDatePlusDays(14),
+          }),
         }}
       />
     </FreshOnEachVisit>

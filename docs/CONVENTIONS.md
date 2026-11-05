@@ -17,6 +17,8 @@ src/
     domain/               Pure rules + Zod schemas. No framework, DB or auth. Unit tested.
     server/               repository.ts, queries.ts, actions.ts ("use server")
     ui/                   Components. "use client" only on the leaves that need it.
+  modules/documents/      Client-facing document templates, style and default text. Other
+                          modules hand it plain data (ProposalDocumentData) to render.
   shared/
     auth/                 Better Auth config, session, membership, redirect, policy
     db/                   Mongo client, names, indexes, scopedCollection, transactions, ids

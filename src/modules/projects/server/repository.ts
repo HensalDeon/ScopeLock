@@ -5,6 +5,7 @@ import { scopedCollection, type WorkspaceOwned } from "@/shared/db/scoped";
 import { paise } from "@/shared/lib/money";
 import type { BillingModel, Milestone } from "../domain/billing";
 import type { Project, ProjectStatus, ProjectTotals } from "../domain/project";
+import { EMPTY_PROPOSAL, type ProposalContent } from "../domain/proposal";
 import type { ScopeItem } from "../domain/scope";
 
 type ProjectDoc = WorkspaceOwned & {
@@ -22,6 +23,8 @@ type ProjectDoc = WorkspaceOwned & {
     approvalId: ObjectId | null;
   };
   milestones: Milestone[];
+  /** Missing on projects created before Phase 3A. */
+  proposal?: ProposalContent;
   totals: ProjectTotals;
 };
 
@@ -34,6 +37,7 @@ export type ProjectData = {
   items: ScopeItem[];
   total: number;
   milestones: Milestone[];
+  proposal: ProposalContent;
   totals: ProjectTotals;
 };
 
@@ -55,6 +59,7 @@ function toProject(doc: ProjectDoc): Project {
       items: doc.baseline.items.map((item) => ({
         ...item,
         description: item.description ?? null,
+        includes: item.includes ?? [],
         amount: paise(item.amount),
       })),
       total: paise(doc.baseline.total),
@@ -63,6 +68,14 @@ function toProject(doc: ProjectDoc): Project {
     milestones: [...doc.milestones]
       .sort((a, b) => a.order - b.order)
       .map((m) => ({ ...m, baseAmount: paise(m.baseAmount) })),
+    proposal: {
+      ...EMPTY_PROPOSAL,
+      ...doc.proposal,
+      addons: (doc.proposal?.addons ?? []).map((a) => ({
+        ...a,
+        amount: paise(a.amount),
+      })),
+    },
     totals: {
       baseline: paise(doc.totals.baseline),
       approvedChanges: paise(doc.totals.approvedChanges),
@@ -84,6 +97,7 @@ function toFields(data: ProjectData) {
     "baseline.items": data.items,
     "baseline.total": data.total,
     milestones: data.milestones,
+    proposal: data.proposal,
     totals: data.totals,
   };
 }
@@ -130,6 +144,7 @@ export async function insertProject(
       approvalId: null,
     },
     milestones: data.milestones,
+    proposal: data.proposal,
     totals: data.totals,
   });
   return insertedId.toHexString();
