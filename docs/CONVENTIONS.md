@@ -115,6 +115,12 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - No `"use cache"` on workspace data in Phase 2. If it's added later, key and tag it by `workspaceId` and call `updateTag` in actions. Never pass a raw portal token into a cached function, because it becomes a stored cache key.
 - Lists have a real empty state: what will appear here and how to add the first item.
 - Bad ids and missing records call `notFound()`. Unexpected failures fall through to `app/error.tsx`.
+- **Visited pages stay alive.** With Cache Components, Next keeps up to 3 visited pages hidden (React `<Activity>`) and restores their state on return. Decide per piece of state:
+  - Transient UI (dropdowns, popovers, confirm dialogs) resets when hidden, with a `useLayoutEffect` cleanup that closes it.
+  - "Create" forms reset after a successful submit.
+  - Drafts the user would want back can stay.
+  - See `node_modules/next/dist/docs/01-app/02-guides/preserving-ui-state.md`.
+- **Crossing the auth boundary** (sign in, sign up, sign out, password-reset sign-in) uses `crossAuthBoundary()`, a full page load, so no client state survives from one account to the next.
 
 ## 6. Security checklists
 

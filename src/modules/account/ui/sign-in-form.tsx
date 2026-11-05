@@ -1,8 +1,7 @@
 "use client";
 
-import type { Route } from "next";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import { Button } from "@/shared/ui/button";
@@ -16,11 +15,11 @@ import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
 import { safeNextPath } from "@/shared/auth/redirect";
 import { authErrorMessage } from "../domain/auth-flow";
+import { crossAuthBoundary } from "./cross-auth-boundary";
 import { GoogleButton } from "./google-button";
 import { PasswordInput } from "./password-input";
 
 export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
-  const router = useRouter();
   const next = safeNextPath(useSearchParams().get("next"));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -42,9 +41,7 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
       setPending(false);
       return;
     }
-    // A plain navigation is enough: refreshing this auth page would bounce
-    // through the proxy redirect for no reason.
-    router.replace(next as Route);
+    crossAuthBoundary(next);
   }
 
   return (

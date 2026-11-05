@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import { PASSWORD_MIN_LENGTH } from "@/shared/auth/policy";
@@ -16,11 +15,11 @@ import {
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
 import { authErrorMessage } from "../domain/auth-flow";
+import { crossAuthBoundary } from "./cross-auth-boundary";
 import { GoogleButton } from "./google-button";
 import { PasswordInput } from "./password-input";
 
 export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
-  const router = useRouter();
   const [error, setError] = useState<{
     message: string;
     exists: boolean;
@@ -56,9 +55,7 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
       setPending(false);
       return;
     }
-    // A plain navigation is enough: refreshing this auth page would bounce
-    // through the proxy redirect for no reason.
-    router.replace("/onboarding");
+    crossAuthBoundary("/onboarding");
   }
 
   return (

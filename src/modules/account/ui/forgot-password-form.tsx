@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import {
@@ -19,6 +18,7 @@ import {
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
 import { authErrorMessage } from "../domain/auth-flow";
+import { crossAuthBoundary } from "./cross-auth-boundary";
 import { PasswordInput } from "./password-input";
 import { useResendTimer } from "./use-resend-timer";
 
@@ -91,7 +91,6 @@ function CodeStep({
   email: string;
   onChangeEmail: () => void;
 }) {
-  const router = useRouter();
   const timer = useResendTimer(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -131,12 +130,10 @@ function CodeStep({
     // Password saved. Sign straight in rather than sending them back to a form.
     const signIn = await authClient.signIn.email({ email, password });
     if (signIn.error) {
-      router.replace("/sign-in");
+      crossAuthBoundary("/sign-in");
       return;
     }
-    // A plain navigation is enough: refreshing this auth page would bounce
-    // through the proxy redirect for no reason.
-    router.replace("/dashboard");
+    crossAuthBoundary("/dashboard");
   }
 
   async function resend() {
