@@ -138,12 +138,13 @@ function Cover({
   images: DocumentImages;
   headingFont: string;
 }) {
-  // The photo sits under a dark layer so white text keeps its contrast; with
-  // no photo uploaded, the cover falls back to plain dark.
+  // The photo sits under a dark layer so text stays readable even on a very
+  // bright photo (a pure white image ends up around #525254: white text
+  // ~7.9:1, accent labels ≥ 4.5:1). No photo uploaded → plain dark cover.
   const photo =
     style.cover === "image" && images.coverUrl
       ? {
-          backgroundImage: `linear-gradient(rgb(15 16 20 / 0.62), rgb(15 16 20 / 0.8)), url(${JSON.stringify(images.coverUrl)})`,
+          backgroundImage: `linear-gradient(rgb(15 16 20 / 0.72), rgb(15 16 20 / 0.86)), url(${JSON.stringify(images.coverUrl)})`,
         }
       : undefined;
   return (

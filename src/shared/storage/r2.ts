@@ -58,7 +58,10 @@ export async function putObject(
   contentType: string,
 ): Promise<void> {
   const { aws, base } = client();
-  const response = await aws.fetch(objectUrl(base, key), {
+  // Sign, then send the raw bytes ourselves. aws4fetch's own fetch passes the
+  // body on as a stream, which goes out without a Content-Length, and R2
+  // rejects larger uploads with 411 Length Required.
+  const signed = await aws.sign(objectUrl(base, key), {
     method: "PUT",
     body,
     headers: {
@@ -66,6 +69,11 @@ export async function putObject(
       // Keys are unique per upload, so the content never changes.
       "cache-control": "private, max-age=31536000, immutable",
     },
+  });
+  const response = await fetch(signed.url, {
+    method: "PUT",
+    headers: signed.headers,
+    body,
   });
   if (!response.ok) {
     throw new Error(`R2 upload failed: ${response.status}`);
