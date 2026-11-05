@@ -112,6 +112,8 @@ function redirectTo(request: NextRequest, path: string): NextResponse {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/projects/:path*",
+    "/clients/:path*",
     "/settings/:path*",
     "/onboarding/:path*",
     "/sign-in",

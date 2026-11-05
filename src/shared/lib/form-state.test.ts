@@ -24,7 +24,11 @@ describe("fieldErrorsFrom", () => {
         { path: ["items", 0, "title"], message: "Required" },
         { path: [], message: "Form-level" },
       ]),
-    ).toEqual({ name: "Too short", items: "Required" });
+    ).toEqual({
+      name: "Too short",
+      items: "Required",
+      "items.0.title": "Required",
+    });
   });
 });
 

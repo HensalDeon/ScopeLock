@@ -2,8 +2,12 @@ import { Check } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { BUSINESS_TYPE_LABELS, formatPhone } from "@/modules/workspace";
+import type { Route } from "next";
+import { countClients } from "@/modules/clients/server";
+import { listProjects } from "@/modules/projects/server";
+import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import { requireWorkspace } from "@/modules/workspace/server";
+import { formatPhone } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
@@ -20,10 +24,15 @@ export default function DashboardPage() {
   );
 }
 
-type Step = { title: string; detail: string; done: boolean };
+type Step = { title: string; detail: string; done: boolean; href?: Route };
 
 async function Overview() {
-  const { user, workspace } = await requireWorkspace();
+  const [{ user, workspace }, clientCount, projects] = await Promise.all([
+    requireWorkspace(),
+    countClients(),
+    listProjects(),
+  ]);
+  const sentForApproval = projects.some((p) => p.status !== "draft");
 
   const steps: Step[] = [
     {
@@ -34,13 +43,20 @@ async function Overview() {
     {
       title: "Add your first client",
       detail: "Their name, company and WhatsApp number.",
-      done: false,
+      done: clientCount > 0,
+      href: "/clients/new",
     },
     {
-      title: "Lock a project's scope",
+      title: "Write down a project's scope",
+      detail: "List what's included, the price, and how the client pays.",
+      done: projects.length > 0,
+      href: "/projects/new",
+    },
+    {
+      title: "Get the scope approved",
       detail:
-        "List what's included and the price, then send it to your client to approve.",
-      done: false,
+        "Send it to your client. Once they approve, it's locked as the baseline.",
+      done: sentForApproval,
     },
     {
       title: "Log extra requests as they come in",
@@ -86,7 +102,16 @@ async function Overview() {
                     step.done && "text-muted-foreground",
                   )}
                 >
-                  {step.title}
+                  {step.href && !step.done ? (
+                    <Link
+                      href={step.href}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {step.title}
+                    </Link>
+                  ) : (
+                    step.title
+                  )}
                   <span className="sr-only">
                     {step.done ? " (done)" : " (to do)"}
                   </span>

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AccountNameForm, SignOutButton } from "@/modules/account";
-import { BusinessDetailsForm, formatPhone } from "@/modules/workspace";
+import { BusinessDetailsForm } from "@/modules/workspace";
+import { formatPhone } from "@/shared/lib/phone";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { Badge } from "@/shared/ui/badge";
 import { PageContainer, PageHeader, Section } from "@/shared/ui/page";

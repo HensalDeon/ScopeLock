@@ -1,18 +1,26 @@
 "use client";
 
-import { LayoutGrid, Settings2, type LucideIcon } from "lucide-react";
+import {
+  FolderKanban,
+  LayoutGrid,
+  Settings2,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/shared/lib/utils";
 
 type NavItem = {
-  href: "/dashboard" | "/settings";
+  href: "/dashboard" | "/projects" | "/clients" | "/settings";
   label: string;
   icon: LucideIcon;
 };
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
+  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/clients", label: "Clients", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 

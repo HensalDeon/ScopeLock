@@ -1,3 +1,9 @@
+/** Field errors keyed by field name, or dotted path for nested rows ("items.0.amount"). */
+export type FieldErrors<Field extends string = string> = Partial<
+  Record<Field, string>
+> &
+  Record<string, string | undefined>;
+
 /**
  * The result a form's server action returns to `useActionState`.
  * Client-safe: imported by forms and by the actions that produce it.
@@ -8,7 +14,7 @@ export type FormState<Field extends string = string> =
       status: "error";
       /** Form-level message, shown above the fields. */
       message?: string;
-      fieldErrors?: Partial<Record<Field, string>>;
+      fieldErrors?: FieldErrors<Field>;
       /** What was typed, echoed back so the form doesn't clear on error. */
       values?: Partial<Record<Field, string>>;
     }
@@ -44,15 +50,22 @@ export function readFields<Field extends string>(
   return values;
 }
 
-/** First Zod issue per top-level field, ready for `fieldErrors`. */
+/**
+ * First Zod issue per field, ready for `fieldErrors`. Nested fields use dotted
+ * paths ("items.0.amount") so a repeated row can show its own message; the
+ * top-level key ("items") also gets the first message for its group.
+ */
 export function fieldErrorsFrom<Field extends string>(
   issues: readonly { path: readonly PropertyKey[]; message: string }[],
-): Partial<Record<Field, string>> {
-  const errors: Partial<Record<Field, string>> = {};
+): FieldErrors<Field> {
+  const errors: Record<string, string> = {};
   for (const issue of issues) {
-    const key = issue.path[0];
-    if (typeof key !== "string") continue;
-    errors[key as Field] ??= issue.message;
+    const [top] = issue.path;
+    if (typeof top !== "string") continue;
+    errors[top] ??= issue.message;
+    if (issue.path.length > 1) {
+      errors[issue.path.map(String).join(".")] ??= issue.message;
+    }
   }
-  return errors;
+  return errors as FieldErrors<Field>;
 }

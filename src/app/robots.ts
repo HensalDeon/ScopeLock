@@ -7,7 +7,15 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Signed-in areas, client portal links and the API stay out of search.
-      disallow: ["/dashboard", "/settings", "/onboarding", "/api/", "/c/"],
+      disallow: [
+        "/dashboard",
+        "/projects",
+        "/clients",
+        "/settings",
+        "/onboarding",
+        "/api/",
+        "/c/",
+      ],
     },
     sitemap: new URL("/sitemap.xml", site.url).toString(),
   };

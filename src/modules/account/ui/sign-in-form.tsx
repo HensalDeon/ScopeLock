@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import { Button } from "@/shared/ui/button";
 import {
@@ -20,6 +20,9 @@ import { GoogleButton } from "./google-button";
 import { PasswordInput } from "./password-input";
 
 export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
+  // Unique per instance: visited pages stay mounted, so two copies of
+  // this form can be in the document at once (CONVENTIONS §5).
+  const uid = useId();
   const next = safeNextPath(useSearchParams().get("next"));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -50,9 +53,9 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
         {error && <FormAlert>{error}</FormAlert>}
 
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-email`}>Email</FieldLabel>
           <Input
-            id="email"
+            id={`${uid}-email`}
             name="email"
             type="email"
             autoComplete="email"
@@ -64,7 +67,7 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
 
         <Field>
           <div className="flex items-baseline justify-between gap-3">
-            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-password`}>Password</FieldLabel>
             <Link
               href="/forgot-password"
               className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
@@ -73,7 +76,7 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
             </Link>
           </div>
           <PasswordInput
-            id="password"
+            id={`${uid}-password`}
             name="password"
             autoComplete="current-password"
             required

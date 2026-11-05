@@ -121,10 +121,14 @@ export default defineConfig([
     },
   },
 
-  // Tests may assert on values they just checked.
+  // Tests may assert on values they just checked, and integration tests may
+  // set up state through raw collections (e.g. simulate a later phase).
   {
     files: ["src/**/*.test.{ts,tsx}"],
-    rules: { "@typescript-eslint/no-non-null-assertion": "off" },
+    rules: {
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "no-restricted-imports": "off",
+    },
   },
 
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),

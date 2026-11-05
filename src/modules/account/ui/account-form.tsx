@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import { Button } from "@/shared/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/shared/ui/field";
@@ -10,6 +10,9 @@ import { Input } from "@/shared/ui/input";
 import { authErrorMessage } from "../domain/auth-flow";
 
 export function AccountNameForm({ name }: { name: string }) {
+  // Unique per instance: visited pages stay mounted, so two copies of
+  // this form can be in the document at once (CONVENTIONS §5).
+  const uid = useId();
   const router = useRouter();
   const [status, setStatus] = useState<
     { kind: "idle" } | { kind: "saved" } | { kind: "error"; message: string }
@@ -39,9 +42,9 @@ export function AccountNameForm({ name }: { name: string }) {
       <FieldGroup className="gap-5">
         {status.kind === "error" && <FormAlert>{status.message}</FormAlert>}
         <Field>
-          <FieldLabel htmlFor="account-name">Your name</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-account-name`}>Your name</FieldLabel>
           <Input
-            id="account-name"
+            id={`${uid}-account-name`}
             name="name"
             defaultValue={name}
             autoComplete="name"

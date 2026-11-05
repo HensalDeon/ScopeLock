@@ -15,6 +15,8 @@ export const COLLECTIONS = {
 
   // ScopeLock
   workspaceProfiles: "workspaceProfiles",
+  clients: "clients",
+  projects: "projects",
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

@@ -22,11 +22,15 @@ export type WorkspaceOwned = {
   updatedAt: Date;
 };
 
-/** A new document as callers write it: the scoped collection fills these in. */
-export type NewDocument<T extends WorkspaceOwned> = Omit<
-  OptionalUnlessRequiredId<T>,
-  keyof WorkspaceOwned
->;
+/**
+ * A new document as callers write it: workspaceId and timestamps are filled
+ * in by the scoped collection, and `_id` is generated unless given.
+ */
+export type NewDocument<T extends WorkspaceOwned & Document> = Omit<
+  T,
+  keyof WorkspaceOwned | "_id"
+> &
+  Partial<Pick<T, "_id" & keyof T>>;
 
 /**
  * The only way module code reads or writes business data.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import {
   BUSINESS_NAME_MAX_LENGTH,
   BUSINESS_TYPE_LABELS,
@@ -32,6 +33,9 @@ export function WorkspaceFields({
   onBusinessNameChange: (value: string) => void;
   defaults: { businessType?: BusinessType | ""; phone?: string };
 }) {
+  // Unique per instance: visited pages stay mounted, so two copies of
+  // this form can be in the document at once (CONVENTIONS §5).
+  const uid = useId();
   const errors = (state.status === "error" && state.fieldErrors) || {};
   const typed = state.status === "idle" ? undefined : state.values;
   const businessType = typed?.businessType ?? defaults.businessType ?? "";
@@ -40,9 +44,9 @@ export function WorkspaceFields({
   return (
     <>
       <Field data-invalid={Boolean(errors.businessName) || undefined}>
-        <FieldLabel htmlFor="businessName">Business name</FieldLabel>
+        <FieldLabel htmlFor={`${uid}-businessName`}>Business name</FieldLabel>
         <Input
-          id="businessName"
+          id={`${uid}-businessName`}
           name="businessName"
           autoComplete="organization"
           value={businessName}
@@ -70,7 +74,7 @@ export function WorkspaceFields({
           {BUSINESS_TYPES.map((type) => (
             <FieldLabel
               key={type}
-              htmlFor={`type-${type}`}
+              htmlFor={`${uid}-type-${type}`}
               className="has-data-checked:border-brand/45 has-data-checked:bg-success-soft/70"
             >
               <Field orientation="horizontal">
@@ -80,7 +84,7 @@ export function WorkspaceFields({
                     {BUSINESS_TYPE_LABELS[type].detail}
                   </FieldDescription>
                 </FieldContent>
-                <RadioGroupItem value={type} id={`type-${type}`} />
+                <RadioGroupItem value={type} id={`${uid}-type-${type}`} />
               </Field>
             </FieldLabel>
           ))}
@@ -89,12 +93,12 @@ export function WorkspaceFields({
       </FieldSet>
 
       <Field data-invalid={Boolean(errors.phone) || undefined}>
-        <FieldLabel htmlFor="phone">
+        <FieldLabel htmlFor={`${uid}-phone`}>
           WhatsApp number{" "}
           <span className="font-normal text-muted-foreground">(optional)</span>
         </FieldLabel>
         <Input
-          id="phone"
+          id={`${uid}-phone`}
           name="phone"
           type="tel"
           inputMode="tel"

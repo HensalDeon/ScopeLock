@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import {
   CODE_TTL_MINUTES,
@@ -37,6 +37,9 @@ export function ForgotPasswordForm() {
 }
 
 function EmailStep({ onSent }: { onSent: (email: string) => void }) {
+  // Unique per instance: visited pages stay mounted, so two copies of
+  // this form can be in the document at once (CONVENTIONS §5).
+  const uid = useId();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -65,9 +68,9 @@ function EmailStep({ onSent }: { onSent: (email: string) => void }) {
       <FieldGroup className="gap-5">
         {error && <FormAlert>{error}</FormAlert>}
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-email`}>Email</FieldLabel>
           <Input
-            id="email"
+            id={`${uid}-email`}
             name="email"
             type="email"
             autoComplete="email"
@@ -91,6 +94,9 @@ function CodeStep({
   email: string;
   onChangeEmail: () => void;
 }) {
+  // Unique per instance: visited pages stay mounted, so two copies of
+  // this form can be in the document at once (CONVENTIONS §5).
+  const uid = useId();
   const timer = useResendTimer(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -163,13 +169,13 @@ function CodeStep({
         {error && <FormAlert>{error}</FormAlert>}
         {notice && !error && <FormAlert tone="success">{notice}</FormAlert>}
         <Field>
-          <FieldLabel htmlFor="code">Code from the email</FieldLabel>
-          <CodeInput id="code" name="code" required autoFocus />
+          <FieldLabel htmlFor={`${uid}-code`}>Code from the email</FieldLabel>
+          <CodeInput id={`${uid}-code`} name="code" required autoFocus />
         </Field>
         <Field>
-          <FieldLabel htmlFor="password">New password</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-password`}>New password</FieldLabel>
           <PasswordInput
-            id="password"
+            id={`${uid}-password`}
             name="password"
             autoComplete="new-password"
             minLength={PASSWORD_MIN_LENGTH}
