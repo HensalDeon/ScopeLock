@@ -37,7 +37,7 @@ async function Preview({
   params: PageProps<"/projects/[id]/preview">["params"];
 }) {
   const { id } = await params;
-  const { project, data, style } = await getProposalDocument(id);
+  const { project, data, style, images } = await getProposalDocument(id);
   const footer = `${data.business.name}  ·  Proposal ${data.reference}`;
 
   return (
@@ -91,6 +91,7 @@ async function Preview({
         <ClassicDocument
           data={data}
           style={style}
+          images={images}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
         />
       </main>

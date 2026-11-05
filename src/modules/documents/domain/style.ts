@@ -4,7 +4,7 @@ import { contrast, isHex, mix, readableShade, textOn, type Hex } from "./color";
 export const DOCUMENT_TEMPLATES = ["classic"] as const;
 export type DocumentTemplate = (typeof DOCUMENT_TEMPLATES)[number];
 
-export const COVER_STYLES = ["dark", "accent", "light"] as const;
+export const COVER_STYLES = ["dark", "accent", "light", "image"] as const;
 export type CoverStyle = (typeof COVER_STYLES)[number];
 
 export const COVER_STYLE_LABELS: Record<
@@ -14,6 +14,7 @@ export const COVER_STYLE_LABELS: Record<
   dark: { title: "Dark", detail: "Deep charcoal, accent details" },
   accent: { title: "Accent colour", detail: "Your colour fills the cover" },
   light: { title: "Light", detail: "Soft tint, dark text" },
+  image: { title: "Photo", detail: "Your cover image behind a dark layer" },
 };
 
 export const HEADING_FONTS = ["serif", "sans"] as const;
@@ -106,8 +107,9 @@ export function documentPalette(
 ) {
   const { accent } = style;
   const soft = mix(accent, PAGE, 0.9);
+  // A photo cover sits under a dark layer, so it reads like the dark cover.
   const coverBg =
-    style.cover === "dark"
+    style.cover === "dark" || style.cover === "image"
       ? DARK_COVER
       : style.cover === "accent"
         ? accent

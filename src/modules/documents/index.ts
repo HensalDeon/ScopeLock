@@ -3,6 +3,7 @@
  * default proposal text. Server-only settings queries are in ./server.ts.
  */
 export type { ProposalDocumentData } from "./domain/document-data";
+export { NO_IMAGES, type DocumentImages } from "./domain/images";
 export {
   defaultsToFormValues,
   PROPOSAL_DEFAULTS_FIELDS,

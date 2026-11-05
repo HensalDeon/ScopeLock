@@ -6,6 +6,7 @@ import { formatINR } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import type { ProposalDocumentData } from "../domain/document-data";
+import { NO_IMAGES, type DocumentImages } from "../domain/images";
 import { documentPalette, type DocumentStyle } from "../domain/style";
 import { documentSerif } from "./fonts";
 
@@ -21,10 +22,13 @@ import { documentSerif } from "./fonts";
 export function ClassicDocument({
   data,
   style,
+  images = NO_IMAGES,
   className,
 }: {
   data: ProposalDocumentData;
   style: DocumentStyle;
+  /** Signed URLs for the uploaded logo and cover image, if any. */
+  images?: DocumentImages;
   className?: string;
 }) {
   const palette = documentPalette(style);
@@ -57,7 +61,12 @@ export function ClassicDocument({
       )}
       style={vars}
     >
-      <Cover data={data} style={style} headingFont={headingFont} />
+      <Cover
+        data={data}
+        style={style}
+        images={images}
+        headingFont={headingFont}
+      />
 
       {data.highlights.length > 0 && (
         <div className="grid grid-cols-2 border-b border-[#e7e4dd] bg-(--doc-soft) @xl:auto-cols-fr @xl:grid-flow-col @xl:grid-cols-none">
@@ -121,14 +130,27 @@ export function ClassicDocument({
 function Cover({
   data,
   style,
+  images,
   headingFont,
 }: {
   data: ProposalDocumentData;
   style: DocumentStyle;
+  images: DocumentImages;
   headingFont: string;
 }) {
+  // The photo sits under a dark layer so white text keeps its contrast; with
+  // no photo uploaded, the cover falls back to plain dark.
+  const photo =
+    style.cover === "image" && images.coverUrl
+      ? {
+          backgroundImage: `linear-gradient(rgb(15 16 20 / 0.62), rgb(15 16 20 / 0.8)), url(${JSON.stringify(images.coverUrl)})`,
+        }
+      : undefined;
   return (
-    <header className="relative overflow-hidden bg-(--doc-cover-bg) px-6 pt-9 pb-8 text-(--doc-cover-text) @xl:px-12 @xl:pt-11 @xl:pb-9">
+    <header
+      className="relative overflow-hidden bg-(--doc-cover-bg) bg-cover bg-center px-6 pt-9 pb-8 text-(--doc-cover-text) @xl:px-12 @xl:pt-11 @xl:pb-9"
+      style={photo}
+    >
       {style.coverPattern && (
         // Both rings are centred on the top-right corner. Their sizes keep
         // the "Proposal" label inside the inner ring and the brand and title
@@ -142,14 +164,31 @@ function Cover({
 
       <div className="relative flex items-start justify-between gap-6">
         <div className="flex items-center gap-3">
-          {style.showLogo && (
-            <span
-              aria-hidden
-              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-(--doc-cover-rule) text-[13px] font-semibold tracking-wide"
-            >
-              {initialsOf(data.business.name)}
-            </span>
-          )}
+          {style.showLogo &&
+            (images.logoUrl ? (
+              // Most logos are dark artwork: on dark, accent or photo covers
+              // they sit on a white plate so they stay visible.
+              <span
+                className={cn(
+                  "flex h-11 shrink-0 items-center rounded-md",
+                  style.cover !== "light" && "bg-white px-2 py-1.5",
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- signed R2 URL, already resized at upload */}
+                <img
+                  src={images.logoUrl}
+                  alt={`${data.business.name} logo`}
+                  className="h-full w-auto max-w-[9rem] object-contain"
+                />
+              </span>
+            ) : (
+              <span
+                aria-hidden
+                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-(--doc-cover-rule) text-[13px] font-semibold tracking-wide"
+              >
+                {initialsOf(data.business.name)}
+              </span>
+            ))}
           <div className="min-w-0">
             <p className={cn("text-[1.35rem] leading-tight", headingFont)}>
               {data.business.name}

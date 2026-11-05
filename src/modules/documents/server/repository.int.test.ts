@@ -8,6 +8,7 @@ describe("document settings repository", () => {
     expect(await repo.findDocumentSettings("ws_new")).toEqual({
       style: DEFAULT_DOCUMENT_STYLE,
       defaults: STARTER_PROPOSAL_DEFAULTS,
+      images: { logoKey: null, coverKey: null },
     });
   });
 
@@ -35,6 +36,30 @@ describe("document settings repository", () => {
 
     expect((await repo.findDocumentSettings("ws_b")).style).toEqual(
       DEFAULT_DOCUMENT_STYLE,
+    );
+  });
+
+  it("swaps image keys and hands back the old one for deletion", async () => {
+    const ws = "ws_images";
+    expect(
+      await repo.setDocumentImage(ws, "logo", "ws/ws_images/logo/a.webp"),
+    ).toBeNull();
+    expect(
+      await repo.setDocumentImage(ws, "logo", "ws/ws_images/logo/b.webp"),
+    ).toBe("ws/ws_images/logo/a.webp");
+    await repo.setDocumentImage(ws, "cover", "ws/ws_images/cover/c.jpg");
+    expect((await repo.findDocumentSettings(ws)).images).toEqual({
+      logoKey: "ws/ws_images/logo/b.webp",
+      coverKey: "ws/ws_images/cover/c.jpg",
+    });
+    expect(await repo.setDocumentImage(ws, "logo", null)).toBe(
+      "ws/ws_images/logo/b.webp",
+    );
+    expect((await repo.findDocumentSettings(ws)).images.logoKey).toBeNull();
+    // Saving the style doesn't touch the images.
+    await repo.saveDocumentStyle(ws, DEFAULT_DOCUMENT_STYLE);
+    expect((await repo.findDocumentSettings(ws)).images.coverKey).toBe(
+      "ws/ws_images/cover/c.jpg",
     );
   });
 });

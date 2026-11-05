@@ -61,6 +61,13 @@ const serverEnvSchema = z
      * APP_URL, for testing a production build locally.
      */
     EMAIL_TRANSPORT: optional.pipe(z.enum(["smtp", "console"]).optional()),
+
+    // File storage: Cloudflare R2 (private bucket). Optional; uploads are
+    // switched off until all four are set.
+    R2_ACCOUNT_ID: optional,
+    R2_ACCESS_KEY_ID: optional,
+    R2_SECRET_ACCESS_KEY: optional,
+    R2_BUCKET: optional,
   })
   .superRefine((e, ctx) => {
     if (e.NODE_ENV !== "production") return;
@@ -115,6 +122,16 @@ export function emailTransport(): "smtp" | "console" | "none" {
   if (e.EMAIL_TRANSPORT) return e.EMAIL_TRANSPORT;
   if (isSmtpConfigured()) return "smtp";
   return e.NODE_ENV === "production" ? "none" : "console";
+}
+
+export function isStorageConfigured(): boolean {
+  const e = env();
+  return Boolean(
+    e.R2_ACCOUNT_ID &&
+    e.R2_ACCESS_KEY_ID &&
+    e.R2_SECRET_ACCESS_KEY &&
+    e.R2_BUCKET,
+  );
 }
 
 export function isSmtpConfigured(): boolean {

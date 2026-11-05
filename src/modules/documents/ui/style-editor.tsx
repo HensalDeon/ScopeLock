@@ -14,6 +14,7 @@ import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
 import { Switch } from "@/shared/ui/switch";
 import type { ProposalDocumentData } from "../domain/document-data";
+import type { DocumentImages } from "../domain/images";
 import {
   ACCENT_PRESETS,
   accentNeedsDarkening,
@@ -30,6 +31,7 @@ import {
   type DocumentStyleFormState,
 } from "../server/actions";
 import { ClassicDocument } from "./classic-document";
+import { ImageUpload } from "./image-upload";
 
 type Values = Record<DocumentStyleField, string>;
 
@@ -40,10 +42,16 @@ type Values = Record<DocumentStyleField, string>;
 export function DocumentStyleEditor({
   initial,
   preview,
+  images: initialImages,
+  uploadsEnabled,
 }: {
   initial: DocumentStyle;
   preview: ProposalDocumentData;
+  images: DocumentImages;
+  uploadsEnabled: boolean;
 }) {
+  // Kept locally so the preview shows a new image the moment it's uploaded.
+  const [images, setImages] = useState(initialImages);
   const uid = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState<
@@ -200,7 +208,7 @@ export function DocumentStyleEditor({
           <div
             role="radiogroup"
             aria-label="Cover"
-            className="grid grid-cols-3 gap-2"
+            className="grid grid-cols-2 gap-2 sm:grid-cols-4"
           >
             {COVER_STYLES.map((cover) => {
               const selected = values.cover === cover;
@@ -221,14 +229,22 @@ export function DocumentStyleEditor({
                   <span
                     aria-hidden
                     className="h-7 rounded-sm border"
-                    style={{
-                      background:
-                        cover === "dark"
-                          ? "#15161a"
-                          : cover === "accent"
-                            ? accent
-                            : `${accent}24`,
-                    }}
+                    style={
+                      cover === "image" && images.coverUrl
+                        ? {
+                            backgroundImage: `linear-gradient(rgb(15 16 20 / 0.5), rgb(15 16 20 / 0.5)), url(${JSON.stringify(images.coverUrl)})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                          }
+                        : {
+                            background:
+                              cover === "dark" || cover === "image"
+                                ? "#15161a"
+                                : cover === "accent"
+                                  ? accent
+                                  : `${accent}24`,
+                          }
+                    }
                   />
                   <span className="font-medium">
                     {COVER_STYLE_LABELS[cover].title}
@@ -237,6 +253,11 @@ export function DocumentStyleEditor({
               );
             })}
           </div>
+          {values.cover === "image" && !images.coverUrl && (
+            <p className="text-sm text-muted-foreground">
+              Upload a cover image below. Until then, the dark cover is used.
+            </p>
+          )}
           <label className="mt-2 flex items-center justify-between gap-3 text-sm">
             Decorative rings on the cover
             <Switch
@@ -245,12 +266,41 @@ export function DocumentStyleEditor({
             />
           </label>
           <label className="flex items-center justify-between gap-3 text-sm">
-            Show your initials on the cover
+            {images.logoUrl
+              ? "Show your logo on the cover"
+              : "Show your initials on the cover"}
             <Switch
               checked={values.showLogo === "true"}
               onCheckedChange={(on) => set("showLogo", String(on))}
             />
           </label>
+        </fieldset>
+
+        <fieldset className="grid gap-5">
+          <legend className="mb-2 text-sm font-medium">
+            Logo and cover image
+          </legend>
+          <ImageUpload
+            kind="logo"
+            label="Logo"
+            hint="PNG, JPG or WebP, up to 5 MB. A transparent PNG looks best."
+            url={images.logoUrl}
+            enabled={uploadsEnabled}
+            onChange={(logoUrl) => setImages((i) => ({ ...i, logoUrl }))}
+          />
+          <ImageUpload
+            kind="cover"
+            label="Cover image"
+            hint="PNG, JPG or WebP, up to 5 MB. A wide photo of your work works well."
+            url={images.coverUrl}
+            enabled={uploadsEnabled}
+            onChange={(coverUrl) => {
+              setImages((i) => ({ ...i, coverUrl }));
+              // A new photo is meant to be seen: switch the cover to it.
+              if (coverUrl) set("cover", "image");
+              else if (values.cover === "image") set("cover", "dark");
+            }}
+          />
         </fieldset>
 
         <fieldset className="grid gap-2">
@@ -322,6 +372,7 @@ export function DocumentStyleEditor({
           <ClassicDocument
             data={preview}
             style={style}
+            images={images}
             className="mx-auto max-w-[210mm] rounded-sm shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] lg:[zoom:0.72]"
           />
         </div>

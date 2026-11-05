@@ -3,7 +3,10 @@ import type {
   ProposalDefaults,
   ProposalDocumentData,
 } from "@/modules/documents";
-import { getDocumentSettings } from "@/modules/documents/server";
+import {
+  getDocumentImages,
+  getDocumentSettings,
+} from "@/modules/documents/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import { requireWorkspace } from "@/modules/workspace/server";
 import type { Project } from "../domain/project";
@@ -28,6 +31,7 @@ export async function getProposalDocument(projectId: string) {
   return {
     project,
     style: settings.style,
+    images: await getDocumentImages(settings),
     data: toProposalDocument(
       project,
       {

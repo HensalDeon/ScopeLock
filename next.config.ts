@@ -20,7 +20,8 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // Signed URLs from the private R2 bucket (logo, cover image).
+  "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com",
   "font-src 'self'",
   `connect-src 'self'${isDev ? " ws:" : ""}`,
   "frame-ancestors 'none'",
@@ -64,6 +65,13 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   typedRoutes: true,
+  experimental: {
+    serverActions: {
+      // Image uploads (resized in the browser first). Stays under Vercel's
+      // 4.5 MB request limit; the server caps files at 4 MB.
+      bodySizeLimit: "4.4mb",
+    },
+  },
   turbopack: {
     rules: {
       "*.css": {

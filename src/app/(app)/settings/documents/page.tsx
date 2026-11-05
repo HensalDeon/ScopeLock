@@ -5,7 +5,11 @@ import {
   ProposalDefaultsForm,
   sampleProposal,
 } from "@/modules/documents";
-import { getDocumentSettings } from "@/modules/documents/server";
+import {
+  getDocumentImages,
+  getDocumentSettings,
+} from "@/modules/documents/server";
+import { isStorageConfigured } from "@/shared/lib/env";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { Section } from "@/shared/ui/page";
@@ -35,6 +39,7 @@ async function DocumentSettings() {
   // A full sample, so every section can be seen in the chosen style. It uses
   // the saved default text, so saving defaults below shows up here too.
   const preview = sampleProposal(business, voice, settings.defaults);
+  const images = await getDocumentImages(settings);
 
   return (
     <div className="grid gap-12">
@@ -49,7 +54,12 @@ async function DocumentSettings() {
             section filled in.
           </p>
         </div>
-        <DocumentStyleEditor initial={settings.style} preview={preview} />
+        <DocumentStyleEditor
+          initial={settings.style}
+          preview={preview}
+          images={images}
+          uploadsEnabled={isStorageConfigured()}
+        />
       </section>
 
       <div className="max-w-4xl">
