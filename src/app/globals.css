@@ -6,6 +6,11 @@
 
 @theme inline {
   --color-brand: var(--brand);
+  --color-canvas: var(--canvas);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-ink: var(--warning-ink);
+  --color-success-soft: var(--success-soft);
   --color-brand-ink: var(--brand-ink);
   --color-brand-bright: var(--brand-bright);
   --color-brand-tile-frame: var(--brand-tile-frame);
@@ -58,38 +63,45 @@
   --brand-bright: #34d399;
   --brand-ink: #0b1220;
   --brand-tile-frame: #f2f5f8;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Neutrals lean slightly toward the ink navy so greys feel deliberate. */
+  --background: #ffffff;
+  --foreground: #0b1220;
+  --card: #ffffff;
+  --card-foreground: #0b1220;
+  --popover: #ffffff;
+  --popover-foreground: #0b1220;
+  --primary: #0b1220;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f6;
+  --secondary-foreground: #0b1220;
+  --muted: #f4f5f8;
+  --muted-foreground: #5a6475;
+  --accent: #eef0f4;
+  --accent-foreground: #0b1220;
+  --destructive: #c8372d;
+  --warning: #b45309;
+  --warning-soft: #fdf3e3;
+  /* Text on warning-soft backgrounds (AA contrast). */
+  --warning-ink: #7a3d06;
+  --success-soft: #e6f5ee;
+  --border: #e3e6eb;
+  --input: #d6dae1;
+  --ring: #0e9f6e;
+  --canvas: #f7f8fa;
+  --chart-1: #0e9f6e;
+  --chart-2: #0b1220;
+  --chart-3: #5a6475;
+  --chart-4: #b45309;
+  --chart-5: #c8372d;
+  --radius: 0.5rem;
+  --sidebar: #f7f8fa;
+  --sidebar-foreground: #0b1220;
+  --sidebar-primary: #0b1220;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eceef2;
+  --sidebar-accent-foreground: #0b1220;
+  --sidebar-border: #e3e6eb;
+  --sidebar-ring: #0e9f6e;
 }
 
 .dark {
@@ -265,4 +277,86 @@
   50% {
     opacity: 0.45;
   }
+}
+
+/* ─── Long-form legal text ─────────────────────────────────────────────── */
+.legal-prose {
+  display: grid;
+  gap: 0.9rem;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--foreground);
+}
+.legal-prose p,
+.legal-prose li {
+  text-wrap: pretty;
+}
+.legal-prose ul {
+  display: grid;
+  gap: 0.45rem;
+  padding-left: 1.15rem;
+  list-style: disc;
+}
+.legal-prose li::marker {
+  color: var(--muted-foreground);
+}
+.legal-prose strong {
+  font-weight: 600;
+}
+.legal-prose a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ─── Marketing grid backdrop (GridBackdrop) ───────────────────────────────
+   Two gradient pairs: 24px cells with a heavier rule every 4th. A line sits
+   exactly on the horizontal centre so the field is symmetric with the
+   centred container. The lit copy is the same lines at carrying strength,
+   masked to a disc under the pointer. */
+.sl-grid,
+.sl-grid-lit {
+  --sl-cell: 24px;
+  --sl-block: 96px;
+  background-image:
+    linear-gradient(to right, var(--sl-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--sl-minor) 1px, transparent 1px),
+    linear-gradient(to right, var(--sl-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--sl-major) 1px, transparent 1px);
+  background-size:
+    var(--sl-cell) var(--sl-cell),
+    var(--sl-cell) var(--sl-cell),
+    var(--sl-block) var(--sl-block),
+    var(--sl-block) var(--sl-block);
+  background-position:
+    calc(50% + var(--sl-cell) / 2) 0,
+    calc(50% + var(--sl-cell) / 2) 0,
+    calc(50% + var(--sl-block) / 2) 0,
+    calc(50% + var(--sl-block) / 2) 0;
+}
+.sl-grid {
+  --sl-minor: rgb(11 18 32 / 0.035);
+  --sl-major: rgb(11 18 32 / 0.07);
+  --mx: -1000px;
+  --my: -1000px;
+  /* Fade toward the edges so the grid never ends on a hard line. */
+  mask-image: radial-gradient(
+    ellipse 75% 85% at 50% 40%,
+    #000 35%,
+    transparent 100%
+  );
+}
+.sl-grid-lit {
+  --sl-minor: rgb(11 18 32 / 0.11);
+  --sl-major: rgb(11 18 32 / 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  mask-image: radial-gradient(
+    circle 200px at var(--mx) var(--my),
+    #000 0%,
+    rgb(0 0 0 / 0.45) 45%,
+    transparent 72%
+  );
+}
+.sl-grid[data-lit="true"] .sl-grid-lit {
+  opacity: 1;
 }

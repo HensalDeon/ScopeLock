@@ -182,15 +182,33 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 ### Phase 1: Auth & workspace
 
-- [ ] Typed collections helper + index setup script (moved from Phase 0, built along with the first collections)
-- [ ] Better Auth: email/password + Google, sessions, protected `(app)` layout
-- [ ] Workspace auto-created at sign-up (organization plugin)
-- [ ] Onboarding: business name, logo upload (R2), phone
-- [ ] App shell: sidebar/nav, mobile layout
+- [x] Typed collections helper + index setup script (`npm run db:indexes`)
+- [x] Better Auth: email/password, password reset and email verification by 6-digit emailed code (hashed, 10 min, 5 tries), sessions, protected `(app)` layout. Google sign-in is ready and switches on when `GOOGLE_CLIENT_ID/SECRET` are set.
+- [x] Workspace created at onboarding with the real business name (organization plugin), instead of an auto-named one at sign-up
+- [x] Onboarding: business name, how you work, WhatsApp number, live "what your client sees" preview
+- [x] App shell: sidebar/nav, mobile layout, settings page
+- [x] Emails over SMTP when configured, printed to the terminal otherwise
+- [ ] Logo upload, moved to Phase 3 (needs a Cloudflare R2 bucket; first shown on the client portal)
+- [ ] Google OAuth keys + SMTP provider (config only, no code)
 
 **Done when:** I can sign up, finish onboarding and see an empty dashboard.
 
+### Phase 1B: Marketing site
+
+- [x] Landing page: pitch, how it works, client view, payments, evidence, pricing, FAQ, final CTA
+- [x] Product visuals built as coded components (no screenshots), matching the real UI
+- [x] `/pricing` with plan comparison. Plans live in one config (`modules/billing/domain/plans.ts`), made dynamic in Phase 8
+- [x] Legal drafts: `/terms`, `/privacy`, `/refunds`, `/contact` (Razorpay requirement), filled from one `legal` config in `src/shared/config/site.ts`
+- [ ] Legal pages reviewed by a lawyer / CA before launch
+- [x] SEO: per-page metadata, share image, `sitemap.xml`, `robots.txt`, structured data
+- [x] CTAs: "Start free" → sign-up; plan buttons → `/sign-up?plan=…` (plan choice is used in Phase 8)
+- [ ] Fill in registered business name, address, contact email, grievance officer; buy domain
+
+**Done when:** the site is something I'd proudly share, and every Razorpay-required page exists.
+
 ### Phase 2: Clients & projects (baseline scope)
+
+Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `workspaceAction`, unit + integration tests).
 
 - [ ] Clients CRUD
 - [ ] Create project → pick client → baseline scope builder (deliverables + amounts, live total)
@@ -201,12 +219,16 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 ### Phase 3: Client portal & baseline approval
 
+- [ ] Business logo upload (Cloudflare R2), shown on the portal
+- [ ] Require a confirmed account email before a portal link can be sent
 - [ ] Secret portal link (random token, only the hash stored) + copy button + WhatsApp share (`wa.me` link with a message ready to send)
 - [ ] Public portal `/c/[token]`: business branding, project summary, deliverables, milestones
 - [ ] Approve / Reject with name + email + optional comment
 - [ ] Approval record with snapshot, hash, IP, user agent. Baseline locks and the project becomes `active`.
 - [ ] Email to the freelancer on decision
 - [ ] Rate limiting + token revoke/regenerate
+- [ ] Security (see `docs/CONVENTIONS.md` §6): token format check + identical 404s, approve/reject resolve everything from the token, atomic status change + approval insert in one transaction, unique index per approved subject, `emailVerified` enforced in the send action
+- [ ] Evidence integrity: approvals insert-only in code; `prevHash` chain (or HMAC with a key outside the DB) + Atlas user limited to find/insert on approvals
 
 **Done when:** Rahul approves from his phone and the freelancer sees "Approved on 4 Nov, 3:42 PM".
 
@@ -226,7 +248,7 @@ Each phase ends with something working and deployed. We finish and check one pha
 - [ ] Settings → payment methods (UPI, QR upload, bank, link, other; set a default)
 - [ ] Payments generated from milestones + approved CR lines (domain function with tests)
 - [ ] Mark a milestone as due → portal shows the amount + methods + **UPI QR code with the amount filled in**
-- [ ] Client "I've paid" → method, UTR, date, screenshot (R2)
+- [ ] Client "I've paid" → method, UTR, date, screenshot (R2: private bucket, random keys, png/jpeg/webp only with magic-byte check, ≤ 5 MB, signed URLs)
 - [ ] Freelancer confirms "Received" / "Not received", or marks it received directly
 - [ ] Emails: payment due (to client), client says paid (to freelancer), confirmed (to client)
 
@@ -254,9 +276,11 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 - [ ] Landing page (pitch: _"How much extra work did you do last month without charging?"_)
 - [ ] Plans + limits: **Free** (2 active projects) · **Pro** (~₹499–999/month) · **Agency** (₹1,999, 15 projects, team later)
-- [ ] Razorpay Subscriptions + webhook → plan limits applied in `billing` module
+- [ ] Razorpay Subscriptions + webhook → plan limits applied in `billing` module (HMAC verified over the raw body, idempotent on event id)
 - [ ] Terms, Privacy, Refund policy pages
 - [ ] Sentry, basic analytics, Atlas backups check
+- [ ] SMTP configured in production; `APP_URL` is the real https domain; `CLIENT_IP_HEADER` set for the host (nginx → `x-real-ip`)
+- [ ] Playwright end-to-end suite in CI (sign-up → onboarding → scope → CR → approve → pay)
 - [ ] Move hosting from Vercel Hobby to Hostinger (Vercel's free plan is non-commercial)
 
 **Done when:** a stranger can sign up, pay and use it without my help.
@@ -284,8 +308,13 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 ## 7. Progress log
 
-| Date       | Phase    | Notes                                                                                                                                                                                                                                      |
-| ---------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 2026-11-04 | Planning | Plan created. DB: MongoDB Atlas. PWA added. Hosting: Vercel free now, Hostinger later.                                                                                                                                                     |
-| 2026-11-04 | Phase 0  | Next.js 16.4 scaffold (Cache Components on), shadcn (Radix), shared utils + 21 tests, PWA manifest/icons, health route, standalone build verified locally. Waiting on Atlas URI + Vercel deploy.                                           |
-| 2026-11-04 | Brand    | Logo chosen: **Focus Lock** (corner brackets framing a green core = agreed scope, locked in). Lowercase `scopelock` wordmark. Name kept: ScopeLock. Client portal will lead with the freelancer's branding + small "Powered by scopelock". |
+| Date       | Phase     | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-11-04 | Planning  | Plan created. DB: MongoDB Atlas. PWA added. Hosting: Vercel free now, Hostinger later.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2026-11-04 | Phase 0   | Next.js 16.4 scaffold (Cache Components on), shadcn (Radix), shared utils + 21 tests, PWA manifest/icons, health route, standalone build verified locally. Waiting on Atlas URI + Vercel deploy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-11-04 | Brand     | Logo chosen: **Focus Lock** (corner brackets framing a green core = agreed scope, locked in). Lowercase `scopelock` wordmark. Name kept: ScopeLock. Client portal will lead with the freelancer's branding + small "Powered by scopelock".                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 2026-11-04 | Phase 1   | Better Auth on MongoDB, proxy + server-side session checks, onboarding, app shell, settings. 56 unit tests; 26-step browser run (sign-up → onboarding → settings → verify email → sign-out → sign-in → password reset) passes.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-11-04 | Phase 1B  | Marketing site: landing, pricing, terms, privacy, refunds, contact, share image, sitemap, robots. Pro ₹499, Agency ₹1,999. Business details are placeholders in `legal` config.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2026-11-04 | Phase 1B  | Polish: Lenis eased scrolling on marketing pages (wheel + in-page links; touch and reduced-motion stay native), graph-paper `GridBackdrop` in hero and final CTA with pointer-lit lines on desktop, header blur removed. Scroll at 60fps with 4x CPU throttle.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-11-05 | Phase 1   | Email links replaced by 6-digit codes (Better Auth emailOTP): forgot password is email → code + new password → signed in; verify email is a code box in the app bar (soft verification kept). Codes hashed, 10 min, 5 tries, 6/min per IP. 15-step browser run passes.                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2026-11-05 | Hardening | Pre-Phase-2 audit (independent security + architecture reviews, findings verified against library source). Unused Better Auth HTTP routes disabled; email-OTP sign-up off; 1 workspace/account, deletion off; security headers + static CSP; client-IP header for rate limits; codes never logged in prod; https `APP_URL` enforced in prod; fresh-session + role checks on writes. `scopedCollection` + `withTransaction` + `workspaceAction` + `FormState`; client-safe `index.ts` / server-only `server.ts` per module; lint-enforced boundaries; stricter tsconfig; error/404 pages; integration tests on in-memory Mongo; CI workflow; `docs/CONVENTIONS.md`. |

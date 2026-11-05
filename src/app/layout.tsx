@@ -21,6 +21,18 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    locale: "en_IN",
+    title: `${site.name}: get paid for the extra work clients ask for`,
+    description: site.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name}: get paid for the extra work clients ask for`,
+    description: site.description,
+  },
   appleWebApp: {
     capable: true,
     title: site.name,
