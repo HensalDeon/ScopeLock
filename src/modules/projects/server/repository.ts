@@ -68,6 +68,7 @@ function toProject(doc: ProjectDoc): Project {
     milestones: [...doc.milestones]
       .sort((a, b) => a.order - b.order)
       .map((m) => ({ ...m, baseAmount: paise(m.baseAmount) })),
+    proposalSaved: doc.proposal !== undefined,
     proposal: {
       ...EMPTY_PROPOSAL,
       ...doc.proposal,

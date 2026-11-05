@@ -1,14 +1,16 @@
 import { paise } from "@/shared/lib/money";
 import type { ProposalDocumentData } from "./document-data";
-import { STARTER_PROPOSAL_DEFAULTS } from "./defaults";
+import { STARTER_PROPOSAL_DEFAULTS, type ProposalDefaults } from "./defaults";
 
 /**
- * A realistic proposal for the style preview in Settings when the workspace
- * has no projects yet: Rahul's 5-page website, ₹80,000, 30/30/40.
+ * A complete proposal for the style preview in Settings: every section filled
+ * in (Rahul's 5-page website, ₹80,000, 30/30/40), so each one can be seen in
+ * the chosen style. Uses the workspace's own default text.
  */
 export function sampleProposal(
   business: ProposalDocumentData["business"],
   voice: "I" | "we",
+  defaults: ProposalDefaults = STARTER_PROPOSAL_DEFAULTS,
 ): ProposalDocumentData {
   const now = new Date();
   return {
@@ -139,8 +141,9 @@ export function sampleProposal(
         unit: null,
       },
     ],
-    clientProvides: STARTER_PROPOSAL_DEFAULTS.clientProvides,
-    exclusions: STARTER_PROPOSAL_DEFAULTS.exclusions,
-    terms: STARTER_PROPOSAL_DEFAULTS.terms,
+    // The workspace's own default text, so saving defaults shows here.
+    clientProvides: defaults.clientProvides,
+    exclusions: defaults.exclusions,
+    terms: defaults.terms,
   };
 }

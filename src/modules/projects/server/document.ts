@@ -1,5 +1,8 @@
 import "server-only";
-import type { ProposalDocumentData } from "@/modules/documents";
+import type {
+  ProposalDefaults,
+  ProposalDocumentData,
+} from "@/modules/documents";
 import { getDocumentSettings } from "@/modules/documents/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import { requireWorkspace } from "@/modules/workspace/server";
@@ -25,22 +28,34 @@ export async function getProposalDocument(projectId: string) {
   return {
     project,
     style: settings.style,
-    data: toProposalDocument(project, {
-      name: workspace.businessName,
-      tagline: BUSINESS_TYPE_LABELS[workspace.businessType].title,
-      email: user.email,
-      phone: workspace.phone,
-      voice: workspace.businessType === "freelancer" ? "I" : "we",
-    }),
+    data: toProposalDocument(
+      project,
+      {
+        name: workspace.businessName,
+        tagline: BUSINESS_TYPE_LABELS[workspace.businessType].title,
+        email: user.email,
+        phone: workspace.phone,
+        voice: workspace.businessType === "freelancer" ? "I" : "we",
+      },
+      settings.defaults,
+    ),
   };
 }
 
+/**
+ * `defaults` fill in terms, exclusions and client needs for projects whose
+ * proposal was never saved (created before proposal sections existed).
+ */
 export function toProposalDocument(
   project: ProjectWithClient,
   business: ProposalDocumentData["business"] & { voice: "I" | "we" },
+  defaults?: ProposalDefaults,
 ): ProposalDocumentData {
   const { voice, ...from } = business;
-  const p = project.proposal;
+  const p =
+    !project.proposalSaved && defaults
+      ? { ...project.proposal, ...defaults }
+      : project.proposal;
   return {
     voice,
     business: from,

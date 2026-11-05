@@ -106,4 +106,19 @@ describe("projects repository", () => {
     expect(await repo.deleteDraftProject("ws_other", id)).toBe(false);
     expect(await repo.deleteDraftProject("ws_owner", id)).toBe(true);
   });
+
+  it("knows whether a project's proposal was ever saved", async () => {
+    const ws = "ws_legacy";
+    const id = new ObjectId(await repo.insertProject(ws, rahulsProject()));
+    expect((await repo.findProject(ws, id))?.proposalSaved).toBe(true);
+
+    // A project created before proposal sections existed has no field.
+    await collection("projects").updateOne(
+      { _id: id },
+      { $unset: { proposal: "" } },
+    );
+    const legacy = await repo.findProject(ws, id);
+    expect(legacy?.proposalSaved).toBe(false);
+    expect(legacy?.proposal.terms).toEqual([]);
+  });
 });

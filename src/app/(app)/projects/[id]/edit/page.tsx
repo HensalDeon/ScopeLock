@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { clientLabel } from "@/modules/clients";
 import { listClients } from "@/modules/clients/server";
+import { getDocumentSettings } from "@/modules/documents/server";
 import {
+  indiaDatePlusDays,
   isEditable,
   ProjectForm,
   proposalFormDefaults,
@@ -34,9 +36,10 @@ async function Form({
   params: PageProps<"/projects/[id]/edit">["params"];
 }) {
   const { id } = await params;
-  const [project, clients] = await Promise.all([
+  const [project, clients, settings] = await Promise.all([
     getProjectOrNotFound(id),
     listClients(),
+    getDocumentSettings(),
   ]);
   if (!isEditable(project.status)) redirect(`/projects/${project.id}`);
 
@@ -75,7 +78,17 @@ async function Form({
           name: m.name,
           percent: String(m.percent),
         })),
-        proposal: proposalFormDefaults(project.proposal),
+        // Never-saved proposals (older projects) start from the workspace's
+        // default text, the same as a new project. Saved ones are kept as is.
+        proposal: proposalFormDefaults(
+          project.proposalSaved
+            ? project.proposal
+            : {
+                ...project.proposal,
+                ...settings.defaults,
+                validUntil: indiaDatePlusDays(14),
+              },
+        ),
       }}
     />
   );

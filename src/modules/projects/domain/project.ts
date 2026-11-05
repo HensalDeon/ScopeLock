@@ -69,6 +69,12 @@ export type Project = {
   milestones: Milestone[];
   /** Optional proposal sections (overview, timeline, terms…). */
   proposal: ProposalContent;
+  /**
+   * False for projects created before proposal sections existed: their
+   * proposal has never been saved, so the workspace's default text applies.
+   * Once saved (even with sections cleared), the person's choice wins.
+   */
+  proposalSaved: boolean;
   totals: ProjectTotals;
   createdAt: Date;
   updatedAt: Date;
