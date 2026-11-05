@@ -2,13 +2,6 @@
 
 import { useId } from "react";
 import {
-  BUSINESS_NAME_MAX_LENGTH,
-  BUSINESS_TYPE_LABELS,
-  BUSINESS_TYPES,
-  type BusinessType,
-} from "../domain/workspace";
-import type { WorkspaceFormState } from "../server/actions";
-import {
   Field,
   FieldContent,
   FieldDescription,
@@ -20,56 +13,68 @@ import {
 } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+import {
+  BUSINESS_NAME_MAX_LENGTH,
+  BUSINESS_TYPE_LABELS,
+  BUSINESS_TYPES,
+  type WorkspaceField,
+} from "../domain/workspace";
 
-/** Business name, how you work, WhatsApp number — shared by onboarding and settings. */
+export type WorkspaceValues = Record<WorkspaceField, string>;
+
+/**
+ * Business name, how you work, WhatsApp number, shared by onboarding and
+ * settings. Controlled by the parent form, which owns validation.
+ */
 export function WorkspaceFields({
-  state,
-  businessName,
-  onBusinessNameChange,
-  defaults,
+  values,
+  onChange,
+  onBlur,
+  errorFor,
 }: {
-  state: WorkspaceFormState;
-  businessName: string;
-  onBusinessNameChange: (value: string) => void;
-  defaults: { businessType?: BusinessType | ""; phone?: string };
+  values: WorkspaceValues;
+  onChange: (field: WorkspaceField, value: string) => void;
+  onBlur: (field: WorkspaceField) => void;
+  errorFor: (field: WorkspaceField) => string | undefined;
 }) {
   // Unique per instance: visited pages stay mounted, so two copies of
   // this form can be in the document at once (CONVENTIONS §5).
   const uid = useId();
-  const errors = (state.status === "error" && state.fieldErrors) || {};
-  const typed = state.status === "idle" ? undefined : state.values;
-  const businessType = typed?.businessType ?? defaults.businessType ?? "";
-  const phone = typed?.phone ?? defaults.phone ?? "";
 
   return (
     <>
-      <Field data-invalid={Boolean(errors.businessName) || undefined}>
+      <Field data-invalid={Boolean(errorFor("businessName")) || undefined}>
         <FieldLabel htmlFor={`${uid}-businessName`}>Business name</FieldLabel>
         <Input
           id={`${uid}-businessName`}
           name="businessName"
           autoComplete="organization"
-          value={businessName}
-          onChange={(e) => onBusinessNameChange(e.target.value)}
-          aria-invalid={Boolean(errors.businessName) || undefined}
+          value={values.businessName}
+          onChange={(e) => onChange("businessName", e.target.value)}
+          onBlur={() => onBlur("businessName")}
+          aria-invalid={Boolean(errorFor("businessName")) || undefined}
           maxLength={BUSINESS_NAME_MAX_LENGTH}
           required
         />
         <FieldDescription>
           Use your studio&apos;s name, or your own if you work under it.
         </FieldDescription>
-        {errors.businessName && <FieldError>{errors.businessName}</FieldError>}
+        {errorFor("businessName") && (
+          <FieldError>{errorFor("businessName")}</FieldError>
+        )}
       </Field>
 
-      <FieldSet data-invalid={Boolean(errors.businessType) || undefined}>
+      <FieldSet data-invalid={Boolean(errorFor("businessType")) || undefined}>
         <FieldLegend variant="label">How do you work?</FieldLegend>
         <RadioGroup
           name="businessType"
-          defaultValue={businessType}
+          value={values.businessType}
+          onValueChange={(value) => {
+            onChange("businessType", value);
+            onBlur("businessType");
+          }}
           className="grid gap-2 sm:grid-cols-3"
-          aria-invalid={Boolean(errors.businessType) || undefined}
-          // Remount when the server echoes a different value back.
-          key={businessType}
+          aria-invalid={Boolean(errorFor("businessType")) || undefined}
         >
           {BUSINESS_TYPES.map((type) => (
             <FieldLabel
@@ -89,10 +94,12 @@ export function WorkspaceFields({
             </FieldLabel>
           ))}
         </RadioGroup>
-        {errors.businessType && <FieldError>{errors.businessType}</FieldError>}
+        {errorFor("businessType") && (
+          <FieldError>{errorFor("businessType")}</FieldError>
+        )}
       </FieldSet>
 
-      <Field data-invalid={Boolean(errors.phone) || undefined}>
+      <Field data-invalid={Boolean(errorFor("phone")) || undefined}>
         <FieldLabel htmlFor={`${uid}-phone`}>
           WhatsApp number{" "}
           <span className="font-normal text-muted-foreground">(optional)</span>
@@ -104,14 +111,15 @@ export function WorkspaceFields({
           inputMode="tel"
           autoComplete="tel"
           placeholder="98765 43210"
-          defaultValue={phone}
-          key={phone}
-          aria-invalid={Boolean(errors.phone) || undefined}
+          value={values.phone}
+          onChange={(e) => onChange("phone", e.target.value)}
+          onBlur={() => onBlur("phone")}
+          aria-invalid={Boolean(errorFor("phone")) || undefined}
         />
         <FieldDescription>
           Shown on approval pages so clients can reach you.
         </FieldDescription>
-        {errors.phone && <FieldError>{errors.phone}</FieldError>}
+        {errorFor("phone") && <FieldError>{errorFor("phone")}</FieldError>}
       </Field>
     </>
   );

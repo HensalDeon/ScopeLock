@@ -1,15 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { quickAddClient } from "@/modules/clients";
-import { IDLE, type FieldErrors } from "@/shared/lib/form-state";
+import { clientInputSchema, quickAddClient } from "@/modules/clients";
+import { IDLE, type FormState } from "@/shared/lib/form-state";
+import { useFormValidation } from "@/shared/lib/use-form-validation";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import type { ClientOption } from "./project-form";
 
+type Field = "name" | "company" | "phone";
+
 /**
  * Add a client without leaving the project form. Not a nested <form> (HTML
  * doesn't allow one): it builds FormData and calls the server action itself.
+ * Checked live with the same rules as the full client form.
  */
 export function QuickAddClient({
   onAdded,
@@ -18,39 +22,57 @@ export function QuickAddClient({
   onAdded: (client: ClientOption) => void;
   onCancel?: () => void;
 }) {
-  const [name, setName] = useState("");
-  const [company, setCompany] = useState("");
-  const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [message, setMessage] = useState<string | null>(null);
+  const [values, setValues] = useState<Record<Field, string>>({
+    name: "",
+    company: "",
+    phone: "",
+  });
+  const [serverState, setServerState] = useState<FormState<string>>(IDLE);
   const [pending, startTransition] = useTransition();
+  const form = useFormValidation(
+    clientInputSchema,
+    { ...values, email: "" },
+    { serverState },
+  );
 
   function add() {
+    if (!form.markSubmitted()) return;
     startTransition(async () => {
       const data = new FormData();
-      data.set("name", name);
-      data.set("company", company);
-      data.set("phone", phone);
+      data.set("name", values.name);
+      data.set("company", values.company);
+      data.set("phone", values.phone);
       data.set("email", "");
       const result = await quickAddClient(IDLE, data);
+      setServerState(result);
       if (result.status === "success" && result.id) {
-        onAdded({ id: result.id, label: result.message ?? name });
-        return;
-      }
-      if (result.status === "error") {
-        setErrors(result.fieldErrors ?? {});
-        setMessage(result.message ?? null);
+        onAdded({ id: result.id, label: result.message ?? values.name });
       }
     });
   }
 
-  // Enter inside these inputs would submit the whole project form.
-  const onKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      add();
-    }
-  };
+  const input = (name: Field) => ({
+    value: values[name],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValues((v) => ({ ...v, [name]: e.target.value }));
+      form.edited(name);
+    },
+    onBlur: () => form.touch(name),
+    // Enter here would submit the whole project form.
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        add();
+      }
+    },
+    "aria-invalid": Boolean(form.errorFor(name)) || undefined,
+    className: "h-9 bg-background",
+  });
+
+  const error = (name: Field) =>
+    form.errorFor(name) && (
+      <p className="text-sm text-destructive">{form.errorFor(name)}</p>
+    );
 
   return (
     <div className="mt-1 grid gap-3 rounded-lg border bg-canvas p-4">
@@ -60,28 +82,17 @@ export function QuickAddClient({
           <Input
             aria-label="Client name"
             placeholder="Rahul Mehta"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={onKeyDown}
-            aria-invalid={Boolean(errors.name) || undefined}
-            className="h-9 bg-background"
+            {...input("name")}
           />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name}</p>
-          )}
+          {error("name")}
         </div>
         <div className="grid gap-1.5">
           <Input
             aria-label="Company (optional)"
             placeholder="Company (optional)"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-            onKeyDown={onKeyDown}
-            className="h-9 bg-background"
+            {...input("company")}
           />
-          {errors.company && (
-            <p className="text-sm text-destructive">{errors.company}</p>
-          )}
+          {error("company")}
         </div>
         <div className="grid gap-1.5 sm:col-span-2">
           <Input
@@ -89,20 +100,14 @@ export function QuickAddClient({
             placeholder="WhatsApp number (optional)"
             type="tel"
             inputMode="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            onKeyDown={onKeyDown}
-            aria-invalid={Boolean(errors.phone) || undefined}
-            className="h-9 bg-background"
+            {...input("phone")}
           />
-          {errors.phone && (
-            <p className="text-sm text-destructive">{errors.phone}</p>
-          )}
+          {error("phone")}
         </div>
       </div>
-      {message && (
+      {serverState.status === "error" && serverState.message && (
         <p role="alert" className="text-sm text-destructive">
-          {message}
+          {serverState.message}
         </p>
       )}
       <div className="flex flex-wrap gap-2">

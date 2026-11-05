@@ -2,8 +2,12 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useActionState, useId } from "react";
+import { useActionState, useId, useRef, useState, useTransition } from "react";
 import { IDLE } from "@/shared/lib/form-state";
+import {
+  focusFirstInvalid,
+  useFormValidation,
+} from "@/shared/lib/use-form-validation";
 import { Button } from "@/shared/ui/button";
 import {
   Field,
@@ -17,6 +21,7 @@ import { Input } from "@/shared/ui/input";
 import {
   CLIENT_COMPANY_MAX_LENGTH,
   CLIENT_NAME_MAX_LENGTH,
+  clientInputSchema,
   type ClientField,
 } from "../domain/client";
 import {
@@ -25,31 +30,62 @@ import {
   type ClientFormState,
 } from "../server/actions";
 
-type Defaults = Partial<Record<ClientField, string>>;
+type Values = Record<ClientField, string>;
+const EMPTY: Values = { name: "", company: "", email: "", phone: "" };
 
 /**
- * Add or edit a client. "Add" redirects on success; "edit" stays and shows
- * a saved message. `next` returns to a flow (e.g. New project) afterwards.
+ * Add or edit a client. Fields are checked as the person goes (same rules as
+ * the server). "Add" redirects on success; "edit" stays, shows a saved
+ * message, and only enables Save when something actually changed.
  */
 export function ClientForm(
   props:
     | { mode: "create"; next?: string; cancelHref: Route }
-    | { mode: "edit"; clientId: string; defaults: Defaults },
+    | { mode: "edit"; clientId: string; defaults: Values },
 ) {
   // Unique per instance: visited pages stay mounted, so two copies of
   // this form can be in the document at once (CONVENTIONS §5).
   const uid = useId();
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState<ClientFormState, FormData>(
     props.mode === "create" ? createClient : updateClient,
     IDLE,
   );
-  const errors = (state.status === "error" && state.fieldErrors) || {};
-  const typed = state.status === "error" ? state.values : undefined;
-  const defaults = props.mode === "edit" ? props.defaults : {};
-  const value = (field: ClientField) => typed?.[field] ?? defaults[field] ?? "";
+  const [, startTransition] = useTransition();
+  const initial = props.mode === "edit" ? props.defaults : undefined;
+  const [values, setValues] = useState<Values>(initial ?? EMPTY);
+  const form = useFormValidation(clientInputSchema, values, {
+    initial,
+    serverState: state,
+  });
+  const canSave = props.mode === "create" || form.isDirty;
+
+  const field = (name: ClientField) => ({
+    id: `${uid}-${name}`,
+    name,
+    value: values[name],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValues((v) => ({ ...v, [name]: e.target.value }));
+      form.edited(name);
+    },
+    onBlur: () => form.touch(name),
+    "aria-invalid": Boolean(form.errorFor(name)) || undefined,
+  });
 
   return (
-    <form action={action} noValidate>
+    <form
+      ref={formRef}
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!form.markSubmitted()) {
+          focusFirstInvalid(formRef.current);
+          return;
+        }
+        const data = new FormData(event.currentTarget);
+        startTransition(() => action(data));
+      }}
+    >
       {props.mode === "create" ? (
         <input type="hidden" name="next" value={props.next ?? ""} />
       ) : (
@@ -60,26 +96,24 @@ export function ClientForm(
           <FormAlert>{state.message}</FormAlert>
         )}
 
-        <Field data-invalid={Boolean(errors.name) || undefined}>
+        <Field data-invalid={Boolean(form.errorFor("name")) || undefined}>
           <FieldLabel htmlFor={`${uid}-name`}>Client name</FieldLabel>
           <Input
-            id={`${uid}-name`}
-            name="name"
+            {...field("name")}
             autoComplete="off"
-            defaultValue={value("name")}
-            key={`name-${value("name")}`}
             maxLength={CLIENT_NAME_MAX_LENGTH}
-            aria-invalid={Boolean(errors.name) || undefined}
             autoFocus={props.mode === "create"}
             required
           />
           <FieldDescription>
             The person who approves the work, e.g. Rahul Mehta.
           </FieldDescription>
-          {errors.name && <FieldError>{errors.name}</FieldError>}
+          {form.errorFor("name") && (
+            <FieldError>{form.errorFor("name")}</FieldError>
+          )}
         </Field>
 
-        <Field data-invalid={Boolean(errors.company) || undefined}>
+        <Field data-invalid={Boolean(form.errorFor("company")) || undefined}>
           <FieldLabel htmlFor={`${uid}-company`}>
             Company{" "}
             <span className="font-normal text-muted-foreground">
@@ -87,19 +121,17 @@ export function ClientForm(
             </span>
           </FieldLabel>
           <Input
-            id={`${uid}-company`}
-            name="company"
+            {...field("company")}
             autoComplete="off"
-            defaultValue={value("company")}
-            key={`company-${value("company")}`}
             maxLength={CLIENT_COMPANY_MAX_LENGTH}
-            aria-invalid={Boolean(errors.company) || undefined}
           />
-          {errors.company && <FieldError>{errors.company}</FieldError>}
+          {form.errorFor("company") && (
+            <FieldError>{form.errorFor("company")}</FieldError>
+          )}
         </Field>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          <Field data-invalid={Boolean(errors.phone) || undefined}>
+          <Field data-invalid={Boolean(form.errorFor("phone")) || undefined}>
             <FieldLabel htmlFor={`${uid}-phone`}>
               WhatsApp number{" "}
               <span className="font-normal text-muted-foreground">
@@ -107,21 +139,19 @@ export function ClientForm(
               </span>
             </FieldLabel>
             <Input
-              id={`${uid}-phone`}
-              name="phone"
+              {...field("phone")}
               type="tel"
               inputMode="tel"
               autoComplete="off"
               placeholder="98765 43210"
-              defaultValue={value("phone")}
-              key={`phone-${value("phone")}`}
-              aria-invalid={Boolean(errors.phone) || undefined}
             />
             <FieldDescription>For sending approval links.</FieldDescription>
-            {errors.phone && <FieldError>{errors.phone}</FieldError>}
+            {form.errorFor("phone") && (
+              <FieldError>{form.errorFor("phone")}</FieldError>
+            )}
           </Field>
 
-          <Field data-invalid={Boolean(errors.email) || undefined}>
+          <Field data-invalid={Boolean(form.errorFor("email")) || undefined}>
             <FieldLabel htmlFor={`${uid}-email`}>
               Email{" "}
               <span className="font-normal text-muted-foreground">
@@ -129,22 +159,20 @@ export function ClientForm(
               </span>
             </FieldLabel>
             <Input
-              id={`${uid}-email`}
-              name="email"
+              {...field("email")}
               type="email"
               inputMode="email"
               autoComplete="off"
-              defaultValue={value("email")}
-              key={`email-${value("email")}`}
-              aria-invalid={Boolean(errors.email) || undefined}
             />
             <FieldDescription>For approval receipts.</FieldDescription>
-            {errors.email && <FieldError>{errors.email}</FieldError>}
+            {form.errorFor("email") && (
+              <FieldError>{form.errorFor("email")}</FieldError>
+            )}
           </Field>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || !canSave}>
             {props.mode === "create"
               ? pending
                 ? "Adding client…"
@@ -158,10 +186,15 @@ export function ClientForm(
               <Link href={props.cancelHref}>Cancel</Link>
             </Button>
           )}
-          {state.status === "success" && !pending && (
+          {state.status === "success" && !pending && !form.isDirty ? (
             <p role="status" className="text-sm text-muted-foreground">
               {state.message}
             </p>
+          ) : (
+            props.mode === "edit" &&
+            !form.isDirty && (
+              <p className="text-sm text-muted-foreground">No changes yet</p>
+            )
           )}
         </div>
       </FieldGroup>

@@ -3,9 +3,13 @@
 import { Plus, X } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { useActionState, useId, useState, useTransition } from "react";
+import { useActionState, useId, useRef, useState, useTransition } from "react";
 import { formatINR } from "@/shared/lib/money";
 import { IDLE } from "@/shared/lib/form-state";
+import {
+  focusFirstInvalid,
+  useFormValidation,
+} from "@/shared/lib/use-form-validation";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -29,6 +33,7 @@ import {
 import {
   PROJECT_DESCRIPTION_MAX_LENGTH,
   PROJECT_NAME_MAX_LENGTH,
+  projectInputSchema,
 } from "../domain/project";
 import { draftTotal, SCOPE_LIMITS } from "../domain/scope";
 import {
@@ -109,7 +114,6 @@ export function ProjectForm({
     IDLE,
   );
   const [, startTransition] = useTransition();
-  const errors = (state.status === "error" && state.fieldErrors) || {};
 
   const [clients, setClients] = useState(initialClients);
   const [clientId, setClientId] = useState(defaults.clientId);
@@ -127,6 +131,38 @@ export function ProjectForm({
         : (DEFAULT_PRESET?.milestones ?? []),
     ),
   );
+
+  // What the server receives, built from state; validated live with the
+  // server's own schema (see useFormValidation).
+  const itemsJson = JSON.stringify(
+    items.map(({ id, title, description, amount }) => ({
+      id,
+      title,
+      description,
+      amount,
+    })),
+  );
+  const milestonesJson = JSON.stringify(
+    billingModel === "milestones"
+      ? milestones.map(({ id, name, percent }) => ({ id, name, percent }))
+      : [],
+  );
+  const values = {
+    clientId,
+    name,
+    description,
+    items: itemsJson,
+    billingModel,
+    milestones: milestonesJson,
+  };
+  const [savedValues] = useState(values);
+  const formRef = useRef<HTMLFormElement>(null);
+  const form = useFormValidation(projectInputSchema, values, {
+    initial: mode === "edit" ? savedValues : undefined,
+    serverState: state,
+  });
+  const err = (path: string, touchKey?: string) =>
+    form.errorFor(path, touchKey);
 
   const total = draftTotal(items.map((item) => item.amount));
   const percents = milestones.map((m) => Number(m.percent));
@@ -162,8 +198,13 @@ export function ProjectForm({
       // Submitted by hand instead of <form action>: React resets a form after
       // an action, which clears the controlled client <select> on a
       // validation error. This form needs JavaScript anyway (rows are JSON).
+      ref={formRef}
       onSubmit={(event) => {
         event.preventDefault();
+        if (!form.markSubmitted()) {
+          focusFirstInvalid(formRef.current);
+          return;
+        }
         const data = new FormData(event.currentTarget);
         startTransition(() => action(data));
       }}
@@ -173,27 +214,8 @@ export function ProjectForm({
       {mode === "edit" && projectId && (
         <input type="hidden" name="id" value={projectId} />
       )}
-      <input
-        type="hidden"
-        name="items"
-        value={JSON.stringify(
-          items.map(({ id, title, description, amount }) => ({
-            id,
-            title,
-            description,
-            amount,
-          })),
-        )}
-      />
-      <input
-        type="hidden"
-        name="milestones"
-        value={JSON.stringify(
-          billingModel === "milestones"
-            ? milestones.map(({ id, name, percent }) => ({ id, name, percent }))
-            : [],
-        )}
-      />
+      <input type="hidden" name="items" value={itemsJson} />
+      <input type="hidden" name="milestones" value={milestonesJson} />
 
       {state.status === "error" && state.message && (
         <FormAlert>{state.message}</FormAlert>
@@ -205,7 +227,7 @@ export function ProjectForm({
         description="Who approves the work, and what you're calling it."
       >
         <FieldGroup className="gap-6">
-          <Field data-invalid={Boolean(errors.clientId) || undefined}>
+          <Field data-invalid={Boolean(err("clientId")) || undefined}>
             <FieldLabel htmlFor={`${uid}-clientId`}>Client</FieldLabel>
             {clients.length > 0 && (
               <NativeSelect
@@ -213,8 +235,12 @@ export function ProjectForm({
                 name="clientId"
                 className="w-full"
                 value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                aria-invalid={Boolean(errors.clientId) || undefined}
+                onChange={(e) => {
+                  setClientId(e.target.value);
+                  form.edited("clientId");
+                }}
+                onBlur={() => form.touch("clientId")}
+                aria-invalid={Boolean(err("clientId")) || undefined}
               >
                 <NativeSelectOption value="">
                   Choose a client
@@ -229,7 +255,7 @@ export function ProjectForm({
             {clients.length === 0 && (
               <input type="hidden" name="clientId" value={clientId} />
             )}
-            {errors.clientId && <FieldError>{errors.clientId}</FieldError>}
+            {err("clientId") && <FieldError>{err("clientId")}</FieldError>}
             {addingClient ? (
               <QuickAddClient
                 onAdded={(client) => {
@@ -256,7 +282,7 @@ export function ProjectForm({
             )}
           </Field>
 
-          <Field data-invalid={Boolean(errors.name) || undefined}>
+          <Field data-invalid={Boolean(err("name")) || undefined}>
             <FieldLabel htmlFor={`${uid}-name`}>Project name</FieldLabel>
             <Input
               id={`${uid}-name`}
@@ -264,14 +290,18 @@ export function ProjectForm({
               autoComplete="off"
               placeholder="Website redesign"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                form.edited("name");
+              }}
+              onBlur={() => form.touch("name")}
               maxLength={PROJECT_NAME_MAX_LENGTH}
-              aria-invalid={Boolean(errors.name) || undefined}
+              aria-invalid={Boolean(err("name")) || undefined}
             />
-            {errors.name && <FieldError>{errors.name}</FieldError>}
+            {err("name") && <FieldError>{err("name")}</FieldError>}
           </Field>
 
-          <Field data-invalid={Boolean(errors.description) || undefined}>
+          <Field data-invalid={Boolean(err("description")) || undefined}>
             <FieldLabel htmlFor={`${uid}-description`}>
               Short description{" "}
               <span className="font-normal text-muted-foreground">
@@ -284,15 +314,19 @@ export function ProjectForm({
               rows={2}
               placeholder="5-page website for Mehta Interiors, with a contact form."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                form.edited("description");
+              }}
+              onBlur={() => form.touch("description")}
               maxLength={PROJECT_DESCRIPTION_MAX_LENGTH}
-              aria-invalid={Boolean(errors.description) || undefined}
+              aria-invalid={Boolean(err("description")) || undefined}
             />
             <FieldDescription>
               Your client sees this above the scope.
             </FieldDescription>
-            {errors.description && (
-              <FieldError>{errors.description}</FieldError>
+            {err("description") && (
+              <FieldError>{err("description")}</FieldError>
             )}
           </Field>
         </FieldGroup>
@@ -306,9 +340,18 @@ export function ProjectForm({
         <div className="grid gap-3">
           <ol className="grid gap-3">
             {items.map((item, index) => {
-              const titleError = errors[`items.${index}.title`];
-              const amountError = errors[`items.${index}.amount`];
-              const noteError = errors[`items.${index}.description`];
+              const titleError = err(
+                `items.${index}.title`,
+                `${item.key}.title`,
+              );
+              const amountError = err(
+                `items.${index}.amount`,
+                `${item.key}.amount`,
+              );
+              const noteError = err(
+                `items.${index}.description`,
+                `${item.key}.description`,
+              );
               return (
                 <li
                   key={item.key}
@@ -320,9 +363,11 @@ export function ProjectForm({
                       placeholder={index === 0 ? "Home page" : "Deliverable"}
                       value={item.title}
                       maxLength={SCOPE_LIMITS.titleMax}
-                      onChange={(e) =>
-                        updateItem(item.key, { title: e.target.value })
-                      }
+                      onChange={(e) => {
+                        updateItem(item.key, { title: e.target.value });
+                        form.edited(`items.${index}.title`);
+                      }}
+                      onBlur={() => form.touch(`${item.key}.title`)}
                       aria-invalid={Boolean(titleError) || undefined}
                       className="col-start-1 row-start-1 h-9"
                     />
@@ -338,9 +383,11 @@ export function ProjectForm({
                         inputMode="decimal"
                         placeholder="0"
                         value={item.amount}
-                        onChange={(e) =>
-                          updateItem(item.key, { amount: e.target.value })
-                        }
+                        onChange={(e) => {
+                          updateItem(item.key, { amount: e.target.value });
+                          form.edited(`items.${index}.amount`);
+                        }}
+                        onBlur={() => form.touch(`${item.key}.amount`)}
                         aria-invalid={Boolean(amountError) || undefined}
                         className="h-9 pl-6 tabular-nums"
                       />
@@ -373,9 +420,11 @@ export function ProjectForm({
                       rows={2}
                       value={item.description}
                       maxLength={SCOPE_LIMITS.descriptionMax}
-                      onChange={(e) =>
-                        updateItem(item.key, { description: e.target.value })
-                      }
+                      onChange={(e) => {
+                        updateItem(item.key, { description: e.target.value });
+                        form.edited(`items.${index}.description`);
+                      }}
+                      onBlur={() => form.touch(`${item.key}.description`)}
                       aria-invalid={Boolean(noteError) || undefined}
                       className="mt-2"
                     />
@@ -398,10 +447,10 @@ export function ProjectForm({
             })}
           </ol>
 
-          {errors.items &&
-            !Object.keys(errors).some((k) => k.startsWith("items.")) && (
+          {err("items") &&
+            !Object.keys(form.errors).some((k) => k.startsWith("items.")) && (
               <p role="alert" className="text-sm text-destructive">
-                {errors.items}
+                {err("items")}
               </p>
             )}
 
@@ -524,8 +573,14 @@ export function ProjectForm({
 
               <ol className="grid gap-2">
                 {milestones.map((milestone, index) => {
-                  const nameError = errors[`milestones.${index}.name`];
-                  const percentError = errors[`milestones.${index}.percent`];
+                  const nameError = err(
+                    `milestones.${index}.name`,
+                    `${milestone.key}.name`,
+                  );
+                  const percentError = err(
+                    `milestones.${index}.percent`,
+                    `${milestone.key}.percent`,
+                  );
                   return (
                     <li key={milestone.key}>
                       <div className="grid grid-cols-[minmax(0,1fr)_5.5rem_2.25rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_5.5rem_7rem_2.25rem]">
@@ -533,11 +588,13 @@ export function ProjectForm({
                           aria-label={`Payment ${index + 1} name`}
                           value={milestone.name}
                           maxLength={MILESTONE_LIMITS.nameMax}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             updateMilestone(milestone.key, {
                               name: e.target.value,
-                            })
-                          }
+                            });
+                            form.edited(`milestones.${index}.name`);
+                          }}
+                          onBlur={() => form.touch(`${milestone.key}.name`)}
                           aria-invalid={Boolean(nameError) || undefined}
                           className="h-9"
                         />
@@ -546,12 +603,16 @@ export function ProjectForm({
                             aria-label={`Payment ${index + 1} percentage`}
                             inputMode="numeric"
                             value={milestone.percent}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               updateMilestone(milestone.key, {
                                 percent: e.target.value
                                   .replace(/[^\d]/g, "")
                                   .slice(0, 3),
-                              })
+                              });
+                              form.edited(`milestones.${index}.percent`);
+                            }}
+                            onBlur={() =>
+                              form.touch(`${milestone.key}.percent`)
                             }
                             aria-invalid={Boolean(percentError) || undefined}
                             className="h-9 pr-7 text-right tabular-nums"
@@ -622,7 +683,11 @@ export function ProjectForm({
                   aria-live="polite"
                   className={cn(
                     "text-sm tabular-nums",
-                    percentSum === 100 ? "text-brand" : "text-warning",
+                    percentSum === 100
+                      ? "text-brand"
+                      : form.submitted
+                        ? "text-destructive"
+                        : "text-warning",
                   )}
                 >
                   {percentSum === 100
@@ -632,18 +697,29 @@ export function ProjectForm({
                       : `Adds up to ${percentSum}%. Remove ${percentSum - 100}%.`}
                 </p>
               </div>
-              {errors.milestones && (
-                <p role="alert" className="text-sm text-destructive">
-                  {errors.milestones}
-                </p>
-              )}
+              {/* Row problems show on their rows and the 100% rule on the
+                  line above; this only covers anything else (e.g. too few
+                  payments). */}
+              {err("milestones") &&
+                percentSum === 100 &&
+                !Object.keys(form.errors).some((k) =>
+                  k.startsWith("milestones."),
+                ) && (
+                  <p role="alert" className="text-sm text-destructive">
+                    {err("milestones")}
+                  </p>
+                )}
             </div>
           )}
         </div>
       </FormSection>
 
       <div className="flex flex-wrap items-center gap-3 border-t pt-6">
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={pending || (mode === "edit" && !form.isDirty)}
+        >
           {mode === "create"
             ? pending
               ? "Creating project…"

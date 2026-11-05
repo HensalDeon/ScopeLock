@@ -108,6 +108,15 @@ It handles these, in order:
 
 After a change that other parts of the page show, call `refresh()` from `next/cache`.
 
+### Forms in the browser
+
+- **Validate live with the server's own Zod schema**, using `useFormValidation(schema, values, { initial, serverState })`. The browser and server can't disagree.
+- **"Reward early, punish late":** a field is checked when the person leaves it or submits. Once it's flagged, it re-checks on every keystroke, so the message goes away the moment the value is right.
+- **Invalid submits never reach the server.** Use `markSubmitted()` and, if it fails, `focusFirstInvalid(form)`. Server-only errors still show until the field is edited (`edited(path)`).
+- **Edit forms disable Save until `isDirty`.** It compares cleaned values, so "98765 43210" vs "+91 98765 43210" isn't a change. Show "No changes yet" or the saved message next to the button.
+- **Keep inputs controlled and submit by hand** (`onSubmit` → `startTransition(() => action(data))`). React's post-action form reset otherwise clears controlled fields such as a `<select>`.
+- **Repeated rows:** errors use dotted paths (`items.0.amount`), and "touched" uses the row's stable key.
+
 ## 5. Pages and rendering (Next.js 16, Cache Components)
 
 - Pages are thin: call `requireWorkspace()` or a module query, then render module UI.

@@ -110,8 +110,6 @@ async function ClientDetail({
           description="Used to send approval links and receipts."
         >
           <ClientForm
-            // Fresh from the database after every save.
-            key={client.updatedAt.getTime()}
             mode="edit"
             clientId={client.id}
             defaults={{
