@@ -1,69 +1,55 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
+import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { redirect, unstable_rethrow } from "next/navigation";
-import { findDefaultWorkspaceId } from "@/shared/auth/membership";
 import { auth } from "@/shared/auth/server";
-import { requireSession } from "@/shared/auth/session";
 import {
+  fieldErrorsFrom,
+  readFields,
+  type FormState,
+} from "@/shared/lib/form-state";
+import {
+  WORKSPACE_FIELDS,
   workspaceDetailsSchema,
   workspaceSlug,
-  type WorkspaceDetailsInput,
+  type WorkspaceField,
 } from "../domain/workspace";
-import { requireWorkspace } from "./context";
-import { getWorkspaceProfile, saveWorkspaceProfile } from "./repository";
+import { workspaceAction } from "./action";
+import { getOnboardingState } from "./context";
+import { saveWorkspaceProfile } from "./repository";
 
-export type WorkspaceFormState = {
-  status: "idle" | "error" | "saved";
-  message?: string;
-  fieldErrors?: Partial<Record<keyof WorkspaceDetailsInput, string>>;
-  /** Echoed back so the form keeps what was typed after an error. */
-  values?: WorkspaceDetailsInput;
-};
+export type WorkspaceFormState = FormState<WorkspaceField>;
 
-function readForm(formData: FormData): WorkspaceDetailsInput {
-  return {
-    businessName: String(formData.get("businessName") ?? ""),
-    businessType: String(
-      formData.get("businessType") ?? "",
-    ) as WorkspaceDetailsInput["businessType"],
-    phone: String(formData.get("phone") ?? ""),
-  };
-}
-
-function invalid(
-  values: WorkspaceDetailsInput,
-  issues: { path: PropertyKey[]; message: string }[],
-): WorkspaceFormState {
-  const fieldErrors: WorkspaceFormState["fieldErrors"] = {};
-  for (const issue of issues) {
-    const key = issue.path[0] as keyof WorkspaceDetailsInput;
-    fieldErrors[key] ??= issue.message;
-  }
-  return { status: "error", fieldErrors, values };
-}
-
-/** Onboarding: create the user's workspace and its profile. */
+/**
+ * Onboarding: create the user's workspace and its profile. Not a
+ * workspaceAction, because there's no workspace yet.
+ */
 export async function setUpWorkspace(
-  _prev: WorkspaceFormState,
+  _previous: WorkspaceFormState,
   formData: FormData,
 ): Promise<WorkspaceFormState> {
-  const { user } = await requireSession();
-  const values = readForm(formData);
+  const { workspaceId: existingId, isSetUp } = await getOnboardingState({
+    fresh: true,
+  });
+  if (isSetUp) redirect("/dashboard");
+
+  const values = readFields(formData, WORKSPACE_FIELDS);
   const parsed = workspaceDetailsSchema.safeParse(values);
-  if (!parsed.success) return invalid(values, parsed.error.issues);
+  if (!parsed.success) {
+    return {
+      status: "error",
+      fieldErrors: fieldErrorsFrom<WorkspaceField>(parsed.error.issues),
+      values,
+    };
+  }
 
   const requestHeaders = await headers();
-
   try {
-    // Re-use a workspace left half-finished by an earlier attempt.
-    let workspaceId = await findDefaultWorkspaceId(user.id);
-    if (workspaceId && (await getWorkspaceProfile(workspaceId))) {
-      redirect("/dashboard");
-    }
-
+    let workspaceId = existingId;
     if (workspaceId) {
+      // Re-use a workspace left half-finished by an earlier attempt.
       await auth.api.updateOrganization({
         body: {
           organizationId: workspaceId,
@@ -89,7 +75,6 @@ export async function setUpWorkspace(
       if (!created) throw new Error("Workspace was not created");
       workspaceId = created.id;
     }
-
     await saveWorkspaceProfile(workspaceId, parsed.data);
   } catch (error) {
     unstable_rethrow(error);
@@ -104,35 +89,27 @@ export async function setUpWorkspace(
   redirect("/dashboard");
 }
 
-/** Settings: update the business details of the current workspace. */
-export async function updateWorkspace(
-  _prev: WorkspaceFormState,
-  formData: FormData,
-): Promise<WorkspaceFormState> {
-  const { workspace } = await requireWorkspace();
-  const values = readForm(formData);
-  const parsed = workspaceDetailsSchema.safeParse(values);
-  if (!parsed.success) return invalid(values, parsed.error.issues);
-
-  try {
-    if (parsed.data.businessName !== workspace.businessName) {
+/** Settings: update the business details clients see. Owners and admins only. */
+export const updateWorkspace = workspaceAction(
+  {
+    fields: WORKSPACE_FIELDS,
+    schema: workspaceDetailsSchema,
+    roles: ["owner", "admin"],
+    failureMessage: "Changes weren't saved. Please try again.",
+  },
+  async (details, { workspace }) => {
+    if (details.businessName !== workspace.businessName) {
       await auth.api.updateOrganization({
         body: {
           organizationId: workspace.workspaceId,
-          data: { name: parsed.data.businessName },
+          data: { name: details.businessName },
         },
         headers: await headers(),
       });
     }
-    await saveWorkspaceProfile(workspace.workspaceId, parsed.data);
-  } catch (error) {
-    console.error("[workspace] update failed", error);
-    return {
-      status: "error",
-      message: "Changes weren't saved. Please try again.",
-      values,
-    };
-  }
-
-  return { status: "saved", message: "Business details saved.", values };
-}
+    await saveWorkspaceProfile(workspace.workspaceId, details);
+    // The sidebar shows the business name; re-render it.
+    refresh();
+    return { message: "Business details saved." };
+  },
+);

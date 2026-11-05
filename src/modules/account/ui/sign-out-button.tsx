@@ -1,9 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { authClient } from "@/shared/auth/client";
 import { Button } from "@/shared/ui/button";
+import { useSignOut } from "./use-sign-out";
 
 export function SignOutButton({
   variant = "ghost",
@@ -14,8 +12,7 @@ export function SignOutButton({
   size?: React.ComponentProps<typeof Button>["size"];
   className?: string;
 }) {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const { signOut, pending, failed } = useSignOut();
   return (
     <Button
       type="button"
@@ -23,14 +20,13 @@ export function SignOutButton({
       size={size}
       className={className}
       disabled={pending}
-      onClick={async () => {
-        setPending(true);
-        await authClient.signOut();
-        router.replace("/sign-in");
-        router.refresh();
-      }}
+      onClick={() => void signOut()}
     >
-      {pending ? "Signing out…" : "Sign out"}
+      {pending
+        ? "Signing out…"
+        : failed
+          ? "Couldn't sign out. Try again"
+          : "Sign out"}
     </Button>
   );
 }

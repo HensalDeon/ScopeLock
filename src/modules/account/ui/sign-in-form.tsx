@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -13,7 +14,8 @@ import {
 } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
-import { authErrorMessage, safeNextPath } from "../domain/auth-flow";
+import { safeNextPath } from "@/shared/auth/redirect";
+import { authErrorMessage } from "../domain/auth-flow";
 import { GoogleButton } from "./google-button";
 import { PasswordInput } from "./password-input";
 
@@ -40,8 +42,9 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
       setPending(false);
       return;
     }
-    router.replace(next as never);
-    router.refresh();
+    // A plain navigation is enough: refreshing this auth page would bounce
+    // through the proxy redirect for no reason.
+    router.replace(next as Route);
   }
 
   return (

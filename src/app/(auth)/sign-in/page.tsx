@@ -1,25 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import {
-  AuthHeading,
-  FormSkeleton,
-  RedirectIfSignedIn,
-  SignInForm,
-} from "@/modules/account";
-import { isGoogleAuthEnabled } from "@/shared/lib/env";
+import { AuthHeading, FormSkeleton } from "@/modules/account";
+import { SignInWithOptions } from "@/modules/account/server";
 
 export const metadata: Metadata = { title: "Sign in" };
 
+/** Signed-in visitors are sent to the app by the proxy before this renders. */
 export default function SignInPage() {
   return (
     <>
-      <Suspense fallback={null}>
-        <RedirectIfSignedIn />
-      </Suspense>
       <AuthHeading title="Sign in to ScopeLock" />
       <Suspense fallback={<FormSkeleton fields={2} />}>
-        <SignInForm googleEnabled={isGoogleAuthEnabled()} />
+        <SignInWithOptions />
       </Suspense>
       <p className="mt-8 text-sm text-muted-foreground">
         New to ScopeLock?{" "}

@@ -1,10 +1,10 @@
 import { Check, QrCode } from "lucide-react";
-import { formatINR, paise, sum } from "@/shared/lib/money";
+import { formatINR, rupeesToPaise, sum } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { LogoMark } from "@/shared/ui/brand";
 import { Container, Leader, SectionHeading } from "./primitives";
 
-const rupees = (n: number) => formatINR(paise(n * 100));
+const rupees = (n: number) => formatINR(rupeesToPaise(n));
 
 /* ── 1. The problem ─────────────────────────────────────────────────────── */
 
@@ -18,7 +18,7 @@ const SMALL_ASKS = [
 ];
 
 export function SmallRequests() {
-  const total = sum(SMALL_ASKS.map((a) => paise(a.amount * 100)));
+  const total = sum(SMALL_ASKS.map((a) => rupeesToPaise(a.amount)));
   return (
     <section className="border-b">
       <Container className="grid items-center gap-12 py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:py-28">

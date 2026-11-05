@@ -1,7 +1,12 @@
 /**
- * One-time email codes (verify email, reset password). Shared by the auth
- * server, the email templates and the forms so the numbers never disagree.
+ * Account security limits, shared by the auth server, email templates and
+ * forms so the numbers never disagree. Client-safe (no secrets here).
  */
+
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_LENGTH = 128;
+
+// One-time email codes (verify email, reset password).
 export const CODE_LENGTH = 6;
 export const CODE_TTL_MINUTES = 10;
 /** Wrong guesses allowed per code before a new one is needed. */

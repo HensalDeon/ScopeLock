@@ -1,6 +1,6 @@
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
-import { env, isSmtpConfigured } from "@/shared/lib/env";
+import { emailTransport, env, isSmtpConfigured } from "@/shared/lib/env";
 import { renderEmail, type EmailContent } from "./layout";
 
 let transporter: Transporter | undefined;
@@ -28,13 +28,24 @@ export async function sendEmail({
   const e = env();
   const { html, text } = renderEmail(content, e.APP_URL);
 
-  if (!isSmtpConfigured()) {
-    // No SMTP yet: print the email so links can be clicked from the terminal.
-    const level = e.NODE_ENV === "production" ? "error" : "info";
-    console[level](
+  const transport = emailTransport();
+
+  if (transport === "none") {
+    // Production without SMTP. Never print the body: it can hold sign-in
+    // codes, and logs are readable by more people than an inbox.
+    console.error(
+      `[email] SMTP is not configured; "${content.heading}" was not sent.`,
+    );
+    return;
+  }
+
+  if (transport === "console") {
+    // Development (or a local production build): print the email so codes
+    // and links work from the terminal.
+    console.info(
       [
         "",
-        "┌─ Email (SMTP not configured — not sent) ─────────────",
+        "┌─ Email (printed, not sent) ──────────────────────────",
         `│ To:      ${to}`,
         `│ Subject: ${subject}`,
         "│",
@@ -46,5 +57,8 @@ export async function sendEmail({
     return;
   }
 
+  if (!isSmtpConfigured()) {
+    throw new Error("EMAIL_TRANSPORT=smtp but SMTP_HOST/USER/PASS are missing");
+  }
   await smtp().sendMail({ from: e.EMAIL_FROM, to, subject, html, text });
 }

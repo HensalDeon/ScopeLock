@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SignOutButton } from "@/modules/account";
-import { getWorkspaceProfile, OnboardingForm } from "@/modules/workspace";
-import { findDefaultWorkspaceId } from "@/shared/auth/membership";
-import { requireSession } from "@/shared/auth/session";
+import { OnboardingForm } from "@/modules/workspace";
+import { getOnboardingState } from "@/modules/workspace/server";
 import { Logo } from "@/shared/ui/brand";
 
 export const metadata: Metadata = { title: "Set up your workspace" };
@@ -35,10 +34,7 @@ export default function OnboardingPage() {
 }
 
 async function Onboarding() {
-  const { user } = await requireSession();
-  const workspaceId = await findDefaultWorkspaceId(user.id);
-  if (workspaceId && (await getWorkspaceProfile(workspaceId))) {
-    redirect("/dashboard");
-  }
+  const { user, isSetUp } = await getOnboardingState();
+  if (isSetUp) redirect("/dashboard");
   return <OnboardingForm suggestedName={user.name} />;
 }

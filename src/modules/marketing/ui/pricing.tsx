@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { PLANS, type Plan } from "@/modules/billing";
-import { formatINR, paise } from "@/shared/lib/money";
+import { formatINR } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
@@ -40,7 +40,7 @@ function PlanCard({ plan }: { plan: Plan }) {
 
       <p className="mt-6 flex items-baseline gap-1.5">
         <span className="text-[40px] leading-none font-semibold tracking-[-0.04em] tabular-nums">
-          {formatINR(paise(plan.monthlyPrice))}
+          {formatINR(plan.monthlyPrice)}
         </span>
         <span className="text-sm text-muted-foreground">
           {plan.monthlyPrice === 0 ? "forever" : "/ month"}

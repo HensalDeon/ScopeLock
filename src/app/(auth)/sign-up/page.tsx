@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { AuthHeading, RedirectIfSignedIn, SignUpForm } from "@/modules/account";
-import { isGoogleAuthEnabled } from "@/shared/lib/env";
+import { AuthHeading, FormSkeleton } from "@/modules/account";
+import { SignUpWithOptions } from "@/modules/account/server";
 
 export const metadata: Metadata = { title: "Create an account" };
 
+/** Signed-in visitors are sent to the app by the proxy before this renders. */
 export default function SignUpPage() {
   return (
     <>
-      <Suspense fallback={null}>
-        <RedirectIfSignedIn />
-      </Suspense>
       <AuthHeading
         title="Create your account"
         description="Next you'll add your business name. Clients see it on every approval link and change order."
       />
-      <SignUpForm googleEnabled={isGoogleAuthEnabled()} />
+      <Suspense fallback={<FormSkeleton fields={3} />}>
+        <SignUpWithOptions />
+      </Suspense>
       <p className="mt-8 text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link

@@ -1,3 +1,4 @@
+import "server-only";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { sha256 } from "./hash";
 

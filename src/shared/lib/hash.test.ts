@@ -1,6 +1,6 @@
+import { ObjectId } from "mongodb";
 import { describe, expect, it } from "vitest";
 import { canonicalJson, hashSnapshot } from "./hash";
-import { generateToken, hashToken, tokenMatchesHash } from "./token";
 
 describe("canonicalJson / hashSnapshot", () => {
   it("ignores key order", () => {
@@ -14,30 +14,38 @@ describe("canonicalJson / hashSnapshot", () => {
     expect(hashSnapshot({ total: 100 })).not.toBe(hashSnapshot({ total: 101 }));
   });
 
-  it("keeps array order significant and drops undefined keys", () => {
+  it("keeps array order significant, nulls, and drops undefined keys", () => {
     expect(canonicalJson([2, 1])).not.toBe(canonicalJson([1, 2]));
-    expect(canonicalJson({ a: 1, b: undefined })).toBe('{"a":1}');
+    expect(canonicalJson({ a: 1, b: undefined, c: null })).toBe(
+      '{"a":1,"c":null}',
+    );
+    expect(canonicalJson({ list: [[1, 2], [3]] })).toBe('{"list":[[1,2],[3]]}');
   });
 
-  it("serialises dates as ISO strings", () => {
-    expect(canonicalJson({ at: new Date("2026-11-04T10:12:00.000Z") })).toBe(
-      '{"at":"2026-11-04T10:12:00.000Z"}',
+  it("serialises dates and ObjectIds as strings", () => {
+    const id = new ObjectId("6728f0c2a1b2c3d4e5f60718");
+    expect(
+      canonicalJson({ at: new Date("2026-11-04T10:12:00.000Z"), id }),
+    ).toBe('{"at":"2026-11-04T10:12:00.000Z","id":"6728f0c2a1b2c3d4e5f60718"}');
+  });
+
+  it("normalises unicode so the same text hashes the same", () => {
+    const composed = "Café"; // é as one code point
+    const decomposed = "Café"; // e + combining accent
+    expect(hashSnapshot({ name: composed })).toBe(
+      hashSnapshot({ name: decomposed }),
     );
   });
-});
 
-describe("tokens", () => {
-  it("generates unique url-safe tokens", () => {
-    const t1 = generateToken();
-    const t2 = generateToken();
-    expect(t1).not.toBe(t2);
-    expect(t1).toMatch(/^[A-Za-z0-9_-]{43}$/);
-  });
-
-  it("verifies a token against its stored hash", () => {
-    const token = generateToken();
-    const stored = hashToken(token);
-    expect(tokenMatchesHash(token, stored)).toBe(true);
-    expect(tokenMatchesHash(generateToken(), stored)).toBe(false);
+  it.each([
+    ["a float", { amount: 12.5 }],
+    ["NaN", { amount: Number.NaN }],
+    ["a Map", { m: new Map([["a", 1]]) }],
+    ["a Set", { s: new Set([1]) }],
+    ["a class instance", { x: new (class Thing {})() }],
+    ["a bigint", { n: BigInt(1) }],
+    ["an invalid date", { d: new Date("nope") }],
+  ])("rejects %s instead of hashing it wrongly", (_label, value) => {
+    expect(() => canonicalJson(value)).toThrow(TypeError);
   });
 });

@@ -1,17 +1,33 @@
 import "server-only";
-import { collection, COLLECTIONS } from "@/shared/db/collections";
+import { COLLECTIONS } from "@/shared/db/names";
+import { scopedCollection } from "@/shared/db/scoped";
 import type { WorkspaceDetails, WorkspaceProfile } from "../domain/workspace";
 
-const profiles = () =>
-  collection<WorkspaceProfile>(COLLECTIONS.workspaceProfiles);
+type WorkspaceProfileDoc = WorkspaceProfile;
+
+const profiles = (workspaceId: string) =>
+  scopedCollection<WorkspaceProfileDoc>(
+    COLLECTIONS.workspaceProfiles,
+    workspaceId,
+  );
+
+function toWorkspaceProfile(doc: WorkspaceProfileDoc): WorkspaceProfile {
+  return {
+    workspaceId: doc.workspaceId,
+    businessName: doc.businessName,
+    businessType: doc.businessType,
+    phone: doc.phone ?? null,
+    currency: doc.currency,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+  };
+}
 
 export async function getWorkspaceProfile(
   workspaceId: string,
 ): Promise<WorkspaceProfile | null> {
-  return profiles().findOne(
-    { workspaceId },
-    { projection: { _id: 0 } },
-  ) as Promise<WorkspaceProfile | null>;
+  const doc = await profiles(workspaceId).findOne();
+  return doc ? toWorkspaceProfile(doc) : null;
 }
 
 /** Creates the profile, or updates it if it already exists (safe to retry). */
@@ -19,17 +35,15 @@ export async function saveWorkspaceProfile(
   workspaceId: string,
   details: WorkspaceDetails,
 ): Promise<void> {
-  const now = new Date();
-  await profiles().updateOne(
-    { workspaceId },
+  await profiles(workspaceId).updateOne(
+    {},
     {
       $set: {
         businessName: details.businessName,
         businessType: details.businessType,
         phone: details.phone,
-        updatedAt: now,
       },
-      $setOnInsert: { workspaceId, currency: "INR", createdAt: now },
+      $setOnInsert: { currency: "INR" },
     },
     { upsert: true },
   );

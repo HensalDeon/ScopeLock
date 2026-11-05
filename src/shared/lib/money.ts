@@ -87,8 +87,11 @@ export function allocate(total: Paise, weights: readonly number[]): Paise[] {
     .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
     .sort((a, b) => b.fraction - a.fraction || a.index - b.index);
 
-  for (let i = 0; remainder > 0; i = (i + 1) % byRemainder.length) {
-    parts[byRemainder[i].index] += 1;
+  // Hand out the leftover paise one at a time, largest remainder first.
+  // remainder < weights.length, so each part gets at most one.
+  for (const { index } of byRemainder) {
+    if (remainder <= 0) break;
+    parts[index] = (parts[index] ?? 0) + 1;
     remainder -= 1;
   }
 

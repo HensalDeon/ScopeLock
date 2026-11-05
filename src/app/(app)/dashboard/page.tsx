@@ -2,11 +2,8 @@ import { Check } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import {
-  BUSINESS_TYPE_LABELS,
-  formatPhone,
-  requireWorkspace,
-} from "@/modules/workspace";
+import { BUSINESS_TYPE_LABELS, formatPhone } from "@/modules/workspace";
+import { requireWorkspace } from "@/modules/workspace/server";
 import { cn } from "@/shared/lib/utils";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 

@@ -9,6 +9,7 @@
   --color-canvas: var(--canvas);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
+  --color-warning-ink: var(--warning-ink);
   --color-success-soft: var(--success-soft);
   --color-brand-ink: var(--brand-ink);
   --color-brand-bright: var(--brand-bright);
@@ -80,6 +81,8 @@
   --destructive: #c8372d;
   --warning: #b45309;
   --warning-soft: #fdf3e3;
+  /* Text on warning-soft backgrounds (AA contrast). */
+  --warning-ink: #7a3d06;
   --success-soft: #e6f5ee;
   --border: #e3e6eb;
   --input: #d6dae1;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
 import { FieldGroup } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
@@ -15,7 +16,7 @@ export function BusinessDetailsForm({
 }) {
   const [state, action, pending] = useActionState<WorkspaceFormState, FormData>(
     updateWorkspace,
-    { status: "idle" },
+    IDLE,
   );
   const [businessName, setBusinessName] = useState(initial.businessName);
 
@@ -38,7 +39,7 @@ export function BusinessDetailsForm({
           <Button type="submit" disabled={pending}>
             {pending ? "Saving…" : "Save changes"}
           </Button>
-          {state.status === "saved" && !pending && (
+          {state.status === "success" && !pending && (
             <p role="status" className="text-sm text-muted-foreground">
               {state.message}
             </p>

@@ -2,8 +2,7 @@
 
 import { ChevronsUpDown, LogOut, Settings2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/shared/auth/client";
+import { useSignOut } from "@/modules/account";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +21,7 @@ export function UserMenu({
   email: string;
   initials: string;
 }) {
-  const router = useRouter();
+  const { signOut, pending } = useSignOut();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md p-1.5 text-left transition-colors outline-none hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-sidebar-accent">
@@ -54,15 +53,9 @@ export function UserMenu({
             Settings
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={async () => {
-            await authClient.signOut();
-            router.replace("/sign-in");
-            router.refresh();
-          }}
-        >
+        <DropdownMenuItem disabled={pending} onSelect={() => void signOut()}>
           <LogOut aria-hidden />
-          Sign out
+          {pending ? "Signing out…" : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

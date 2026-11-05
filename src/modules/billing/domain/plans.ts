@@ -5,13 +5,15 @@
  * the database / Razorpay plans and enforces the limits.
  * Prices are in paise.
  */
+import { paise, type Paise } from "@/shared/lib/money";
+
 export type PlanId = "free" | "pro" | "agency";
 
 export type Plan = {
   id: PlanId;
   name: string;
-  /** Monthly price in paise. 0 = free. */
-  monthlyPrice: number;
+  /** Monthly price. 0 = free. */
+  monthlyPrice: Paise;
   summary: string;
   activeProjects: number;
   teamMembers: number;
@@ -24,7 +26,7 @@ export const PLANS: readonly Plan[] = [
   {
     id: "free",
     name: "Free",
-    monthlyPrice: 0,
+    monthlyPrice: paise(0),
     summary: "For trying it on your next project.",
     activeProjects: 2,
     teamMembers: 1,
@@ -40,7 +42,7 @@ export const PLANS: readonly Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    monthlyPrice: 49_900,
+    monthlyPrice: paise(49_900),
     summary: "For freelancers with a full client list.",
     activeProjects: 6,
     teamMembers: 1,
@@ -58,7 +60,7 @@ export const PLANS: readonly Plan[] = [
   {
     id: "agency",
     name: "Agency",
-    monthlyPrice: 199_900,
+    monthlyPrice: paise(199_900),
     summary: "For studios and agencies running many clients.",
     activeProjects: 15,
     teamMembers: 5,
@@ -71,7 +73,7 @@ export const PLANS: readonly Plan[] = [
     ],
     cta: "Start with Agency",
   },
-] as const;
+];
 
 export function planById(id: string | null | undefined): Plan | undefined {
   return PLANS.find((p) => p.id === id);

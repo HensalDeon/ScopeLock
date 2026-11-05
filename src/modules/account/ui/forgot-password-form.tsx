@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/shared/auth/client";
-import { CODE_TTL_MINUTES, isCompleteCode } from "@/shared/auth/codes";
+import {
+  CODE_TTL_MINUTES,
+  isCompleteCode,
+  PASSWORD_MIN_LENGTH,
+} from "@/shared/auth/policy";
 import { Button } from "@/shared/ui/button";
 import { CodeInput } from "@/shared/ui/code-input";
 import {
@@ -103,8 +107,10 @@ function CodeStep({
       setError("Enter the 6-digit code from the email.");
       return;
     }
-    if (password.length < 8) {
-      setError("Use at least 8 characters for your new password.");
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      setError(
+        `Use at least ${PASSWORD_MIN_LENGTH} characters for your new password.`,
+      );
       return;
     }
 
@@ -128,8 +134,9 @@ function CodeStep({
       router.replace("/sign-in");
       return;
     }
+    // A plain navigation is enough: refreshing this auth page would bounce
+    // through the proxy redirect for no reason.
     router.replace("/dashboard");
-    router.refresh();
   }
 
   async function resend() {
@@ -168,11 +175,12 @@ function CodeStep({
             id="password"
             name="password"
             autoComplete="new-password"
-            minLength={8}
+            minLength={PASSWORD_MIN_LENGTH}
             required
           />
           <FieldDescription>
-            At least 8 characters. You&apos;ll be signed out on other devices.
+            At least {PASSWORD_MIN_LENGTH} characters. You&apos;ll be signed out
+            on other devices.
           </FieldDescription>
         </Field>
         <Button type="submit" size="lg" className="w-full" disabled={pending}>

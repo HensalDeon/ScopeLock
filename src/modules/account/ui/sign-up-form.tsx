@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/shared/auth/client";
+import { PASSWORD_MIN_LENGTH } from "@/shared/auth/policy";
 import { Button } from "@/shared/ui/button";
 import {
   Field,
@@ -30,9 +31,9 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const password = String(form.get("password"));
-    if (password.length < 8) {
+    if (password.length < PASSWORD_MIN_LENGTH) {
       setError({
-        message: "Use at least 8 characters for your password.",
+        message: `Use at least ${PASSWORD_MIN_LENGTH} characters for your password.`,
         exists: false,
       });
       return;
@@ -55,8 +56,9 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
       setPending(false);
       return;
     }
+    // A plain navigation is enough: refreshing this auth page would bounce
+    // through the proxy redirect for no reason.
     router.replace("/onboarding");
-    router.refresh();
   }
 
   return (
@@ -102,10 +104,12 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
             id="password"
             name="password"
             autoComplete="new-password"
-            minLength={8}
+            minLength={PASSWORD_MIN_LENGTH}
             required
           />
-          <FieldDescription>At least 8 characters.</FieldDescription>
+          <FieldDescription>
+            At least {PASSWORD_MIN_LENGTH} characters.
+          </FieldDescription>
         </Field>
 
         <Button type="submit" size="lg" className="w-full" disabled={pending}>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialsOf } from "./business-initials";
+import { initialsOf } from "./initials";
 
 describe("initialsOf", () => {
   it.each([

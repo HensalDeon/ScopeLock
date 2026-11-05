@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CODE_RESEND_SECONDS } from "@/shared/auth/codes";
+import { CODE_RESEND_SECONDS } from "@/shared/auth/policy";
 
 /**
  * Seconds left before another code can be requested. Call `start()` after
- * each send. Keeps people from hitting the server's 3-per-minute limit.
+ * each send. Keeps people well under the server's per-minute send limit.
  */
 export function useResendTimer(startRunning = false) {
   const [left, setLeft] = useState(startRunning ? CODE_RESEND_SECONDS : 0);

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/shared/auth/client";
-import { isCompleteCode } from "@/shared/auth/codes";
+import { isCompleteCode } from "@/shared/auth/policy";
 import { Button } from "@/shared/ui/button";
 import { CodeInput } from "@/shared/ui/code-input";
 import { authErrorMessage } from "../domain/auth-flow";
@@ -73,7 +73,7 @@ export function VerifyEmailForm({ email }: { email: string }) {
         className="flex flex-wrap items-center gap-2"
         onSubmit={(event) => {
           event.preventDefault();
-          verify(String(new FormData(event.currentTarget).get("code")));
+          void verify(String(new FormData(event.currentTarget).get("code")));
         }}
       >
         <CodeInput
@@ -82,7 +82,7 @@ export function VerifyEmailForm({ email }: { email: string }) {
           aria-invalid={message?.tone === "error" || undefined}
           className="h-9 w-[9.5rem] px-2.5 text-[17px] tracking-[0.36em]"
           onValueChange={(code) => {
-            if (isCompleteCode(code)) verify(code);
+            if (isCompleteCode(code)) void verify(code);
           }}
         />
         <Button type="submit" disabled={pending} className="h-9">

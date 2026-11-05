@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CODE_LENGTH, normalizeCode } from "@/shared/auth/codes";
+import { CODE_LENGTH, normalizeCode } from "@/shared/auth/policy";
 import { cn } from "@/shared/lib/utils";
 
 /**

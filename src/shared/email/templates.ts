@@ -1,4 +1,4 @@
-import { CODE_TTL_MINUTES } from "@/shared/auth/codes";
+import { CODE_TTL_MINUTES } from "@/shared/auth/policy";
 import type { EmailContent } from "./layout";
 
 /** Account emails. Short, plain, and specific — like a person wrote them. */

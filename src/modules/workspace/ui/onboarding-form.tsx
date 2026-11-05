@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
 import { FieldGroup } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
@@ -11,17 +12,17 @@ import { WorkspaceFields } from "./workspace-fields";
 export function OnboardingForm({ suggestedName }: { suggestedName: string }) {
   const [state, action, pending] = useActionState<WorkspaceFormState, FormData>(
     setUpWorkspace,
-    { status: "idle" },
+    IDLE,
   );
-  const [businessName, setBusinessName] = useState(
-    state.values?.businessName ?? suggestedName,
-  );
+  const [businessName, setBusinessName] = useState(suggestedName);
 
   return (
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-14">
       <form action={action} noValidate>
         <FieldGroup className="gap-6">
-          {state.message && <FormAlert>{state.message}</FormAlert>}
+          {state.status === "error" && state.message && (
+            <FormAlert>{state.message}</FormAlert>
+          )}
           <WorkspaceFields
             state={state}
             businessName={businessName}

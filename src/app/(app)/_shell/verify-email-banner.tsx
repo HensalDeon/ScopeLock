@@ -7,7 +7,7 @@ export async function VerifyEmailBanner() {
   if (!session || session.user.emailVerified) return null;
 
   return (
-    <div className="border-b border-warning/20 bg-warning-soft px-4 py-3 text-[#7a3d06] sm:px-8">
+    <div className="border-b border-warning/20 bg-warning-soft px-4 py-3 text-warning-ink sm:px-8">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <p className="min-w-0 flex-1 basis-80 text-sm leading-relaxed">
           Confirm your email so approval and payment notifications reach you.

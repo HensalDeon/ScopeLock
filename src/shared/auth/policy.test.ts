@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isCompleteCode, normalizeCode } from "./codes";
+import { isCompleteCode, normalizeCode } from "./policy";
 
 describe("normalizeCode", () => {
   it.each([

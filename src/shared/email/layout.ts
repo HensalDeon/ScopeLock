@@ -24,6 +24,15 @@ const escape = (s: string) =>
  * Inline styles only (email clients ignore <style> blocks), no images
  * besides the small mark, so it renders the same in Gmail, Outlook and Apple Mail.
  */
+/** Only web links go in emails; blocks javascript:, data: and friends. */
+function safeHref(url: string): string {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error(`Refusing to put a ${parsed.protocol} link in an email`);
+  }
+  return parsed.toString();
+}
+
 export function renderEmail(content: EmailContent, appUrl: string) {
   const { ink, brand } = brandColors;
   const muted = "#5a6475";
@@ -36,11 +45,12 @@ export function renderEmail(content: EmailContent, appUrl: string) {
     )
     .join("");
 
+  const actionUrl = content.action ? safeHref(content.action.url) : "";
   const action = content.action
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 24px;"><tr><td style="background:${ink};border-radius:8px;">
-         <a href="${escape(content.action.url)}" style="display:inline-block;padding:12px 20px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">${escape(content.action.label)}</a>
+         <a href="${escape(actionUrl)}" style="display:inline-block;padding:12px 20px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">${escape(content.action.label)}</a>
        </td></tr></table>
-       <p style="margin:0 0 24px;font-size:13px;line-height:20px;color:${muted};">Button not working? Paste this link into your browser:<br><span style="color:${ink};word-break:break-all;">${escape(content.action.url)}</span></p>`
+       <p style="margin:0 0 24px;font-size:13px;line-height:20px;color:${muted};">Button not working? Paste this link into your browser:<br><span style="color:${ink};word-break:break-all;">${escape(actionUrl)}</span></p>`
     : "";
 
   const code = content.code

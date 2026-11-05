@@ -1,10 +1,7 @@
 import Link from "next/link";
-import {
-  BUSINESS_TYPE_LABELS,
-  BusinessInitials,
-  initialsOf,
-  requireWorkspace,
-} from "@/modules/workspace";
+import { BUSINESS_TYPE_LABELS, BusinessInitials } from "@/modules/workspace";
+import { requireWorkspace } from "@/modules/workspace/server";
+import { initialsOf } from "@/shared/lib/initials";
 import { Logo } from "@/shared/ui/brand";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav";

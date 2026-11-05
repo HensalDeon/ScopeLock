@@ -1,6 +1,6 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
-import { safeNextPath } from "@/modules/account";
+import { safeNextPath } from "@/shared/auth/redirect";
 import { auth } from "@/shared/auth/server";
 
 const AUTH_PAGES = new Set(["/sign-in", "/sign-up"]);

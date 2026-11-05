@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BUSINESS_NAME_MAX_LENGTH,
   BUSINESS_TYPE_LABELS,
   BUSINESS_TYPES,
   type BusinessType,
@@ -31,11 +32,10 @@ export function WorkspaceFields({
   onBusinessNameChange: (value: string) => void;
   defaults: { businessType?: BusinessType | ""; phone?: string };
 }) {
-  const errors = state.fieldErrors ?? {};
-  const businessType = (state.values?.businessType ??
-    defaults.businessType ??
-    "") as string;
-  const phone = state.values?.phone ?? defaults.phone ?? "";
+  const errors = (state.status === "error" && state.fieldErrors) || {};
+  const typed = state.status === "idle" ? undefined : state.values;
+  const businessType = typed?.businessType ?? defaults.businessType ?? "";
+  const phone = typed?.phone ?? defaults.phone ?? "";
 
   return (
     <>
@@ -48,7 +48,7 @@ export function WorkspaceFields({
           value={businessName}
           onChange={(e) => onBusinessNameChange(e.target.value)}
           aria-invalid={Boolean(errors.businessName) || undefined}
-          maxLength={80}
+          maxLength={BUSINESS_NAME_MAX_LENGTH}
           required
         />
         <FieldDescription>

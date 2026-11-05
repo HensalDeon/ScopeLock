@@ -12,6 +12,16 @@ export const BUSINESS_TYPE_LABELS: Record<
   agency: { title: "Agency", detail: "10+ people" },
 };
 
+export const BUSINESS_NAME_MAX_LENGTH = 80;
+
+/** Fields of the business details form (onboarding and settings). */
+export const WORKSPACE_FIELDS = [
+  "businessName",
+  "businessType",
+  "phone",
+] as const;
+export type WorkspaceField = (typeof WORKSPACE_FIELDS)[number];
+
 export type WorkspaceProfile = {
   /** Better Auth organization id. */
   workspaceId: string;
@@ -55,7 +65,7 @@ export function formatPhone(e164: string): string {
 export function workspaceSlug(name: string, suffix: string): string {
   const base = name
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
@@ -86,7 +96,10 @@ export const workspaceDetailsSchema = z.object({
     .string()
     .trim()
     .min(2, "Enter at least 2 characters.")
-    .max(80, "Keep it under 80 characters."),
+    .max(
+      BUSINESS_NAME_MAX_LENGTH,
+      `Keep it under ${BUSINESS_NAME_MAX_LENGTH} characters.`,
+    ),
   businessType: z.enum(BUSINESS_TYPES, {
     error: "Choose how you work.",
   }),
