@@ -206,3 +206,4 @@ Integration tests run against an in-memory MongoDB replica set, with one databas
 - [ ] Checked at 390 px wide with no horizontal scroll. Pending and empty states exist.
 - [ ] The security checklist above has been gone through for the feature's type.
 - [ ] `docs/PLAN.md` checklist and progress log are updated.
+- [ ] `docs/PRODUCT.md` is updated when a user-visible feature ships (move it from "Coming" to "Built", refresh the numbers). It feeds pitch decks and videos, so it must stay true.
