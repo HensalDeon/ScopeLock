@@ -73,9 +73,13 @@ export async function findActivity(
 export async function findRecentActivity(
   workspaceId: string,
   limit: number,
+  exclude: readonly ActivityType[] = [],
 ): Promise<ActivityEvent[]> {
   const docs = await activity(workspaceId)
-    .find({}, { sort: { at: -1, _id: -1 }, limit })
+    .find(exclude.length ? { type: { $nin: [...exclude] } } : {}, {
+      sort: { at: -1, _id: -1 },
+      limit,
+    })
     .toArray();
   return docs.map((doc) => ({
     id: doc._id.toHexString(),

@@ -16,12 +16,15 @@ export function ActivityTimeline({
   items,
   empty,
   visible = 8,
+  compact,
 }: {
   items: Item[];
   /** Shown when there's nothing yet. */
   empty: string;
   /** Latest events shown; older ones fold under "Show earlier activity". */
   visible?: number;
+  /** One line per event, without the client's quoted note (overview). */
+  compact?: boolean;
 }) {
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground">{empty}</p>;
@@ -30,7 +33,7 @@ export function ActivityTimeline({
   const earlier = items.slice(visible);
   return (
     <div className="grid">
-      <Lines items={latest} last={earlier.length === 0} />
+      <Lines items={latest} last={earlier.length === 0} compact={compact} />
       {earlier.length > 0 && (
         <details className="group">
           <summary className="cursor-pointer list-none pl-7 text-sm font-medium underline-offset-4 group-open:mb-3 hover:underline [&::-webkit-details-marker]:hidden">
@@ -42,14 +45,22 @@ export function ActivityTimeline({
               Hide earlier events
             </span>
           </summary>
-          <Lines items={earlier} last />
+          <Lines items={earlier} last compact={compact} />
         </details>
       )}
     </div>
   );
 }
 
-function Lines({ items, last }: { items: Item[]; last: boolean }) {
+function Lines({
+  items,
+  last,
+  compact,
+}: {
+  items: Item[];
+  last: boolean;
+  compact?: boolean;
+}) {
   return (
     <ol className="grid">
       {items.map((item, i) => (
@@ -73,7 +84,7 @@ function Lines({ items, last }: { items: Item[]; last: boolean }) {
           </div>
           <div className="grid gap-1 pb-5 text-sm">
             <p className="leading-snug text-pretty">{item.text}</p>
-            {item.quote && (
+            {item.quote && !compact && (
               <p className="border-l-2 border-border pl-3 leading-relaxed whitespace-pre-line text-muted-foreground">
                 “{item.quote}”
               </p>

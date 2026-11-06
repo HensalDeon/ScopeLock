@@ -9,31 +9,30 @@ import { cn } from "@/shared/lib/utils";
 export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
   const plural = (n: number, word: string) =>
     `${n} ${word}${n === 1 ? "" : "s"}`;
+  const approvedCount = rows.reduce((s, r) => s + r.approvedProjects, 0);
+  const draftCount = rows.reduce((s, r) => s + r.draftProjects, 0);
+  const waitingAny = rows.some((r) => r.waiting > 0);
   const cells = [
     {
       label: "Approved work",
       amounts: rows.map((r) => ({ c: r.currency, v: r.approved })),
-      note: plural(
-        rows.reduce((s, r) => s + r.approvedProjects, 0),
-        "project",
-      ),
+      note: approvedCount
+        ? plural(approvedCount, "project")
+        : "None approved yet",
       tone: "neutral" as const,
     },
     {
       label: "Waiting on clients",
       amounts: rows.map((r) => ({ c: r.currency, v: r.waiting })),
-      note: "Sent, not answered yet",
-      tone: rows.some((r) => r.waiting > 0)
-        ? ("waiting" as const)
-        : ("neutral" as const),
+      note: waitingAny ? "Sent, not answered yet" : "Nothing waiting",
+      tone: waitingAny ? ("waiting" as const) : ("neutral" as const),
     },
     {
       label: "In draft",
       amounts: rows.map((r) => ({ c: r.currency, v: r.draft })),
-      note: `${plural(
-        rows.reduce((s, r) => s + r.draftProjects, 0),
-        "project",
-      )} not sent`,
+      note: draftCount
+        ? `${plural(draftCount, "project")} not sent`
+        : "Nothing in draft",
       tone: "neutral" as const,
     },
   ];

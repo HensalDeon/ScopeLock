@@ -58,7 +58,7 @@ async function Overview() {
       countClients(),
       listProjects(),
       listOpenChanges(),
-      listRecentActivity(10),
+      listRecentActivity(6),
     ]);
   const byId = new Map(projects.map((p) => [p.id, p]));
 
@@ -244,7 +244,8 @@ async function Overview() {
             Recent activity
           </h2>
           <ActivityTimeline
-            visible={10}
+            visible={6}
+            compact
             items={activity.map((a) => ({
               ...a,
               context: byId.has(a.projectId)
@@ -256,6 +257,11 @@ async function Overview() {
             }))}
             empty="Sends, approvals and change requests across your projects will show here."
           />
+          {activity.length >= 6 && (
+            <p className="text-xs text-muted-foreground">
+              Full history is on each project&apos;s page.
+            </p>
+          )}
         </section>
       </div>
     </div>
