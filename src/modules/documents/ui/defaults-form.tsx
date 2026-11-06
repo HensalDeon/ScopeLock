@@ -110,11 +110,7 @@ export function ProposalDefaultsForm({
           </Field>
         ))}
         <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="submit"
-            variant="outline"
-            disabled={pending || !form.isDirty}
-          >
+          <Button type="submit" disabled={pending || !form.isDirty}>
             {pending ? "Saving…" : "Save defaults"}
           </Button>
           {!pending && !form.isDirty && (

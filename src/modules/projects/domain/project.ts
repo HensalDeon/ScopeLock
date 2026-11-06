@@ -93,6 +93,8 @@ export type Project = {
   lastDecision: ProjectDecision | null;
   /** A client link exists (it may be shown again; see portal). */
   hasPortalLink: boolean;
+  /** How many change requests were ever created (CR numbers used). */
+  changeCount: number;
   totals: ProjectTotals;
   createdAt: Date;
   updatedAt: Date;

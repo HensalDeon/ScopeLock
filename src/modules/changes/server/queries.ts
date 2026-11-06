@@ -32,3 +32,11 @@ export async function getChangeOrNotFound(
   if (!doc) notFound();
   return { change: repo.toChange(doc), sent: doc.sent?.data ?? null };
 }
+
+/** Change requests waiting on the client or still in draft, workspace-wide. */
+export async function listOpenChanges(): Promise<ChangeRequest[]> {
+  const { workspace } = await requireWorkspace();
+  return (await repo.findOpenChangeDocs(workspace.workspaceId)).map(
+    repo.toChange,
+  );
+}

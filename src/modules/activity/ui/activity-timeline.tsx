@@ -1,8 +1,15 @@
+import type { Route } from "next";
+import Link from "next/link";
 import { formatDateTime } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
 import type { ActivityLine } from "../domain/activity";
 
-type Item = { id: string; at: Date } & ActivityLine;
+type Item = {
+  id: string;
+  at: Date;
+  /** Which project, for feeds that mix projects (the overview). */
+  context?: { label: string; href: string };
+} & ActivityLine;
 
 /** A project's history, newest first. Used in the app and the portal. */
 export function ActivityTimeline({
@@ -73,6 +80,17 @@ function Lines({ items, last }: { items: Item[]; last: boolean }) {
             )}
             <p className="text-xs text-muted-foreground tabular-nums">
               {formatDateTime(item.at)}
+              {item.context && (
+                <>
+                  {" · "}
+                  <Link
+                    href={item.context.href as Route}
+                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                  >
+                    {item.context.label}
+                  </Link>
+                </>
+              )}
             </p>
           </div>
         </li>

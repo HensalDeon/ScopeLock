@@ -9,7 +9,12 @@ import {
   type ActivityLine,
   type Viewer,
 } from "../domain/activity";
-import { findActivity, insertActivity, type NewActivity } from "./repository";
+import {
+  findActivity,
+  findRecentActivity,
+  insertActivity,
+  type NewActivity,
+} from "./repository";
 
 /**
  * Records an event after the change it describes has been saved. A failure
@@ -71,6 +76,21 @@ export async function listClientHistory(
   return events.map((e) => ({
     id: e.id,
     at: e.at,
+    ...describeActivity(e, viewer),
+  }));
+}
+
+/** The workspace's latest events, each with its project id (for the overview). */
+export async function listRecentActivity(
+  limit = 10,
+): Promise<(ActivityItem & { projectId: string })[]> {
+  const { workspace, user } = await requireWorkspace();
+  const viewer: Viewer = { kind: "member", userId: user.id };
+  const events = await findRecentActivity(workspace.workspaceId, limit);
+  return events.map((e) => ({
+    id: e.id,
+    at: e.at,
+    projectId: e.projectId,
     ...describeActivity(e, viewer),
   }));
 }

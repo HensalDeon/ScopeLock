@@ -128,8 +128,23 @@ async function ProjectDetail({
         </div>
       )}
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="grid gap-8">
+      {/* On phones the share card comes first (it's the main action); on
+          desktop it sits top-right with the client card below it. */}
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr] lg:gap-y-4">
+        <div className="lg:col-start-2 lg:row-start-1">
+          <SharePanel
+            projectId={project.id}
+            status={project.status}
+            url={share.url}
+            hasLink={share.hasLink}
+            sentAt={share.sentAt}
+            lastDecision={project.lastDecision}
+            emailVerified={user.emailVerified}
+            client={{ firstName, phone: client?.phone ?? null }}
+            message={`Hi ${firstName}, here's the proposal for ${project.name} (${total}). You can read it and approve it here:`}
+          />
+        </div>
+        <div className="grid gap-8 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <section
             aria-labelledby={`scope-${project.id}`}
             className="grid gap-3"
@@ -192,18 +207,7 @@ async function ProjectDetail({
           />
         </div>
 
-        <aside className="grid gap-4">
-          <SharePanel
-            projectId={project.id}
-            status={project.status}
-            url={share.url}
-            hasLink={share.hasLink}
-            sentAt={share.sentAt}
-            lastDecision={project.lastDecision}
-            emailVerified={user.emailVerified}
-            client={{ firstName, phone: client?.phone ?? null }}
-            message={`Hi ${firstName}, here's the proposal for ${project.name} (${total}). You can read it and approve it here:`}
-          />
+        <aside className="grid gap-4 lg:col-start-2 lg:row-start-2">
           {client && (
             <div className="rounded-xl border bg-canvas p-5">
               <h2 className="text-sm font-semibold">Client</h2>

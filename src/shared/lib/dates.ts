@@ -45,3 +45,28 @@ export function formatDate(
 export function formatDateTime(date: Date, options?: { now?: Date }): string {
   return `${formatDate(date, options)}, ${time.format(date).toLowerCase()}`;
 }
+
+const isoDay = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** Whole calendar days between two moments, in India time. */
+function daysBetween(earlier: Date, later: Date): number {
+  const day = (d: Date) => Date.parse(`${isoDay.format(d)}T00:00:00Z`);
+  return Math.round((day(later) - day(earlier)) / 86_400_000);
+}
+
+/**
+ * "today", "yesterday", "3 days ago"; after a week the date ("18 Nov").
+ * For "sent …" and "waiting since …" lines.
+ */
+export function formatAgo(date: Date, { now = new Date() } = {}): string {
+  const days = daysBetween(date, now);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  return `on ${formatDate(date, { now })}`;
+}

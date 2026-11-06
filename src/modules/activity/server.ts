@@ -7,6 +7,7 @@ import "server-only";
 export {
   listClientHistory,
   listProjectActivity,
+  listRecentActivity,
   logActivity,
   logActivityInTransaction,
   type ActivityItem,

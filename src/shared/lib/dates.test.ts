@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatDateTime } from "./dates";
+import { formatAgo, formatDate, formatDateTime } from "./dates";
 
 const now = new Date("2026-11-20T06:00:00Z");
 
@@ -22,5 +22,20 @@ describe("dates (India time)", () => {
     expect(
       formatDate(new Date("2026-03-02T06:00:00Z"), { now, withYear: true }),
     ).toBe("2 Mar 2026");
+  });
+
+  it("says how long ago, by India calendar days", () => {
+    const now = new Date("2026-11-06T18:00:00Z"); // 6 Nov, 11:30 pm IST
+    expect(formatAgo(new Date("2026-11-06T00:00:00Z"), { now })).toBe("today");
+    // 5 Nov, 11:00 pm IST is yesterday even though it's < 24h ago.
+    expect(formatAgo(new Date("2026-11-05T17:30:00Z"), { now })).toBe(
+      "yesterday",
+    );
+    expect(formatAgo(new Date("2026-11-03T10:00:00Z"), { now })).toBe(
+      "3 days ago",
+    );
+    expect(formatAgo(new Date("2026-10-20T10:00:00Z"), { now })).toBe(
+      "on 20 Oct",
+    );
   });
 });

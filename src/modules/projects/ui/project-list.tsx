@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { clientLabel } from "@/modules/clients";
 import { formatDate } from "@/shared/lib/dates";
-import { formatMoney } from "@/shared/lib/money";
+import { formatMoney, sum } from "@/shared/lib/money";
 import type { Project } from "../domain/project";
 import { ProjectStatusBadge } from "./project-status-badge";
 
@@ -10,7 +10,11 @@ type Row = Project & {
   client?: { name: string; company: string | null } | null;
 };
 
-/** Projects with client, total, status and last change. Server component. */
+/**
+ * Projects with client, total, status and last change. The total includes
+ * approved changes (same number as the project page); changes still waiting
+ * on the client show as a note, not in the total. Server component.
+ */
 export function ProjectList({
   projects,
   showClient = true,
@@ -34,9 +38,21 @@ export function ProjectList({
                   : `Updated ${formatDate(project.updatedAt)}`}
               </p>
             </div>
-            <p className="text-right text-sm font-medium tabular-nums">
-              {formatMoney(project.baseline.total, project.currency)}
-            </p>
+            <div className="text-right">
+              <p className="text-sm font-medium tabular-nums">
+                {formatMoney(
+                  sum([project.baseline.total, project.totals.approvedChanges]),
+                  project.currency,
+                )}
+              </p>
+              {project.totals.pendingChanges > 0 && (
+                <p className="text-xs text-warning-ink tabular-nums">
+                  +{" "}
+                  {formatMoney(project.totals.pendingChanges, project.currency)}{" "}
+                  waiting
+                </p>
+              )}
+            </div>
             <ProjectStatusBadge
               status={project.status}
               className="col-start-1 row-start-2 w-fit sm:col-start-3 sm:row-start-1"

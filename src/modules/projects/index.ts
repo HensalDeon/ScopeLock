@@ -10,6 +10,7 @@ export {
   type ProjectStatus,
 } from "./domain/project";
 export { EMPTY_PROPOSAL, type ProposalContent } from "./domain/proposal";
+export { portfolioTotals, type CurrencyTotals } from "./domain/portfolio";
 export { DeleteProjectButton } from "./ui/delete-project-button";
 export {
   indiaDatePlusDays,

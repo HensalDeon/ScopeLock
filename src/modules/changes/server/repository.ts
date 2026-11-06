@@ -223,3 +223,15 @@ export async function findChangeStatuses(
     .find({ projectId }, { projection: { status: 1, total: 1 }, session })
     .toArray();
 }
+
+/** Sent and draft CRs across the workspace (for the overview). */
+export async function findOpenChangeDocs(
+  workspaceId: string,
+): Promise<ChangeDoc[]> {
+  return changes(workspaceId)
+    .find(
+      { status: { $in: ["sent", "draft"] } },
+      { sort: { updatedAt: -1 }, limit: 100 },
+    )
+    .toArray();
+}

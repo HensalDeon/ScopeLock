@@ -68,3 +68,21 @@ export async function findActivity(
     data: doc.data,
   }));
 }
+
+/** The latest events across every project in the workspace. */
+export async function findRecentActivity(
+  workspaceId: string,
+  limit: number,
+): Promise<ActivityEvent[]> {
+  const docs = await activity(workspaceId)
+    .find({}, { sort: { at: -1, _id: -1 }, limit })
+    .toArray();
+  return docs.map((doc) => ({
+    id: doc._id.toHexString(),
+    projectId: doc.projectId.toHexString(),
+    type: doc.type,
+    at: doc.at,
+    actor: doc.actor,
+    data: doc.data,
+  }));
+}

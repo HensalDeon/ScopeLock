@@ -3,7 +3,7 @@ import { SettingsTabs } from "./_components/settings-tabs";
 
 export default function SettingsLayout({ children }: LayoutProps<"/settings">) {
   return (
-    <PageContainer className="max-w-6xl">
+    <PageContainer>
       <PageHeader title="Settings" />
       <SettingsTabs />
       {children}

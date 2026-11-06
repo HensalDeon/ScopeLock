@@ -53,28 +53,52 @@ export function ApprovalHistory({
                 “{a.comment}”
               </p>
             )}
-            <dl className="grid gap-x-6 gap-y-1 font-mono text-[11.5px] text-muted-foreground sm:grid-cols-[auto_1fr]">
-              <dt>Email</dt>
-              <dd className="truncate">{a.decidedBy.email}</dd>
-              <dt>IP address</dt>
-              <dd>{a.ip ?? "Not recorded"}</dd>
-              <dt>Fingerprint</dt>
-              <dd className="truncate" title={a.snapshotHash}>
-                {a.snapshotHash.slice(0, 16)}
-              </dd>
-              <dt>Record check</dt>
-              <dd className={a.intact ? "text-foreground" : "text-destructive"}>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <Link
+                href={`/projects/${projectId}/answers/${a.id}`}
+                className="text-sm font-medium underline-offset-4 hover:underline"
+              >
+                View the version they saw
+              </Link>
+              <span
+                className={cn(
+                  "text-xs",
+                  a.intact
+                    ? "text-muted-foreground"
+                    : "font-medium text-destructive",
+                )}
+              >
                 {a.intact
-                  ? "Intact: matches what was sent"
-                  : "Doesn't match its signature. Contact support."}
-              </dd>
-            </dl>
-            <Link
-              href={`/projects/${projectId}/answers/${a.id}`}
-              className="justify-self-start text-sm font-medium underline-offset-4 hover:underline"
-            >
-              View the version they saw
-            </Link>
+                  ? "Signed record · intact"
+                  : "Signed record doesn't match its signature. Contact support."}
+              </span>
+            </div>
+            <details className="group">
+              <summary className="cursor-pointer list-none text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline [&::-webkit-details-marker]:hidden">
+                <span className="group-open:hidden">Record details</span>
+                <span className="hidden group-open:inline">
+                  Hide record details
+                </span>
+              </summary>
+              <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 font-mono text-[11.5px] text-muted-foreground">
+                <dt>Email</dt>
+                <dd className="truncate">{a.decidedBy.email}</dd>
+                <dt>IP address</dt>
+                <dd>{a.ip ?? "Not recorded"}</dd>
+                <dt>Fingerprint</dt>
+                <dd className="truncate" title={a.snapshotHash}>
+                  {a.snapshotHash.slice(0, 16)}
+                </dd>
+                <dt>Record check</dt>
+                <dd
+                  className={a.intact ? "text-foreground" : "text-destructive"}
+                >
+                  {a.intact
+                    ? "Intact: matches what was sent"
+                    : "Doesn't match its signature. Contact support."}
+                </dd>
+              </dl>
+            </details>
           </li>
         ))}
       </ol>

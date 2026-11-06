@@ -102,6 +102,7 @@ function toProject(doc: ProjectDoc): Project {
     proposalSaved: doc.proposal !== undefined,
     sentAt: doc.sent?.sentAt ?? null,
     hasPortalLink: Boolean(doc.portal?.tokenHash),
+    changeCount: doc.changeCounter ?? 0,
     lastDecision: doc.lastDecision
       ? {
           ...doc.lastDecision,

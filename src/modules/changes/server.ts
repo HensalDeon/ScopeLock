@@ -3,7 +3,11 @@
  */
 import "server-only";
 
-export { getChangeOrNotFound, listChanges } from "./server/queries";
+export {
+  getChangeOrNotFound,
+  listChanges,
+  listOpenChanges,
+} from "./server/queries";
 export { changeOrderData } from "./server/document";
 // For the portal module (repository level, workspace given by the link).
 export {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ClientList } from "@/modules/clients";
 import { listClients } from "@/modules/clients/server";
+import { listProjects } from "@/modules/projects/server";
 import { Button } from "@/shared/ui/button";
 import { EmptyState, ListSkeleton } from "@/shared/ui/list-states";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
@@ -33,15 +34,20 @@ export default function ClientsPage() {
 }
 
 async function Clients() {
-  const [active, archived] = await Promise.all([
+  const [active, archived, projects] = await Promise.all([
     listClients(),
     listClients({ archived: true }),
+    listProjects(),
   ]);
+  const projectCounts = new Map<string, number>();
+  for (const p of projects) {
+    projectCounts.set(p.clientId, (projectCounts.get(p.clientId) ?? 0) + 1);
+  }
 
   return (
     <div className="grid gap-8">
       {active.length > 0 ? (
-        <ClientList clients={active} />
+        <ClientList clients={active} projectCounts={projectCounts} />
       ) : (
         <EmptyState
           title="No clients yet"
@@ -63,7 +69,7 @@ async function Clients() {
             Archived clients ({archived.length})
           </summary>
           <div className="mt-3">
-            <ClientList clients={archived} />
+            <ClientList clients={archived} projectCounts={projectCounts} />
           </div>
         </details>
       )}
