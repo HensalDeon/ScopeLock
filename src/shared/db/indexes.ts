@@ -43,6 +43,11 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
   [COLLECTIONS.requestLimits]: [
     { key: { expiresAt: 1 }, expireAfterSeconds: 0 },
   ],
+  [COLLECTIONS.changeRequests]: [
+    // CR-001, CR-002… are unique within a project.
+    { key: { workspaceId: 1, projectId: 1, number: 1 }, unique: true },
+  ],
+  [COLLECTIONS.activity]: [{ key: { workspaceId: 1, projectId: 1, at: -1 } }],
   [COLLECTIONS.approvals]: [
     { key: { workspaceId: 1, projectId: 1, decidedAt: -1 } },
     // A subject (a sent proposal) can be approved only once, even on a

@@ -1,8 +1,11 @@
 import { z } from "zod";
 
-/** What was decided on. "baseline" = the project's first proposal; change
- * requests join in Phase 4. */
-export type ApprovalSubject = { type: "baseline"; id: string };
+/** What was decided on: the project's proposal ("baseline", id = project id)
+ * or a change request (id = the CR's id). */
+export type ApprovalSubject = {
+  type: "baseline" | "change_request";
+  id: string;
+};
 
 export type Decision = "approved" | "rejected";
 
@@ -20,6 +23,8 @@ export type Approval = {
   hashVersion: number;
   ip: string | null;
   userAgent: string | null;
+  /** "Proposal" or "CR-001 Blog section", from the snapshot. */
+  label: string;
 };
 
 export const DECISION_FIELDS = [
@@ -64,7 +69,7 @@ export const decisionInputSchema = z
   })
   .refine((input) => input.decision !== "rejected" || Boolean(input.comment), {
     path: ["comment"],
-    message: "Say what you'd like changed.",
+    message: "Add a short note, so they know what to change.",
     // Check it even while other fields (name, email) are still wrong, so
     // every problem shows at once.
     when: ({ value }) => {

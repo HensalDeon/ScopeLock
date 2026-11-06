@@ -46,7 +46,17 @@ export function toApproval(doc: ApprovalDoc): Approval {
     hashVersion: doc.hashVersion,
     ip: doc.ip,
     userAgent: doc.userAgent,
+    label: subjectLabel(doc),
   };
+}
+
+function subjectLabel(doc: ApprovalDoc): string {
+  if (doc.subject.type === "baseline") return "Proposal";
+  const { reference, title } = doc.snapshot as {
+    reference?: unknown;
+    title?: unknown;
+  };
+  return [reference, title].filter((v) => typeof v === "string").join(" ");
 }
 
 export async function insertApproval(
@@ -55,6 +65,14 @@ export async function insertApproval(
   session: ClientSession,
 ): Promise<void> {
   await approvals(workspaceId).insertOne(doc, { session });
+}
+
+export async function findApproval(
+  workspaceId: string,
+  projectId: ObjectId,
+  id: ObjectId,
+): Promise<ApprovalDoc | null> {
+  return approvals(workspaceId).findOne({ _id: id, projectId });
 }
 
 /** Newest first. */

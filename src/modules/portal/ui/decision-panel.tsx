@@ -36,16 +36,23 @@ type Values = Record<DecisionField, string>;
  */
 export function DecisionPanel({
   action: decide,
+  kind,
   businessName,
   total,
   defaults,
 }: {
   action: (state: DecisionState, data: FormData) => Promise<DecisionState>;
+  /** The proposal, or a change request after it. */
+  kind: "proposal" | "change";
   businessName: string;
   /** Formatted, e.g. "₹80,000". */
   total: string;
   defaults: { name: string; email: string };
 }) {
+  const copy =
+    kind === "proposal"
+      ? proposalCopy(businessName, total)
+      : changeCopy(businessName, total);
   const uid = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState<DecisionState, FormData>(
@@ -121,14 +128,14 @@ export function DecisionPanel({
             onSelect={() => choose("approved")}
             icon={<Check aria-hidden />}
             title="Approve"
-            detail={`The scope and ${total} as written`}
+            detail={copy.approveDetail}
           />
           <ChoiceButton
             selected={choice === "rejected"}
             onSelect={() => choose("rejected")}
             icon={<MessageSquareText aria-hidden />}
-            title="Ask for changes"
-            detail={`Tell ${businessName} what to change`}
+            title={copy.rejectTitle}
+            detail={copy.rejectDetail}
           />
         </div>
         {form.errorFor("decision") && (
@@ -144,13 +151,13 @@ export function DecisionPanel({
                 data-invalid={Boolean(form.errorFor("comment")) || undefined}
               >
                 <FieldLabel htmlFor={`${uid}-comment`}>
-                  What would you like changed?
+                  {copy.rejectLabel}
                 </FieldLabel>
                 <Textarea
                   {...field("comment")}
                   rows={4}
                   maxLength={DECISION_LIMITS.comment}
-                  placeholder="For example: add a blog section, and move launch to 15 Dec."
+                  placeholder={copy.rejectPlaceholder}
                 />
                 <FieldError>{form.errorFor("comment")}</FieldError>
               </Field>
@@ -205,12 +212,10 @@ export function DecisionPanel({
                     : `Approve for ${total}`
                   : pending
                     ? "Sending…"
-                    : "Send my changes"}
+                    : copy.rejectSubmit}
               </Button>
               <FieldDescription>
-                {choice === "approved"
-                  ? `Your name, email, the time and your IP address are saved with a copy of this proposal, so you and ${businessName} have the same record of what was agreed.`
-                  : `${businessName} gets your note by email and will send an updated proposal to this same link.`}
+                {choice === "approved" ? copy.approveNote : copy.rejectNote}
               </FieldDescription>
             </div>
           </>
@@ -252,4 +257,31 @@ function ChoiceButton({
       </span>
     </button>
   );
+}
+
+function proposalCopy(business: string, total: string) {
+  return {
+    approveDetail: `The scope and ${total} as written`,
+    rejectTitle: "Ask for changes",
+    rejectDetail: `Tell ${business} what to change`,
+    rejectLabel: "What would you like changed?",
+    rejectPlaceholder:
+      "For example: add a blog section, and move launch to 15 Dec.",
+    rejectSubmit: "Send my changes",
+    approveNote: `Your name, email, the time and your IP address are saved with a copy of this proposal, so you and ${business} have the same record of what was agreed.`,
+    rejectNote: `${business} gets your note by email and will send an updated proposal to this same link.`,
+  };
+}
+
+function changeCopy(business: string, total: string) {
+  return {
+    approveDetail: `Add this to the project for ${total}`,
+    rejectTitle: "Decline",
+    rejectDetail: "Nothing is added to the project",
+    rejectLabel: `Why are you declining? ${business} may be able to adjust it.`,
+    rejectPlaceholder: "For example: the price is more than we planned.",
+    rejectSubmit: "Decline this change",
+    approveNote: `Your name, email, the time and your IP address are saved with a copy of this change request, so you and ${business} have the same record of what was agreed.`,
+    rejectNote: `${business} gets your note by email. Nothing is added to the project.`,
+  };
 }

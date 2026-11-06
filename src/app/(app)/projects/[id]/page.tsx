@@ -2,8 +2,12 @@ import { Eye, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { ActivityTimeline } from "@/modules/activity";
+import { listProjectActivity } from "@/modules/activity/server";
 import { ApprovalHistory } from "@/modules/approvals";
 import { listApprovalsForProject } from "@/modules/approvals/server";
+import { ChangeList, scheduleAdditions } from "@/modules/changes";
+import { listChanges } from "@/modules/changes/server";
 import { clientFirstName } from "@/modules/clients";
 import {
   DeleteProjectButton,
@@ -16,7 +20,7 @@ import {
 import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { formatDateTime } from "@/shared/lib/dates";
-import { formatMoney, minor } from "@/shared/lib/money";
+import { formatMoney, minor, sum } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
@@ -40,12 +44,20 @@ async function ProjectDetail({
   params: PageProps<"/projects/[id]">["params"];
 }) {
   const { id } = await params;
-  const [project, share, approvals, { user }] = await Promise.all([
-    getProjectOrNotFound(id),
-    getShareState(id),
-    listApprovalsForProject(id),
-    requireWorkspace(),
-  ]);
+  const [project, share, approvals, changes, activity, { user }] =
+    await Promise.all([
+      getProjectOrNotFound(id),
+      getShareState(id),
+      listApprovalsForProject(id),
+      listChanges(id),
+      listProjectActivity(id),
+      requireWorkspace(),
+    ]);
+  const money = (amount: number) =>
+    formatMoney(minor(amount), project.currency);
+  const { approvedChanges, pendingChanges } = project.totals;
+  const approved =
+    project.status !== "draft" && project.status !== "awaiting_approval";
   const editable = isEditable(project.status);
   const client = project.client;
   const firstName = client ? clientFirstName(client) : "your client";
@@ -115,6 +127,25 @@ async function ProjectDetail({
         </div>
       )}
 
+      {approved && (approvedChanges > 0 || pendingChanges > 0) && (
+        <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 rounded-xl border bg-canvas px-5 py-4">
+          <p className="text-[15px] tabular-nums">
+            <span className="text-muted-foreground">Agreed </span>
+            {money(project.baseline.total)}
+            <span className="px-2 text-muted-foreground">→</span>
+            <span className="text-muted-foreground">Now </span>
+            <span className="font-semibold">
+              {money(sum([project.baseline.total, minor(approvedChanges)]))}
+            </span>
+          </p>
+          {pendingChanges > 0 && (
+            <p className="text-sm text-warning-ink tabular-nums">
+              {money(pendingChanges)} waiting for approval
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="grid gap-8">
           <section
@@ -139,11 +170,40 @@ async function ProjectDetail({
             >
               Payment terms
             </h2>
-            <MilestoneTable project={project} />
+            <MilestoneTable
+              project={project}
+              additions={scheduleAdditions(project.milestones, changes)}
+            />
+          </section>
+          {approved && (
+            <ChangeList
+              projectId={project.id}
+              changes={changes}
+              currency={project.currency}
+              canCreate={project.status === "active"}
+              addons={project.proposal.addons}
+              headingId={`changes-${project.id}`}
+            />
+          )}
+          <section
+            aria-labelledby={`activity-${project.id}`}
+            className="grid gap-3"
+          >
+            <h2
+              id={`activity-${project.id}`}
+              className="text-[15px] font-semibold"
+            >
+              Activity
+            </h2>
+            <ActivityTimeline
+              items={activity}
+              empty="Sending, approvals and change requests will show here as they happen."
+            />
           </section>
           <ApprovalHistory
             approvals={approvals}
             headingId={`answers-${project.id}`}
+            projectId={project.id}
           />
         </div>
 

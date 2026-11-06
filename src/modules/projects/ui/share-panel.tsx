@@ -1,19 +1,11 @@
 "use client";
 
-import { Check, Copy, MessageCircle } from "lucide-react";
-import {
-  useActionState,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useState,
-} from "react";
+import { useActionState, useLayoutEffect, useState } from "react";
 import { formatDateTime } from "@/shared/lib/dates";
 import { IDLE } from "@/shared/lib/form-state";
-import { whatsappLink } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { ShareLink } from "@/shared/ui/share-link";
 import type { ProjectDecision, ProjectStatus } from "../domain/project";
 import {
   regeneratePortalLink,
@@ -131,7 +123,7 @@ export function SharePanel({
       )}
 
       {url ? (
-        <LinkTools url={url} phone={client.phone} message={message} />
+        <ShareLink url={url} phone={client.phone} message={message} />
       ) : (
         <Body>
           This link can&apos;t be shown again because the app&apos;s security
@@ -152,70 +144,6 @@ export function SharePanel({
         <ReplaceLink projectId={projectId} />
       </div>
     </Card>
-  );
-}
-
-function LinkTools({
-  url,
-  phone,
-  message,
-}: {
-  url: string;
-  phone: string | null;
-  message: string;
-}) {
-  const uid = useId();
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return;
-    const t = setTimeout(() => setCopied(false), 2000);
-    return () => clearTimeout(t);
-  }, [copied]);
-
-  const text = `${message} ${url}`;
-  const whatsapp = phone
-    ? whatsappLink(phone, text)
-    : `https://wa.me/?text=${encodeURIComponent(text)}`;
-
-  return (
-    <div className="grid gap-2">
-      <label htmlFor={`${uid}-link`} className="sr-only">
-        Client link
-      </label>
-      <Input
-        id={`${uid}-link`}
-        readOnly
-        value={url}
-        onFocus={(e) => e.currentTarget.select()}
-        className="font-mono text-xs"
-      />
-      <div className="grid grid-cols-2 gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(url);
-              setCopied(true);
-            } catch {
-              document.getElementById(`${uid}-link`)?.focus();
-            }
-          }}
-        >
-          {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
-          {copied ? "Copied" : "Copy link"}
-        </Button>
-        <Button asChild>
-          <a href={whatsapp} target="_blank" rel="noopener noreferrer">
-            <MessageCircle aria-hidden />
-            WhatsApp
-          </a>
-        </Button>
-      </div>
-      <p aria-live="polite" className="sr-only">
-        {copied ? "Link copied" : ""}
-      </p>
-    </div>
   );
 }
 

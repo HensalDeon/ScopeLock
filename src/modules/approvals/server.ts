@@ -6,6 +6,7 @@ import "server-only";
 
 export { recordDecision } from "./server/record";
 export {
+  getApprovalWithSnapshot,
   listApprovalsForProject,
   type CheckedApproval,
 } from "./server/queries";

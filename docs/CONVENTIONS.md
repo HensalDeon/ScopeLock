@@ -21,6 +21,8 @@ src/
   modules/documents/      Client-facing document templates, style and default text. Other
                           modules hand it plain data (ProposalDocumentData) to render.
   modules/approvals/      Signed, insert-only evidence of client decisions.
+  modules/changes/        Change requests after the baseline: billing placement, change orders.
+  modules/activity/       Insert-only project history; filtered and reworded for the client.
   modules/portal/         The client's public pages (/c/[token]); no sign-in. Exposes
                           only server.ts (PortalPage) and a public server action.
   shared/
@@ -76,6 +78,7 @@ Then:
   - Embedded items (scope lines, milestones) get `randomUUID()` ids.
 - **Multi-document writes** that must agree (approval + status + payment line) go in `withTransaction()`. Pass `{ session }` to every write. Don't send emails inside a transaction, because it can retry.
 - **State changes are atomic:** `findOneAndUpdate({ _id, status: "sent" }, { $set: { status: "approved" } })`. If it returns `null`, someone else got there first.
+- **Activity:** every user-visible state change writes an activity event (`logActivity` after the change; `logActivityInTransaction` inside a client decision). New event types say in `isClientVisible` whether the client may see them. Never put IPs, internal notes or link changes in client-visible events.
 - **Money** is integer minor units (`Minor`; `Paise` for rupee-only code), always. The currency lives on the record (a project's `currency`), and amounts are never summed across currencies. Use `allocate()` for splits, `parseAmount()` for input and `formatMoney(amount, currency)` for display.
 
 ## 4. Server actions

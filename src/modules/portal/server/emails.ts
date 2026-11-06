@@ -46,3 +46,52 @@ export function decisionEmail(input: {
     },
   };
 }
+
+/** To the freelancer, when the client answers a change request. */
+export function changeDecisionEmail(input: {
+  decision: "approved" | "rejected";
+  label: string;
+  title: string;
+  projectTitle: string;
+  total: string;
+  billing: string;
+  clientName: string;
+  clientEmail: string;
+  comment: string | null;
+  at: Date;
+  url: string;
+}): { subject: string; content: EmailContent } {
+  const when = formatDateTime(input.at);
+  const who = `${input.clientName} (${input.clientEmail})`;
+  const what = `${input.label} ${input.title}`;
+  if (input.decision === "approved") {
+    return {
+      subject: `${input.clientName} approved ${input.label}: ${input.title}`,
+      content: {
+        preview: `${input.total} · ${input.projectTitle} · ${when}`,
+        heading: `${input.label} is approved`,
+        paragraphs: [
+          `${who} approved ${what} for ${input.total} on ${when}.`,
+          input.billing,
+          ...(input.comment ? [`Their note: “${input.comment}”`] : []),
+        ],
+        action: { label: "Open the change request", url: input.url },
+        footnote:
+          "ScopeLock keeps a signed record of exactly what was approved, with the time, name and email.",
+      },
+    };
+  }
+  return {
+    subject: `${input.clientName} declined ${input.label}: ${input.title}`,
+    content: {
+      preview: input.comment ?? `${input.projectTitle} · ${when}`,
+      heading: `${input.label} was declined`,
+      paragraphs: [
+        `${who} declined ${what} (${input.total}) on ${when}.`,
+        ...(input.comment ? [`What they said: “${input.comment}”`] : []),
+        "Nothing was added to the project. You can send a new change request with a different price or scope.",
+      ],
+      action: { label: "Open the change request", url: input.url },
+    },
+  };
+}

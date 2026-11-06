@@ -60,3 +60,33 @@ export type ProposalDocumentData = {
   exclusions: string[];
   terms: string[];
 };
+
+/**
+ * A change order: one change request as the client sees and approves it.
+ * Frozen when sent; the same shape is the approval snapshot.
+ */
+export type ChangeOrderData = {
+  voice: "I" | "we";
+  business: ProposalDocumentData["business"];
+  client: ProposalDocumentData["client"];
+  /** "CR-001". */
+  reference: string;
+  /** The approved proposal it changes: "P-1F107C". */
+  projectReference: string;
+  projectTitle: string;
+  currency: CurrencyCode;
+  title: string;
+  description: string | null;
+  items: {
+    id: string;
+    title: string;
+    description: string | null;
+    amount: Minor;
+  }[];
+  total: Minor;
+  /** Where the money goes, in words: "Added to the “Before launch” payment." */
+  billing: string;
+  /** The approved proposal's total, for context. */
+  originalTotal: Minor;
+  issuedOn: Date;
+};

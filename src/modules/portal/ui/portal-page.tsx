@@ -1,13 +1,22 @@
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ActivityTimeline } from "@/modules/activity";
+import {
+  CHANGE_STATUS_LABELS,
+  changeLabel,
+  type ChangeRequest,
+} from "@/modules/changes";
 import { ClassicDocument } from "@/modules/documents";
 import { formatDateTime } from "@/shared/lib/dates";
-import { formatMoney, minor } from "@/shared/lib/money";
-import { LogoMark } from "@/shared/ui/brand";
+import { formatMoney, minor, sum } from "@/shared/lib/money";
+import { cn } from "@/shared/lib/utils";
 import { PrintButton } from "@/shared/ui/print-button";
 import { decideProposal } from "../server/actions";
 import { getPortalView } from "../server/queries";
 import { DecisionPanel } from "./decision-panel";
+import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";
 
-/** The client's page for a proposal link: the document and their answer. */
+/** The client's page for a link: the proposal, its changes and history. */
 export async function PortalPage({ token }: { token: string }) {
   const view = await getPortalView(token);
 
@@ -31,33 +40,29 @@ export async function PortalPage({ token }: { token: string }) {
     );
   }
 
-  const total = formatMoney(minor(data.total), data.currency);
+  const money = (amount: number) => formatMoney(minor(amount), data.currency);
+  const projectTotal = sum([
+    minor(data.total),
+    minor(view.totals.approvedChanges),
+  ]);
+  const waiting = view.changes.filter((c) => c.status === "sent");
 
   return (
     <>
-      <header className="sticky top-0 z-10 border-b border-black/10 bg-white/95 backdrop-blur print:hidden">
-        <div className="mx-auto flex max-w-[210mm] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
-              Proposal from {business}
-            </p>
-            <p className="truncate text-xs text-muted-foreground tabular-nums">
-              {data.reference} · {total}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {state === "awaiting" && (
-              <a
-                href="#answer"
-                className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80"
-              >
-                Approve or ask for changes
-              </a>
-            )}
-            <PrintButton label="Save PDF" />
-          </div>
-        </div>
-      </header>
+      <PortalHeader
+        title={`Proposal from ${business}`}
+        detail={`${data.reference} · ${money(state === "approved" ? projectTotal : data.total)}`}
+      >
+        {state === "awaiting" && (
+          <a
+            href="#answer"
+            className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80"
+          >
+            Approve or ask for changes
+          </a>
+        )}
+        <PrintButton label="Save PDF" />
+      </PortalHeader>
 
       {state === "approved" && decision && (
         <StatusStrip tone="done">
@@ -72,6 +77,87 @@ export async function PortalPage({ token }: { token: string }) {
       )}
 
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
+        {state === "approved" && (
+          <div className="mx-auto mb-0 grid max-w-[210mm] gap-6 border-b bg-white px-5 py-7 sm:mb-6 sm:rounded-sm sm:border sm:px-10 print:hidden">
+            {waiting.length > 0 && (
+              <section aria-labelledby="waiting-heading" className="grid gap-3">
+                <h2 id="waiting-heading" className="text-base font-semibold">
+                  Waiting for your answer
+                </h2>
+                <ul className="grid gap-2">
+                  {waiting.map((c) => (
+                    <li key={c.id}>
+                      <Link
+                        href={`/c/${token}/changes/${c.number}`}
+                        className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning-soft px-4 py-3 hover:border-warning"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-mono text-[11px] tracking-[0.12em] text-warning-ink uppercase">
+                            {changeLabel(c.number)}
+                          </span>
+                          <span className="block truncate text-[15px] font-medium">
+                            {c.title}
+                          </span>
+                        </span>
+                        <span className="text-[15px] font-semibold tabular-nums">
+                          {money(c.total)}
+                        </span>
+                        <span className="hidden text-sm font-medium sm:inline">
+                          Review
+                        </span>
+                        <ChevronRight aria-hidden className="size-4 shrink-0" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <section aria-labelledby="totals-heading" className="grid gap-2">
+              <h2 id="totals-heading" className="text-base font-semibold">
+                Project total
+              </h2>
+              <dl className="grid gap-1.5 text-sm">
+                <Row label="Approved proposal">{money(data.total)}</Row>
+                <Row label="Approved changes">
+                  {money(view.totals.approvedChanges)}
+                </Row>
+                <Row label="Total so far" strong>
+                  {money(projectTotal)}
+                </Row>
+              </dl>
+            </section>
+
+            {view.changes.length > 0 && (
+              <section aria-labelledby="changes-heading" className="grid gap-2">
+                <h2 id="changes-heading" className="text-base font-semibold">
+                  Change requests
+                </h2>
+                <ul className="divide-y rounded-lg border">
+                  {view.changes.map((c) => (
+                    <ChangeRow
+                      key={c.id}
+                      change={c}
+                      token={token}
+                      money={money}
+                    />
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <section aria-labelledby="history-heading" className="grid gap-3">
+              <h2 id="history-heading" className="text-base font-semibold">
+                History
+              </h2>
+              <ActivityTimeline
+                items={view.history}
+                empty="Your approvals and change requests will appear here."
+              />
+            </section>
+          </div>
+        )}
+
         <ClassicDocument
           data={data}
           style={view.style}
@@ -95,14 +181,15 @@ export async function PortalPage({ token }: { token: string }) {
               Approve this proposal, or ask for changes
             </h2>
             <p className="mt-2 mb-6 max-w-prose text-[15px] leading-relaxed text-pretty text-muted-foreground">
-              Approving agrees the scope above for {total}. Anything extra later
-              comes to you as a separate request with its own price, for you to
-              approve or not.
+              Approving agrees the scope above for {money(data.total)}. Anything
+              extra later comes to you as a separate request with its own price,
+              for you to approve or not.
             </p>
             <DecisionPanel
+              kind="proposal"
               action={decideProposal.bind(null, token)}
               businessName={business}
-              total={total}
+              total={money(data.total)}
               defaults={{
                 name: data.client?.name ?? "",
                 email: data.client?.email ?? "",
@@ -116,55 +203,79 @@ export async function PortalPage({ token }: { token: string }) {
   );
 }
 
-function StatusStrip({
-  tone,
+function Row({
+  label,
+  strong,
   children,
 }: {
-  tone: "done" | "waiting";
+  label: string;
+  strong?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div
-      role="status"
-      className={
-        tone === "done"
-          ? "border-b border-brand/25 bg-success-soft print:hidden"
-          : "border-b border-warning/30 bg-warning-soft print:hidden"
-      }
+      className={cn(
+        "flex items-baseline justify-between gap-4",
+        strong && "border-t pt-2 text-[15px] font-semibold",
+      )}
     >
-      <p
-        className={`mx-auto max-w-[210mm] px-4 py-3 text-sm font-medium text-pretty ${tone === "done" ? "text-foreground" : "text-warning-ink"}`}
-      >
-        {children}
-      </p>
+      <dt className={strong ? undefined : "text-muted-foreground"}>{label}</dt>
+      <dd className="tabular-nums">{children}</dd>
     </div>
   );
 }
 
-function Notice({
-  title,
-  children,
+function ChangeRow({
+  change,
+  token,
+  money,
 }: {
-  title: string;
-  children: React.ReactNode;
+  change: ChangeRequest;
+  token: string;
+  money: (amount: number) => string;
 }) {
+  // A change the freelancer took back reads as "being updated" to the client.
+  const status =
+    change.status === "draft"
+      ? "Being updated"
+      : CHANGE_STATUS_LABELS[change.status];
   return (
-    <main className="flex min-h-dvh items-center px-5 py-16">
-      <div className="mx-auto grid w-full max-w-md gap-3 rounded-lg border bg-white p-6">
-        <h1 className="text-lg font-semibold text-balance">{title}</h1>
-        <p className="text-[15px] leading-relaxed text-pretty text-muted-foreground">
-          {children}
-        </p>
-      </div>
-    </main>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="flex items-center justify-center gap-2 px-4 py-8 text-xs text-[#6b6f76] print:hidden">
-      <LogoMark className="size-3.5" />
-      Sent with ScopeLock
-    </footer>
+    <li>
+      <Link
+        href={`/c/${token}/changes/${change.number}`}
+        className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50"
+      >
+        <span className="w-14 shrink-0 font-mono text-[11px] tracking-[0.08em] text-muted-foreground">
+          {changeLabel(change.number)}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-medium">{change.title}</span>
+          <span
+            className={cn(
+              "text-xs",
+              change.status === "approved" && "text-brand-ink",
+              change.status === "sent" && "text-warning-ink",
+              !["approved", "sent"].includes(change.status) &&
+                "text-muted-foreground",
+            )}
+          >
+            {status}
+          </span>
+        </span>
+        <span
+          className={cn(
+            "tabular-nums",
+            ["rejected", "withdrawn"].includes(change.status) &&
+              "text-muted-foreground line-through",
+          )}
+        >
+          {money(change.total)}
+        </span>
+        <ChevronRight
+          aria-hidden
+          className="size-4 shrink-0 text-muted-foreground"
+        />
+      </Link>
+    </li>
   );
 }

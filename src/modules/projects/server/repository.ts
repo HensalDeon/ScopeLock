@@ -42,6 +42,8 @@ type ProjectDoc = WorkspaceOwned & {
   sent?: SentProposal | null;
   lastDecision?:
     (Omit<ProjectDecision, "approvalId"> & { approvalId: ObjectId }) | null;
+  /** Last change request number used (CR-001 = 1). */
+  changeCounter?: number;
 };
 
 export type PortalLink = {
@@ -358,4 +360,42 @@ export async function applyDecision(
     { session },
   );
   return updated !== null;
+}
+
+// ── Change requests (used by the changes module) ───────────────────────────
+
+/**
+ * The next CR number for an approved project (1, 2, 3…), from an atomic
+ * counter on the project, so two people can't get the same number. Null if
+ * the project isn't active.
+ */
+export async function nextChangeNumber(
+  workspaceId: string,
+  id: ObjectId,
+): Promise<number | null> {
+  const doc = await projects(workspaceId).findOneAndUpdate(
+    { _id: id, status: "active" },
+    { $inc: { changeCounter: 1 } },
+    { returnDocument: "after", projection: { changeCounter: 1 } },
+  );
+  return doc?.changeCounter ?? null;
+}
+
+/** Keeps the project's denormalised change totals in step. */
+export async function setChangeTotals(
+  workspaceId: string,
+  id: ObjectId,
+  totals: { approved: number; pending: number },
+  session?: ClientSession,
+): Promise<void> {
+  await projects(workspaceId).updateOne(
+    { _id: id },
+    {
+      $set: {
+        "totals.approvedChanges": totals.approved,
+        "totals.pendingChanges": totals.pending,
+      },
+    },
+    { session },
+  );
 }

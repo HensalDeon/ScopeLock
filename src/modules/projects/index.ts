@@ -15,7 +15,11 @@ export {
   indiaDatePlusDays,
   proposalFormDefaults,
 } from "./ui/proposal-form-defaults";
-export { MilestoneTable, ScopeTable } from "./ui/project-plan";
+export {
+  MilestoneTable,
+  ScopeTable,
+  type ScheduleAdditions,
+} from "./ui/project-plan";
 export {
   ProjectForm,
   type ClientOption,

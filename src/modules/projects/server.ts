@@ -5,6 +5,7 @@ import "server-only";
 
 export {
   countProjects,
+  findProjectWithClient,
   getProjectOrNotFound,
   listProjects,
   getShareState,
@@ -12,8 +13,10 @@ export {
   type ProjectWithClient,
   type ShareState,
 } from "./server/queries";
-// For the client portal module only (public, token-based).
+// For the changes and portal modules (repository level, workspace given).
 export {
+  nextChangeNumber,
+  setChangeTotals,
   applyDecision,
   findByPortalTokenHash,
   type PortalProject,
@@ -21,6 +24,7 @@ export {
 } from "./server/repository";
 export { PORTAL_TOKEN_PATTERN } from "./server/portal";
 export {
+  documentBusiness,
   getProposalDocument,
   projectReference,
   toProposalDocument,

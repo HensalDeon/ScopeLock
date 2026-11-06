@@ -19,6 +19,8 @@ export const COLLECTIONS = {
   projects: "projects",
   documentSettings: "documentSettings",
   approvals: "approvals",
+  changeRequests: "changeRequests",
+  activity: "activity",
   requestLimits: "requestLimits",
 } as const;
 

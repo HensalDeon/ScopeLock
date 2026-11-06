@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import type { ObjectId } from "mongodb";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { logActivity } from "@/modules/activity/server";
 import { clientFirstName } from "@/modules/clients";
 import { getDocumentSettings } from "@/modules/documents/server";
 import { z } from "zod";
@@ -34,6 +35,9 @@ const objectIdField = z.string().transform((value, ctx) => {
   }
   return id;
 });
+
+const member = (user: { id: string; name: string }) =>
+  ({ kind: "member", userId: user.id, name: user.name }) as const;
 
 const LOCKED =
   "This project's scope has been sent for approval, so it can't be changed here. New work goes in a change request.";
@@ -74,9 +78,14 @@ export const createProject = workspaceAction(
     schema: projectInputSchema,
     failureMessage: "The project wasn't saved. Please try again.",
   },
-  async (input, { workspace }) => {
+  async (input, { workspace, user }) => {
     const data = await toProjectData(input);
     const id = await repo.insertProject(workspace.workspaceId, data);
+    await logActivity(workspace.workspaceId, {
+      projectId: parseObjectId(id) as ObjectId,
+      type: "project.created",
+      actor: member(user),
+    });
     redirect(`/projects/${id}`);
   },
 );
@@ -180,6 +189,13 @@ export const sendProposal = workspaceAction(
         "This proposal has already been sent. Refresh the page to see where it is.",
       );
     }
+    await logActivity(context.workspace.workspaceId, {
+      projectId: id,
+      type: "proposal.sent",
+      at: now,
+      actor: member(context.user),
+      data: { amount: data.total, currency: data.currency },
+    });
     refresh();
     return {
       message: `Sent. Share the link with ${clientFirstName(project.client)} on WhatsApp or email.`,
@@ -193,13 +209,18 @@ export const withdrawProposal = workspaceAction(
     ...idOnly,
     failureMessage: "The proposal wasn't withdrawn. Please try again.",
   },
-  async ({ id }, { workspace }) => {
+  async ({ id }, { workspace, user }) => {
     const done = await repo.markWithdrawn(workspace.workspaceId, id);
     if (!done) {
       throw new UserError(
         "The client has already answered, or the proposal was withdrawn. Refresh the page.",
       );
     }
+    await logActivity(workspace.workspaceId, {
+      projectId: id,
+      type: "proposal.withdrawn",
+      actor: member(user),
+    });
     refresh();
     return { message: "Withdrawn. Edit the scope, then send it again." };
   },
@@ -216,6 +237,11 @@ export const regeneratePortalLink = workspaceAction(
       throw new UserError("Send the proposal first. That creates the link.");
     }
     await repo.replacePortal(workspace.workspaceId, id, newPortalLink());
+    await logActivity(workspace.workspaceId, {
+      projectId: id,
+      type: "link.replaced",
+      actor: member(user),
+    });
     refresh();
     return { message: "New link ready. The old link no longer opens." };
   },

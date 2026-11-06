@@ -1,6 +1,12 @@
+import Link from "next/link";
 import { formatDateTime } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
-import { DECISION_LABELS, type Approval } from "../domain/approval";
+import type { Approval } from "../domain/approval";
+
+function verdict(a: Approval): string {
+  if (a.decision === "approved") return "Approved";
+  return a.subject.type === "baseline" ? "Changes requested" : "Declined";
+}
 
 /**
  * The client's answers on a project, newest first. Each record is checked
@@ -9,9 +15,11 @@ import { DECISION_LABELS, type Approval } from "../domain/approval";
 export function ApprovalHistory({
   approvals,
   headingId,
+  projectId,
 }: {
   approvals: (Approval & { intact: boolean })[];
   headingId: string;
+  projectId: string;
 }) {
   if (approvals.length === 0) return null;
   return (
@@ -22,6 +30,9 @@ export function ApprovalHistory({
       <ol className="grid gap-3">
         {approvals.map((a) => (
           <li key={a.id} className="grid gap-2 rounded-xl border p-4 text-sm">
+            <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
+              {a.label}
+            </p>
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
               <p className="font-medium">
                 <span
@@ -31,7 +42,7 @@ export function ApprovalHistory({
                   )}
                   aria-hidden
                 />
-                {DECISION_LABELS[a.decision]} by {a.decidedBy.name}
+                {verdict(a)} by {a.decidedBy.name}
               </p>
               <p className="text-muted-foreground tabular-nums">
                 {formatDateTime(a.decidedAt)}
@@ -58,6 +69,12 @@ export function ApprovalHistory({
                   : "Doesn't match its signature. Contact support."}
               </dd>
             </dl>
+            <Link
+              href={`/projects/${projectId}/answers/${a.id}`}
+              className="justify-self-start text-sm font-medium underline-offset-4 hover:underline"
+            >
+              View the version they saw
+            </Link>
           </li>
         ))}
       </ol>

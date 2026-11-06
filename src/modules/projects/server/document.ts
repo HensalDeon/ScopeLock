@@ -60,15 +60,28 @@ export function currentProposalData(
 ): ProposalDocumentData {
   return toProposalDocument(
     project,
-    {
-      name: workspace.businessName,
-      tagline: BUSINESS_TYPE_LABELS[workspace.businessType].title,
-      email: user.email,
-      phone: workspace.phone,
-      voice: workspace.businessType === "freelancer" ? "I" : "we",
-    },
+    documentBusiness({ workspace, user }),
     defaults,
   );
+}
+
+/** The business details every client document shows (proposal, CRs). */
+export function documentBusiness({
+  workspace,
+  user,
+}: Pick<
+  WorkspaceContext,
+  "workspace" | "user"
+>): ProposalDocumentData["business"] & {
+  voice: "I" | "we";
+} {
+  return {
+    name: workspace.businessName,
+    tagline: BUSINESS_TYPE_LABELS[workspace.businessType].title,
+    email: user.email,
+    phone: workspace.phone,
+    voice: workspace.businessType === "freelancer" ? "I" : "we",
+  };
 }
 
 /**

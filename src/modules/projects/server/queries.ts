@@ -41,6 +41,19 @@ export async function countProjects(): Promise<number> {
   return repo.countProjects(workspace.workspaceId);
 }
 
+/** For actions: the project with its client, or null. */
+export async function findProjectWithClient(
+  id: string,
+): Promise<ProjectWithClient | null> {
+  const objectId = parseObjectId(id);
+  if (!objectId) return null;
+  const { workspace } = await requireWorkspace();
+  const project = await repo.findProject(workspace.workspaceId, objectId);
+  if (!project) return null;
+  const [withClient] = await withClients([project]);
+  return withClient ?? null;
+}
+
 /** For pages: the project with its client, or the 404 page. */
 export async function getProjectOrNotFound(
   id: string,
