@@ -21,7 +21,8 @@ export const STARTER_PROPOSAL_DEFAULTS: ProposalDefaults = {
     "Design includes 2 rounds of revisions. Further rounds are quoted as a change request.",
     "New pages or features requested after approval are priced as change requests before any work starts.",
     "Timelines depend on receiving content and feedback on time.",
-    "Prices are in Indian rupees. GST is extra where applicable.",
+    // Currency-neutral: projects can be billed in any supported currency.
+    "Prices are in the currency shown on this proposal. GST or other taxes are extra where applicable.",
   ],
   exclusions: [
     "Domain registration and hosting fees",
