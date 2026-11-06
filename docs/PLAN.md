@@ -18,6 +18,19 @@
 7. **ScopeLock never holds client money.** Money goes straight to the freelancer, so we don't act as a payment aggregator and avoid RBI compliance.
 8. **The evidence can't be changed.** Every approval saves a frozen snapshot, a content hash, the timestamp, IP address, user agent, and the approver's name and email.
 9. **Clients don't log in.** Clients reach their pages through secret links. Email OTP verification for approvers comes after the MVP.
+10. **Client-facing documents carry the freelancer's brand.**
+    - The proposal (quotation), change orders and invoices share one document style, set in Settings → Documents: template, accent colour, cover image and logo.
+    - The client approves exactly what they see, so the approval snapshot includes the full proposal content.
+11. **Each project has one currency.**
+    - Supported: INR, USD, EUR, GBP, AED, CAD, AUD and SGD, all two-decimal, so amounts stay integer minor units.
+    - The workspace has a default (INR), and each client can have their own.
+    - A project picks up its client's currency and is locked once sent. Its CRs, payments and invoices use the same currency.
+    - Totals are never added across currencies.
+12. **Invoices follow Indian norms.**
+    - Every invoice gets a sequential number that never repeats.
+    - GST lines appear only when the freelancer has added a GSTIN.
+    - The final invoice shows the original scope, approved changes, payments and balance.
+    - A CA reviews the format once before launch.
 
 ---
 
@@ -104,15 +117,38 @@ src/
   url?, instructions?, isDefault }
 ```
 
-**`clients`**: name, company, email, phone (WhatsApp).
+**`documentSettings`** (one per workspace, owned by the `documents` module; defaults apply until saved): `style` (below) and `defaults` (`terms[]`, `exclusions[]`, `clientProvides[]` pre-filled into new projects).
 
-**`projects`**:
+`style` (Settings → Documents, applies to every client-facing document):
+
+```ts
+{ template: 'classic',            // more templates later
+  accent: '#b08d57',              // validated hex; text shades derived for ≥ 4.5:1 contrast
+  cover: 'dark' | 'accent' | 'light', coverPattern: true,
+  headingFont: 'serif' | 'sans', showLogo: true,
+  coverImageKey?                  // R2 object key, when uploads arrive; dark overlay keeps text readable
+}
+```
+
+`invoicing`: `{ prefix: 'INV', nextNumber, gstin?, stateCode?, sac: '998314', legalName?, address? }`. Numbers come from an atomic `$inc`, so they never repeat or skip.
+
+**`clients`**: name, company, email, phone (WhatsApp), `currency?` (default for their projects; null = workspace default).
+
+**`projects`** (`currency`: one of the supported codes; every amount below is minor units of it):
 
 ```ts
 { clientId, name, description, currency,
   status: 'draft' | 'awaiting_approval' | 'active' | 'completed' | 'archived',
   billingModel: 'upfront' | 'milestones',
-  baseline: { items: [{ id, title, description, amount }], total, approvedAt?, approvalId? },
+  baseline: { items: [{ id, title, description, includes: string[], amount }], total, approvedAt?, approvalId? },
+  proposal: {             // optional sections, rendered on the client's page and PDF
+    title?, subtitle?, overview?, callout?,
+    highlights: [{ value, label }],                 // "5 · Custom pages"
+    timeline: [{ phase, duration, description, isMilestone }],
+    clientProvides: string[], exclusions: string[], terms: string[],
+    addons: [{ id, title, description, amount, unit? }],   // can become a CR later
+    validUntil?
+  },
   milestones: [{ id, name, percent, baseAmount, order }],
   portalTokenHash,        // client portal link
   totals: { baseline, approvedChanges, pendingChanges, paid, due }  // denormalised for dashboard
@@ -155,6 +191,16 @@ After the baseline is approved it is **locked**. Changes after that go through c
 
 Approving a change request **adds a line** to the matching payment (or creates a new `pay_now` payment).
 
+**`invoices`** (Phase 5, one per payment request; issued invoices are never edited, only cancelled or credited):
+
+```ts
+{ projectId, paymentId, number /* INV-2026-001 */, issuedOn, dueOn,
+  seller: { name, address, gstin? }, buyer: { name, company, address?, gstin? },
+  lines: [{ description, sac?, amount }], subtotal,
+  tax?: { type: 'cgst_sgst' | 'igst', rate, cgst?, sgst?, igst? }, total,
+  status: 'issued' | 'paid' | 'cancelled', snapshotHash }
+```
+
 **`activity`**: project timeline (`project.created`, `baseline.approved`, `cr.sent`, `payment.confirmed`, …).
 
 **Indexes:** `{ workspaceId, … }` on every collection, unique `portalTokenHash`, `{ projectId, number }` unique on change requests.
@@ -171,12 +217,12 @@ Each phase ends with something working and deployed. We finish and check one pha
 - [x] Folder structure from §3
 - [x] Typed env vars (Zod), `.env.example`
 - [x] MongoDB Atlas connection helper (cached client) + `/api/health`
-- [ ] Verify the health check against a real Atlas cluster (needs `MONGODB_URI`)
+- [x] Verify the health check against a real Atlas cluster (`/api/health` reports the database up, locally and on Vercel)
 - [x] `money` util (paise ↔ ₹ formatting, `Intl` en-IN), `hash` util, secure `token` util
 - [x] Vitest set up for domain logic
 - [x] PWA basics: web manifest, app icons, theme colour, installable
 - [x] `output: "standalone"` (portable to Hostinger later)
-- [ ] First commit + push to GitHub + deploy to Vercel
+- [x] First commit + push to GitHub + deploy to Vercel (`dev` branch, preview at scopelock-test.vercel.app)
 
 **Done when:** the app deploys and a health page confirms it can reach the database.
 
@@ -188,8 +234,8 @@ Each phase ends with something working and deployed. We finish and check one pha
 - [x] Onboarding: business name, how you work, WhatsApp number, live "what your client sees" preview
 - [x] App shell: sidebar/nav, mobile layout, settings page
 - [x] Emails over SMTP when configured, printed to the terminal otherwise
-- [ ] Logo upload, moved to Phase 3 (needs a Cloudflare R2 bucket; first shown on the client portal)
-- [ ] Google OAuth keys + SMTP provider (config only, no code)
+- [x] ~~Logo upload~~: moved to Phase 3 (needs a Cloudflare R2 bucket; first shown on the client portal)
+- [x] Google OAuth keys + SMTP provider for development (Google sign-in on Vercel, Gmail SMTP). Production SMTP on the real domain is a Phase 8 item.
 
 **Done when:** I can sign up, finish onboarding and see an empty dashboard.
 
@@ -199,10 +245,9 @@ Each phase ends with something working and deployed. We finish and check one pha
 - [x] Product visuals built as coded components (no screenshots), matching the real UI
 - [x] `/pricing` with plan comparison. Plans live in one config (`modules/billing/domain/plans.ts`), made dynamic in Phase 8
 - [x] Legal drafts: `/terms`, `/privacy`, `/refunds`, `/contact` (Razorpay requirement), filled from one `legal` config in `src/shared/config/site.ts`
-- [ ] Legal pages reviewed by a lawyer / CA before launch
 - [x] SEO: per-page metadata, share image, `sitemap.xml`, `robots.txt`, structured data
 - [x] CTAs: "Start free" → sign-up; plan buttons → `/sign-up?plan=…` (plan choice is used in Phase 8)
-- [ ] Fill in registered business name, address, contact email, grievance officer; buy domain
+- [x] ~~Lawyer review, business details, domain~~: moved to the Phase 8 launch checklist (not needed to build the product)
 
 **Done when:** the site is something I'd proudly share, and every Razorpay-required page exists.
 
@@ -210,21 +255,71 @@ Each phase ends with something working and deployed. We finish and check one pha
 
 Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `workspaceAction`, unit + integration tests).
 
-- [ ] Clients CRUD
-- [ ] Create project → pick client → baseline scope builder (deliverables + amounts, live total)
-- [ ] Billing setup: upfront or milestones (percentages must add up to 100, amounts calculated automatically, editable presets like 30/30/40 or 50/50)
-- [ ] Project list + project detail page
+- [x] Clients: add, edit, archive/restore (archive instead of delete so approvals and payments never lose who they were for), WhatsApp link, per-client project list
+- [x] Create project → pick client (or add one inline) → baseline scope builder (deliverables + amounts + optional notes, live total in ₹)
+- [x] Billing setup: upfront (stored as one 100% milestone) or milestones; whole-number percentages must add up to 100; exact amounts via `allocate()`; presets 30/30/40, 50/50, 40/60, all editable
+- [x] Project list + project detail page; drafts can be edited or deleted (atomic draft-only writes); dashboard checklist reads real data
 
 **Done when:** I can create the "Rahul – ₹80,000, 5 pages, 30/30/40" project.
 
-### Phase 3: Client portal & baseline approval
+### Phase 3A: Proposal content & document design
 
-- [ ] Business logo upload (Cloudflare R2), shown on the portal
+The client approves what they see, so the scope has to read like a proper proposal. This follows the layout of my Estimator quotation builder, not a plain table.
+
+- [x] Project form: optional sections added with one click, so simple projects stay simple:
+  - title and subtitle;
+  - overview with a highlighted note;
+  - highlight stats;
+  - bullet points ("what's included") per scope line;
+  - timeline;
+  - what I need from you;
+  - not included;
+  - optional add-ons;
+  - terms;
+  - valid until.
+- [x] Default terms and "not included" lists saved in Settings, so they're pre-filled on every new project
+- [x] Document template **Classic**, one React component used for the in-app preview, the client portal and print:
+  - cover with brand, title and prepared for/by;
+  - highlights strip;
+  - numbered sections;
+  - scope cards;
+  - investment;
+  - payment schedule;
+  - timeline;
+  - add-ons;
+  - needs and exclusions;
+  - terms.
+- [x] Settings → Documents, with a live preview:
+  - accent colour (presets plus custom, with a readable-text check);
+  - cover style (dark, accent or light, with optional rings; uploaded image comes with R2);
+  - logo on or off;
+  - serif or sans headings.
+- [x] "Preview as client" on the project page
+- [x] Print-ready A4 page: browser "Save as PDF", page breaks, a footer with page numbers. No PDF server needed.
+- [x] Business logo and cover image upload (Cloudflare R2: private bucket, png/jpeg/webp, ≤ 5 MB, signed URLs). Resized in the browser, real file bytes checked on the server, random keys, old files deleted, "Photo" cover. Verified against the real bucket.
+
+**Done when:** Rahul's project preview looks as good as my Estimator proposal, in my brand colour, on desktop and phone.
+
+### Phase 3A+: Multi-currency
+
+- [x] Currencies: INR, USD, EUR, GBP, AED, CAD, AUD, SGD. Money is integer minor units (`Minor`), formatted per currency (Indian grouping for ₹, international for the rest).
+- [x] Workspace default currency (Settings → Business), defaulting to INR; not asked at onboarding
+- [x] Client "Bills in" currency (optional; empty = workspace default)
+- [x] Project currency: picked up from the client, changeable while a draft, locked once sent. Older projects read as INR.
+- [x] Project form, tables, project list and the Classic proposal use the project's currency and symbol
+- [x] Ambiguous amounts like "2.400" are rejected instead of guessed
+
+**Done when:** a USD client's project shows "$2,400.50" everywhere, split 30/30/40 in cents, and INR projects are unchanged.
+
+### Phase 3B: Client portal & baseline approval
+
+- [ ] Portal uses the Phase 3A document as the approval page
+- [ ] On send, store the proposal content as shown (including workspace defaults applied to older projects), so later changes to default text can't change a proposal that's already with the client
 - [ ] Require a confirmed account email before a portal link can be sent
 - [ ] Secret portal link (random token, only the hash stored) + copy button + WhatsApp share (`wa.me` link with a message ready to send)
-- [ ] Public portal `/c/[token]`: business branding, project summary, deliverables, milestones
+- [ ] Public portal `/c/[token]`: the Classic document in the freelancer's style, with an approval panel
 - [ ] Approve / Reject with name + email + optional comment
-- [ ] Approval record with snapshot, hash, IP, user agent. Baseline locks and the project becomes `active`.
+- [ ] Approval record with a snapshot of everything shown (scope, proposal sections and **currency**), hash, IP and user agent. The baseline locks and the project becomes `active`.
 - [ ] Email to the freelancer on decision
 - [ ] Rate limiting + token revoke/regenerate
 - [ ] Security (see `docs/CONVENTIONS.md` §6): token format check + identical 404s, approve/reject resolve everything from the token, atomic status change + approval insert in one transaction, unique index per approved subject, `emailVerified` enforced in the send action
@@ -238,6 +333,7 @@ Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `
 - [ ] Send → shows up in the portal (plus a direct deep link)
 - [ ] Client approves/rejects → approval record → project totals update
 - [ ] Freelancer can withdraw a CR that hasn't been decided
+- [ ] Turn a proposal add-on into a CR in one click (title, description and price pre-filled)
 - [ ] Project page: "Original ₹80,000 → Now ₹95,000" with a list of changes
 - [ ] Activity timeline
 
@@ -247,24 +343,33 @@ Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `
 
 - [ ] Settings → payment methods (UPI, QR upload, bank, link, other; set a default)
 - [ ] Payments generated from milestones + approved CR lines (domain function with tests)
-- [ ] Mark a milestone as due → portal shows the amount + methods + **UPI QR code with the amount filled in**
+- [ ] Mark a milestone as due → portal shows the amount + methods + **UPI QR code with the amount filled in** (UPI only for INR projects; foreign-currency projects offer SWIFT bank details, PayPal, Wise or a payment link)
 - [ ] Client "I've paid" → method, UTR, date, screenshot (R2: private bucket, random keys, png/jpeg/webp only with magic-byte check, ≤ 5 MB, signed URLs)
 - [ ] Freelancer confirms "Received" / "Not received", or marks it received directly
 - [ ] Emails: payment due (to client), client says paid (to freelancer), confirmed (to client)
+- [ ] Settings → Invoicing:
+  - invoice prefix and starting number;
+  - legal name and address;
+  - optional GSTIN with state, and SAC code (default 998314, IT design and development).
+- [ ] Each payment request becomes a numbered invoice (atomic counter, so numbers never repeat or skip). Issued invoices are immutable; mistakes are fixed by cancelling the invoice and issuing a new one.
+- [ ] GST only when a GSTIN is set: CGST + SGST 9% + 9% within the same state, IGST 18% across states (domain function with tests)
+- [ ] Foreign-currency invoices as export of services: zero-rated under LUT, with the "supply meant for export under LUT without payment of IGST" declaration (wording confirmed by a CA)
+- [ ] Final invoice includes the project statement: original scope, approved CRs, payments received, balance due
+- [ ] Invoice page in the client portal, same document style as the proposal
 
 **Done when:** Rahul pays ₹47,000 by UPI, uploads the UTR, and the freelancer confirms it.
 
 ### Phase 6: PDFs
 
-- [ ] Change order PDF (one CR: what, why, price, billing, approval proof)
-- [ ] Project statement PDF (baseline → all CRs → approvals → payments → balance)
-- [ ] Download from the app + the portal. Cached in R2, regenerated when data changes.
+- [ ] PDFs of the proposal, change orders, invoices and the project statement, all in the Phase 3A template and document style
+- [ ] Start with print-ready pages (browser "Save as PDF", like Estimator). Add server-generated PDF files for email attachments if needed, cached in R2 and regenerated when data changes.
+- [ ] Download from the app and from the portal
 
 **Done when:** the PDF is something I'd be happy to send a client.
 
 ### Phase 7: Dashboard & polish
 
-- [ ] Dashboard: **"Revenue recovered"** (approved CRs this month/all time), pending approvals, payments due, payments to confirm
+- [ ] Dashboard: **"Revenue recovered"** (approved CRs this month/all time), pending approvals, payments due, payments to confirm. Totals are shown per currency (₹2,40,000 · $3,200), never summed across currencies.
 - [ ] Reminders: resend approval/payment links
 - [ ] Empty states, loading states, errors, mobile QA
 - [ ] PWA polish: service worker, offline fallback page, "Install app" prompt, iOS home-screen support
@@ -274,10 +379,12 @@ Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `
 
 ### Phase 8: Launch
 
-- [ ] Landing page (pitch: _"How much extra work did you do last month without charging?"_)
-- [ ] Plans + limits: **Free** (2 active projects) · **Pro** (~₹499–999/month) · **Agency** (₹1,999, 15 projects, team later)
+- [x] Landing page (pitch: _"How much extra work did you do last month without charging?"_): built in Phase 1B
+- [ ] Plan limits enforced: **Free** (2 active projects) · **Pro** (₹499/month, 6 projects) · **Agency** (₹1,999/month, 15 projects, team later)
 - [ ] Razorpay Subscriptions + webhook → plan limits applied in `billing` module (HMAC verified over the raw body, idempotent on event id)
-- [ ] Terms, Privacy, Refund policy pages
+- [ ] Terms, Privacy, Refund policy pages: drafts exist (Phase 1B); fill in registered business name, address, contact email, GSTIN and grievance officer in the `legal` config
+- [ ] Legal pages reviewed by a lawyer / CA
+- [ ] Buy the domain; set `APP_URL`, Google OAuth URLs and the email sender to it
 - [ ] Sentry, basic analytics, Atlas backups check
 - [ ] SMTP configured in production; `APP_URL` is the real https domain; `CLIENT_IP_HEADER` set for the host (nginx → `x-real-ip`)
 - [ ] Playwright end-to-end suite in CI (sign-up → onboarding → scope → CR → approve → pay)
@@ -292,7 +399,10 @@ Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `
 - Email OTP verification for approvers (stronger evidence)
 - Retainer billing model
 - Team members & roles (agencies)
-- GST-compliant invoices
+- More document templates (e.g. Minimal, Bold) and per-project style overrides
+- Saved proposal templates: reuse a past project's sections and scope as a starting point
+- Value-based pricing display (standard value, discount, "You save"), as in Estimator
+- E-invoicing (IRN) for freelancers above the GST e-invoice threshold
 - Creative/design approvals (the WhatsApp-first proofing idea)
 
 ---
@@ -318,3 +428,11 @@ Build with the module recipe in `docs/CONVENTIONS.md` §2 (`scopedCollection`, `
 | 2026-11-04 | Phase 1B  | Polish: Lenis eased scrolling on marketing pages (wheel + in-page links; touch and reduced-motion stay native), graph-paper `GridBackdrop` in hero and final CTA with pointer-lit lines on desktop, header blur removed. Scroll at 60fps with 4x CPU throttle.                                                                                                                                                                                                                                                                                                                                                                                                     |
 | 2026-11-05 | Phase 1   | Email links replaced by 6-digit codes (Better Auth emailOTP): forgot password is email → code + new password → signed in; verify email is a code box in the app bar (soft verification kept). Codes hashed, 10 min, 5 tries, 6/min per IP. 15-step browser run passes.                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-11-05 | Hardening | Pre-Phase-2 audit (independent security + architecture reviews, findings verified against library source). Unused Better Auth HTTP routes disabled; email-OTP sign-up off; 1 workspace/account, deletion off; security headers + static CSP; client-IP header for rate limits; codes never logged in prod; https `APP_URL` enforced in prod; fresh-session + role checks on writes. `scopedCollection` + `withTransaction` + `workspaceAction` + `FormState`; client-safe `index.ts` / server-only `server.ts` per module; lint-enforced boundaries; stricter tsconfig; error/404 pages; integration tests on in-memory Mongo; CI workflow; `docs/CONVENTIONS.md`. |
+| 2026-11-05 | Phase 2   | Clients and projects modules on `scopedCollection` + `workspaceAction`. Rahul's ₹80,000, 5-page, 30/30/40 project creates with exact ₹24,000/₹24,000/₹32,000 milestones. Unique form ids per instance (`useId`, Activity keeps pages mounted); India-time dates; signed-in pages noindex. 119 unit + 17 integration tests; 36-step browser run passes.                                                                                                                                                                                                                                                                                                             |
+| 2026-11-05 | Planning  | Added Phase 3A (proposal content + Classic document template + Settings → Documents customiser, modelled on my Estimator builder) before the portal (now 3B). Invoices with numbering and optional GST moved into Phase 5; PDFs in Phase 6 reuse the same template.                                                                                                                                                                                                                                                                                                                                                                                                |
+| 2026-11-05 | Phase 3A  | Proposal sections (overview, highlights, scope bullet points, timeline, add-ons, needs, exclusions, terms, valid until) on projects; `documents` module with the Classic template (one component for settings preview, "Preview as client" and A4 print), Settings → Documents (accent presets + custom with contrast guarantee, dark/accent/light cover, rings, serif/sans, initials) and default text. Logo/cover upload waits for R2. 157 unit + 19 integration tests; 27-step browser run plus all earlier suites pass.                                                                                                                                        |
+| 2026-11-05 | Phase 3A  | Defaults apply to projects whose proposal was never saved (created before 3A) in both the edit form and Preview as client; once saved, the person's choice wins, even if a section was cleared. Settings preview always shows the full sample with the saved default text.                                                                                                                                                                                                                                                                                                                                                                                         |
+| 2026-11-05 | Polish    | Back links on every inner page (edit project → back to project, new project, add client) via a shared `BackLink`; "Client not listed?" link left-aligned (the form field was stretching it).                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| 2026-11-05 | Phase 3A  | Logo + cover image upload built on Cloudflare R2 (aws4fetch, private bucket, signed URLs cached per hour). Browser resizes to WebP (strips EXIF); server checks real file bytes, caps 4 MB (Vercel limit), stores under `ws/<id>/<kind>/<random>`; replacing or removing deletes the old object. "Photo" cover style with a dark layer; logo on a white plate on dark covers. Switched off until R2 env vars are set.                                                                                                                                                                                                                                              |
+| 2026-11-05 | Phase 3A  | Uploads verified live against the R2 bucket (18 checks: upload, signed URLs, replace deletes old object, remove, 5 MB and fake-image rejection). Fixed 411 Length Required on larger files (send raw bytes after signing). Photo cover layer deepened so text stays readable on bright photos. Phase 3A complete.                                                                                                                                                                                                                                                                                                                                                  |
+| 2026-11-05 | Phase 3A+ | Multi-currency: 8 two-decimal currencies; `Minor` units + `formatMoney`; workspace default (Settings), client "Bills in", project currency following the client until chosen. Form, tables, list and Classic proposal format per currency. Plan updated for UPI (INR only), export invoices under LUT, per-currency dashboard totals, currency in approval snapshots. 187 unit + 21 integration tests; 18-step currency browser run plus all earlier suites pass.                                                                                                                                                                                                  |

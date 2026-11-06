@@ -33,6 +33,16 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
   [COLLECTIONS.authRateLimit]: [{ key: { key: 1 }, unique: true }],
 
   [COLLECTIONS.workspaceProfiles]: [{ key: { workspaceId: 1 }, unique: true }],
+
+  // Business data: every index starts with workspaceId (see CONVENTIONS §2).
+  [COLLECTIONS.clients]: [
+    { key: { workspaceId: 1, archivedAt: 1, nameLower: 1 } },
+  ],
+  [COLLECTIONS.documentSettings]: [{ key: { workspaceId: 1 }, unique: true }],
+  [COLLECTIONS.projects]: [
+    { key: { workspaceId: 1, updatedAt: -1 } },
+    { key: { workspaceId: 1, clientId: 1, updatedAt: -1 } },
+  ],
 };
 
 export async function ensureIndexes(

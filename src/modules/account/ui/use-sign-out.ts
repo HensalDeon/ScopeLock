@@ -1,12 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/shared/auth/client";
+import { crossAuthBoundary } from "./cross-auth-boundary";
 
-/** Signs out, then lands on /sign-in. `pending` drives "Signing out…". */
+/**
+ * Signs out, then loads /sign-in fresh (see crossAuthBoundary).
+ * `pending` stays true until the page unloads.
+ */
 export function useSignOut() {
-  const router = useRouter();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -19,8 +21,7 @@ export function useSignOut() {
       setFailed(true);
       return;
     }
-    router.replace("/sign-in");
-    router.refresh();
+    crossAuthBoundary("/sign-in");
   }
 
   return { signOut, pending, failed };

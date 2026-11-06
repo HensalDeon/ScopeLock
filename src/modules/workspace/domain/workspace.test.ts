@@ -1,35 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  formatPhone,
-  normalizePhone,
-  workspaceDetailsSchema,
-  workspaceSlug,
-} from "./workspace";
-
-describe("normalizePhone", () => {
-  it.each([
-    ["9876543210", "+919876543210"],
-    ["98765 43210", "+919876543210"],
-    ["098765-43210", "+919876543210"],
-    ["919876543210", "+919876543210"],
-    ["+91 98765 43210", "+919876543210"],
-    ["+971 50 123 4567", "+971501234567"],
-    ["+1 (415) 555-0100", "+14155550100"],
-  ])("normalises %s", (input, expected) => {
-    expect(normalizePhone(input)).toBe(expected);
-  });
-
-  it.each(["", "12345", "5876543210", "abc", "+12"])("rejects %s", (input) => {
-    expect(normalizePhone(input)).toBeNull();
-  });
-});
-
-describe("formatPhone", () => {
-  it("groups Indian numbers", () => {
-    expect(formatPhone("+919876543210")).toBe("+91 98765 43210");
-    expect(formatPhone("+971501234567")).toBe("+971501234567");
-  });
-});
+import { workspaceDetailsSchema, workspaceSlug } from "./workspace";
 
 describe("workspaceSlug", () => {
   it("builds a url-safe slug", () => {
@@ -52,6 +22,8 @@ describe("workspaceDetailsSchema", () => {
       businessName: "Hensal Deon",
       businessType: "freelancer",
       phone: "+919876543210",
+      // Not asked at onboarding: defaults to rupees.
+      currency: "INR",
     });
   });
 

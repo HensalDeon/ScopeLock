@@ -74,6 +74,12 @@ export async function setUpWorkspace(
       });
       if (!created) throw new Error("Workspace was not created");
       workspaceId = created.id;
+      // createOrganization marks it active in the database only; this also
+      // refreshes the session cookie, so the proxy sees it straight away.
+      await auth.api.setActiveOrganization({
+        body: { organizationId: workspaceId },
+        headers: requestHeaders,
+      });
     }
     await saveWorkspaceProfile(workspaceId, parsed.data);
   } catch (error) {

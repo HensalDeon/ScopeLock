@@ -8,5 +8,6 @@ export { workspaceAction } from "./server/action";
 export {
   getOnboardingState,
   requireWorkspace,
+  requireWorkspaceForWrite,
   type WorkspaceContext,
 } from "./server/context";

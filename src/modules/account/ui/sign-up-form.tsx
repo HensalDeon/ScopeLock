@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import { PASSWORD_MIN_LENGTH } from "@/shared/auth/policy";
 import { Button } from "@/shared/ui/button";
@@ -16,11 +15,14 @@ import {
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
 import { authErrorMessage } from "../domain/auth-flow";
+import { crossAuthBoundary } from "./cross-auth-boundary";
 import { GoogleButton } from "./google-button";
 import { PasswordInput } from "./password-input";
 
 export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
-  const router = useRouter();
+  // Unique per instance: visited pages stay mounted, so two copies of
+  // this form can be in the document at once (CONVENTIONS §5).
+  const uid = useId();
   const [error, setError] = useState<{
     message: string;
     exists: boolean;
@@ -56,9 +58,7 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
       setPending(false);
       return;
     }
-    // A plain navigation is enough: refreshing this auth page would bounce
-    // through the proxy redirect for no reason.
-    router.replace("/onboarding");
+    crossAuthBoundary("/onboarding");
   }
 
   return (
@@ -82,14 +82,20 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
         )}
 
         <Field>
-          <FieldLabel htmlFor="name">Your name</FieldLabel>
-          <Input id="name" name="name" autoComplete="name" required autoFocus />
+          <FieldLabel htmlFor={`${uid}-name`}>Your name</FieldLabel>
+          <Input
+            id={`${uid}-name`}
+            name="name"
+            autoComplete="name"
+            required
+            autoFocus
+          />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="email">Work email</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-email`}>Work email</FieldLabel>
           <Input
-            id="email"
+            id={`${uid}-email`}
             name="email"
             type="email"
             autoComplete="email"
@@ -99,9 +105,9 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-password`}>Password</FieldLabel>
           <PasswordInput
-            id="password"
+            id={`${uid}-password`}
             name="password"
             autoComplete="new-password"
             minLength={PASSWORD_MIN_LENGTH}

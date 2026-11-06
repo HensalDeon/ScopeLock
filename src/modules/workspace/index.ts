@@ -4,7 +4,6 @@
  */
 export {
   BUSINESS_TYPE_LABELS,
-  formatPhone,
   type BusinessType,
   type WorkspaceProfile,
 } from "./domain/workspace";

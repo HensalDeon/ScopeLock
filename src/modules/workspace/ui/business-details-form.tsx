@@ -1,47 +1,31 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
 import { FieldGroup } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
-import type { BusinessType } from "../domain/workspace";
-import { updateWorkspace, type WorkspaceFormState } from "../server/actions";
-import { WorkspaceFields } from "./workspace-fields";
+import { updateWorkspace } from "../server/actions";
+import { useWorkspaceForm } from "./use-workspace-form";
+import { WorkspaceFields, type WorkspaceValues } from "./workspace-fields";
 
-export function BusinessDetailsForm({
-  initial,
-}: {
-  initial: { businessName: string; businessType: BusinessType; phone: string };
-}) {
-  const [state, action, pending] = useActionState<WorkspaceFormState, FormData>(
-    updateWorkspace,
-    IDLE,
-  );
-  const [businessName, setBusinessName] = useState(initial.businessName);
+/** Settings: edit the business details clients see. */
+export function BusinessDetailsForm({ initial }: { initial: WorkspaceValues }) {
+  const { formRef, state, pending, form, fieldProps, onSubmit } =
+    useWorkspaceForm(updateWorkspace, initial, { trackChanges: true });
 
   return (
-    <form action={action} noValidate>
+    <form ref={formRef} onSubmit={onSubmit} noValidate>
       <FieldGroup className="gap-6">
         {state.status === "error" && state.message && (
           <FormAlert>{state.message}</FormAlert>
         )}
-        <WorkspaceFields
-          state={state}
-          businessName={businessName}
-          onBusinessNameChange={setBusinessName}
-          defaults={{
-            businessType: initial.businessType,
-            phone: initial.phone,
-          }}
-        />
+        <WorkspaceFields {...fieldProps} showCurrency />
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || !form.isDirty}>
             {pending ? "Saving…" : "Save changes"}
           </Button>
-          {state.status === "success" && !pending && (
+          {!pending && !form.isDirty && (
             <p role="status" className="text-sm text-muted-foreground">
-              {state.message}
+              {state.status === "success" ? state.message : "No changes yet"}
             </p>
           )}
         </div>

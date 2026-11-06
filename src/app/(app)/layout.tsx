@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Shell, ShellSkeleton } from "./_shell/shell";
 import { VerifyEmailBanner } from "./_shell/verify-email-banner";
+
+/** Signed-in pages never belong in search results. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (

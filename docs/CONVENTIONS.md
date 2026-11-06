@@ -17,6 +17,8 @@ src/
     domain/               Pure rules + Zod schemas. No framework, DB or auth. Unit tested.
     server/               repository.ts, queries.ts, actions.ts ("use server")
     ui/                   Components. "use client" only on the leaves that need it.
+  modules/documents/      Client-facing document templates, style and default text. Other
+                          modules hand it plain data (ProposalDocumentData) to render.
   shared/
     auth/                 Better Auth config, session, membership, redirect, policy
     db/                   Mongo client, names, indexes, scopedCollection, transactions, ids
@@ -70,7 +72,7 @@ Then:
   - Embedded items (scope lines, milestones) get `randomUUID()` ids.
 - **Multi-document writes** that must agree (approval + status + payment line) go in `withTransaction()`. Pass `{ session }` to every write. Don't send emails inside a transaction, because it can retry.
 - **State changes are atomic:** `findOneAndUpdate({ _id, status: "sent" }, { $set: { status: "approved" } })`. If it returns `null`, someone else got there first.
-- **Money** is integer paise (`Paise`), always. Use `allocate()` for splits and `formatINR()` for display.
+- **Money** is integer minor units (`Minor`; `Paise` for rupee-only code), always. The currency lives on the record (a project's `currency`), and amounts are never summed across currencies. Use `allocate()` for splits, `parseAmount()` for input and `formatMoney(amount, currency)` for display.
 
 ## 4. Server actions
 
@@ -108,13 +110,29 @@ It handles these, in order:
 
 After a change that other parts of the page show, call `refresh()` from `next/cache`.
 
+### Forms in the browser
+
+- **Validate live with the server's own Zod schema**, using `useFormValidation(schema, values, { initial, serverState })`. The browser and server can't disagree.
+- **"Reward early, punish late":** a field is checked when the person leaves it or submits. Once it's flagged, it re-checks on every keystroke, so the message goes away the moment the value is right.
+- **Invalid submits never reach the server.** Use `markSubmitted()` and, if it fails, `focusFirstInvalid(form)`. Server-only errors still show until the field is edited (`edited(path)`).
+- **Edit forms disable Save until `isDirty`.** It compares cleaned values, so "98765 43210" vs "+91 98765 43210" isn't a change. Show "No changes yet" or the saved message next to the button.
+- **Keep inputs controlled and submit by hand** (`onSubmit` → `startTransition(() => action(data))`). React's post-action form reset otherwise clears controlled fields such as a `<select>`.
+- **Repeated rows:** errors use dotted paths (`items.0.amount`), and "touched" uses the row's stable key.
+
 ## 5. Pages and rendering (Next.js 16, Cache Components)
 
 - Pages are thin: call `requireWorkspace()` or a module query, then render module UI.
 - Anything that reads the session, headers or cookies renders inside `<Suspense>` with a skeleton that has the same shape.
 - No `"use cache"` on workspace data in Phase 2. If it's added later, key and tag it by `workspaceId` and call `updateTag` in actions. Never pass a raw portal token into a cached function, because it becomes a stored cache key.
 - Lists have a real empty state: what will appear here and how to add the first item.
+- Every inner page (detail, new, edit) starts with a `BackLink` to its parent ("← Projects", "← Back to project"). Phones and the installed app have no reliable browser Back button.
 - Bad ids and missing records call `notFound()`. Unexpected failures fall through to `app/error.tsx`.
+- **Visited pages stay alive.** With Cache Components, Next keeps up to 3 visited pages hidden (React `<Activity>`) and restores their state on return. Decide per piece of state:
+  - Transient UI (dropdowns, popovers, confirm dialogs) resets when hidden, with a `useLayoutEffect` cleanup that closes it.
+  - "Create" forms reset after a successful submit.
+  - Drafts the user would want back can stay.
+  - See `node_modules/next/dist/docs/01-app/02-guides/preserving-ui-state.md`.
+- **Crossing the auth boundary** (sign in, sign up, sign out, password-reset sign-in) uses `crossAuthBoundary()`, a full page load, so no client state survives from one account to the next.
 
 ## 6. Security checklists
 

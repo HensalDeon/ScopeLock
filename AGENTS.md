@@ -15,7 +15,7 @@ Read `docs/PLAN.md` first — it is the source of truth for product rules, data 
 - **Architecture:** feature-first modular monolith. Business code lives in `src/modules/<module>/{domain,server,ui}` with two public entries: `index.ts` (client-safe) and `server.ts` (server-only). Modules import each other only through those (lint-enforced). `src/app/` routes stay thin. Cross-cutting code lives in `src/shared/` (`auth/`, `db/`, `email/`, `lib/`, `ui/` = shadcn components, `config/`).
 - **Data access:** module code uses `scopedCollection()` (never raw collections), so every query is pinned to a workspace. Mutations use `workspaceAction()` (fresh session + membership + role + Zod). Multi-document writes use `withTransaction()`.
 - **Domain logic** = pure, framework-free functions in `domain/`, covered by Vitest (`*.test.ts` next to the file).
-- **Money:** always integer paise (`Paise` type, `src/shared/lib/money.ts`). Never floats. Use `allocate()` for splits.
+- **Money:** always integer minor units (`Minor` type, `src/shared/lib/money.ts`; `Paise` for rupee-only code). Never floats. Each project has one currency (`src/shared/lib/currency.ts`); format with `formatMoney(amount, currency)`, never sum across currencies. Use `allocate()` for splits.
 - **Multi-tenancy:** every business document has `workspaceId`; every query filters by it.
 - **Evidence:** approval records are insert-only, with snapshot + `hashSnapshot()`.
 - **Secret links:** store only `hashToken(token)`, never the raw token.
