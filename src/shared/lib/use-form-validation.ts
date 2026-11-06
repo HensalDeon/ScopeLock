@@ -85,3 +85,6 @@ export function focusFirstInvalid(form: HTMLFormElement | null): void {
     form?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   });
 }
+
+/** What useFormValidation returns, for form pieces split into components. */
+export type FormValidation = ReturnType<typeof useFormValidation>;

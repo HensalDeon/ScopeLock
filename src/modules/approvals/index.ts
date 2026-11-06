@@ -12,4 +12,4 @@ export {
   type DecisionInput,
   verdictLabel,
 } from "./domain/approval";
-export { ApprovalHistory } from "./ui/approval-history";
+export { ApprovalCards, ApprovalRows } from "./ui/approval-history";

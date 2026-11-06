@@ -3,6 +3,12 @@ import type { ClientSession, ObjectId } from "mongodb";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import {
+  PAGE_SIZE,
+  paginate,
+  toPage,
+  type Page,
+} from "@/shared/lib/pagination";
+import {
   ACTIVITY_TYPES,
   describeActivity,
   isClientVisible,
@@ -10,6 +16,7 @@ import {
   type Viewer,
 } from "../domain/activity";
 import {
+  countActivity,
   findActivity,
   findRecentActivity,
   insertActivity,
@@ -42,20 +49,34 @@ export async function logActivityInTransaction(
 
 export type ActivityItem = { id: string; at: Date } & ActivityLine;
 
-/** The project's full history for the signed-in member, newest first. */
+/**
+ * One page of a project's history for the signed-in member, newest first.
+ * The project page asks for a short first page; the full history page
+ * pages through the rest.
+ */
 export async function listProjectActivity(
   projectId: string,
-): Promise<ActivityItem[]> {
+  { page = 1, pageSize = PAGE_SIZE }: { page?: number; pageSize?: number } = {},
+): Promise<Page<ActivityItem>> {
   const id = parseObjectId(projectId);
-  if (!id) return [];
+  if (!id) return toPage([], 0, 1, pageSize);
   const { workspace, user } = await requireWorkspace();
+  const ws = workspace.workspaceId;
   const viewer: Viewer = { kind: "member", userId: user.id };
-  const events = await findActivity(workspace.workspaceId, id);
-  return events.map((e) => ({
-    id: e.id,
-    at: e.at,
-    ...describeActivity(e, viewer),
-  }));
+  const result = await paginate(
+    page,
+    () => countActivity(ws, id),
+    (window) => findActivity(ws, id, undefined, window),
+    pageSize,
+  );
+  return {
+    ...result,
+    items: result.items.map((e) => ({
+      id: e.id,
+      at: e.at,
+      ...describeActivity(e, viewer),
+    })),
+  };
 }
 
 /**
@@ -68,10 +89,12 @@ export async function listClientHistory(
   businessName: string,
 ): Promise<ActivityItem[]> {
   const viewer: Viewer = { kind: "client", businessName };
+  // The latest 50: the portal shows a few and folds the rest.
   const events = await findActivity(
     workspaceId,
     projectId,
     ACTIVITY_TYPES.filter(isClientVisible),
+    { skip: 0, limit: 50 },
   );
   return events.map((e) => ({
     id: e.id,

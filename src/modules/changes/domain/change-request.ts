@@ -483,3 +483,51 @@ export function changeShareMessage(input: {
 }): string {
   return `Hi ${input.clientFirstName}, here's a change request for ${input.projectName}: ${input.title} (${input.total}). You can approve or decline it here:`;
 }
+
+/**
+ * The "when it's paid" choices for a project. With a single payment
+ * (upfront billing) only "separate payment" and "add to it" make sense.
+ */
+export function billingChoices(
+  milestones: readonly { name: string }[],
+): { value: BillingOption; label: string; detail: string }[] {
+  const separate = {
+    value: "pay_now" as const,
+    label: "Ask for it as a separate payment",
+    detail: "Due once your client approves it.",
+  };
+  if (milestones.length <= 1) {
+    return [
+      separate,
+      {
+        value: "final",
+        label: "Add it to the full payment",
+        detail: "Only if the full payment hasn't been paid yet.",
+      },
+    ];
+  }
+  const last = milestones.at(-1);
+  return [
+    {
+      value: "final",
+      label: "Add to the final payment",
+      detail: last ? `Goes on “${last.name}”.` : "",
+    },
+    {
+      value: "next_milestone",
+      label: "Add to the next payment due",
+      detail: "The next payment that hasn't been paid.",
+    },
+    {
+      value: "split",
+      label: "Split across the remaining payments",
+      detail: "In the same proportions as the payment schedule.",
+    },
+    {
+      value: "milestone",
+      label: "Add to a specific payment",
+      detail: "Choose which one below.",
+    },
+    separate,
+  ];
+}

@@ -36,7 +36,7 @@ export function OverviewView({ data }: { data: OverviewData }) {
           </h2>
           <ActivityTimeline
             visible={6}
-            compact
+            quotes="hidden"
             items={data.activity.map(({ project, ...a }) => ({
               ...a,
               context: project

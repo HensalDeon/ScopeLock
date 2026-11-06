@@ -4,6 +4,8 @@ import { formatDateTime } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
 import type { ActivityLine } from "../domain/activity";
 
+type Quotes = "full" | "clamped" | "hidden";
+
 type Item = {
   id: string;
   at: Date;
@@ -16,15 +18,18 @@ export function ActivityTimeline({
   items,
   empty,
   visible = 8,
-  compact,
+  quotes = "full",
 }: {
   items: Item[];
   /** Shown when there's nothing yet. */
   empty: string;
   /** Latest events shown; older ones fold under "Show earlier activity". */
   visible?: number;
-  /** One line per event, without the client's quoted note (overview). */
-  compact?: boolean;
+  /**
+   * The client's quoted notes: in full (default), clamped to two lines
+   * (summaries) or hidden (the overview's one-line feed).
+   */
+  quotes?: Quotes;
 }) {
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground">{empty}</p>;
@@ -33,7 +38,7 @@ export function ActivityTimeline({
   const earlier = items.slice(visible);
   return (
     <div className="grid">
-      <Lines items={latest} last={earlier.length === 0} compact={compact} />
+      <Lines items={latest} last={earlier.length === 0} quotes={quotes} />
       {earlier.length > 0 && (
         <details className="group">
           <summary className="cursor-pointer list-none pl-7 text-sm font-medium underline-offset-4 group-open:mb-3 hover:underline [&::-webkit-details-marker]:hidden">
@@ -45,7 +50,7 @@ export function ActivityTimeline({
               Hide earlier events
             </span>
           </summary>
-          <Lines items={earlier} last compact={compact} />
+          <Lines items={earlier} last quotes={quotes} />
         </details>
       )}
     </div>
@@ -55,11 +60,11 @@ export function ActivityTimeline({
 function Lines({
   items,
   last,
-  compact,
+  quotes,
 }: {
   items: Item[];
   last: boolean;
-  compact?: boolean;
+  quotes: Quotes;
 }) {
   return (
     <ol className="grid">
@@ -84,8 +89,13 @@ function Lines({
           </div>
           <div className="grid gap-1 pb-5 text-sm">
             <p className="leading-snug text-pretty">{item.text}</p>
-            {item.quote && !compact && (
-              <p className="border-l-2 border-border pl-3 leading-relaxed whitespace-pre-line text-muted-foreground">
+            {item.quote && quotes !== "hidden" && (
+              <p
+                className={cn(
+                  "border-l-2 border-border pl-3 leading-relaxed whitespace-pre-line text-muted-foreground",
+                  quotes === "clamped" && "line-clamp-2",
+                )}
+              >
                 “{item.quote}”
               </p>
             )}

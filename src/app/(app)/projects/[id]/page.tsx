@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ActivityTimeline } from "@/modules/activity";
 import { listProjectActivity } from "@/modules/activity/server";
-import { ApprovalHistory } from "@/modules/approvals";
+import { ApprovalRows } from "@/modules/approvals";
 import { listApprovalsForProject } from "@/modules/approvals/server";
 import {
   ChangeList,
@@ -27,6 +28,30 @@ import { PageContainer, TitledSection } from "@/shared/ui/page";
 
 export const metadata: Metadata = { title: "Project" };
 
+/** The project page shows the latest few; the rest have their own pages. */
+const ACTIVITY_SHOWN = 5;
+const ANSWERS_SHOWN = 3;
+
+function SeeAll({
+  href,
+  total,
+  shown,
+}: {
+  href: string;
+  total: number;
+  shown: number;
+}) {
+  if (total <= shown) return null;
+  return (
+    <Link
+      href={href as Route}
+      className="text-sm font-medium underline-offset-4 hover:underline"
+    >
+      See all {total}
+    </Link>
+  );
+}
+
 export default function ProjectPage({ params }: PageProps<"/projects/[id]">) {
   return (
     <PageContainer>
@@ -45,9 +70,9 @@ async function ProjectDetail({
     await Promise.all([
       getProjectOrNotFound(id),
       getShareState(id),
-      listApprovalsForProject(id),
+      listApprovalsForProject(id, { pageSize: ANSWERS_SHOWN }),
       listChanges(id),
-      listProjectActivity(id),
+      listProjectActivity(id, { pageSize: ACTIVITY_SHOWN }),
       requireWorkspace(),
     ]);
   const approved = isScopeApproved(project.status);
@@ -106,17 +131,42 @@ async function ProjectDetail({
               headingId={`changes-${project.id}`}
             />
           )}
-          <TitledSection id={`activity-${project.id}`} title="Activity">
+          <TitledSection
+            id={`activity-${project.id}`}
+            title="Activity"
+            action={
+              <SeeAll
+                href={`/projects/${project.id}/activity`}
+                total={activity.total}
+                shown={activity.items.length}
+              />
+            }
+          >
             <ActivityTimeline
-              items={activity}
+              items={activity.items}
+              visible={ACTIVITY_SHOWN}
+              quotes="clamped"
               empty="Sending, approvals and change requests will show here as they happen."
             />
           </TitledSection>
-          <ApprovalHistory
-            approvals={approvals}
-            headingId={`answers-${project.id}`}
-            projectId={project.id}
-          />
+          {approvals.total > 0 && (
+            <TitledSection
+              id={`answers-${project.id}`}
+              title="Client answers"
+              action={
+                <SeeAll
+                  href={`/projects/${project.id}/answers`}
+                  total={approvals.total}
+                  shown={approvals.items.length}
+                />
+              }
+            >
+              <ApprovalRows
+                approvals={approvals.items}
+                projectId={project.id}
+              />
+            </TitledSection>
+          )}
         </div>
 
         <aside className="grid gap-4 lg:col-start-2 lg:row-start-2">

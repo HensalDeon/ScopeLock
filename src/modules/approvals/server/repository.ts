@@ -75,12 +75,27 @@ export async function findApproval(
   return approvals(workspaceId).findOne({ _id: id, projectId });
 }
 
-/** Newest first. */
+/** Newest first, one window at a time. */
 export async function findApprovalsForProject(
   workspaceId: string,
   projectId: ObjectId,
+  window: { skip: number; limit: number } = { skip: 0, limit: 50 },
 ): Promise<ApprovalDoc[]> {
   return approvals(workspaceId)
-    .find({ projectId }, { sort: { decidedAt: -1 }, limit: 50 })
+    .find(
+      { projectId },
+      {
+        sort: { decidedAt: -1, _id: -1 },
+        skip: window.skip,
+        limit: window.limit,
+      },
+    )
     .toArray();
+}
+
+export async function countApprovalsForProject(
+  workspaceId: string,
+  projectId: ObjectId,
+): Promise<number> {
+  return approvals(workspaceId).countDocuments({ projectId });
 }

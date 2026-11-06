@@ -134,6 +134,7 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
   - Page-specific markup lives in the module's `ui/` (for example `ProjectHeader`), or in a route `_components/` folder only if no module owns it.
   - A route over ~150 lines, or any `.map`/`.filter`/`if` building data in a route, is a sign something belongs in a module.
 - **Every list page paginates.** Use `paginate()` / `parsePage()` from `shared/lib/pagination` (20 per page, `?page=N`, too-high pages clamp to the last) and `<Pagination>` from `shared/ui/pagination`. Repository list functions take `{ skip, limit }` with a matching `count…()`. Pickers and workspace figures use their own capped or projected queries, never an unbounded `find()`.
+- **Detail pages summarise; logs get their own page.** A list that grows with use (activity, signed records) shows the latest few on the detail page with "See all N", which opens a paged full page (for example `/projects/[id]/activity`). Never let a detail page grow without bound.
 - **Reuse before you write.** Check `shared/ui` first: `MoneyInput`, `FormSection`, `TitledSection`, `SideCard`, `ShareLink`, `Pagination`, `EmptyState`, `BackLink`. If a piece of UI appears twice, move it there.
 - **Keep files small.** Aim for under ~300 lines; split big forms into section components.
 - Anything that reads the session, headers or cookies renders inside `<Suspense>` with a skeleton that has the same shape.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
+  billingChoices,
   billingSummary,
   blankChangeValues,
   changeShareMessage,
@@ -250,5 +251,25 @@ describe("form values", () => {
     ).toBe(
       "Hi Rahul, here's a change request for Website redesign: Blog (₹15,000). You can approve or decline it here:",
     );
+  });
+});
+
+describe("billingChoices", () => {
+  it("offers two choices for a single payment, five for milestones", () => {
+    expect(
+      billingChoices([{ name: "Full payment" }]).map((c) => c.value),
+    ).toEqual(["pay_now", "final"]);
+    const many = billingChoices([
+      { name: "Advance" },
+      { name: "Before launch" },
+    ]);
+    expect(many.map((c) => c.value)).toEqual([
+      "final",
+      "next_milestone",
+      "split",
+      "milestone",
+      "pay_now",
+    ]);
+    expect(many[0]?.detail).toBe("Goes on “Before launch”.");
   });
 });

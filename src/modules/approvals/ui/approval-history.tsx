@@ -1,102 +1,137 @@
+import { ChevronRight } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { formatDateTime } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
 import { verdictLabel, type Approval } from "../domain/approval";
 
+type Checked = Approval & { intact: boolean };
+
+const versionHref = (projectId: string, id: string) =>
+  `/projects/${projectId}/answers/${id}` as Route;
+
+function Dot({ decision }: { decision: Approval["decision"] }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "inline-block size-1.5 shrink-0 rounded-full",
+        decision === "approved" ? "bg-brand" : "bg-warning",
+      )}
+    />
+  );
+}
+
 /**
- * The client's answers on a project, newest first. Each record is checked
- * against its fingerprint and signature when the page loads.
+ * The client's answers as compact rows, for the project page: what was
+ * answered, the verdict, who and when, and a link to the exact version.
+ * A record that fails its check is flagged right in the row.
  */
-export function ApprovalHistory({
+export function ApprovalRows({
   approvals,
-  headingId,
   projectId,
 }: {
-  approvals: (Approval & { intact: boolean })[];
-  headingId: string;
+  approvals: Checked[];
   projectId: string;
 }) {
-  if (approvals.length === 0) return null;
   return (
-    <section aria-labelledby={headingId} className="grid gap-3">
-      <h2 id={headingId} className="text-[15px] font-semibold">
-        Client answers
-      </h2>
-      <ol className="grid gap-3">
-        {approvals.map((a) => (
-          <li key={a.id} className="grid gap-2 rounded-xl border p-4 text-sm">
-            <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
-              {a.label}
-            </p>
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <p className="font-medium">
-                <span
-                  className={cn(
-                    "mr-2 inline-block size-1.5 -translate-y-px rounded-full",
-                    a.decision === "approved" ? "bg-brand" : "bg-warning",
-                  )}
-                  aria-hidden
-                />
-                {verdictLabel(a)} by {a.decidedBy.name}
-              </p>
-              <p className="text-muted-foreground tabular-nums">
-                {formatDateTime(a.decidedAt)}
-              </p>
-            </div>
-            {a.comment && (
-              <p className="leading-relaxed whitespace-pre-line">
-                “{a.comment}”
-              </p>
-            )}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <Link
-                href={`/projects/${projectId}/answers/${a.id}`}
-                className="text-sm font-medium underline-offset-4 hover:underline"
-              >
-                View the version they saw
-              </Link>
-              <span
-                className={cn(
-                  "text-xs",
-                  a.intact
-                    ? "text-muted-foreground"
-                    : "font-medium text-destructive",
-                )}
-              >
-                {a.intact
-                  ? "Signed record · intact"
-                  : "Signed record doesn't match its signature. Contact support."}
+    <ol className="divide-y rounded-xl border bg-background">
+      {approvals.map((a) => (
+        <li key={a.id}>
+          <Link
+            href={versionHref(projectId, a.id)}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-canvas sm:px-5"
+          >
+            <span className="grid min-w-0 gap-0.5">
+              <span className="truncate font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
+                {a.label}
               </span>
-            </div>
-            <details className="group">
-              <summary className="cursor-pointer list-none text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline [&::-webkit-details-marker]:hidden">
-                <span className="group-open:hidden">Record details</span>
-                <span className="hidden group-open:inline">
-                  Hide record details
+              <span className="flex min-w-0 items-center gap-2 text-sm">
+                <Dot decision={a.decision} />
+                <span className="truncate">
+                  <span className="font-medium">{verdictLabel(a)}</span> by{" "}
+                  {a.decidedBy.name}
                 </span>
-              </summary>
-              <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 font-mono text-[11.5px] text-muted-foreground">
-                <dt>Email</dt>
-                <dd className="truncate">{a.decidedBy.email}</dd>
-                <dt>IP address</dt>
-                <dd>{a.ip ?? "Not recorded"}</dd>
-                <dt>Fingerprint</dt>
-                <dd className="truncate" title={a.snapshotHash}>
-                  {a.snapshotHash.slice(0, 16)}
-                </dd>
-                <dt>Record check</dt>
-                <dd
-                  className={a.intact ? "text-foreground" : "text-destructive"}
-                >
-                  {a.intact
-                    ? "Intact: matches what was sent"
-                    : "Doesn't match its signature. Contact support."}
-                </dd>
-              </dl>
-            </details>
-          </li>
-        ))}
-      </ol>
-    </section>
+              </span>
+              {a.comment && (
+                <span className="truncate text-sm text-muted-foreground">
+                  “{a.comment}”
+                </span>
+              )}
+              {!a.intact && (
+                <span className="text-xs font-medium text-destructive">
+                  Doesn&apos;t match its signature. Contact support.
+                </span>
+              )}
+            </span>
+            <span className="flex items-center gap-2 text-sm text-muted-foreground tabular-nums">
+              {formatDateTime(a.decidedAt)}
+              <ChevronRight aria-hidden className="size-4" />
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/**
+ * Each answer in full, for the signed records page: the note, the record's
+ * details (email, IP, fingerprint) and its integrity check.
+ */
+export function ApprovalCards({
+  approvals,
+  projectId,
+}: {
+  approvals: Checked[];
+  projectId: string;
+}) {
+  return (
+    <ol className="grid gap-3">
+      {approvals.map((a) => (
+        <li
+          key={a.id}
+          className="grid gap-2 rounded-xl border p-4 text-sm sm:p-5"
+        >
+          <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
+            {a.label}
+          </p>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <p className="flex items-center gap-2 font-medium">
+              <Dot decision={a.decision} />
+              {verdictLabel(a)} by {a.decidedBy.name}
+            </p>
+            <p className="text-muted-foreground tabular-nums">
+              {formatDateTime(a.decidedAt)}
+            </p>
+          </div>
+          {a.comment && (
+            <p className="leading-relaxed whitespace-pre-line">“{a.comment}”</p>
+          )}
+          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 font-mono text-[11.5px] text-muted-foreground">
+            <dt>Email</dt>
+            <dd className="truncate">{a.decidedBy.email}</dd>
+            <dt>IP address</dt>
+            <dd>{a.ip ?? "Not recorded"}</dd>
+            <dt>Fingerprint</dt>
+            <dd className="truncate" title={a.snapshotHash}>
+              {a.snapshotHash.slice(0, 16)}
+            </dd>
+            <dt>Record check</dt>
+            <dd className={a.intact ? "text-foreground" : "text-destructive"}>
+              {a.intact
+                ? "Intact: matches what was sent"
+                : "Doesn't match its signature. Contact support."}
+            </dd>
+          </dl>
+          <Link
+            href={versionHref(projectId, a.id)}
+            className="justify-self-start font-medium underline-offset-4 hover:underline"
+          >
+            View the version they saw
+          </Link>
+        </li>
+      ))}
+    </ol>
   );
 }

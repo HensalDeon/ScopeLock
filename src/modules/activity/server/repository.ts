@@ -47,16 +47,21 @@ export async function insertActivity(
   );
 }
 
-/** Newest first. */
+const projectFilter = (projectId: ObjectId, types?: readonly ActivityType[]) =>
+  types ? { projectId, type: { $in: [...types] } } : { projectId };
+
+/** Newest first, one window at a time. */
 export async function findActivity(
   workspaceId: string,
   projectId: ObjectId,
   types?: readonly ActivityType[],
+  window: { skip: number; limit: number } = { skip: 0, limit: 50 },
 ): Promise<ActivityEvent[]> {
   const docs = await activity(workspaceId)
-    .find(types ? { projectId, type: { $in: [...types] } } : { projectId }, {
+    .find(projectFilter(projectId, types), {
       sort: { at: -1, _id: -1 },
-      limit: 200,
+      skip: window.skip,
+      limit: window.limit,
     })
     .toArray();
   return docs.map((doc) => ({
@@ -67,6 +72,14 @@ export async function findActivity(
     actor: doc.actor,
     data: doc.data,
   }));
+}
+
+export async function countActivity(
+  workspaceId: string,
+  projectId: ObjectId,
+  types?: readonly ActivityType[],
+): Promise<number> {
+  return activity(workspaceId).countDocuments(projectFilter(projectId, types));
 }
 
 /** The latest events across every project in the workspace. */
