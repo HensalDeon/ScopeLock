@@ -2,6 +2,8 @@ import { Eye, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { ApprovalHistory } from "@/modules/approvals";
+import { listApprovalsForProject } from "@/modules/approvals/server";
 import { clientFirstName } from "@/modules/clients";
 import {
   DeleteProjectButton,
@@ -9,9 +11,12 @@ import {
   MilestoneTable,
   ProjectStatusBadge,
   ScopeTable,
+  SharePanel,
 } from "@/modules/projects";
-import { getProjectOrNotFound } from "@/modules/projects/server";
+import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
+import { requireWorkspace } from "@/modules/workspace/server";
 import { formatDateTime } from "@/shared/lib/dates";
+import { formatMoney, minor } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
@@ -35,9 +40,19 @@ async function ProjectDetail({
   params: PageProps<"/projects/[id]">["params"];
 }) {
   const { id } = await params;
-  const project = await getProjectOrNotFound(id);
+  const [project, share, approvals, { user }] = await Promise.all([
+    getProjectOrNotFound(id),
+    getShareState(id),
+    listApprovalsForProject(id),
+    requireWorkspace(),
+  ]);
   const editable = isEditable(project.status);
   const client = project.client;
+  const firstName = client ? clientFirstName(client) : "your client";
+  const total = formatMoney(
+    minor(share.sentTotal ?? project.baseline.total),
+    project.currency,
+  );
 
   return (
     <div className="grid gap-8">
@@ -76,7 +91,9 @@ async function ProjectDetail({
             <Button asChild>
               <Link href={`/projects/${project.id}/preview`}>
                 <Eye aria-hidden />
-                Preview as client
+                {project.sentAt && !editable
+                  ? "View sent proposal"
+                  : "Preview as client"}
               </Link>
             </Button>
           </div>
@@ -88,7 +105,7 @@ async function ProjectDetail({
         )}
       </div>
 
-      {project.status === "draft" && (
+      {project.status === "draft" && !share.hasLink && (
         <div className="rounded-xl border border-dashed bg-canvas px-5 py-4 text-sm leading-relaxed text-pretty">
           <span className="font-medium">Draft.</span> Only you can see this.
           Next, you&apos;ll send the scope to{" "}
@@ -124,9 +141,24 @@ async function ProjectDetail({
             </h2>
             <MilestoneTable project={project} />
           </section>
+          <ApprovalHistory
+            approvals={approvals}
+            headingId={`answers-${project.id}`}
+          />
         </div>
 
         <aside className="grid gap-4">
+          <SharePanel
+            projectId={project.id}
+            status={project.status}
+            url={share.url}
+            hasLink={share.hasLink}
+            sentAt={share.sentAt}
+            lastDecision={project.lastDecision}
+            emailVerified={user.emailVerified}
+            client={{ firstName, phone: client?.phone ?? null }}
+            message={`Hi ${firstName}, here's the proposal for ${project.name} (${total}). You can read it and approve it here:`}
+          />
           {client && (
             <div className="rounded-xl border bg-canvas p-5">
               <h2 className="text-sm font-semibold">Client</h2>

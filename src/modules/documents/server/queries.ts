@@ -10,6 +10,16 @@ export async function getDocumentSettings(): Promise<repo.DocumentSettings> {
   return repo.findDocumentSettings(workspace.workspaceId);
 }
 
+/**
+ * For the public client portal only: the workspace comes from the project
+ * found by its link's hash, never from the request.
+ */
+export async function getPortalDocumentSettings(
+  workspaceId: string,
+): Promise<repo.DocumentSettings> {
+  return repo.findDocumentSettings(workspaceId);
+}
+
 /** Short-lived URLs for the logo and cover image, for rendering documents. */
 export async function getDocumentImages(
   settings: repo.DocumentSettings,

@@ -18,6 +18,8 @@ export const COLLECTIONS = {
   clients: "clients",
   projects: "projects",
   documentSettings: "documentSettings",
+  approvals: "approvals",
+  requestLimits: "requestLimits",
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

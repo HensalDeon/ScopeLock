@@ -6,6 +6,7 @@ export {
   isEditable,
   PROJECT_STATUS_LABELS,
   type Project,
+  type ProjectDecision,
   type ProjectStatus,
 } from "./domain/project";
 export { EMPTY_PROPOSAL, type ProposalContent } from "./domain/proposal";
@@ -22,3 +23,4 @@ export {
 } from "./ui/project-form";
 export { ProjectList } from "./ui/project-list";
 export { ProjectStatusBadge } from "./ui/project-status-badge";
+export { SharePanel } from "./ui/share-panel";

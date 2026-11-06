@@ -46,6 +46,17 @@ export function isEditable(status: ProjectStatus): boolean {
   return status === "draft";
 }
 
+/** The client's latest answer to the sent proposal (summary; the full
+ * signed record lives in the approvals module). */
+export type ProjectDecision = {
+  decision: "approved" | "rejected";
+  at: Date;
+  name: string;
+  email: string;
+  comment: string | null;
+  approvalId: string;
+};
+
 export type ProjectTotals = {
   baseline: Minor;
   approvedChanges: Minor;
@@ -77,6 +88,11 @@ export type Project = {
    * Once saved (even with sections cleared), the person's choice wins.
    */
   proposalSaved: boolean;
+  /** When the proposal was last sent to the client (null: never). */
+  sentAt: Date | null;
+  lastDecision: ProjectDecision | null;
+  /** A client link exists (it may be shown again; see portal). */
+  hasPortalLink: boolean;
   totals: ProjectTotals;
   createdAt: Date;
   updatedAt: Date;

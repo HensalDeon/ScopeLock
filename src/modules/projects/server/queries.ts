@@ -5,6 +5,7 @@ import { getClientsById } from "@/modules/clients/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import type { Project } from "../domain/project";
+import { portalUrl } from "./portal";
 import * as repo from "./repository";
 
 export type ProjectWithClient = Project & { client: Client | null };
@@ -51,4 +52,27 @@ export async function getProjectOrNotFound(
   if (!project) notFound();
   const [withClient] = await withClients([project]);
   return withClient ?? notFound();
+}
+
+export type ShareState = {
+  /** The client link, or null if never sent (or it can't be opened). */
+  url: string | null;
+  hasLink: boolean;
+  sentAt: Date | null;
+  sentTotal: number | null;
+};
+
+/** What the project page needs to share the proposal. */
+export async function getShareState(projectId: string): Promise<ShareState> {
+  const id = parseObjectId(projectId);
+  if (!id) notFound();
+  const { workspace } = await requireWorkspace();
+  const state = await repo.findPortalState(workspace.workspaceId, id);
+  if (!state) notFound();
+  return {
+    url: state.portal ? portalUrl(state.portal) : null,
+    hasLink: Boolean(state.portal),
+    sentAt: state.sent?.sentAt ?? null,
+    sentTotal: state.sent?.data.total ?? null,
+  };
 }

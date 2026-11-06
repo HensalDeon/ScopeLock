@@ -10,6 +10,7 @@ src/
     (marketing)/          Public site (static)
     (auth)/               Sign in, sign up, reset
     (app)/                Signed-in app (protected by proxy.ts + requireWorkspace)
+    (portal)/             Client portal: public, secret-link pages (/c/[token])
     api/                  Route handlers (auth, health; webhooks later)
   modules/<name>/         One folder per business capability
     index.ts              Public, client-safe API: types, schemas, UI, server-action refs
@@ -19,6 +20,9 @@ src/
     ui/                   Components. "use client" only on the leaves that need it.
   modules/documents/      Client-facing document templates, style and default text. Other
                           modules hand it plain data (ProposalDocumentData) to render.
+  modules/approvals/      Signed, insert-only evidence of client decisions.
+  modules/portal/         The client's public pages (/c/[token]); no sign-in. Exposes
+                          only server.ts (PortalPage) and a public server action.
   shared/
     auth/                 Better Auth config, session, membership, redirect, policy
     db/                   Mongo client, names, indexes, scopedCollection, transactions, ids
@@ -147,8 +151,8 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 
 **Client portal and secret links (Phase 3+)**
 
-- [ ] Tokens come from `generateToken()` (256-bit). Store only `hashToken(token)`, with a unique index.
-- [ ] Check the token format (`/^[A-Za-z0-9_-]{43}$/`) before querying. Unknown, revoked and expired tokens all get the same `notFound()`.
+- [ ] Tokens come from `generateToken()` (256-bit). Store only `hashToken(token)`, with a unique index. If the link must be shown again, also store a copy sealed with `encryptText("portal-link-v1", …)` (key derived from the app secret, never in the database), so a database leak alone yields no working links.
+- [ ] Check the token format (`/^[A-Za-z0-9_-]{43}$/`) before querying. Unknown, revoked and expired tokens all get the same `notFound()`. The portal streams, so that page is served with status 200 for every bad link. Don't add a format check in `proxy.ts`: malformed links would then get a 404 and unknown ones a 200, which tells them apart.
 - [ ] Rate-limit portal requests by IP and by token. The IP comes from `CLIENT_IP_HEADER`.
 - [ ] Approve and reject work out the project or change request from the token only, never from ids the client sends.
 - [ ] `/c/*` keeps `no-referrer`, `noindex` and `no-store` (set in `next.config.ts`).
@@ -160,7 +164,8 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - [ ] Snapshot built from the database, not from the request. Store `hashSnapshot(snapshot)`, `SNAPSHOT_HASH_VERSION`, IP, user agent and timestamp.
 - [ ] Unique index on `{ subjectType, subjectId }` so a double-click can't approve twice.
 - [ ] The status change and the approval insert happen in one transaction.
-- [ ] Before launch: chain each record to the previous one in the workspace (`prevHash`), or HMAC it with a key outside the database, so database access alone can't rewrite history. Also use an Atlas user that can only `find` and `insert` on approvals.
+- [ ] Sign every record with `sign("evidence-v1", …)` over its canonical facts (including the snapshot hash), and re-check hash + signature when showing it. Database access alone then can't rewrite history. Before launch, also use an Atlas user that can only `find` and `insert` on approvals.
+- [ ] Guard the status change on everything the client saw: `status`, the link's hash and the sent version (`sent.sentAt`). A withdrawn, re-sent or re-linked proposal can't be decided with an old page.
 
 **File uploads (logo, payment proof)**
 
