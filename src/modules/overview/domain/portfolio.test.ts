@@ -13,7 +13,7 @@ const p = (
 ) => ({
   status,
   currency: extra.currency ?? ("INR" as const),
-  baseline: { items: [], total: minor(total), approvedAt: null },
+  baselineTotal: minor(total),
   totals: {
     baseline: minor(total),
     approvedChanges: minor(extra.approvedChanges ?? 0),

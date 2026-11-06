@@ -1,18 +1,15 @@
 import type { Metadata, Route } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { clientLabel } from "@/modules/clients";
 import { listClients } from "@/modules/clients/server";
 import { getDocumentSettings } from "@/modules/documents/server";
 import {
-  indiaDatePlusDays,
+  clientOptions,
   isEditable,
   ProjectForm,
-  proposalFormDefaults,
+  projectFormValues,
 } from "@/modules/projects";
 import { getProjectOrNotFound } from "@/modules/projects/server";
-import { toMajor } from "@/shared/lib/money";
-import { joinLines } from "@/shared/lib/text-lines";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
@@ -64,20 +61,6 @@ async function Form({
   ]);
   if (!isEditable(project.status)) redirect(`/projects/${project.id}`);
 
-  // Keep an archived client selectable on its own project.
-  const options = clients.map((c) => ({
-    id: c.id,
-    label: clientLabel(c),
-    currency: c.currency,
-  }));
-  if (project.client && !options.some((o) => o.id === project.clientId)) {
-    options.push({
-      id: project.clientId,
-      label: `${clientLabel(project.client)} (archived)`,
-      currency: project.client.currency,
-    });
-  }
-
   return (
     <ProjectForm
       // Fresh from the database after every save; a draft in progress is
@@ -85,39 +68,10 @@ async function Form({
       key={project.updatedAt.getTime()}
       mode="edit"
       projectId={project.id}
-      clients={options}
+      clients={clientOptions(clients, project)}
       defaultCurrency={workspace.currency}
       cancelHref={`/projects/${project.id}` as Route}
-      defaults={{
-        clientId: project.clientId,
-        currency: project.currency,
-        name: project.name,
-        description: project.description ?? "",
-        items: project.baseline.items.map((item) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description ?? "",
-          includes: joinLines(item.includes),
-          amount: String(toMajor(item.amount)),
-        })),
-        billingModel: project.billingModel,
-        milestones: project.milestones.map((m) => ({
-          id: m.id,
-          name: m.name,
-          percent: String(m.percent),
-        })),
-        // Never-saved proposals (older projects) start from the workspace's
-        // default text, the same as a new project. Saved ones are kept as is.
-        proposal: proposalFormDefaults(
-          project.proposalSaved
-            ? project.proposal
-            : {
-                ...project.proposal,
-                ...settings.defaults,
-                validUntil: indiaDatePlusDays(14),
-              },
-        ),
-      }}
+      defaults={projectFormValues(project, settings.defaults)}
     />
   );
 }

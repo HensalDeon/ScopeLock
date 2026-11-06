@@ -1,6 +1,4 @@
-import { Eye, Pencil } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { ActivityTimeline } from "@/modules/activity";
 import { listProjectActivity } from "@/modules/activity/server";
@@ -14,21 +12,18 @@ import {
 import { listChanges } from "@/modules/changes/server";
 import { clientFirstName } from "@/modules/clients";
 import {
-  DeleteProjectButton,
-  isEditable,
+  isScopeApproved,
   MilestoneTable,
-  ProjectStatusBadge,
+  ProjectHeader,
+  ProjectSidebar,
+  proposalShareMessage,
   ScopeTable,
   SharePanel,
 } from "@/modules/projects";
 import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
-import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, minor } from "@/shared/lib/money";
-import { formatPhone } from "@/shared/lib/phone";
-import { BackLink } from "@/shared/ui/back-link";
-import { Button } from "@/shared/ui/button";
-import { PageContainer } from "@/shared/ui/page";
+import { PageContainer, TitledSection } from "@/shared/ui/page";
 
 export const metadata: Metadata = { title: "Project" };
 
@@ -44,9 +39,7 @@ export default function ProjectPage({ params }: PageProps<"/projects/[id]">) {
 
 async function ProjectDetail({
   params,
-}: {
-  params: PageProps<"/projects/[id]">["params"];
-}) {
+}: Pick<PageProps<"/projects/[id]">, "params">) {
   const { id } = await params;
   const [project, share, approvals, changes, activity, { user }] =
     await Promise.all([
@@ -57,79 +50,17 @@ async function ProjectDetail({
       listProjectActivity(id),
       requireWorkspace(),
     ]);
-  const approved =
-    project.status !== "draft" && project.status !== "awaiting_approval";
-  const editable = isEditable(project.status);
-  const client = project.client;
-  const firstName = client ? clientFirstName(client) : "your client";
-  const total = formatMoney(
-    minor(share.sentTotal ?? project.baseline.total),
-    project.currency,
-  );
+  const approved = isScopeApproved(project.status);
+  const firstName = project.client
+    ? clientFirstName(project.client)
+    : "your client";
 
   return (
     <div className="grid gap-8">
-      <div className="grid gap-3">
-        <BackLink href="/projects">Projects</BackLink>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="grid min-w-0 gap-1.5">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-[-0.02em] text-balance">
-                {project.name}
-              </h1>
-              <ProjectStatusBadge status={project.status} />
-            </div>
-            {client && (
-              <p className="text-[15px] text-muted-foreground">
-                For{" "}
-                <Link
-                  href={`/clients/${client.id}`}
-                  className="font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  {client.name}
-                </Link>
-                {client.company ? ` · ${client.company}` : ""}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {editable && (
-              <Button asChild variant="outline">
-                <Link href={`/projects/${project.id}/edit`}>
-                  <Pencil aria-hidden />
-                  Edit scope
-                </Link>
-              </Button>
-            )}
-            <Button asChild>
-              <Link href={`/projects/${project.id}/preview`}>
-                <Eye aria-hidden />
-                {project.sentAt && !editable
-                  ? "View sent proposal"
-                  : "Preview as client"}
-              </Link>
-            </Button>
-          </div>
-        </div>
-        {project.description && (
-          <p className="max-w-prose text-[15px] leading-relaxed text-pretty">
-            {project.description}
-          </p>
-        )}
-      </div>
+      <ProjectHeader project={project} hasLink={share.hasLink} />
 
-      {project.status === "draft" && !share.hasLink && (
-        <div className="rounded-xl border border-dashed bg-canvas px-5 py-4 text-sm leading-relaxed text-pretty">
-          <span className="font-medium">Draft.</span> Only you can see this.
-          Next, you&apos;ll send the scope to{" "}
-          {client ? clientFirstName(client) : "your client"} to approve. Once
-          they do, it&apos;s locked, and anything extra becomes a priced change
-          request.
-        </div>
-      )}
-
-      {/* On phones the share card comes first (it's the main action); on
-          desktop it sits top-right with the client card below it. */}
+      {/* Phones: the share card first (it's the main action). Desktop: it
+          sits top-right, with the client card below it. */}
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr] lg:gap-y-4">
         <div className="lg:col-start-2 lg:row-start-1">
           <SharePanel
@@ -140,41 +71,31 @@ async function ProjectDetail({
             sentAt={share.sentAt}
             lastDecision={project.lastDecision}
             emailVerified={user.emailVerified}
-            client={{ firstName, phone: client?.phone ?? null }}
-            message={`Hi ${firstName}, here's the proposal for ${project.name} (${total}). You can read it and approve it here:`}
+            client={{ firstName, phone: project.client?.phone ?? null }}
+            message={proposalShareMessage({
+              clientFirstName: firstName,
+              projectName: project.name,
+              total: formatMoney(
+                minor(share.sentTotal ?? project.baseline.total),
+                project.currency,
+              ),
+            })}
           />
         </div>
+
         <div className="grid gap-8 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-          <section
-            aria-labelledby={`scope-${project.id}`}
-            className="grid gap-3"
-          >
-            <h2
-              id={`scope-${project.id}`}
-              className="text-[15px] font-semibold"
-            >
-              Agreed scope
-            </h2>
+          <TitledSection id={`scope-${project.id}`} title="Agreed scope">
             <ScopeTable
               project={project}
               changes={approved ? changeSummary(changes) : undefined}
             />
-          </section>
-          <section
-            aria-labelledby={`payments-${project.id}`}
-            className="grid gap-3"
-          >
-            <h2
-              id={`payments-${project.id}`}
-              className="text-[15px] font-semibold"
-            >
-              Payment terms
-            </h2>
+          </TitledSection>
+          <TitledSection id={`payments-${project.id}`} title="Payment terms">
             <MilestoneTable
               project={project}
               additions={scheduleAdditions(project.milestones, changes)}
             />
-          </section>
+          </TitledSection>
           {approved && (
             <ChangeList
               projectId={project.id}
@@ -185,21 +106,12 @@ async function ProjectDetail({
               headingId={`changes-${project.id}`}
             />
           )}
-          <section
-            aria-labelledby={`activity-${project.id}`}
-            className="grid gap-3"
-          >
-            <h2
-              id={`activity-${project.id}`}
-              className="text-[15px] font-semibold"
-            >
-              Activity
-            </h2>
+          <TitledSection id={`activity-${project.id}`} title="Activity">
             <ActivityTimeline
               items={activity}
               empty="Sending, approvals and change requests will show here as they happen."
             />
-          </section>
+          </TitledSection>
           <ApprovalHistory
             approvals={approvals}
             headingId={`answers-${project.id}`}
@@ -208,44 +120,7 @@ async function ProjectDetail({
         </div>
 
         <aside className="grid gap-4 lg:col-start-2 lg:row-start-2">
-          {client && (
-            <div className="rounded-xl border bg-canvas p-5">
-              <h2 className="text-sm font-semibold">Client</h2>
-              <dl className="mt-3 grid gap-2.5 text-sm">
-                <div>
-                  <dt className="text-muted-foreground">Name</dt>
-                  <dd className="font-medium">{client.name}</dd>
-                </div>
-                {client.phone && (
-                  <div>
-                    <dt className="text-muted-foreground">WhatsApp</dt>
-                    <dd className="font-medium tabular-nums">
-                      {formatPhone(client.phone)}
-                    </dd>
-                  </div>
-                )}
-                {client.email && (
-                  <div>
-                    <dt className="text-muted-foreground">Email</dt>
-                    <dd className="truncate font-medium">{client.email}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          )}
-          <p className="px-1 text-xs text-muted-foreground">
-            Created {formatDateTime(project.createdAt)}
-            {project.updatedAt.getTime() !== project.createdAt.getTime() &&
-              ` · Updated ${formatDateTime(project.updatedAt)}`}
-          </p>
-          {editable && (
-            <div className="px-1">
-              <DeleteProjectButton
-                projectId={project.id}
-                projectName={project.name}
-              />
-            </div>
-          )}
+          <ProjectSidebar project={project} />
         </aside>
       </div>
     </div>

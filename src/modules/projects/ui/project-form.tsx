@@ -4,7 +4,7 @@ import { Plus, X } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useActionState, useId, useRef, useState, useTransition } from "react";
-import { CURRENCY_INFO, type CurrencyCode } from "@/shared/lib/currency";
+import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney } from "@/shared/lib/money";
 import { IDLE } from "@/shared/lib/form-state";
 import {
@@ -23,6 +23,8 @@ import {
 } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
+import { MoneyInput } from "@/shared/ui/money-input";
+import { FormSection } from "@/shared/ui/page";
 import { NativeSelect, NativeSelectOption } from "@/shared/ui/native-select";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { Textarea } from "@/shared/ui/textarea";
@@ -162,7 +164,6 @@ export function ProjectForm({
     const client = list.find((c) => c.id === id);
     setCurrency(client?.currency ?? defaultCurrency);
   };
-  const symbol = CURRENCY_INFO[currency].symbol;
   const money = (amount: Parameters<typeof formatMoney>[0]) =>
     formatMoney(amount, currency);
   // Controlled: React resets uncontrolled inputs after a form action, which
@@ -458,30 +459,19 @@ export function ProjectForm({
                       aria-invalid={Boolean(titleError) || undefined}
                       className="col-start-1 row-start-1 h-9"
                     />
-                    <div className="relative col-start-1 row-start-2 sm:col-start-2 sm:row-start-1">
-                      <span
-                        aria-hidden
-                        className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-sm text-muted-foreground"
-                      >
-                        {symbol}
-                      </span>
-                      <Input
-                        aria-label={`Amount for deliverable ${index + 1}, in ${currency}`}
-                        inputMode="decimal"
-                        placeholder="0"
-                        value={item.amount}
-                        onChange={(e) => {
-                          updateItem(item.key, { amount: e.target.value });
-                          form.edited(`items.${index}.amount`);
-                        }}
-                        onBlur={() => form.touch(`${item.key}.amount`)}
-                        aria-invalid={Boolean(amountError) || undefined}
-                        className="h-9 tabular-nums"
-                        style={{
-                          paddingLeft: `calc(0.9rem + ${symbol.length}ch)`,
-                        }}
-                      />
-                    </div>
+                    <MoneyInput
+                      currency={currency}
+                      wrapperClassName="col-start-1 row-start-2 sm:col-start-2 sm:row-start-1"
+                      aria-label={`Amount for deliverable ${index + 1}, in ${currency}`}
+                      value={item.amount}
+                      onChange={(e) => {
+                        updateItem(item.key, { amount: e.target.value });
+                        form.edited(`items.${index}.amount`);
+                      }}
+                      onBlur={() => form.touch(`${item.key}.amount`)}
+                      aria-invalid={Boolean(amountError) || undefined}
+                      className="h-9"
+                    />
                     <Button
                       type="button"
                       variant="ghost"
@@ -891,27 +881,5 @@ export function ProjectForm({
         </p>
       </div>
     </form>
-  );
-}
-
-function FormSection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="grid gap-5 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-10">
-      <div className="grid content-start gap-1">
-        <h2 className="text-[15px] font-semibold">{title}</h2>
-        <p className="text-sm text-pretty text-muted-foreground">
-          {description}
-        </p>
-      </div>
-      <div className="min-w-0">{children}</div>
-    </section>
   );
 }

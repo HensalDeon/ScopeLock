@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decisionInputSchema } from "./approval";
+import { decisionInputSchema, verdictLabel } from "./approval";
 
 const base = {
   decision: "approved",
@@ -57,5 +57,29 @@ describe("decisionInputSchema", () => {
         false,
       );
     }
+  });
+});
+
+describe("verdictLabel", () => {
+  it("words a 'no' by what was answered", () => {
+    const subject = (type: "baseline" | "change_request") => ({
+      type,
+      id: "x",
+    });
+    expect(
+      verdictLabel({
+        decision: "approved",
+        subject: subject("change_request"),
+      }),
+    ).toBe("Approved");
+    expect(
+      verdictLabel({ decision: "rejected", subject: subject("baseline") }),
+    ).toBe("Changes requested");
+    expect(
+      verdictLabel({
+        decision: "rejected",
+        subject: subject("change_request"),
+      }),
+    ).toBe("Declined");
   });
 });

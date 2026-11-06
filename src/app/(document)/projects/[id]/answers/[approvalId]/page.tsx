@@ -3,6 +3,7 @@ import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { verdictLabel } from "@/modules/approvals";
 import { getApprovalWithSnapshot } from "@/modules/approvals/server";
 import {
   ChangeOrderDocument,
@@ -48,12 +49,7 @@ async function Answer({
   if (!record) notFound();
   const { approval, snapshot } = record;
   const images = await getDocumentImages(settings);
-  const verdict =
-    approval.decision === "approved"
-      ? "Approved"
-      : approval.subject.type === "baseline"
-        ? "Changes requested"
-        : "Declined";
+  const verdict = verdictLabel(approval);
 
   return (
     <>

@@ -123,4 +123,47 @@ describe("projects repository", () => {
     expect(legacy?.proposalSaved).toBe(false);
     expect(legacy?.proposal.terms).toEqual([]);
   });
+
+  it("pages projects newest first, with counts per client", async () => {
+    const ws = "ws_pages";
+    const a = new ObjectId();
+    const b = new ObjectId();
+    for (let i = 0; i < 5; i++) {
+      await repo.insertProject(ws, {
+        ...rahulsProject(i < 3 ? a : b),
+        name: `P${i}`,
+      });
+      await new Promise((r) => setTimeout(r, 3));
+    }
+    const first = await repo.findProjects(ws, {}, { skip: 0, limit: 2 });
+    const second = await repo.findProjects(ws, {}, { skip: 2, limit: 2 });
+    const last = await repo.findProjects(ws, {}, { skip: 4, limit: 2 });
+    expect([...first, ...second, ...last].map((p) => p.name)).toEqual([
+      "P4",
+      "P3",
+      "P2",
+      "P1",
+      "P0",
+    ]);
+    expect(await repo.countProjects(ws, { clientId: a })).toBe(3);
+    const counts = await repo.countProjectsByClient(ws);
+    expect([counts.get(a.toHexString()), counts.get(b.toHexString())]).toEqual([
+      3, 2,
+    ]);
+    expect((await repo.countProjectsByClient("ws_other")).size).toBe(0);
+  });
+
+  it("summarises projects without the heavy fields", async () => {
+    const ws = "ws_summary";
+    await repo.insertProject(ws, rahulsProject());
+    const [summary] = await repo.findProjectSummaries(ws);
+    expect(summary).toMatchObject({
+      name: "Website redesign",
+      status: "draft",
+      baselineTotal: 8_000_000,
+      changeCount: 0,
+    });
+    expect(summary).not.toHaveProperty("baseline");
+    expect(summary).not.toHaveProperty("proposal");
+  });
 });

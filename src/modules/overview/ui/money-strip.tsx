@@ -1,4 +1,4 @@
-import type { CurrencyTotals } from "@/modules/projects";
+import type { CurrencyTotals } from "../domain/portfolio";
 import { formatMoney } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 

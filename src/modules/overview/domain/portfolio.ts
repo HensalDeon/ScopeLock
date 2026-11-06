@@ -1,6 +1,6 @@
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { minor, sum, type Minor } from "@/shared/lib/money";
-import type { Project } from "./project";
+import type { ProjectFigures } from "./overview";
 
 export type CurrencyTotals = {
   currency: CurrencyCode;
@@ -20,10 +20,7 @@ export type CurrencyTotals = {
  * them are left out; INR comes first.
  */
 export function portfolioTotals(
-  projects: readonly Pick<
-    Project,
-    "status" | "currency" | "baseline" | "totals"
-  >[],
+  projects: readonly ProjectFigures[],
 ): CurrencyTotals[] {
   const rows = new Map<CurrencyCode, CurrencyTotals>();
   const row = (currency: CurrencyCode) => {
@@ -45,17 +42,13 @@ export function portfolioTotals(
     if (p.status === "archived") continue;
     const r = row(p.currency);
     if (p.status === "active" || p.status === "completed") {
-      r.approved = sum([
-        r.approved,
-        p.baseline.total,
-        p.totals.approvedChanges,
-      ]);
+      r.approved = sum([r.approved, p.baselineTotal, p.totals.approvedChanges]);
       r.approvedProjects += 1;
       r.waiting = sum([r.waiting, p.totals.pendingChanges]);
     } else if (p.status === "awaiting_approval") {
-      r.waiting = sum([r.waiting, p.baseline.total]);
+      r.waiting = sum([r.waiting, p.baselineTotal]);
     } else {
-      r.draft = sum([r.draft, p.baseline.total]);
+      r.draft = sum([r.draft, p.baselineTotal]);
       r.draftProjects += 1;
     }
   }

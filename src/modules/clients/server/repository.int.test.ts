@@ -61,4 +61,26 @@ describe("clients repository", () => {
     await repo.setClientArchived(ws, new ObjectId(asha), false);
     expect(await repo.countActiveClients(ws)).toBe(3);
   });
+
+  it("pages clients A–Z, active and archived separately", async () => {
+    const ws = "ws_client_pages";
+    for (const name of [
+      "Zara Khan",
+      "arjun Rao",
+      "Meera Iyer",
+      "Bilal Shaikh",
+    ]) {
+      await repo.insertClient(ws, { ...rahul, name });
+    }
+    const firstPage = await repo.findClients(ws, {}, { skip: 0, limit: 2 });
+    const secondPage = await repo.findClients(ws, {}, { skip: 2, limit: 2 });
+    expect([...firstPage, ...secondPage].map((c) => c.name)).toEqual([
+      "arjun Rao",
+      "Bilal Shaikh",
+      "Meera Iyer",
+      "Zara Khan",
+    ]);
+    expect(await repo.countClients(ws)).toBe(4);
+    expect(await repo.countClients(ws, { archived: true })).toBe(0);
+  });
 });

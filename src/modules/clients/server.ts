@@ -8,5 +8,7 @@ export {
   findClient,
   getClientOrNotFound,
   getClientsById,
+  countArchivedClients,
   listClients,
+  listClientsPage,
 } from "./server/queries";

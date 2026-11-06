@@ -1,14 +1,7 @@
 import { Check } from "lucide-react";
-import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
-
-export type SetupStep = {
-  title: string;
-  detail: string;
-  done: boolean;
-  href?: Route;
-};
+import type { SetupStep } from "../domain/overview";
 
 /** First-run steps. Shown on the overview only until they're all done. */
 export function SetupChecklist({ steps }: { steps: SetupStep[] }) {

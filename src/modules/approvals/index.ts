@@ -3,7 +3,6 @@
  */
 export {
   DECISION_FIELDS,
-  DECISION_LABELS,
   DECISION_LIMITS,
   decisionInputSchema,
   type Approval,
@@ -11,5 +10,6 @@ export {
   type Decision,
   type DecisionField,
   type DecisionInput,
+  verdictLabel,
 } from "./domain/approval";
 export { ApprovalHistory } from "./ui/approval-history";

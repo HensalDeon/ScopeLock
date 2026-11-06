@@ -2,11 +2,12 @@
 
 import { Plus, X } from "lucide-react";
 import { useId } from "react";
-import { CURRENCY_INFO, type CurrencyCode } from "@/shared/lib/currency";
+import type { CurrencyCode } from "@/shared/lib/currency";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { FieldDescription, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import { MoneyInput } from "@/shared/ui/money-input";
 import { Switch } from "@/shared/ui/switch";
 import { Textarea } from "@/shared/ui/textarea";
 import { PROPOSAL_LIMITS as L } from "../domain/proposal";
@@ -438,35 +439,24 @@ export function ProposalSections({
                 {...field(`addons.${i}.title`, `${addon.key}.title`)}
                 className="h-9 bg-background"
               />
-              <div className="relative col-start-1 row-start-2 sm:col-start-2 sm:row-start-1">
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-sm text-muted-foreground"
-                >
-                  {CURRENCY_INFO[currency].symbol}
-                </span>
-                <Input
-                  aria-label={`Add-on ${i + 1} price, in ${currency}`}
-                  inputMode="decimal"
-                  placeholder="0"
-                  value={addon.amount}
-                  onChange={(e) =>
-                    set(
-                      "addons",
-                      value.addons.map((x) =>
-                        x.key === addon.key
-                          ? { ...x, amount: e.target.value }
-                          : x,
-                      ),
-                    )
-                  }
-                  {...field(`addons.${i}.amount`, `${addon.key}.amount`)}
-                  className="h-9 bg-background tabular-nums"
-                  style={{
-                    paddingLeft: `calc(0.9rem + ${CURRENCY_INFO[currency].symbol.length}ch)`,
-                  }}
-                />
-              </div>
+              <MoneyInput
+                currency={currency}
+                wrapperClassName="col-start-1 row-start-2 sm:col-start-2 sm:row-start-1"
+                aria-label={`Add-on ${i + 1} price, in ${currency}`}
+                value={addon.amount}
+                onChange={(e) =>
+                  set(
+                    "addons",
+                    value.addons.map((x) =>
+                      x.key === addon.key
+                        ? { ...x, amount: e.target.value }
+                        : x,
+                    ),
+                  )
+                }
+                {...field(`addons.${i}.amount`, `${addon.key}.amount`)}
+                className="h-9 bg-background"
+              />
               <Input
                 aria-label={`Add-on ${i + 1} unit`}
                 placeholder="/ page"

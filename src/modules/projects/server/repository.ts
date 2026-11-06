@@ -144,16 +144,88 @@ function toFields(data: ProjectData) {
   };
 }
 
+/** Newest activity first, one page at a time. */
 export async function findProjects(
   workspaceId: string,
   filter: { clientId?: ObjectId } = {},
+  window: { skip: number; limit: number } = { skip: 0, limit: 100 },
 ): Promise<Project[]> {
   const docs = await projects(workspaceId)
     .find(filter.clientId ? { clientId: filter.clientId } : {}, {
-      sort: { updatedAt: -1 },
+      sort: { updatedAt: -1, _id: -1 },
+      skip: window.skip,
+      limit: window.limit,
     })
     .toArray();
   return docs.map(toProject);
+}
+
+/**
+ * A light row per project for workspace-wide figures (the overview): no
+ * scope lines, proposal text or sent copies.
+ */
+export type ProjectSummary = Pick<
+  Project,
+  | "id"
+  | "name"
+  | "status"
+  | "currency"
+  | "clientId"
+  | "totals"
+  | "sentAt"
+  | "lastDecision"
+  | "updatedAt"
+  | "changeCount"
+> & { baselineTotal: Project["baseline"]["total"] };
+
+export async function findProjectSummaries(
+  workspaceId: string,
+): Promise<ProjectSummary[]> {
+  const docs = await projects(workspaceId)
+    .find(
+      { status: { $ne: "archived" } },
+      {
+        projection: {
+          name: 1,
+          status: 1,
+          currency: 1,
+          clientId: 1,
+          totals: 1,
+          "baseline.total": 1,
+          "sent.sentAt": 1,
+          lastDecision: 1,
+          updatedAt: 1,
+          changeCounter: 1,
+        },
+        sort: { updatedAt: -1 },
+        limit: 1000,
+      },
+    )
+    .toArray();
+  return docs.map((doc) => ({
+    id: doc._id.toHexString(),
+    name: doc.name,
+    status: doc.status,
+    currency: doc.currency ?? DEFAULT_CURRENCY,
+    clientId: doc.clientId.toHexString(),
+    baselineTotal: minor(doc.baseline.total),
+    totals: {
+      baseline: minor(doc.totals.baseline),
+      approvedChanges: minor(doc.totals.approvedChanges),
+      pendingChanges: minor(doc.totals.pendingChanges),
+      paid: minor(doc.totals.paid),
+      due: minor(doc.totals.due),
+    },
+    sentAt: doc.sent?.sentAt ?? null,
+    lastDecision: doc.lastDecision
+      ? {
+          ...doc.lastDecision,
+          approvalId: doc.lastDecision.approvalId.toHexString(),
+        }
+      : null,
+    updatedAt: doc.updatedAt,
+    changeCount: doc.changeCounter ?? 0,
+  }));
 }
 
 export async function findProject(
@@ -164,8 +236,23 @@ export async function findProject(
   return doc ? toProject(doc) : null;
 }
 
-export async function countProjects(workspaceId: string): Promise<number> {
-  return projects(workspaceId).countDocuments();
+export async function countProjects(
+  workspaceId: string,
+  filter: { clientId?: ObjectId } = {},
+): Promise<number> {
+  return projects(workspaceId).countDocuments(
+    filter.clientId ? { clientId: filter.clientId } : {},
+  );
+}
+
+/** How many projects each client has (for the clients list). */
+export async function countProjectsByClient(
+  workspaceId: string,
+): Promise<Map<string, number>> {
+  const rows = (await projects(workspaceId)
+    .aggregate([{ $group: { _id: "$clientId", count: { $sum: 1 } } }])
+    .toArray()) as { _id: ObjectId; count: number }[];
+  return new Map(rows.map((r) => [r._id.toHexString(), r.count]));
 }
 
 export async function insertProject(

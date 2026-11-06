@@ -3,22 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-
-export type AttentionItem = {
-  key: string;
-  /** "Proposal", "CR-002", "Draft"… */
-  tag: string;
-  tone: "waiting" | "neutral";
-  title: string;
-  /** Project · client · when. */
-  detail: string;
-  amount: string;
-  href: Route;
-  /** A client note to show under the row. */
-  quote?: string | null;
-  /** WhatsApp reminder link, for things waiting on the client. */
-  remind?: string | null;
-};
+import type { AttentionItem } from "../domain/overview";
 
 /** A titled list of things to act on, with a real empty state. */
 export function AttentionList({
@@ -58,7 +43,10 @@ export function AttentionList({
               key={item.key}
               className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-4 py-3.5 sm:px-5"
             >
-              <Link href={item.href} className="group grid min-w-0 gap-0.5">
+              <Link
+                href={item.href as Route}
+                className="group grid min-w-0 gap-0.5"
+              >
                 <span
                   className={cn(
                     "font-mono text-[11px] tracking-[0.1em] uppercase",

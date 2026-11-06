@@ -5,7 +5,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useActionState, useId, useRef, useState, useTransition } from "react";
 import { draftTotal } from "@/shared/lib/amount-field";
-import { CURRENCY_INFO, type CurrencyCode } from "@/shared/lib/currency";
+import type { CurrencyCode } from "@/shared/lib/currency";
 import { IDLE } from "@/shared/lib/form-state";
 import { formatMoney } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
@@ -22,6 +22,8 @@ import {
 } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
+import { MoneyInput } from "@/shared/ui/money-input";
+import { FormSection } from "@/shared/ui/page";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { Textarea } from "@/shared/ui/textarea";
 import {
@@ -30,22 +32,13 @@ import {
   SOURCE_CHANNELS,
   SOURCE_LABELS,
   type BillingOption,
+  type ChangeFormValues,
 } from "../domain/change-request";
 import {
   createChange,
   updateChange,
   type ChangeFormState,
 } from "../server/actions";
-
-export type ChangeFormValues = {
-  title: string;
-  description: string;
-  items: { id?: string; title: string; description: string; amount: string }[];
-  billingOption: BillingOption;
-  milestoneId: string;
-  sourceChannel: string;
-  sourceNote: string;
-};
 
 type Row = ChangeFormValues["items"][number] & {
   key: string;
@@ -120,7 +113,6 @@ export function ChangeForm({
     initial: mode === "edit" ? initial : undefined,
     serverState: state,
   });
-  const symbol = CURRENCY_INFO[currency].symbol;
   const total = draftTotal(rows.map((r) => r.amount));
   const single = milestones.length <= 1;
   const last = milestones.at(-1);
@@ -204,7 +196,7 @@ export function ChangeForm({
         <FormAlert>{state.message}</FormAlert>
       )}
 
-      <Section
+      <FormSection
         title="The change"
         description="Your client sees the name and description on the change request."
       >
@@ -244,9 +236,9 @@ export function ChangeForm({
             <FieldError>{form.errorFor("description")}</FieldError>
           </Field>
         </div>
-      </Section>
+      </FormSection>
 
-      <Section
+      <FormSection
         title="Price"
         description="One line per piece of work. The total is what your client approves."
       >
@@ -286,30 +278,19 @@ export function ChangeForm({
                       aria-invalid={Boolean(titleError) || undefined}
                       className="col-start-1 row-start-1 h-9"
                     />
-                    <div className="relative col-start-1 row-start-2 sm:col-start-2 sm:row-start-1">
-                      <span
-                        aria-hidden
-                        className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-sm text-muted-foreground"
-                      >
-                        {symbol}
-                      </span>
-                      <Input
-                        aria-label={`Amount for line ${index + 1}, in ${currency}`}
-                        inputMode="decimal"
-                        placeholder="0"
-                        value={row.amount}
-                        onChange={(e) => {
-                          updateRow(row.key, { amount: e.target.value });
-                          form.edited(`items.${index}.amount`);
-                        }}
-                        onBlur={() => form.touch(`${row.key}.amount`)}
-                        aria-invalid={Boolean(amountError) || undefined}
-                        className="h-9 tabular-nums"
-                        style={{
-                          paddingLeft: `calc(0.9rem + ${symbol.length}ch)`,
-                        }}
-                      />
-                    </div>
+                    <MoneyInput
+                      currency={currency}
+                      wrapperClassName="col-start-1 row-start-2 sm:col-start-2 sm:row-start-1"
+                      aria-label={`Amount for line ${index + 1}, in ${currency}`}
+                      value={row.amount}
+                      onChange={(e) => {
+                        updateRow(row.key, { amount: e.target.value });
+                        form.edited(`items.${index}.amount`);
+                      }}
+                      onBlur={() => form.touch(`${row.key}.amount`)}
+                      aria-invalid={Boolean(amountError) || undefined}
+                      className="h-9"
+                    />
                     <Button
                       type="button"
                       variant="ghost"
@@ -400,9 +381,9 @@ export function ChangeForm({
             </p>
           </div>
         </div>
-      </Section>
+      </FormSection>
 
-      <Section
+      <FormSection
         title="When it's paid"
         description="Approving and paying are separate. Your client approves now; this says which payment it joins."
       >
@@ -467,9 +448,9 @@ export function ChangeForm({
             <input type="hidden" name="milestoneId" value="" />
           )}
         </fieldset>
-      </Section>
+      </FormSection>
 
-      <Section
+      <FormSection
         title="Where it came from"
         description="Only you see this. It helps when you look back at why the price went up."
       >
@@ -508,7 +489,7 @@ export function ChangeForm({
             <FieldError>{form.errorFor("sourceNote")}</FieldError>
           </Field>
         </div>
-      </Section>
+      </FormSection>
 
       <div className="flex flex-wrap items-center gap-3 border-t pt-6">
         <Button
@@ -534,27 +515,5 @@ export function ChangeForm({
         </FieldDescription>
       </div>
     </form>
-  );
-}
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="grid gap-5 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-10">
-      <div className="grid content-start gap-1">
-        <h2 className="text-[15px] font-semibold">{title}</h2>
-        <p className="text-sm text-pretty text-muted-foreground">
-          {description}
-        </p>
-      </div>
-      <div className="min-w-0">{children}</div>
-    </section>
   );
 }

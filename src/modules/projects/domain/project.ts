@@ -41,6 +41,21 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   archived: "Archived",
 };
 
+/** The client has approved the baseline (change requests can follow). */
+export function isScopeApproved(status: ProjectStatus): boolean {
+  return status === "active" || status === "completed";
+}
+
+/** The WhatsApp text that goes before the proposal link. */
+export function proposalShareMessage(input: {
+  clientFirstName: string;
+  projectName: string;
+  /** Formatted, e.g. "₹80,000". */
+  total: string;
+}): string {
+  return `Hi ${input.clientFirstName}, here's the proposal for ${input.projectName} (${input.total}). You can read it and approve it here:`;
+}
+
 /** Only drafts can be edited or deleted; after sending, scope is locked. */
 export function isEditable(status: ProjectStatus): boolean {
   return status === "draft";

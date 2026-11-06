@@ -1,10 +1,14 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ChangeForm, type ChangeFormValues } from "@/modules/changes";
+import {
+  blankChangeValues,
+  ChangeForm,
+  changeValuesFrom,
+  changeValuesFromAddon,
+} from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
 import { getProjectOrNotFound } from "@/modules/projects/server";
-import { toMajor, type Minor } from "@/shared/lib/money";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
 import { FreshOnEachVisit } from "@/shared/ui/fresh-on-each-visit";
@@ -48,59 +52,19 @@ async function NewChange({
     );
   }
 
-  const amount = (value: Minor) => String(toMajor(value));
-  let defaults: ChangeFormValues = {
-    title: "",
-    description: "",
-    items: [],
-    billingOption: project.billingModel === "upfront" ? "pay_now" : "final",
-    milestoneId: "",
-    sourceChannel: "",
-    sourceNote: "",
-  };
-
-  // "Turn into a change request" from a proposal add-on.
+  // "Turn into a change request" (?addon=) or "Send a revised one" (?from=).
   const addon = project.proposal.addons.find((a) => a.id === query.addon);
-  if (addon) {
-    defaults = {
-      ...defaults,
-      title: addon.title,
-      description: addon.description ?? "",
-      items: [
-        {
-          title: addon.unit
-            ? `${addon.title} (${addon.unit.replace(/^\/\s*/, "per ")})`
-            : addon.title,
-          description: "",
-          amount: amount(addon.amount),
-        },
-      ],
-    };
-  }
-
-  // "Send a revised one" from a declined or cancelled change request.
   const from =
     typeof query.from === "string"
       ? (await listChanges(project.id)).find(
           (c) => String(c.number) === query.from,
         )
       : undefined;
-  if (from) {
-    defaults = {
-      ...defaults,
-      title: from.title,
-      description: from.description ?? "",
-      items: from.items.map((item) => ({
-        title: item.title,
-        description: item.description ?? "",
-        amount: amount(item.amount),
-      })),
-      billingOption: from.billing.option,
-      milestoneId: from.billing.milestoneId ?? "",
-      sourceChannel: from.source?.channel ?? "",
-      sourceNote: from.source?.note ?? "",
-    };
-  }
+  const defaults = from
+    ? changeValuesFrom(from, { revise: true })
+    : addon
+      ? changeValuesFromAddon(addon, project.billingModel)
+      : blankChangeValues(project.billingModel);
 
   return (
     <div className="grid gap-2">

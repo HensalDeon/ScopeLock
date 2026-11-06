@@ -9,6 +9,7 @@ import { IDLE } from "@/shared/lib/form-state";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
+import { SideCard, SideCardText, SideCardTitle } from "@/shared/ui/side-card";
 import type { ChangeRequest } from "../domain/change-request";
 import {
   cancelChange,
@@ -47,17 +48,17 @@ export function ChangeActions({
 
   if (change.status === "draft") {
     return (
-      <Card>
-        <Title>
+      <SideCard>
+        <SideCardTitle>
           {change.everSent
             ? `Taken back from ${clientFirstName}`
             : `Draft: only you can see it`}
-        </Title>
-        <Body>
+        </SideCardTitle>
+        <SideCardText>
           {change.everSent
             ? `${clientFirstName} sees "being updated" until you send it again.`
             : `When you send it, ${clientFirstName} gets it on the same link as the proposal.`}
-        </Body>
+        </SideCardText>
         {!emailVerified && (
           <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-warning-ink">
             Confirm your email first, with the code from the banner at the top.
@@ -105,15 +106,15 @@ export function ChangeActions({
             </Confirm>
           )}
         </div>
-      </Card>
+      </SideCard>
     );
   }
 
   return (
-    <Card>
+    <SideCard>
       {change.status === "sent" && (
         <>
-          <Title>Waiting for {clientFirstName}</Title>
+          <SideCardTitle>Waiting for {clientFirstName}</SideCardTitle>
           {change.sentAt && (
             <p className="text-sm text-muted-foreground tabular-nums">
               Sent {formatDateTime(change.sentAt)}
@@ -123,10 +124,10 @@ export function ChangeActions({
       )}
       {change.decision && (
         <>
-          <Title>
+          <SideCardTitle>
             {change.decision.decision === "approved" ? "Approved" : "Declined"}{" "}
             by {change.decision.name}
-          </Title>
+          </SideCardTitle>
           <p className="text-sm text-muted-foreground tabular-nums">
             {formatDateTime(change.decision.at)}
           </p>
@@ -146,8 +147,8 @@ export function ChangeActions({
       )}
       {change.status === "withdrawn" && (
         <>
-          <Title>Cancelled</Title>
-          <Body>Nothing was added to the project.</Body>
+          <SideCardTitle>Cancelled</SideCardTitle>
+          <SideCardText>Nothing was added to the project.</SideCardText>
         </>
       )}
       {link && change.status !== "withdrawn" && (
@@ -162,7 +163,7 @@ export function ChangeActions({
           variant="outline"
         />
       )}
-    </Card>
+    </SideCard>
   );
 }
 
@@ -241,21 +242,5 @@ function Confirm({
         </Button>
       </div>
     </div>
-  );
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid gap-3 rounded-xl border bg-canvas p-5">{children}</div>
-  );
-}
-function Title({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-sm font-semibold">{children}</h2>;
-}
-function Body({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
-      {children}
-    </p>
   );
 }

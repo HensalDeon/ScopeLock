@@ -80,7 +80,12 @@ export const decisionInputSchema = z
 
 export type DecisionInput = z.output<typeof decisionInputSchema>;
 
-export const DECISION_LABELS: Record<Decision, string> = {
-  approved: "Approved",
-  rejected: "Changes requested",
-};
+/** "Approved", or for a "no": "Changes requested" (proposal) / "Declined" (CR). */
+export function verdictLabel(
+  approval: Pick<Approval, "decision" | "subject">,
+): string {
+  if (approval.decision === "approved") return "Approved";
+  return approval.subject.type === "baseline"
+    ? "Changes requested"
+    : "Declined";
+}

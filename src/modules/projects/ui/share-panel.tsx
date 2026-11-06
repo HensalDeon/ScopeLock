@@ -6,6 +6,7 @@ import { IDLE } from "@/shared/lib/form-state";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
+import { SideCard, SideCardText, SideCardTitle } from "@/shared/ui/side-card";
 import type { ProjectDecision, ProjectStatus } from "../domain/project";
 import {
   regeneratePortalLink,
@@ -52,10 +53,10 @@ export function SharePanel({
         ? lastDecision
         : null;
     return (
-      <Card>
+      <SideCard>
         {changes ? (
           <>
-            <Title>{name} asked for changes</Title>
+            <SideCardTitle>{name} asked for changes</SideCardTitle>
             <p className="text-sm text-muted-foreground tabular-nums">
               {formatDateTime(changes.at)}
             </p>
@@ -64,20 +65,20 @@ export function SharePanel({
                 {changes.comment}
               </blockquote>
             )}
-            <Body>
+            <SideCardText>
               Edit the scope, then send it again. {name} keeps the same link.
-            </Body>
+            </SideCardText>
           </>
         ) : (
           <>
-            <Title>
+            <SideCardTitle>
               {hasLink ? "Send the updated proposal" : `Send to ${name}`}
-            </Title>
-            <Body>
+            </SideCardTitle>
+            <SideCardText>
               {hasLink
                 ? `${name} keeps the same link. It will show this new version.`
                 : `This freezes the proposal as it is now and makes a private link for ${name}. Share it on WhatsApp or by email.`}
-            </Body>
+            </SideCardText>
           </>
         )}
         {!emailVerified && (
@@ -92,16 +93,16 @@ export function SharePanel({
           label={hasLink ? "Send updated proposal" : "Send for approval"}
           pendingLabel="Sending…"
         />
-      </Card>
+      </SideCard>
     );
   }
 
   const approved = status !== "awaiting_approval";
   return (
-    <Card>
+    <SideCard>
       {approved && lastDecision?.decision === "approved" ? (
         <>
-          <Title>Approved by {lastDecision.name}</Title>
+          <SideCardTitle>Approved by {lastDecision.name}</SideCardTitle>
           <p className="text-sm text-muted-foreground tabular-nums">
             {formatDateTime(lastDecision.at)}
           </p>
@@ -113,7 +114,7 @@ export function SharePanel({
         </>
       ) : (
         <>
-          <Title>Waiting for {name}</Title>
+          <SideCardTitle>Waiting for {name}</SideCardTitle>
           {sentAt && (
             <p className="text-sm text-muted-foreground tabular-nums">
               Sent {formatDateTime(sentAt)}
@@ -125,10 +126,10 @@ export function SharePanel({
       {url ? (
         <ShareLink url={url} phone={client.phone} message={message} />
       ) : (
-        <Body>
+        <SideCardText>
           This link can&apos;t be shown again because the app&apos;s security
           key changed. Make a new link and share that one.
-        </Body>
+        </SideCardText>
       )}
 
       <div className="flex flex-wrap gap-x-1 gap-y-2">
@@ -143,7 +144,7 @@ export function SharePanel({
         )}
         <ReplaceLink projectId={projectId} />
       </div>
-    </Card>
+    </SideCard>
   );
 }
 
@@ -217,21 +218,5 @@ function ActionButton({
         </p>
       )}
     </form>
-  );
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid gap-3 rounded-xl border bg-canvas p-5">{children}</div>
-  );
-}
-function Title({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-sm font-semibold">{children}</h2>;
-}
-function Body({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
-      {children}
-    </p>
   );
 }

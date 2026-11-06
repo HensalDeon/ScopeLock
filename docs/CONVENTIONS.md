@@ -128,7 +128,14 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 
 ## 5. Pages and rendering (Next.js 16, Cache Components)
 
-- Pages are thin: call `requireWorkspace()` or a module query, then render module UI.
+- **Pages are composition only.** A route loads data through module queries and renders module UI. It holds no business rules, no view-model building and no copy logic:
+  - Rules and anything worth a test (what's waiting, form defaults, share messages, labels) are pure functions in the module's `domain/`, with a `*.test.ts`.
+  - Gathering data for a screen is a module query in `server/` returning a ready view model (for example `getOverview()`).
+  - Page-specific markup lives in the module's `ui/` (for example `ProjectHeader`), or in a route `_components/` folder only if no module owns it.
+  - A route over ~150 lines, or any `.map`/`.filter`/`if` building data in a route, is a sign something belongs in a module.
+- **Every list page paginates.** Use `paginate()` / `parsePage()` from `shared/lib/pagination` (20 per page, `?page=N`, too-high pages clamp to the last) and `<Pagination>` from `shared/ui/pagination`. Repository list functions take `{ skip, limit }` with a matching `count…()`. Pickers and workspace figures use their own capped or projected queries, never an unbounded `find()`.
+- **Reuse before you write.** Check `shared/ui` first: `MoneyInput`, `FormSection`, `TitledSection`, `SideCard`, `ShareLink`, `Pagination`, `EmptyState`, `BackLink`. If a piece of UI appears twice, move it there.
+- **Keep files small.** Aim for under ~300 lines; split big forms into section components.
 - Anything that reads the session, headers or cookies renders inside `<Suspense>` with a skeleton that has the same shape.
 - No `"use cache"` on workspace data in Phase 2. If it's added later, key and tag it by `workspaceId` and call `updateTag` in actions. Never pass a raw portal token into a cached function, because it becomes a stored cache key.
 - Lists have a real empty state: what will appear here and how to add the first item.

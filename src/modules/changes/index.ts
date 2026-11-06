@@ -5,6 +5,10 @@
 export {
   BILLING_OPTIONS,
   billingSummary,
+  blankChangeValues,
+  changeShareMessage,
+  changeValuesFrom,
+  changeValuesFromAddon,
   CHANGE_FIELDS,
   CHANGE_LIMITS,
   CHANGE_STATUS_LABELS,
@@ -17,12 +21,13 @@ export {
   SOURCE_CHANNELS,
   SOURCE_LABELS,
   type BillingOption,
+  type ChangeFormValues,
   type ChangeRequest,
   type ChangeStatus,
   type MilestoneRef,
   type ScheduleRow,
 } from "./domain/change-request";
 export { ChangeActions } from "./ui/change-actions";
-export { ChangeForm, type ChangeFormValues } from "./ui/change-form";
+export { ChangeForm } from "./ui/change-form";
 export { ChangeList } from "./ui/change-list";
 export { ChangeStatusBadge } from "./ui/change-status-badge";

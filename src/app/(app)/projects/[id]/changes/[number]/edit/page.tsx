@@ -1,10 +1,9 @@
 import type { Metadata, Route } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { ChangeForm, changeLabel } from "@/modules/changes";
+import { ChangeForm, changeLabel, changeValuesFrom } from "@/modules/changes";
 import { getChangeOrNotFound } from "@/modules/changes/server";
 import { getProjectOrNotFound } from "@/modules/projects/server";
-import { toMajor } from "@/shared/lib/money";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
@@ -45,20 +44,7 @@ async function EditChange({
         number={change.number}
         currency={project.currency}
         milestones={project.milestones.map((m) => ({ id: m.id, name: m.name }))}
-        defaults={{
-          title: change.title,
-          description: change.description ?? "",
-          items: change.items.map((item) => ({
-            id: item.id,
-            title: item.title,
-            description: item.description ?? "",
-            amount: String(toMajor(item.amount)),
-          })),
-          billingOption: change.billing.option,
-          milestoneId: change.billing.milestoneId ?? "",
-          sourceChannel: change.source?.channel ?? "",
-          sourceNote: change.source?.note ?? "",
-        }}
+        defaults={changeValuesFrom(change)}
         cancelHref={page}
       />
     </div>

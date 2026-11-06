@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { formatINR, minor } from "@/shared/lib/money";
 import { percentTotal, splitByMilestones } from "./billing";
-import { buildProjectPlan, isEditable, projectInputSchema } from "./project";
+import {
+  buildProjectPlan,
+  isEditable,
+  isScopeApproved,
+  projectInputSchema,
+  proposalShareMessage,
+} from "./project";
 import { draftTotal } from "./scope";
 
 const CLIENT = "6728f0c2a1b2c3d4e5f60718";
@@ -193,5 +199,26 @@ describe("project currency", () => {
     );
     expect(plan.total).toBe(240_001);
     expect(plan.milestones.reduce((a, m) => a + m.baseAmount, 0)).toBe(240_001);
+  });
+});
+
+describe("status helpers and share text", () => {
+  it("knows when the scope is approved", () => {
+    expect(isScopeApproved("active")).toBe(true);
+    expect(isScopeApproved("completed")).toBe(true);
+    expect(isScopeApproved("awaiting_approval")).toBe(false);
+    expect(isScopeApproved("draft")).toBe(false);
+  });
+
+  it("writes the WhatsApp message", () => {
+    expect(
+      proposalShareMessage({
+        clientFirstName: "Rahul",
+        projectName: "Website redesign",
+        total: "₹80,000",
+      }),
+    ).toBe(
+      "Hi Rahul, here's the proposal for Website redesign (₹80,000). You can read it and approve it here:",
+    );
   });
 });

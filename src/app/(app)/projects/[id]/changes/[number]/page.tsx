@@ -6,6 +6,7 @@ import {
   ChangeActions,
   ChangeStatusBadge,
   changeLabel,
+  changeShareMessage,
   SOURCE_LABELS,
 } from "@/modules/changes";
 import { changeOrderData, getChangeOrNotFound } from "@/modules/changes/server";
@@ -113,7 +114,12 @@ async function ChangeDetail({
                 ? {
                     url: `${share.url}/changes/${change.number}`,
                     phone: project.client?.phone ?? null,
-                    message: `Hi ${firstName}, here's a change request for ${project.name}: ${change.title} (${total}). You can approve or decline it here:`,
+                    message: changeShareMessage({
+                      clientFirstName: firstName,
+                      projectName: project.name,
+                      title: change.title,
+                      total,
+                    }),
                   }
                 : null
             }

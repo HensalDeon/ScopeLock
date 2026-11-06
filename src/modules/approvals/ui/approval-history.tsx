@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { formatDateTime } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
-import type { Approval } from "../domain/approval";
-
-function verdict(a: Approval): string {
-  if (a.decision === "approved") return "Approved";
-  return a.subject.type === "baseline" ? "Changes requested" : "Declined";
-}
+import { verdictLabel, type Approval } from "../domain/approval";
 
 /**
  * The client's answers on a project, newest first. Each record is checked
@@ -42,7 +37,7 @@ export function ApprovalHistory({
                   )}
                   aria-hidden
                 />
-                {verdict(a)} by {a.decidedBy.name}
+                {verdictLabel(a)} by {a.decidedBy.name}
               </p>
               <p className="text-muted-foreground tabular-nums">
                 {formatDateTime(a.decidedAt)}

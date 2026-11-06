@@ -4,18 +4,20 @@
  */
 export {
   isEditable,
+  isScopeApproved,
+  proposalShareMessage,
   PROJECT_STATUS_LABELS,
   type Project,
   type ProjectDecision,
   type ProjectStatus,
 } from "./domain/project";
 export { EMPTY_PROPOSAL, type ProposalContent } from "./domain/proposal";
-export { portfolioTotals, type CurrencyTotals } from "./domain/portfolio";
 export { DeleteProjectButton } from "./ui/delete-project-button";
 export {
-  indiaDatePlusDays,
-  proposalFormDefaults,
-} from "./ui/proposal-form-defaults";
+  clientOptions,
+  newProjectValues,
+  projectFormValues,
+} from "./ui/project-form-values";
 export {
   MilestoneTable,
   ScopeTable,
@@ -27,6 +29,8 @@ export {
   type ClientOption,
   type ProjectFormDefaults,
 } from "./ui/project-form";
+export { ProjectHeader } from "./ui/project-header";
 export { ProjectList } from "./ui/project-list";
+export { ProjectSidebar } from "./ui/project-sidebar";
 export { ProjectStatusBadge } from "./ui/project-status-badge";
 export { SharePanel } from "./ui/share-panel";

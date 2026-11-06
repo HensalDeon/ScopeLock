@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { clientLabel } from "@/modules/clients";
 import { listClients } from "@/modules/clients/server";
 import { getDocumentSettings } from "@/modules/documents/server";
 import {
-  EMPTY_PROPOSAL,
-  indiaDatePlusDays,
+  clientOptions,
+  newProjectValues,
   ProjectForm,
-  proposalFormDefaults,
 } from "@/modules/projects";
 import { FreshOnEachVisit } from "@/shared/ui/fresh-on-each-visit";
 import { requireWorkspace } from "@/modules/workspace/server";
@@ -46,42 +44,19 @@ async function Form({
     getDocumentSettings(),
     requireWorkspace(),
   ]);
-  const preselected =
-    typeof client === "string" && clients.some((c) => c.id === client)
-      ? client
-      : clients.length === 1
-        ? (clients[0]?.id ?? "")
-        : "";
-
   return (
     <FreshOnEachVisit>
       <ProjectForm
         mode="create"
-        clients={clients.map((c) => ({
-          id: c.id,
-          label: clientLabel(c),
-          currency: c.currency,
-        }))}
+        clients={clientOptions(clients)}
         defaultCurrency={workspace.currency}
         cancelHref="/projects"
-        defaults={{
-          clientId: preselected,
-          // The chosen client's currency, else the workspace default.
-          currency:
-            clients.find((c) => c.id === preselected)?.currency ??
-            workspace.currency,
-          name: "",
-          description: "",
-          items: [],
-          billingModel: "milestones",
-          milestones: [],
-          // Start from the workspace's standard text (Settings → Documents).
-          proposal: proposalFormDefaults({
-            ...EMPTY_PROPOSAL,
-            ...settings.defaults,
-            validUntil: indiaDatePlusDays(14),
-          }),
-        }}
+        defaults={newProjectValues({
+          clients,
+          requestedClientId: client,
+          workspaceCurrency: workspace.currency,
+          proposalDefaults: settings.defaults,
+        })}
       />
     </FreshOnEachVisit>
   );

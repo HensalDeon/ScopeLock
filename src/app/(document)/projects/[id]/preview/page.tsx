@@ -7,6 +7,7 @@ import { ClassicDocument } from "@/modules/documents";
 import { isEditable } from "@/modules/projects";
 import { getProposalDocument } from "@/modules/projects/server";
 import { Button } from "@/shared/ui/button";
+import { cssString } from "@/shared/lib/css-string";
 import { PrintButton } from "@/shared/ui/print-button";
 
 export const metadata: Metadata = { title: "Proposal preview" };
@@ -19,16 +20,6 @@ export default function ProposalPreviewPage({
       <Preview params={params} />
     </Suspense>
   );
-}
-
-/** Text safe to put inside a CSS string (business names are user input). */
-function cssString(value: string): string {
-  return `"${value
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/[\r\n]+/g, " ")
-    .replace(/</g, "\\3c ")
-    .replace(/>/g, "\\3e ")}"`;
 }
 
 async function Preview({

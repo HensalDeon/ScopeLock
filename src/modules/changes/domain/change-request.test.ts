@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
   billingSummary,
+  blankChangeValues,
+  changeShareMessage,
+  changeValuesFrom,
+  changeValuesFromAddon,
   changeInputSchema,
   changeLabel,
   changeTotals,
@@ -178,5 +182,73 @@ describe("changeInputSchema", () => {
         items: JSON.stringify([{ title: "x", amount: "abc" }]),
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("form values", () => {
+  it("starts blank with the right billing for the model", () => {
+    expect(blankChangeValues("milestones").billingOption).toBe("final");
+    expect(blankChangeValues("upfront").billingOption).toBe("pay_now");
+  });
+
+  it("pre-fills from an add-on, spelling out the unit", () => {
+    const v = changeValuesFromAddon(
+      {
+        title: "Extra page",
+        description: "Any page in the same design.",
+        amount: minor(600_000),
+        unit: "/ page",
+      },
+      "milestones",
+    );
+    expect(v).toMatchObject({
+      title: "Extra page",
+      description: "Any page in the same design.",
+      items: [{ title: "Extra page (per page)", amount: "6000" }],
+    });
+  });
+
+  it("edits keep line ids; revisions start fresh lines", () => {
+    const cr = {
+      title: "Gallery page",
+      description: null,
+      items: [
+        {
+          id: "a",
+          title: "Gallery",
+          description: null,
+          amount: minor(649_950),
+        },
+      ],
+      billing: { option: "milestone" as const, milestoneId: "m2" },
+      source: { channel: "whatsapp" as const, note: "Asked on 3 Nov" },
+    };
+    expect(changeValuesFrom(cr).items[0]).toEqual({
+      id: "a",
+      title: "Gallery",
+      description: "",
+      amount: "6499.5",
+    });
+    expect(changeValuesFrom(cr, { revise: true }).items[0]).not.toHaveProperty(
+      "id",
+    );
+    expect(changeValuesFrom(cr)).toMatchObject({
+      billingOption: "milestone",
+      milestoneId: "m2",
+      sourceChannel: "whatsapp",
+    });
+  });
+
+  it("writes the WhatsApp message", () => {
+    expect(
+      changeShareMessage({
+        clientFirstName: "Rahul",
+        projectName: "Website redesign",
+        title: "Blog",
+        total: "₹15,000",
+      }),
+    ).toBe(
+      "Hi Rahul, here's a change request for Website redesign: Blog (₹15,000). You can approve or decline it here:",
+    );
   });
 });

@@ -5,11 +5,14 @@ import "server-only";
 
 export {
   countProjects,
+  countProjectsByClient,
   findProjectWithClient,
   getProjectOrNotFound,
   listProjects,
   getShareState,
   listProjectsForClient,
+  listProjectSummaries,
+  type ProjectSummaryWithClient,
   type ProjectWithClient,
   type ShareState,
 } from "./server/queries";
