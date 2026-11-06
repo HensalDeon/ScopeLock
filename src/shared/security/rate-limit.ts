@@ -8,6 +8,9 @@ type LimitDoc = { _id: string; count: number; expiresAt: Date };
  * Fixed-window rate limit stored in MongoDB, so it holds across serverless
  * instances. `key` names who and what ("portal-view:<ip>"). Counters expire
  * on their own (TTL index on expiresAt).
+ *
+ * In pages, call it after `requestInfo()` (which you need for the IP anyway):
+ * that marks the render as per-request before the clock is read here.
  */
 export async function rateLimit(
   key: string,

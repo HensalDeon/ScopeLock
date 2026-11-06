@@ -1,5 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
+import { connection } from "next/server";
 import { env } from "@/shared/lib/env";
 
 /**
@@ -11,6 +12,10 @@ export async function requestInfo(): Promise<{
   ip: string | null;
   userAgent: string | null;
 }> {
+  // Only runs for a real request, never during prerendering. Callers read
+  // the clock right after (rate limits, evidence timestamps), which Cache
+  // Components refuses before the render is marked per-request.
+  await connection();
   const h = await headers();
   const raw = h.get(env().CLIENT_IP_HEADER) ?? "";
   // x-forwarded-for may list proxies: the first entry is the client.
