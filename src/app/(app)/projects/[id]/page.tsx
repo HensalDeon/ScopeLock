@@ -6,7 +6,11 @@ import { ActivityTimeline } from "@/modules/activity";
 import { listProjectActivity } from "@/modules/activity/server";
 import { ApprovalHistory } from "@/modules/approvals";
 import { listApprovalsForProject } from "@/modules/approvals/server";
-import { ChangeList, scheduleAdditions } from "@/modules/changes";
+import {
+  ChangeList,
+  changeSummary,
+  scheduleAdditions,
+} from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
 import { clientFirstName } from "@/modules/clients";
 import {
@@ -20,7 +24,7 @@ import {
 import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { formatDateTime } from "@/shared/lib/dates";
-import { formatMoney, minor, sum } from "@/shared/lib/money";
+import { formatMoney, minor } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
@@ -53,9 +57,6 @@ async function ProjectDetail({
       listProjectActivity(id),
       requireWorkspace(),
     ]);
-  const money = (amount: number) =>
-    formatMoney(minor(amount), project.currency);
-  const { approvedChanges, pendingChanges } = project.totals;
   const approved =
     project.status !== "draft" && project.status !== "awaiting_approval";
   const editable = isEditable(project.status);
@@ -127,25 +128,6 @@ async function ProjectDetail({
         </div>
       )}
 
-      {approved && (approvedChanges > 0 || pendingChanges > 0) && (
-        <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 rounded-xl border bg-canvas px-5 py-4">
-          <p className="text-[15px] tabular-nums">
-            <span className="text-muted-foreground">Agreed </span>
-            {money(project.baseline.total)}
-            <span className="px-2 text-muted-foreground">→</span>
-            <span className="text-muted-foreground">Now </span>
-            <span className="font-semibold">
-              {money(sum([project.baseline.total, minor(approvedChanges)]))}
-            </span>
-          </p>
-          {pendingChanges > 0 && (
-            <p className="text-sm text-warning-ink tabular-nums">
-              {money(pendingChanges)} waiting for approval
-            </p>
-          )}
-        </div>
-      )}
-
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="grid gap-8">
           <section
@@ -158,7 +140,10 @@ async function ProjectDetail({
             >
               Agreed scope
             </h2>
-            <ScopeTable project={project} />
+            <ScopeTable
+              project={project}
+              changes={approved ? changeSummary(changes) : undefined}
+            />
           </section>
           <section
             aria-labelledby={`payments-${project.id}`}

@@ -10,6 +10,7 @@ export {
   CHANGE_STATUS_LABELS,
   changeInputSchema,
   changeLabel,
+  changeSummary,
   parseChangeNumber,
   scheduleAdditions,
   scheduleWithChanges,

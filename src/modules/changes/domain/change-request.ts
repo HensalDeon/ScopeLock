@@ -373,3 +373,17 @@ export function scheduleAdditions(
     dueNow,
   };
 }
+
+/** Counts and sums for the scope table's footer. */
+export function changeSummary(
+  changes: readonly Pick<ChangeRequest, "status" | "total">[],
+): {
+  approved: { count: number; total: Minor };
+  pending: { count: number; total: Minor };
+} {
+  const of = (status: ChangeStatus) => {
+    const list = changes.filter((c) => c.status === status);
+    return { count: list.length, total: sum(list.map((c) => c.total)) };
+  };
+  return { approved: of("approved"), pending: of("sent") };
+}

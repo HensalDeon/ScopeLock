@@ -19,6 +19,7 @@ export {
   MilestoneTable,
   ScopeTable,
   type ScheduleAdditions,
+  type ScopeChanges,
 } from "./ui/project-plan";
 export {
   ProjectForm,
