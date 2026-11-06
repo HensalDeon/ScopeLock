@@ -5,6 +5,7 @@
 export {
   isEditable,
   isScopeApproved,
+  unlockingSteps,
   proposalShareMessage,
   PROJECT_STATUS_LABELS,
   type Project,

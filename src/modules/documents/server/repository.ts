@@ -1,7 +1,7 @@
 import "server-only";
 import { COLLECTIONS } from "@/shared/db/names";
 import { scopedCollection, type WorkspaceOwned } from "@/shared/db/scoped";
-import type { StorageKind } from "@/shared/storage/r2";
+import type { DocumentImageKind } from "../domain/images";
 import {
   STARTER_PROPOSAL_DEFAULTS,
   type ProposalDefaults,
@@ -62,7 +62,7 @@ export async function saveProposalDefaults(
   );
 }
 
-const FIELD: Record<StorageKind, "logoKey" | "coverKey"> = {
+const FIELD: Record<DocumentImageKind, "logoKey" | "coverKey"> = {
   logo: "logoKey",
   cover: "coverKey",
 };
@@ -73,7 +73,7 @@ const FIELD: Record<StorageKind, "logoKey" | "coverKey"> = {
  */
 export async function setDocumentImage(
   workspaceId: string,
-  kind: StorageKind,
+  kind: DocumentImageKind,
   key: string | null,
 ): Promise<string | null> {
   const field = FIELD[kind];

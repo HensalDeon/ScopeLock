@@ -70,3 +70,13 @@ export function formatAgo(date: Date, { now = new Date() } = {}): string {
   if (days < 7) return `${days} days ago`;
   return `on ${formatDate(date, { now })}`;
 }
+
+/** Today's date in India as "2026-11-07" (for date inputs and checks). */
+export function todayInIndia(now: Date = new Date()): string {
+  return isoDay.format(now);
+}
+
+/** A stored calendar date ("2026-11-07") as "7 Nov" (or "7 Nov 2025"). */
+export function formatIsoDate(iso: string, options?: { now?: Date }): string {
+  return formatDate(new Date(`${iso}T12:00:00+05:30`), options);
+}

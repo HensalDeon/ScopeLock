@@ -28,6 +28,12 @@ import {
   type PortalProject,
   type SentProposal,
 } from "@/modules/projects/server";
+import {
+  portalPayment,
+  portalSchedule,
+  type PaymentSchedule,
+  type PortalPayment,
+} from "@/modules/payments/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { hashToken } from "@/shared/lib/token";
 import { rateLimit } from "@/shared/security/rate-limit";
@@ -81,6 +87,8 @@ export type PortalView =
       changes: ChangeRequest[];
       totals: Project["totals"];
       history: ActivityItem[];
+      /** The payment schedule once the proposal is approved. */
+      payments: PaymentSchedule | null;
     };
 
 export async function getPortalView(token: string): Promise<PortalView> {
@@ -93,6 +101,11 @@ export async function getPortalView(token: string): Promise<PortalView> {
     state === "approved" ? findChangeDocs(workspaceId, projectId) : [],
     listClientHistory(workspaceId, projectId, sent.data.business.name),
   ]);
+  const changes = changeDocs.map(toChange);
+  const payments =
+    state === "approved"
+      ? await portalSchedule(workspaceId, projectId, project, changes)
+      : null;
   return {
     state,
     data: sent.data,
@@ -100,9 +113,10 @@ export async function getPortalView(token: string): Promise<PortalView> {
     images,
     sentAt: sent.sentAt,
     decision: project.lastDecision,
-    changes: changeDocs.filter((d) => d.everSent).map(toChange),
+    changes: changes.filter((c) => c.everSent),
     totals: project.totals,
     history,
+    payments,
   };
 }
 
@@ -149,5 +163,39 @@ export async function getPortalChange(
     ...(await look(opened.workspaceId)),
     businessName: opened.sent.data.business.name,
     projectTitle: opened.sent.data.title,
+  };
+}
+
+export type PortalPaymentView =
+  | { state: "limited" }
+  | ({
+      state: "ok";
+      businessName: string;
+      projectTitle: string;
+      reference: string;
+    } & PortalPayment);
+
+/** One payment request on the portal: /c/[token]/pay/[id]. */
+export async function getPortalPayment(
+  token: string,
+  paymentIdParam: string,
+): Promise<PortalPaymentView> {
+  const opened = await openPortal(token);
+  if (opened === "limited") return { state: "limited" };
+  const id = parseObjectId(paymentIdParam);
+  if (!id) notFound();
+  const found = await portalPayment(
+    opened.workspaceId,
+    opened.projectId,
+    id,
+    opened.sent.data.reference,
+  );
+  if (!found) notFound();
+  return {
+    state: "ok",
+    businessName: opened.sent.data.business.name,
+    projectTitle: opened.sent.data.title,
+    reference: opened.sent.data.reference,
+    ...found,
   };
 }

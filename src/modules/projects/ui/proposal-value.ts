@@ -31,6 +31,8 @@ export type ProposalFormValue = {
     duration: string;
     description: string;
     isMilestone: boolean;
+    /** Which payment this milestone unlocks: "" for none, else its position ("0", "1"…). */
+    paymentOrder: string;
   }>[];
   addons: Row<{
     id?: string;
@@ -62,7 +64,18 @@ export function proposalToJson(v: ProposalFormValue): string {
     overview: on("overview") ? v.overview : "",
     callout: on("overview") ? v.callout : "",
     highlights: on("highlights") ? v.highlights.map(strip) : [],
-    timeline: on("timeline") ? v.timeline.map(strip) : [],
+    timeline: on("timeline")
+      ? v.timeline.map((step) => {
+          const { paymentOrder, ...rest } = strip(step);
+          return {
+            ...rest,
+            paymentOrder:
+              step.isMilestone && paymentOrder !== ""
+                ? Number(paymentOrder)
+                : null,
+          };
+        })
+      : [],
     addons: on("addons") ? v.addons.map(strip) : [],
     clientProvides: on("clientProvides") ? v.clientProvides : "",
     exclusions: on("exclusions") ? v.exclusions : "",
@@ -82,6 +95,7 @@ export const newStep = () => ({
   duration: "",
   description: "",
   isMilestone: false,
+  paymentOrder: "",
 });
 export const newAddon = () => ({
   key: proposalRowKey(),

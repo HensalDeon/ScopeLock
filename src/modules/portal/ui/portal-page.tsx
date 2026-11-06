@@ -1,15 +1,11 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ActivityTimeline } from "@/modules/activity";
-import {
-  CHANGE_STATUS_LABELS,
-  changeLabel,
-  type ChangeRequest,
-} from "@/modules/changes";
+import { changeLabel } from "@/modules/changes";
 import { ClassicDocument } from "@/modules/documents";
+import { ChangeRow, PaymentRow, Row } from "./portal-rows";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, minor, sum } from "@/shared/lib/money";
-import { cn } from "@/shared/lib/utils";
 import { PrintButton } from "@/shared/ui/print-button";
 import { decideProposal } from "../server/actions";
 import { getPortalView } from "../server/queries";
@@ -125,8 +121,34 @@ export async function PortalPage({ token }: { token: string }) {
                 <Row label="Total so far" strong>
                   {money(projectTotal)}
                 </Row>
+                {view.payments && view.payments.totals.received > 0 && (
+                  <Row label="Paid so far">
+                    {money(view.payments.totals.received)}
+                  </Row>
+                )}
               </dl>
             </section>
+
+            {view.payments && view.payments.items.length > 0 && (
+              <section
+                aria-labelledby="payments-heading"
+                className="grid gap-2"
+              >
+                <h2 id="payments-heading" className="text-base font-semibold">
+                  Payments
+                </h2>
+                <ul className="divide-y rounded-lg border">
+                  {view.payments.items.map((item) => (
+                    <PaymentRow
+                      key={item.key}
+                      item={item}
+                      token={token}
+                      money={money}
+                    />
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {view.changes.length > 0 && (
               <section aria-labelledby="changes-heading" className="grid gap-2">
@@ -200,82 +222,5 @@ export async function PortalPage({ token }: { token: string }) {
       </main>
       <Footer />
     </>
-  );
-}
-
-function Row({
-  label,
-  strong,
-  children,
-}: {
-  label: string;
-  strong?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-baseline justify-between gap-4",
-        strong && "border-t pt-2 text-[15px] font-semibold",
-      )}
-    >
-      <dt className={strong ? undefined : "text-muted-foreground"}>{label}</dt>
-      <dd className="tabular-nums">{children}</dd>
-    </div>
-  );
-}
-
-function ChangeRow({
-  change,
-  token,
-  money,
-}: {
-  change: ChangeRequest;
-  token: string;
-  money: (amount: number) => string;
-}) {
-  // A change the freelancer took back reads as "being updated" to the client.
-  const status =
-    change.status === "draft"
-      ? "Being updated"
-      : CHANGE_STATUS_LABELS[change.status];
-  return (
-    <li>
-      <Link
-        href={`/c/${token}/changes/${change.number}`}
-        className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50"
-      >
-        <span className="w-14 shrink-0 font-mono text-[11px] tracking-[0.08em] text-muted-foreground">
-          {changeLabel(change.number)}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium">{change.title}</span>
-          <span
-            className={cn(
-              "text-xs",
-              change.status === "approved" && "text-brand-ink",
-              change.status === "sent" && "text-warning-ink",
-              !["approved", "sent"].includes(change.status) &&
-                "text-muted-foreground",
-            )}
-          >
-            {status}
-          </span>
-        </span>
-        <span
-          className={cn(
-            "tabular-nums",
-            ["rejected", "withdrawn"].includes(change.status) &&
-              "text-muted-foreground line-through",
-          )}
-        >
-          {money(change.total)}
-        </span>
-        <ChevronRight
-          aria-hidden
-          className="size-4 shrink-0 text-muted-foreground"
-        />
-      </Link>
-    </li>
   );
 }

@@ -5,12 +5,13 @@ import { ActivityTimeline } from "@/modules/activity";
 import { listProjectActivity } from "@/modules/activity/server";
 import { ApprovalRows } from "@/modules/approvals";
 import { listApprovalsForProject } from "@/modules/approvals/server";
-import {
-  ChangeList,
-  changeSummary,
-  scheduleAdditions,
-} from "@/modules/changes";
+import { ChangeList, changeSummary } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
+import { hasAnyMethod, PaymentsPanel } from "@/modules/payments";
+import {
+  getPaymentMethods,
+  getProjectPayments,
+} from "@/modules/payments/server";
 import { clientFirstName } from "@/modules/clients";
 import {
   isScopeApproved,
@@ -19,6 +20,7 @@ import {
   ProjectSidebar,
   proposalShareMessage,
   ScopeTable,
+  unlockingSteps,
   SharePanel,
 } from "@/modules/projects";
 import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
@@ -76,6 +78,12 @@ async function ProjectDetail({
       requireWorkspace(),
     ]);
   const approved = isScopeApproved(project.status);
+  const [payments, { methods }] = approved
+    ? await Promise.all([
+        getProjectPayments(project, changes),
+        getPaymentMethods(),
+      ])
+    : [null, { methods: null }];
   const firstName = project.client
     ? clientFirstName(project.client)
     : "your client";
@@ -115,12 +123,25 @@ async function ProjectDetail({
               changes={approved ? changeSummary(changes) : undefined}
             />
           </TitledSection>
-          <TitledSection id={`payments-${project.id}`} title="Payment terms">
-            <MilestoneTable
-              project={project}
-              additions={scheduleAdditions(project.milestones, changes)}
-            />
-          </TitledSection>
+          {payments ? (
+            <TitledSection id={`payments-${project.id}`} title="Payments">
+              <PaymentsPanel
+                projectId={project.id}
+                projectName={project.name}
+                currency={project.currency}
+                items={payments.items}
+                totals={payments.totals}
+                portalUrl={share.url}
+                client={{ firstName, phone: project.client?.phone ?? null }}
+                methodsReady={methods ? hasAnyMethod(methods) : false}
+                unlockedBy={unlockingSteps(project)}
+              />
+            </TitledSection>
+          ) : (
+            <TitledSection id={`payments-${project.id}`} title="Payment terms">
+              <MilestoneTable project={project} />
+            </TitledSection>
+          )}
           {approved && (
             <ChangeList
               projectId={project.id}

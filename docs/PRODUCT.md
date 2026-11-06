@@ -2,7 +2,7 @@
 
 > The source for pitch decks, demo videos, the website and investor or partner conversations. Every claim here is true of the product as built. Planned work is marked **Coming**. Update this file whenever a user-visible feature ships (see `docs/CONVENTIONS.md`, Definition of done).
 >
-> **Status as of 6 Nov 2026:** proposal, client approval and change requests are built and tested. Payments and invoices are next (Phase 5). Not yet launched or charging.
+> **Status as of 7 Nov 2026:** proposal, client approval, change requests and payments are built and tested. Numbered invoices with GST are next (Phase 5B). Not yet launched or charging.
 
 ---
 
@@ -60,7 +60,7 @@ When the freelancer does ask for more money, there's no record of what was agree
 1. **Lock the scope.** List what's included and the price, and turn it into a proper proposal (cover, overview, timeline, terms) in your own brand. Your client approves it from a link, so the baseline is agreed in writing before work starts.
 2. **Log every extra request.** When a request comes in on WhatsApp, a call or email, log it with a price in under a minute, and note where it came from. Add-ons you listed in the proposal turn into a change request in one click.
 3. **The client approves from their phone.** They get one link: what changed, what it costs and when it's billed. No login, no app. Their answer is saved as a signed record, with the date and time.
-4. **Get paid on your terms** _(Coming, Phase 5)_. Add it to the next payment, the final payment, split it, or ask for it now. Clients pay by UPI, bank transfer or your own payment link.
+4. **Get paid on your terms.** Each change joins the next payment, the final payment, a chosen one, or is paid separately. When a milestone is done, ask for its payment in one tap: the client gets a page with a UPI QR code (amount filled in), your bank details or payment link, taps "I've paid" with the UTR and a screenshot, and you confirm it.
 
 **The demo story (real numbers)**
 
@@ -74,25 +74,25 @@ When the freelancer does ask for more money, there's no record of what was agree
 
 ## 5. What's built today
 
-| Area                   | What it does                                                                                                                                                                                                     | Status           |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| **Accounts**           | Email + password or Google sign-in; 6-digit email codes for confirming email and resetting passwords; one workspace per business (freelancer, studio or agency)                                                  | Built            |
-| **Clients**            | Client list with WhatsApp number, company, email and billing currency; archive without losing history                                                                                                            | Built            |
-| **Projects and scope** | Priced scope lines with notes and bullet points; upfront or milestone payments (30/30/40 quick splits) that always add up exactly                                                                                | Built            |
-| **Proposals**          | Optional sections: cover title, overview, highlights, timeline with milestones, optional add-ons, "what I need from you", "not included", terms, valid-until date. Default text set once in Settings             | Built            |
-| **Document design**    | "Classic" template; accent colour (presets or custom, readability checked automatically); dark, accent, light or photo cover; your logo and cover image; serif or sans headings. Live preview with a full sample | Built            |
-| **Client portal**      | One private link per project. The client reads the proposal on their phone and approves or asks for changes. Becomes their project page: changes waiting for them, total so far, every change, their history     | Built            |
-| **Change requests**    | CR-001, CR-002… with priced lines; billing options (final payment, next payment, split, a chosen payment, or a separate payment); send, take back, cancel, revise a declined one                                 | Built            |
-| **Signed records**     | Every approval and "no" is saved with what the client saw, who, when and from where, and checked against its signature every time it's shown. "View the version they saw" for any answer                         | Built            |
-| **Overview**           | Money at a glance (approved work, waiting on clients, in draft); "waiting on clients" with a one-tap WhatsApp reminder; "needs you"; recent activity                                                             | Built            |
-| **Activity**           | A full history of every project, for you; a simpler version for your client                                                                                                                                      | Built            |
-| **Multi-currency**     | INR, USD, EUR, GBP, AED, CAD, AUD, SGD. Each project has one currency; totals are never mixed                                                                                                                    | Built            |
-| **Emails**             | Sign-in codes; a notice to you whenever a client approves or answers; ScopeLock logo in every email                                                                                                              | Built            |
-| **Installable app**    | Installs on a phone or desktop like an app (PWA)                                                                                                                                                                 | Built            |
-| **Payments**           | Mark a payment due; the client sees the amount, UPI QR code with the amount filled in, bank details or payment link; they report "I've paid" with the UTR and a screenshot; only you mark it received            | Coming (Phase 5) |
-| **Invoices**           | Numbered invoices that never repeat or skip; GST lines only when you add a GSTIN; final invoice with original scope, approved changes, payments and balance                                                      | Coming (Phase 5) |
-| **PDFs**               | PDFs of the proposal, change orders, invoices and the project statement. _Today: "Save PDF" through the browser's print dialog_                                                                                  | Coming (Phase 6) |
-| **Subscriptions**      | Free, Pro and Agency plans with Razorpay                                                                                                                                                                         | Coming (Phase 8) |
+| Area                   | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Status            |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| **Accounts**           | Email + password or Google sign-in; 6-digit email codes for confirming email and resetting passwords; one workspace per business (freelancer, studio or agency)                                                                                                                                                                                                                                                                                                                                             | Built             |
+| **Clients**            | Client list with WhatsApp number, company, email and billing currency; archive without losing history                                                                                                                                                                                                                                                                                                                                                                                                       | Built             |
+| **Projects and scope** | Priced scope lines with notes and bullet points; upfront or milestone payments (30/30/40 quick splits) that always add up exactly                                                                                                                                                                                                                                                                                                                                                                           | Built             |
+| **Proposals**          | Optional sections: cover title, overview, highlights, timeline with milestones, optional add-ons, "what I need from you", "not included", terms, valid-until date. Default text set once in Settings                                                                                                                                                                                                                                                                                                        | Built             |
+| **Document design**    | "Classic" template; accent colour (presets or custom, readability checked automatically); dark, accent, light or photo cover; your logo and cover image; serif or sans headings. Live preview with a full sample                                                                                                                                                                                                                                                                                            | Built             |
+| **Client portal**      | One private link per project. The client reads the proposal on their phone and approves or asks for changes. Becomes their project page: changes waiting for them, total so far, every change, their history                                                                                                                                                                                                                                                                                                | Built             |
+| **Change requests**    | CR-001, CR-002… with priced lines; billing options (final payment, next payment, split, a chosen payment, or a separate payment); send, take back, cancel, revise a declined one                                                                                                                                                                                                                                                                                                                            | Built             |
+| **Signed records**     | Every approval and "no" is saved with what the client saw, who, when and from where, and checked against its signature every time it's shown. "View the version they saw" for any answer                                                                                                                                                                                                                                                                                                                    | Built             |
+| **Overview**           | Money at a glance (approved work, waiting on clients, in draft); "waiting on clients" with a one-tap WhatsApp reminder; "needs you"; recent activity                                                                                                                                                                                                                                                                                                                                                        | Built             |
+| **Activity**           | A full history of every project, for you; a simpler version for your client                                                                                                                                                                                                                                                                                                                                                                                                                                 | Built             |
+| **Multi-currency**     | INR, USD, EUR, GBP, AED, CAD, AUD, SGD. Each project has one currency; totals are never mixed                                                                                                                                                                                                                                                                                                                                                                                                               | Built             |
+| **Emails**             | Sign-in codes; a notice to you whenever a client approves or answers; ScopeLock logo in every email                                                                                                                                                                                                                                                                                                                                                                                                         | Built             |
+| **Installable app**    | Installs on a phone or desktop like an app (PWA)                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Built             |
+| **Payments**           | Your payment methods (UPI, bank incl. SWIFT/IBAN, payment link, QR image, other). Ask for a payment in one tap; the client's page shows the amount, a UPI QR code with the amount filled in, a "Pay with a UPI app" button, your bank details or link. They tap "I've paid" with the UTR and a screenshot; you confirm it, say "not received" with a note, or mark it received yourself. Timeline milestones show which payment they unlock. Emails at every step; "received" and "due now" on the overview | Built             |
+| **Invoices**           | Numbered invoices that never repeat or skip; GST lines only when you add a GSTIN; final invoice with original scope, approved changes, payments and balance                                                                                                                                                                                                                                                                                                                                                 | Coming (Phase 5B) |
+| **PDFs**               | PDFs of the proposal, change orders, invoices and the project statement. _Today: "Save PDF" through the browser's print dialog_                                                                                                                                                                                                                                                                                                                                                                             | Coming (Phase 6)  |
+| **Subscriptions**      | Free, Pro and Agency plans with Razorpay                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Coming (Phase 8)  |
 
 ---
 
@@ -106,7 +106,8 @@ When the freelancer does ask for more money, there's no record of what was agree
 - **Looks professional.** Proposals and change requests in your brand, not a WhatsApp message or a Word file.
 - **Flexible billing.** Approving and paying are separate steps. You decide whether a change is paid now, with the next milestone, at the end, or split.
 - **Your money, directly.** ScopeLock never holds or routes client money: clients pay you by UPI, bank transfer or your own link.
-- **Knows what's waiting.** The overview shows what clients haven't answered and nudges them in one tap.
+- **Knows what's waiting.** The overview shows what clients haven't answered and what's due, and nudges them in one tap.
+- **Paid faster.** A UPI QR with the amount already filled in, and a "client says paid" step with the UTR, so you only check and confirm.
 
 **For their client**
 
@@ -116,13 +117,13 @@ When the freelancer does ask for more money, there's no record of what was agree
 
 **Compared with what freelancers do today**
 
-| Today                                        | With ScopeLock                                                    |
-| -------------------------------------------- | ----------------------------------------------------------------- |
-| Agreements scattered across WhatsApp chats   | One locked scope, approved from a link                            |
-| Extras done free to avoid an awkward ask     | Each extra priced and sent in a minute                            |
-| "I never agreed to that"                     | A signed record of exactly what was approved, and when            |
-| Quotes in Word or PDF, edited after the fact | Versions frozen when sent; the approved one can't change          |
-| Chasing payments by memory                   | _(Coming)_ every payment due, reported and confirmed in one place |
+| Today                                        | With ScopeLock                                                                           |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Agreements scattered across WhatsApp chats   | One locked scope, approved from a link                                                   |
+| Extras done free to avoid an awkward ask     | Each extra priced and sent in a minute                                                   |
+| "I never agreed to that"                     | A signed record of exactly what was approved, and when                                   |
+| Quotes in Word or PDF, edited after the fact | Versions frozen when sent; the approved one can't change                                 |
+| Chasing payments by memory                   | Every payment due, reported and confirmed in one place, with a one-tap WhatsApp reminder |
 
 ---
 
@@ -155,7 +156,7 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
   - Client pages are hidden from search engines, never cached, and don't leak the link to other sites.
 - **Abuse limits.** Page views and client answers are rate-limited per connection and per link.
 - **Files**
-  - Logos and cover images live in a private storage bucket, served through short-lived signed links.
+  - Logos, cover images, payment QR codes and payment screenshots live in a private storage bucket, served through short-lived signed links. Clients' screenshots only ever download (10-minute links); they're never shown inside our pages.
   - Uploads are checked by their actual file contents (PNG, JPEG or WebP only), resized, and stripped of photo metadata such as location.
 - **Web security**
   - A strict content security policy, HTTPS enforced (HSTS), no framing by other sites (clickjacking protection), no content-type sniffing, and tight browser permissions.
@@ -177,12 +178,13 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 | Email       | SMTP (Nodemailer)                                                                             | Works with any provider                                                                          |
 | Hosting     | Vercel now; built to run on any Node server (Hostinger later)                                 | No lock-in                                                                                       |
 | App install | PWA                                                                                           | Installs on phone and desktop                                                                    |
-| Coming      | Razorpay (subscriptions), `qrcode` (UPI QR), PDF generation, Sentry                           | Phases 5–8                                                                                       |
+| QR codes    | `qrcode` (UPI QR with the amount, drawn on the server)                                        | Nothing about the payment goes to a third-party image service                                    |
+| Coming      | Razorpay (subscriptions), PDF generation, Sentry                                              | Phases 6–8                                                                                       |
 
 **Engineering quality**
 
 - A modular codebase: each business area (projects, changes, approvals, portal…) is a self-contained module with tested rules.
-- **230 unit tests**, **37 database integration tests** (against a real MongoDB), and browser tests that drive the whole flow (sign-up → proposal → client approval → change requests) on desktop and phone widths. All run on every push.
+- **249 unit tests**, **41 database integration tests** (against a real MongoDB), and browser tests that drive the whole flow (sign-up → proposal → client approval → change requests → payment requested → client pays by UPI → confirmed) on desktop and phone widths. All run on every push.
 
 ---
 
@@ -225,7 +227,8 @@ Not live yet; prices may change before launch.
 | 3A    | Proposal content and document design (logo, cover, colours)                                                                                               | Done    |
 | 3B    | Client portal and signed baseline approval                                                                                                                | Done    |
 | 4     | Change requests, client history, signed versions                                                                                                          | Done    |
-| 5     | Payments (UPI QR, bank, links, "I've paid", confirmation) and numbered invoices with optional GST                                                         | Next    |
+| 5A    | Payments: UPI QR with amount, bank, links, "I've paid" with UTR and screenshot, confirmation, timeline-linked milestones                                  | Done    |
+| 5B    | Numbered invoices with optional GST, export under LUT, final statement, invoice page for clients                                                          | Next    |
 | 6     | PDFs of every document                                                                                                                                    | Planned |
 | 7     | Dashboard and polish; real use on my own client projects                                                                                                  | Planned |
 | 8     | Launch: plans and Razorpay, legal pages, domain, monitoring                                                                                               | Planned |
@@ -267,7 +270,7 @@ Not live yet; prices may change before launch.
 | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | "A signed record of exactly what your client approved, and when"                   | "Legally binding" or "court-proof" (we haven't had legal review; Phase 8)                 |
 | "ScopeLock never holds your money; clients pay you directly"                       | "We process payments" or "payment gateway"                                                |
-| "Payments and invoices are coming next"                                            | That payments, invoices or PDFs work today (until Phases 5–6 ship)                        |
+| "Payments are built; invoices are coming next"                                     | That invoices or PDFs work today (until Phases 5B and 6 ship)                             |
 | "Free to start; planned Pro ₹499 / month"                                          | Final prices or "free forever" (pricing goes live in Phase 8)                             |
 | "Built for Indian freelancers; also bills in USD, EUR, GBP, AED, CAD, AUD and SGD" | GST compliance or e-invoicing claims (GST lines come with invoices; e-invoicing is later) |
 | "Your data is walled off per business; links are secret and replaceable"           | "Bank-grade" or "military-grade" security, or certifications we don't hold                |

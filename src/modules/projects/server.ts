@@ -20,6 +20,7 @@ export {
 export {
   nextChangeNumber,
   setChangeTotals,
+  setPaymentTotals,
   applyDecision,
   findByPortalTokenHash,
   type PortalProject,

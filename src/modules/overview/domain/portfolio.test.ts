@@ -8,6 +8,8 @@ const p = (
   extra: {
     approvedChanges?: number;
     pendingChanges?: number;
+    paid?: number;
+    due?: number;
     currency?: "INR" | "USD";
   } = {},
 ) => ({
@@ -18,8 +20,8 @@ const p = (
     baseline: minor(total),
     approvedChanges: minor(extra.approvedChanges ?? 0),
     pendingChanges: minor(extra.pendingChanges ?? 0),
-    paid: minor(0),
-    due: minor(0),
+    paid: minor(extra.paid ?? 0),
+    due: minor(extra.due ?? 0),
   },
 });
 
@@ -29,6 +31,8 @@ describe("portfolioTotals", () => {
       p("active", 8_300_000, {
         approvedChanges: 1_500_000,
         pendingChanges: 600_000,
+        paid: 2_490_000,
+        due: 4_820_000,
       }),
       p("awaiting_approval", 2_000_000),
       p("draft", 4_000_000),
@@ -43,6 +47,8 @@ describe("portfolioTotals", () => {
       waiting: 2_600_000,
       draft: 5_800_000,
       draftProjects: 2,
+      received: 2_490_000,
+      due: 4_820_000,
     });
     expect(rows[1]).toMatchObject({ approved: 120_000, waiting: 0, draft: 0 });
   });

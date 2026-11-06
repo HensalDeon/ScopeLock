@@ -41,13 +41,22 @@ export type ProposalDocumentData = {
   }[];
   total: Minor;
   billingModel: "upfront" | "milestones";
-  milestones: { id: string; name: string; percent: number; amount: Minor }[];
+  milestones: {
+    id: string;
+    name: string;
+    percent: number;
+    amount: Minor;
+    /** "Before work starts", "After Design (Week 2)". Missing on older proposals. */
+    dueWhen?: string | null;
+  }[];
   timeline: {
     id: string;
     phase: string;
     duration: string | null;
     description: string | null;
     isMilestone: boolean;
+    /** The payment this milestone unlocks. Missing on older proposals. */
+    payment?: { name: string; amount: Minor } | null;
   }[];
   addons: {
     id: string;

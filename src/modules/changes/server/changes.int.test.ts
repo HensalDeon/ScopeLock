@@ -113,6 +113,10 @@ function decide(
         name: "Rahul Mehta",
         email: "rahul@mehta.in",
         comment: null,
+        placement:
+          decision === "approved"
+            ? [{ milestoneId: "m3", amount: 1_500_000 }]
+            : null,
       },
       session,
     );

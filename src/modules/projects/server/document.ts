@@ -14,7 +14,7 @@ import {
   requireWorkspace,
   type WorkspaceContext,
 } from "@/modules/workspace/server";
-import type { Project } from "../domain/project";
+import { paymentTimings, type Project } from "../domain/project";
 import { getProjectOrNotFound, type ProjectWithClient } from "./queries";
 import { findPortalState } from "./repository";
 
@@ -98,6 +98,8 @@ export function toProposalDocument(
     !project.proposalSaved && defaults
       ? { ...project.proposal, ...defaults }
       : project.proposal;
+  const ordered = [...project.milestones].sort((a, b) => a.order - b.order);
+  const timings = paymentTimings(ordered.length, p.timeline);
   return {
     voice,
     business: from,
@@ -123,13 +125,32 @@ export function toProposalDocument(
     items: project.baseline.items,
     total: project.baseline.total,
     billingModel: project.billingModel,
-    milestones: project.milestones.map((m) => ({
+    milestones: ordered.map((m, i) => ({
       id: m.id,
       name: m.name,
       percent: m.percent,
       amount: m.baseAmount,
+      dueWhen:
+        project.billingModel === "milestones"
+          ? (timings[i]?.dueWhen ?? null)
+          : null,
     })),
-    timeline: p.timeline,
+    timeline: p.timeline.map((step) => {
+      const linked =
+        step.isMilestone && step.paymentOrder != null
+          ? ordered[step.paymentOrder]
+          : undefined;
+      return {
+        id: step.id,
+        phase: step.phase,
+        duration: step.duration,
+        description: step.description,
+        isMilestone: step.isMilestone,
+        payment: linked
+          ? { name: linked.name, amount: linked.baseAmount }
+          : null,
+      };
+    }),
     addons: p.addons,
     clientProvides: p.clientProvides,
     exclusions: p.exclusions,

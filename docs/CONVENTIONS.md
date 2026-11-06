@@ -184,6 +184,14 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - [ ] Only `image/png`, `image/jpeg` and `image/webp`. Check the magic bytes, not just the extension or MIME type. Size limit of about 5 MB.
 - [ ] Serve files through short-lived signed URLs. Proofs download with `Content-Disposition: attachment`.
 
+**Payments (Phase 5)**
+
+- [ ] ScopeLock never holds money: methods are the freelancer's own (UPI, bank, link). Only the freelancer can mark a payment received.
+- [ ] A payment's lines and amount are frozen when it's requested. One open request per slot (unique partial index on `open: true`); every status change is an atomic update from an allowed state, appended to the payment's history.
+- [ ] An approved CR's placement is fixed at approval, computed with the slots already requested (`closedKeys`), inside the decision transaction.
+- [ ] Client uploads (payment screenshots) go through `readImageUpload` (bytes checked, ≤ 4 MB), live under `ws/{id}/payment-proof/`, and are only ever served with `signedDownloadUrl` (attachment, 10 minutes), never rendered on our pages.
+- [ ] Public "I've paid" works out the project from the token and checks the payment belongs to it; rate-limited per IP and per link.
+
 **Webhooks (Razorpay, Phase 8)**
 
 - [ ] Verify the HMAC over the raw body (`await req.text()`) with `timingSafeEqual`.

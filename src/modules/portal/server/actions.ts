@@ -10,7 +10,9 @@ import {
   type DecisionInput,
 } from "@/modules/approvals";
 import { recordDecision } from "@/modules/approvals/server";
-import { changeLabel } from "@/modules/changes";
+import { closedKeys } from "@/modules/payments";
+import { findPaymentDocs, toPayment } from "@/modules/payments/server";
+import { changeLabel, placeChange } from "@/modules/changes";
 import {
   applyChangeDecision,
   findChangeDoc,
@@ -263,10 +265,26 @@ export async function decideChange(
         },
         session,
       );
+      // Where the money goes, fixed now: never into a payment already
+      // requested (it moves to the next open one, or a separate payment).
+      const placement =
+        input.decision === "approved"
+          ? placeChange(
+              minor(change.total),
+              change.billing,
+              project.milestones,
+              closedKeys(
+                (await findPaymentDocs(workspaceId, projectId, session)).map(
+                  toPayment,
+                ),
+              ),
+            )
+          : null;
       const applied = await applyChangeDecision(
         {
           workspaceId,
           id: change._id,
+          placement,
           sentAt: sent.sentAt,
           decision: input.decision,
           approvalId,

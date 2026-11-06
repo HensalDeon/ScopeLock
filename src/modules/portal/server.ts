@@ -5,4 +5,5 @@
 import "server-only";
 
 export { PortalChangePage } from "./ui/portal-change-page";
+export { PortalPaymentPage } from "./ui/portal-payment-page";
 export { PortalPage } from "./ui/portal-page";

@@ -40,6 +40,7 @@ export function proposalFormDefaults(p: ProposalContent): ProposalFormDefaults {
       duration: s.duration ?? "",
       description: s.description ?? "",
       isMilestone: s.isMilestone,
+      paymentOrder: s.paymentOrder == null ? "" : String(s.paymentOrder),
     })),
     addons: p.addons.map((a) => ({
       id: a.id,

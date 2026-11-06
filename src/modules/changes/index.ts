@@ -16,6 +16,8 @@ export {
   changeLabel,
   changeSummary,
   parseChangeNumber,
+  placeChange,
+  placementOf,
   scheduleAdditions,
   scheduleWithChanges,
   SOURCE_CHANNELS,
@@ -25,6 +27,7 @@ export {
   type ChangeRequest,
   type ChangeStatus,
   type MilestoneRef,
+  type Placement,
   type ScheduleRow,
 } from "./domain/change-request";
 export { ChangeActions } from "./ui/change-actions";

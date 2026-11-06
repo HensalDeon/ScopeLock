@@ -46,6 +46,8 @@ export type ChangeDoc = WorkspaceOwned & {
     comment: string | null;
     approvalId: ObjectId;
   } | null;
+  /** Fixed when approved: which payment(s) the money joins. */
+  placement?: { milestoneId: string | null; amount: number }[] | null;
 };
 
 export type ChangeData = Pick<
@@ -73,6 +75,12 @@ export function toChange(doc: ChangeDoc): ChangeRequest {
     sentAt: doc.sent?.sentAt ?? null,
     decision: doc.decision
       ? { ...doc.decision, approvalId: doc.decision.approvalId.toHexString() }
+      : null,
+    placement: doc.placement
+      ? doc.placement.map((p) => ({
+          milestoneId: p.milestoneId,
+          amount: minor(p.amount),
+        }))
       : null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -190,6 +198,8 @@ export async function applyChangeDecision(
     name: string;
     email: string;
     comment: string | null;
+    /** Approved only: where the money goes, fixed now. */
+    placement: { milestoneId: string | null; amount: number }[] | null;
   },
   session: ClientSession,
 ): Promise<boolean> {
@@ -206,6 +216,7 @@ export async function applyChangeDecision(
           comment: input.comment,
           approvalId: input.approvalId,
         },
+        placement: input.decision === "approved" ? input.placement : null,
       },
     },
     { session },

@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/shared/ui/input";
+import { NativeSelect } from "@/shared/ui/native-select";
 import { Switch } from "@/shared/ui/switch";
 import {
   AddButton,
@@ -12,7 +13,7 @@ import { L, newStep } from "./proposal-value";
 
 /** Steps with durations; milestones are marked. */
 export function TimelineSection({ kit }: { kit: SectionKit }) {
-  const { value, set, field, err } = kit;
+  const { value, set, field, err, payments } = kit;
   return (
     <SectionCard kit={kit} id="timeline">
       <div className="grid gap-3">
@@ -97,6 +98,34 @@ export function TimelineSection({ kit }: { kit: SectionKit }) {
               />
               Mark as a milestone
             </label>
+            {step.isMilestone && payments.length > 0 && (
+              <label className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-[auto_minmax(0,16rem)] sm:items-center sm:gap-3">
+                Unlocks payment
+                <NativeSelect
+                  aria-label={`Payment unlocked by step ${i + 1}`}
+                  value={step.paymentOrder}
+                  onChange={(e) =>
+                    set(
+                      "timeline",
+                      value.timeline.map((x) =>
+                        x.key === step.key
+                          ? { ...x, paymentOrder: e.target.value }
+                          : x,
+                      ),
+                    )
+                  }
+                  className="w-full bg-background"
+                >
+                  <option value="">No payment</option>
+                  {payments.map((p) => (
+                    <option key={p.order} value={String(p.order)}>
+                      {p.order + 1}. {p.name || `Payment ${p.order + 1}`}
+                      {p.percent ? ` (${p.percent}%)` : ""}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </label>
+            )}
             {err(`timeline.${i}.phase`, `${step.key}.phase`)}
           </div>
         ))}

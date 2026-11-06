@@ -21,6 +21,8 @@ export const COLLECTIONS = {
   approvals: "approvals",
   changeRequests: "changeRequests",
   activity: "activity",
+  paymentSettings: "paymentSettings",
+  payments: "payments",
   requestLimits: "requestLimits",
 } as const;
 

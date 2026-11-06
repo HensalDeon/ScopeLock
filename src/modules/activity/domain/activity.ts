@@ -19,6 +19,11 @@ export const ACTIVITY_TYPES = [
   "change.cancelled",
   "change.approved",
   "change.rejected",
+  "payment.requested",
+  "payment.cancelled",
+  "payment.reported",
+  "payment.confirmed",
+  "payment.not_received",
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
@@ -54,6 +59,11 @@ const CLIENT_VISIBLE: ReadonlySet<ActivityType> = new Set([
   "change.cancelled",
   "change.approved",
   "change.rejected",
+  "payment.requested",
+  "payment.cancelled",
+  "payment.reported",
+  "payment.confirmed",
+  "payment.not_received",
 ]);
 
 export function isClientVisible(type: ActivityType): boolean {
@@ -134,5 +144,29 @@ export function describeActivity(
       );
     case "change.rejected":
       return line(`${who} declined ${change}`, "neutral", data.comment ?? null);
+    case "payment.requested":
+      return line(
+        `${who} asked for the ${data.title} payment${amount}`,
+        "waiting",
+      );
+    case "payment.cancelled":
+      return line(`${who} cancelled the ${data.title} payment request`);
+    case "payment.reported":
+      return line(
+        `${who} said the ${data.title} payment was made${amount}`,
+        "waiting",
+        data.comment ?? null,
+      );
+    case "payment.confirmed":
+      return line(
+        `${who} confirmed the ${data.title} payment was received${amount}`,
+        "done",
+      );
+    case "payment.not_received":
+      return line(
+        `${who} marked the ${data.title} payment as not received yet`,
+        "waiting",
+        data.comment ?? null,
+      );
   }
 }

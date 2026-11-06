@@ -16,6 +16,7 @@ import {
   EMPTY_PROPOSAL,
   proposalInputSchema,
   type ProposalContent,
+  type TimelineStep,
 } from "./proposal";
 import {
   SCOPE_LIMITS,
@@ -248,7 +249,10 @@ export function buildProjectPlan(
     items,
     total,
     milestones: buildMilestones(total, milestoneInputs, newId),
-    proposal: buildProposal({ ...EMPTY_PROPOSAL, ...input.proposal }, newId),
+    proposal: linkTimelineToPayments(
+      buildProposal({ ...EMPTY_PROPOSAL, ...input.proposal }, newId),
+      input.billingModel === "milestones" ? input.milestones.length : 0,
+    ),
   };
 }
 
@@ -260,4 +264,72 @@ export function emptyTotals(baseline: Minor): ProjectTotals {
     paid: minor(0),
     due: minor(0),
   };
+}
+
+/** Keeps a timeline step's payment link only on milestones, and only to a payment that exists. */
+function linkTimelineToPayments(
+  proposal: ProposalContent,
+  paymentCount: number,
+): ProposalContent {
+  const used = new Set<number>();
+  return {
+    ...proposal,
+    timeline: proposal.timeline.map((step) => {
+      const order = step.paymentOrder ?? null;
+      const valid =
+        step.isMilestone &&
+        order !== null &&
+        order < paymentCount &&
+        !used.has(order);
+      if (valid) used.add(order);
+      return { ...step, paymentOrder: valid ? order : null };
+    }),
+  };
+}
+
+export type PaymentTiming = {
+  /** The step that unlocks this payment, if any. */
+  step: { phase: string; duration: string | null } | null;
+  /** "Before work starts", "After Design (Week 2)", or null. */
+  dueWhen: string | null;
+};
+
+/**
+ * For each payment (in schedule order): the timeline step that unlocks it
+ * and when it falls due, in words. An unlinked first payment is the
+ * advance: "Before work starts".
+ */
+export function paymentTimings(
+  paymentCount: number,
+  timeline: readonly Pick<
+    TimelineStep,
+    "phase" | "duration" | "isMilestone" | "paymentOrder"
+  >[],
+): PaymentTiming[] {
+  return Array.from({ length: paymentCount }, (_, order) => {
+    const step = timeline.find(
+      (s) => s.isMilestone && (s.paymentOrder ?? null) === order,
+    );
+    if (step) {
+      return {
+        step: { phase: step.phase, duration: step.duration },
+        dueWhen: `After ${step.phase}${step.duration ? ` (${step.duration})` : ""}`,
+      };
+    }
+    return { step: null, dueWhen: order === 0 ? "Before work starts" : null };
+  });
+}
+
+/** Payment (milestone id) → the timeline step that unlocks it, by name. */
+export function unlockingSteps(
+  project: Pick<Project, "milestones" | "proposal">,
+): Record<string, string> {
+  const ordered = [...project.milestones].sort((a, b) => a.order - b.order);
+  const timings = paymentTimings(ordered.length, project.proposal.timeline);
+  return Object.fromEntries(
+    ordered.flatMap((m, i) => {
+      const step = timings[i]?.step;
+      return step ? [[m.id, step.phase]] : [];
+    }),
+  );
 }

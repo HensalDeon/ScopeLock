@@ -38,6 +38,8 @@ type Props = {
   errorFor: (path: string, touchKey?: string) => string | undefined;
   touch: (key: string) => void;
   edited: (path: string) => void;
+  /** The project's payments, in order (milestone billing only). */
+  payments?: SectionKit["payments"];
 };
 
 /**
@@ -52,6 +54,7 @@ export function ProposalSections({
   touch,
   edited,
   currency,
+  payments = [],
 }: Props) {
   const uid = useId();
   const inactive = PROPOSAL_SECTIONS.filter(
@@ -79,6 +82,7 @@ export function ProposalSections({
     },
     remove: (id) =>
       onChange((v) => ({ ...v, active: v.active.filter((a) => a !== id) })),
+    payments,
   };
 
   const section = (id: ProposalSectionId) => {

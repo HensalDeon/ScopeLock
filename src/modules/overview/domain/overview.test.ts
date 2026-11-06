@@ -17,7 +17,12 @@ const project = (p: Partial<OverviewProject>): OverviewProject => ({
   status: "active",
   currency: "INR",
   baselineTotal: minor(8_300_000),
-  totals: { approvedChanges: minor(0), pendingChanges: minor(0) },
+  totals: {
+    approvedChanges: minor(0),
+    pendingChanges: minor(0),
+    paid: minor(0),
+    due: minor(0),
+  },
   client: { name: "Rahul Mehta", phone: "+919876543210" },
   sentAt: null,
   lastDecision: null,
@@ -155,5 +160,48 @@ describe("setupSteps", () => {
       projects: [{ status: "active", changeCount: 0 }],
     });
     expect(steps.map((s) => s.done)).toEqual([true, true, true, true, false]);
+  });
+});
+
+describe("payments on the overview", () => {
+  const due = {
+    id: "pay1",
+    projectId: "p1",
+    label: "Before launch",
+    amount: minor(4_700_000),
+    status: "due" as const,
+    requestedAt: daysAgo(2),
+    reportedAt: null,
+  };
+  it("lists a due payment as waiting, with a reminder to the payment page", () => {
+    const [item] = waitingOnClients(
+      [project({})],
+      [],
+      new Map([["p1", "https://x.in/c/abc"]]),
+      now,
+      [due],
+    );
+    expect(item).toMatchObject({
+      tag: "Payment due",
+      title: "Before launch",
+      amount: "₹47,000",
+      detail: "Website redesign · asked 2 days ago",
+    });
+    expect(decodeURIComponent(item?.remind ?? "")).toContain(
+      "https://x.in/c/abc/pay/pay1",
+    );
+  });
+
+  it("puts 'client says paid' first under Needs you", () => {
+    const items = needsYou(
+      [project({}), project({ id: "d1", name: "Shop", status: "draft" })],
+      [],
+      now,
+      [{ ...due, status: "client_reported", reportedAt: daysAgo(0) }],
+    );
+    expect(items.map((i) => i.tag)).toEqual(["Client says paid", "Draft"]);
+    expect(items[0]?.detail).toBe(
+      "Website redesign · Rahul Mehta paid today · check and confirm",
+    );
   });
 });

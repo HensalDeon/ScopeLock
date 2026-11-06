@@ -434,7 +434,14 @@ function buildSections(
           ) : (
             data.milestones.map((m) => (
               <tr key={m.id} className="border-b border-[#ece9e3]">
-                <td className="py-2.5 pr-3 font-semibold">{m.name}</td>
+                <td className="py-2.5 pr-3">
+                  <strong className="font-semibold">{m.name}</strong>
+                  {m.dueWhen && (
+                    <span className="block text-xs text-[#6b6f78]">
+                      {m.dueWhen}
+                    </span>
+                  )}
+                </td>
                 <td className="py-2.5 text-right tabular-nums">{m.percent}%</td>
                 <td className="py-2.5 text-right font-semibold tabular-nums">
                   {money(m.amount)}
@@ -478,6 +485,9 @@ function buildSections(
                   {step.isMilestone && (
                     <span className="ml-2 rounded-full bg-(--doc-soft) px-2 py-0.5 text-[10px] font-medium tracking-wide text-(--doc-soft-text) uppercase">
                       Milestone
+                      {step.payment
+                        ? ` · ${money(step.payment.amount)} due`
+                        : ""}
                     </span>
                   )}
                 </h3>

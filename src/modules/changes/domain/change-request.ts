@@ -89,6 +89,11 @@ export type ChangeRequest = {
     comment: string | null;
     approvalId: string;
   } | null;
+  /**
+   * Where its money went, fixed when the client approved it (null for
+   * changes approved before this was recorded: see `placementOf`).
+   */
+  placement: Placement[] | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -530,4 +535,17 @@ export function billingChoices(
     },
     separate,
   ];
+}
+
+/**
+ * An approved change's placement: the one fixed at approval, or (for older
+ * changes) worked out now with no payments requested yet.
+ */
+export function placementOf(
+  change: Pick<ChangeRequest, "placement" | "total" | "billing">,
+  milestones: readonly MilestoneRef[],
+): Placement[] {
+  return (
+    change.placement ?? placeChange(change.total, change.billing, milestones)
+  );
 }

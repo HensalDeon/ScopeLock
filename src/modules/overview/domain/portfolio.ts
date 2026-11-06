@@ -12,6 +12,9 @@ export type CurrencyTotals = {
   /** Drafts not yet sent. */
   draft: Minor;
   draftProjects: number;
+  /** Payments received, and asked for but not received yet. */
+  received: Minor;
+  due: Minor;
 };
 
 /**
@@ -33,6 +36,8 @@ export function portfolioTotals(
         waiting: minor(0),
         draft: minor(0),
         draftProjects: 0,
+        received: minor(0),
+        due: minor(0),
       };
       rows.set(currency, r);
     }
@@ -41,6 +46,8 @@ export function portfolioTotals(
   for (const p of projects) {
     if (p.status === "archived") continue;
     const r = row(p.currency);
+    r.received = sum([r.received, p.totals.paid]);
+    r.due = sum([r.due, p.totals.due]);
     if (p.status === "active" || p.status === "completed") {
       r.approved = sum([r.approved, p.baselineTotal, p.totals.approvedChanges]);
       r.approvedProjects += 1;

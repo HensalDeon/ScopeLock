@@ -17,7 +17,13 @@ export type ProjectFigures = {
   status: Status;
   currency: CurrencyCode;
   baselineTotal: Minor;
-  totals: { approvedChanges: Minor; pendingChanges: Minor };
+  totals: {
+    approvedChanges: Minor;
+    pendingChanges: Minor;
+    /** Payments received / asked for and not yet received. */
+    paid: Minor;
+    due: Minor;
+  };
 };
 
 export type OverviewProject = ProjectFigures & {
@@ -47,6 +53,17 @@ export type OverviewChange = {
   everSent: boolean;
   sentAt: Date | null;
   updatedAt: Date;
+};
+
+/** A payment request still owed (due, or the client says paid). */
+export type OverviewPayment = {
+  id: string;
+  projectId: string;
+  label: string;
+  amount: Minor;
+  status: "due" | "client_reported";
+  requestedAt: Date;
+  reportedAt: Date | null;
 };
 
 export type AttentionItem = {
@@ -138,6 +155,7 @@ export function waitingOnClients(
   changes: readonly OverviewChange[],
   links: ReadonlyMap<string, string | null>,
   now: Date = new Date(),
+  payments: readonly OverviewPayment[] = [],
 ): AttentionItem[] {
   const byId = new Map(projects.map((p) => [p.id, p]));
   const who = (p: OverviewProject) =>
@@ -191,6 +209,32 @@ export function waitingOnClients(
       since: c.sentAt?.getTime() ?? 0,
     });
   }
+  for (const pay of payments.filter((p) => p.status === "due")) {
+    const p = byId.get(pay.projectId);
+    if (!p) continue;
+    const amount = formatMoney(pay.amount, p.currency);
+    const url = links.get(p.id);
+    rows.push({
+      item: {
+        key: `pay-${pay.id}`,
+        tag: "Payment due",
+        tone: "waiting",
+        title: pay.label,
+        detail: [p.name, `asked ${formatAgo(pay.requestedAt, { now })}`].join(
+          " · ",
+        ),
+        amount,
+        href: `/projects/${p.id}`,
+        quote: null,
+        remind: reminderLink(
+          p.client?.phone ?? null,
+          url ? `${url}/pay/${pay.id}` : null,
+          `Hi ${who(p)}, a gentle reminder that the ${pay.label} payment for ${p.name} (${amount}) is due. You can pay here:`,
+        ),
+      },
+      since: pay.requestedAt.getTime(),
+    });
+  }
   return rows.sort((a, b) => a.since - b.since).map((r) => r.item);
 }
 
@@ -199,9 +243,31 @@ export function needsYou(
   projects: readonly OverviewProject[],
   changes: readonly OverviewChange[],
   now: Date = new Date(),
+  payments: readonly OverviewPayment[] = [],
 ): AttentionItem[] {
   const byId = new Map(projects.map((p) => [p.id, p]));
   const rows: { item: AttentionItem; rank: number; at: number }[] = [];
+
+  // A client says they've paid: check and confirm first.
+  for (const pay of payments.filter((p) => p.status === "client_reported")) {
+    const p = byId.get(pay.projectId);
+    if (!p) continue;
+    rows.push({
+      item: {
+        key: `pay-${pay.id}`,
+        tag: "Client says paid",
+        tone: "waiting",
+        title: pay.label,
+        detail: `${p.name} · ${p.client?.name ?? "Your client"} paid ${formatAgo(pay.reportedAt ?? pay.requestedAt, { now })} · check and confirm`,
+        amount: formatMoney(pay.amount, p.currency),
+        href: `/projects/${p.id}`,
+        quote: null,
+        remind: null,
+      },
+      rank: -1,
+      at: (pay.reportedAt ?? pay.requestedAt).getTime(),
+    });
+  }
 
   for (const p of projects.filter((p) => p.status === "draft")) {
     const asked =

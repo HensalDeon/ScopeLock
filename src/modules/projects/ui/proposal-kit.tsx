@@ -28,6 +28,8 @@ export type SectionKit = {
   /** The field's error message as a paragraph, or null. */
   err: (path: string, touchKey?: string) => React.ReactNode;
   remove: (id: ProposalSectionId) => void;
+  /** The project's payments, in order, for linking milestones to them. */
+  payments: { order: number; name: string; percent: string }[];
 };
 
 /** A section's box: its name, a Remove button, then its fields. */

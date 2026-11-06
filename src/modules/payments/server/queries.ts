@@ -1,0 +1,66 @@
+import "server-only";
+import type { ChangeRequest } from "@/modules/changes";
+import { requireWorkspace } from "@/modules/workspace/server";
+import { parseObjectId } from "@/shared/db/ids";
+import { minor } from "@/shared/lib/money";
+import { signedUrls } from "@/shared/storage/r2";
+import type { PaymentMethods } from "../domain/methods";
+import type { Payment } from "../domain/payment";
+import * as repo from "./repository";
+import {
+  scheduleFor,
+  type PaymentSchedule,
+  type ProjectForSchedule,
+} from "./schedule";
+
+/** The workspace's payment methods, with a signed URL for the QR image. */
+export async function getPaymentMethods(): Promise<{
+  methods: PaymentMethods;
+  qrUrl: string | null;
+}> {
+  const { workspace } = await requireWorkspace();
+  return methodsWithQr(workspace.workspaceId);
+}
+
+/**
+ * For the public portal only: the workspace comes from the project found by
+ * the link, never from the request.
+ */
+export async function methodsWithQr(
+  workspaceId: string,
+): Promise<{ methods: PaymentMethods; qrUrl: string | null }> {
+  const { methods, qrKey } = await repo.findMethods(workspaceId);
+  const { qr } = await signedUrls({ qr: qrKey });
+  return { methods, qrUrl: qr };
+}
+
+/** The signed-in workspace's view of a project's payments. */
+export async function getProjectPayments(
+  project: ProjectForSchedule,
+  changes: readonly ChangeRequest[],
+): Promise<PaymentSchedule> {
+  const id = parseObjectId(project.id);
+  if (!id) {
+    return {
+      items: [],
+      payments: [],
+      totals: { received: minor(0), due: minor(0), total: minor(0) },
+    };
+  }
+  const { workspace } = await requireWorkspace();
+  return scheduleFor(workspace.workspaceId, id, project, changes);
+}
+
+/** Payments still owed across the workspace, oldest first (overview). */
+export async function listOwedPayments(): Promise<Payment[]> {
+  const { workspace } = await requireWorkspace();
+  return (await repo.findOwedPaymentDocs(workspace.workspaceId)).map(
+    repo.toPayment,
+  );
+}
+
+/** Received so far, per currency (overview). */
+export async function receivedByCurrency() {
+  const { workspace } = await requireWorkspace();
+  return repo.sumReceived(workspace.workspaceId);
+}

@@ -48,6 +48,20 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     { key: { workspaceId: 1, projectId: 1, number: 1 }, unique: true },
   ],
   [COLLECTIONS.activity]: [{ key: { workspaceId: 1, projectId: 1, at: -1 } }],
+  [COLLECTIONS.paymentSettings]: [{ key: { workspaceId: 1 }, unique: true }],
+  [COLLECTIONS.payments]: [
+    { key: { workspaceId: 1, projectId: 1, requestedAt: -1 } },
+    // One open request per slot (milestone or separate change): a double
+    // tap can't ask for the same payment twice. `open` is removed on cancel.
+    {
+      key: { workspaceId: 1, projectId: 1, key: 1 },
+      unique: true,
+      partialFilterExpression: { open: true },
+      name: "one_open_payment_per_slot",
+    },
+    // The overview: payments still owed across the workspace.
+    { key: { workspaceId: 1, status: 1, requestedAt: 1 } },
+  ],
   [COLLECTIONS.approvals]: [
     { key: { workspaceId: 1, projectId: 1, decidedAt: -1 } },
     // A subject (a sent proposal) can be approved only once, even on a

@@ -487,3 +487,17 @@ export async function setChangeTotals(
     { session },
   );
 }
+
+/** Keeps the project's received / owed totals in step with its payments. */
+export async function setPaymentTotals(
+  workspaceId: string,
+  id: ObjectId,
+  totals: { paid: number; due: number },
+  session?: ClientSession,
+): Promise<void> {
+  await projects(workspaceId).updateOne(
+    { _id: id },
+    { $set: { "totals.paid": totals.paid, "totals.due": totals.due } },
+    { session },
+  );
+}

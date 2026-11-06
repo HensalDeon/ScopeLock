@@ -232,6 +232,15 @@ export function ProjectForm({
           }
           touch={form.touch}
           edited={(path) => form.edited(`proposal.${path}`)}
+          payments={
+            billingModel === "milestones"
+              ? milestones.map((m, order) => ({
+                  order,
+                  name: m.name,
+                  percent: m.percent,
+                }))
+              : []
+          }
         />
       </FormSection>
 

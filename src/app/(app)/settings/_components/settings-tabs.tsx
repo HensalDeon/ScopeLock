@@ -7,6 +7,7 @@ import { cn } from "@/shared/lib/utils";
 const TABS = [
   { href: "/settings", label: "Business & account" },
   { href: "/settings/documents", label: "Documents" },
+  { href: "/settings/payments", label: "Payments" },
 ] as const;
 
 export function SettingsTabs() {
