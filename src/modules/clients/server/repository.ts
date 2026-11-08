@@ -29,17 +29,32 @@ function toClient(doc: ClientDoc): Client {
   };
 }
 
+/** A–Z by name, one window at a time. */
 export async function findClients(
   workspaceId: string,
   { archived = false }: { archived?: boolean } = {},
+  window: { skip: number; limit: number } = { skip: 0, limit: 500 },
 ): Promise<Client[]> {
   const docs = await clients(workspaceId)
     .find(
       { archivedAt: archived ? { $ne: null } : null },
-      { sort: { nameLower: 1 } },
+      {
+        sort: { nameLower: 1, _id: 1 },
+        skip: window.skip,
+        limit: window.limit,
+      },
     )
     .toArray();
   return docs.map(toClient);
+}
+
+export async function countClients(
+  workspaceId: string,
+  { archived = false }: { archived?: boolean } = {},
+): Promise<number> {
+  return clients(workspaceId).countDocuments({
+    archivedAt: archived ? { $ne: null } : null,
+  });
 }
 
 export async function findClient(

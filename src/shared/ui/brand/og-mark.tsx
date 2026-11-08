@@ -58,3 +58,31 @@ export function OgMark({
     </div>
   );
 }
+
+/**
+ * The bare mark for light backgrounds (emails): ink brackets, emerald core,
+ * transparent canvas. Rendered to PNG because email clients drop inline SVG.
+ */
+export function OgMarkOnLight({ size }: { size: number }) {
+  return (
+    <div style={{ width: "100%", height: "100%", display: "flex" }}>
+      <svg width={size} height={size} viewBox={MARK_VIEWBOX}>
+        <path
+          d={markPaths.bracketTopLeft}
+          fill="none"
+          stroke={brandColors.ink}
+          strokeWidth={MARK_STROKE}
+          strokeLinejoin="round"
+        />
+        <path
+          d={markPaths.bracketBottomRight}
+          fill="none"
+          stroke={brandColors.ink}
+          strokeWidth={MARK_STROKE}
+          strokeLinejoin="round"
+        />
+        <rect {...markCore} fill={brandColors.brand} />
+      </svg>
+    </div>
+  );
+}

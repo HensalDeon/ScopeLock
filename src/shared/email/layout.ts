@@ -1,5 +1,8 @@
 import { brandColors } from "@/shared/ui/brand/geometry";
 
+/** Matches the inline image attached by send.ts (see mark.tsx). */
+export const MARK_CID = "scopelock-mark";
+
 export type EmailContent = {
   /** Shown in the inbox list after the subject. */
   preview: string;
@@ -34,7 +37,7 @@ function safeHref(url: string): string {
 }
 
 export function renderEmail(content: EmailContent, appUrl: string) {
-  const { ink, brand } = brandColors;
+  const { ink } = brandColors;
   const muted = "#5a6475";
   const line = "#e2e5ea";
 
@@ -71,7 +74,7 @@ export function renderEmail(content: EmailContent, appUrl: string) {
       <tr><td style="padding:28px 32px 0;">
         <table role="presentation" cellpadding="0" cellspacing="0"><tr>
           <td style="padding-right:8px;vertical-align:middle;">
-            <svg width="22" height="22" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="${ink}" stroke-width="5" stroke-linejoin="round"><path d="M8.5 21V12.5a4 4 0 0 1 4-4H21"/><path d="M39.5 27v8.5a4 4 0 0 1-4 4H27"/></g><rect x="18" y="18" width="12" height="12" rx="3" fill="${brand}"/></svg>
+            <img src="cid:${MARK_CID}" width="22" height="22" alt="" style="display:block;width:22px;height:22px;border:0;outline:none;">
           </td>
           <td style="vertical-align:middle;font-size:16px;font-weight:600;letter-spacing:-0.3px;color:${ink};">scopelock</td>
         </tr></table>

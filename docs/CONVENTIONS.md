@@ -10,6 +10,7 @@ src/
     (marketing)/          Public site (static)
     (auth)/               Sign in, sign up, reset
     (app)/                Signed-in app (protected by proxy.ts + requireWorkspace)
+    (portal)/             Client portal: public, secret-link pages (/c/[token])
     api/                  Route handlers (auth, health; webhooks later)
   modules/<name>/         One folder per business capability
     index.ts              Public, client-safe API: types, schemas, UI, server-action refs
@@ -19,6 +20,11 @@ src/
     ui/                   Components. "use client" only on the leaves that need it.
   modules/documents/      Client-facing document templates, style and default text. Other
                           modules hand it plain data (ProposalDocumentData) to render.
+  modules/approvals/      Signed, insert-only evidence of client decisions.
+  modules/changes/        Change requests after the baseline: billing placement, change orders.
+  modules/activity/       Insert-only project history; filtered and reworded for the client.
+  modules/portal/         The client's public pages (/c/[token]); no sign-in. Exposes
+                          only server.ts (PortalPage) and a public server action.
   shared/
     auth/                 Better Auth config, session, membership, redirect, policy
     db/                   Mongo client, names, indexes, scopedCollection, transactions, ids
@@ -72,6 +78,7 @@ Then:
   - Embedded items (scope lines, milestones) get `randomUUID()` ids.
 - **Multi-document writes** that must agree (approval + status + payment line) go in `withTransaction()`. Pass `{ session }` to every write. Don't send emails inside a transaction, because it can retry.
 - **State changes are atomic:** `findOneAndUpdate({ _id, status: "sent" }, { $set: { status: "approved" } })`. If it returns `null`, someone else got there first.
+- **Activity:** every user-visible state change writes an activity event (`logActivity` after the change; `logActivityInTransaction` inside a client decision). New event types say in `isClientVisible` whether the client may see them. Never put IPs, internal notes or link changes in client-visible events.
 - **Money** is integer minor units (`Minor`; `Paise` for rupee-only code), always. The currency lives on the record (a project's `currency`), and amounts are never summed across currencies. Use `allocate()` for splits, `parseAmount()` for input and `formatMoney(amount, currency)` for display.
 
 ## 4. Server actions
@@ -115,13 +122,21 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - **Validate live with the server's own Zod schema**, using `useFormValidation(schema, values, { initial, serverState })`. The browser and server can't disagree.
 - **"Reward early, punish late":** a field is checked when the person leaves it or submits. Once it's flagged, it re-checks on every keystroke, so the message goes away the moment the value is right.
 - **Invalid submits never reach the server.** Use `markSubmitted()` and, if it fails, `focusFirstInvalid(form)`. Server-only errors still show until the field is edited (`edited(path)`).
-- **Edit forms disable Save until `isDirty`.** It compares cleaned values, so "98765 43210" vs "+91 98765 43210" isn't a change. Show "No changes yet" or the saved message next to the button.
+- **Save buttons use the primary style** (an outlined button looks invisible when disabled). **Edit forms disable Save until `isDirty`.** It compares cleaned values, so "98765 43210" vs "+91 98765 43210" isn't a change. Show "No changes yet" or the saved message next to the button.
 - **Keep inputs controlled and submit by hand** (`onSubmit` → `startTransition(() => action(data))`). React's post-action form reset otherwise clears controlled fields such as a `<select>`.
 - **Repeated rows:** errors use dotted paths (`items.0.amount`), and "touched" uses the row's stable key.
 
 ## 5. Pages and rendering (Next.js 16, Cache Components)
 
-- Pages are thin: call `requireWorkspace()` or a module query, then render module UI.
+- **Pages are composition only.** A route loads data through module queries and renders module UI. It holds no business rules, no view-model building and no copy logic:
+  - Rules and anything worth a test (what's waiting, form defaults, share messages, labels) are pure functions in the module's `domain/`, with a `*.test.ts`.
+  - Gathering data for a screen is a module query in `server/` returning a ready view model (for example `getOverview()`).
+  - Page-specific markup lives in the module's `ui/` (for example `ProjectHeader`), or in a route `_components/` folder only if no module owns it.
+  - A route over ~150 lines, or any `.map`/`.filter`/`if` building data in a route, is a sign something belongs in a module.
+- **Every list page paginates.** Use `paginate()` / `parsePage()` from `shared/lib/pagination` (20 per page, `?page=N`, too-high pages clamp to the last) and `<Pagination>` from `shared/ui/pagination`. Repository list functions take `{ skip, limit }` with a matching `count…()`. Pickers and workspace figures use their own capped or projected queries, never an unbounded `find()`.
+- **Detail pages summarise; logs get their own page.** A list that grows with use (activity, signed records) shows the latest few on the detail page with "See all N", which opens a paged full page (for example `/projects/[id]/activity`). Never let a detail page grow without bound.
+- **Reuse before you write.** Check `shared/ui` first: `MoneyInput`, `FormSection`, `TitledSection`, `SideCard`, `ShareLink`, `Pagination`, `EmptyState`, `BackLink`. If a piece of UI appears twice, move it there.
+- **Keep files small.** Aim for under ~300 lines; split big forms into section components.
 - Anything that reads the session, headers or cookies renders inside `<Suspense>` with a skeleton that has the same shape.
 - No `"use cache"` on workspace data in Phase 2. If it's added later, key and tag it by `workspaceId` and call `updateTag` in actions. Never pass a raw portal token into a cached function, because it becomes a stored cache key.
 - Lists have a real empty state: what will appear here and how to add the first item.
@@ -147,8 +162,8 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 
 **Client portal and secret links (Phase 3+)**
 
-- [ ] Tokens come from `generateToken()` (256-bit). Store only `hashToken(token)`, with a unique index.
-- [ ] Check the token format (`/^[A-Za-z0-9_-]{43}$/`) before querying. Unknown, revoked and expired tokens all get the same `notFound()`.
+- [ ] Tokens come from `generateToken()` (256-bit). Store only `hashToken(token)`, with a unique index. If the link must be shown again, also store a copy sealed with `encryptText("portal-link-v1", …)` (key derived from the app secret, never in the database), so a database leak alone yields no working links.
+- [ ] Check the token format (`/^[A-Za-z0-9_-]{43}$/`) before querying. Unknown, revoked and expired tokens all get the same `notFound()`. The portal streams, so that page is served with status 200 for every bad link. Don't add a format check in `proxy.ts`: malformed links would then get a 404 and unknown ones a 200, which tells them apart.
 - [ ] Rate-limit portal requests by IP and by token. The IP comes from `CLIENT_IP_HEADER`.
 - [ ] Approve and reject work out the project or change request from the token only, never from ids the client sends.
 - [ ] `/c/*` keeps `no-referrer`, `noindex` and `no-store` (set in `next.config.ts`).
@@ -160,13 +175,22 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - [ ] Snapshot built from the database, not from the request. Store `hashSnapshot(snapshot)`, `SNAPSHOT_HASH_VERSION`, IP, user agent and timestamp.
 - [ ] Unique index on `{ subjectType, subjectId }` so a double-click can't approve twice.
 - [ ] The status change and the approval insert happen in one transaction.
-- [ ] Before launch: chain each record to the previous one in the workspace (`prevHash`), or HMAC it with a key outside the database, so database access alone can't rewrite history. Also use an Atlas user that can only `find` and `insert` on approvals.
+- [ ] Sign every record with `sign("evidence-v1", …)` over its canonical facts (including the snapshot hash), and re-check hash + signature when showing it. Database access alone then can't rewrite history. Before launch, also use an Atlas user that can only `find` and `insert` on approvals.
+- [ ] Guard the status change on everything the client saw: `status`, the link's hash and the sent version (`sent.sentAt`). A withdrawn, re-sent or re-linked proposal can't be decided with an old page.
 
 **File uploads (logo, payment proof)**
 
 - [ ] The R2 bucket is private. Object key is `ws/{workspaceId}/{kind}/{generateToken()}`, never the uploaded filename.
 - [ ] Only `image/png`, `image/jpeg` and `image/webp`. Check the magic bytes, not just the extension or MIME type. Size limit of about 5 MB.
 - [ ] Serve files through short-lived signed URLs. Proofs download with `Content-Disposition: attachment`.
+
+**Payments (Phase 5)**
+
+- [ ] ScopeLock never holds money: methods are the freelancer's own (UPI, bank, link). Only the freelancer can mark a payment received.
+- [ ] A payment's lines and amount are frozen when it's requested. One open request per slot (unique partial index on `open: true`); every status change is an atomic update from an allowed state, appended to the payment's history.
+- [ ] An approved CR's placement is fixed at approval, computed with the slots already requested (`closedKeys`), inside the decision transaction.
+- [ ] Client uploads (payment screenshots) go through `readImageUpload` (bytes checked, ≤ 4 MB), live under `ws/{id}/payment-proof/`, and are only ever served with `signedDownloadUrl` (attachment, 10 minutes), never rendered on our pages.
+- [ ] Public "I've paid" works out the project from the token and checks the payment belongs to it; rate-limited per IP and per link.
 
 **Webhooks (Razorpay, Phase 8)**
 
@@ -190,3 +214,4 @@ Integration tests run against an in-memory MongoDB replica set, with one databas
 - [ ] Checked at 390 px wide with no horizontal scroll. Pending and empty states exist.
 - [ ] The security checklist above has been gone through for the feature's type.
 - [ ] `docs/PLAN.md` checklist and progress log are updated.
+- [ ] `docs/PRODUCT.md` is updated when a user-visible feature ships (move it from "Coming" to "Built", refresh the numbers). It feeds pitch decks and videos, so it must stay true.

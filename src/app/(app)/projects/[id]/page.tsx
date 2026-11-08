@@ -1,23 +1,58 @@
-import { Eye, Pencil } from "lucide-react";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { ActivityTimeline } from "@/modules/activity";
+import { listProjectActivity } from "@/modules/activity/server";
+import { ApprovalRows } from "@/modules/approvals";
+import { listApprovalsForProject } from "@/modules/approvals/server";
+import { ChangeList, changeSummary } from "@/modules/changes";
+import { listChanges } from "@/modules/changes/server";
+import { hasAnyMethod, PaymentsPanel } from "@/modules/payments";
+import {
+  getPaymentMethods,
+  getProjectPayments,
+} from "@/modules/payments/server";
 import { clientFirstName } from "@/modules/clients";
 import {
-  DeleteProjectButton,
-  isEditable,
+  isScopeApproved,
   MilestoneTable,
-  ProjectStatusBadge,
+  ProjectHeader,
+  ProjectSidebar,
+  proposalShareMessage,
   ScopeTable,
+  unlockingSteps,
+  SharePanel,
 } from "@/modules/projects";
-import { getProjectOrNotFound } from "@/modules/projects/server";
-import { formatDateTime } from "@/shared/lib/dates";
-import { formatPhone } from "@/shared/lib/phone";
-import { BackLink } from "@/shared/ui/back-link";
-import { Button } from "@/shared/ui/button";
-import { PageContainer } from "@/shared/ui/page";
+import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
+import { requireWorkspace } from "@/modules/workspace/server";
+import { formatMoney, minor } from "@/shared/lib/money";
+import { PageContainer, TitledSection } from "@/shared/ui/page";
 
 export const metadata: Metadata = { title: "Project" };
+
+/** The project page shows the latest few; the rest have their own pages. */
+const ACTIVITY_SHOWN = 5;
+const ANSWERS_SHOWN = 3;
+
+function SeeAll({
+  href,
+  total,
+  shown,
+}: {
+  href: string;
+  total: number;
+  shown: number;
+}) {
+  if (total <= shown) return null;
+  return (
+    <Link
+      href={href as Route}
+      className="text-sm font-medium underline-offset-4 hover:underline"
+    >
+      See all {total}
+    </Link>
+  );
+}
 
 export default function ProjectPage({ params }: PageProps<"/projects/[id]">) {
   return (
@@ -31,140 +66,132 @@ export default function ProjectPage({ params }: PageProps<"/projects/[id]">) {
 
 async function ProjectDetail({
   params,
-}: {
-  params: PageProps<"/projects/[id]">["params"];
-}) {
+}: Pick<PageProps<"/projects/[id]">, "params">) {
   const { id } = await params;
-  const project = await getProjectOrNotFound(id);
-  const editable = isEditable(project.status);
-  const client = project.client;
+  const [project, share, approvals, changes, activity, { user }] =
+    await Promise.all([
+      getProjectOrNotFound(id),
+      getShareState(id),
+      listApprovalsForProject(id, { pageSize: ANSWERS_SHOWN }),
+      listChanges(id),
+      listProjectActivity(id, { pageSize: ACTIVITY_SHOWN }),
+      requireWorkspace(),
+    ]);
+  const approved = isScopeApproved(project.status);
+  const [payments, { methods }] = approved
+    ? await Promise.all([
+        getProjectPayments(project, changes),
+        getPaymentMethods(),
+      ])
+    : [null, { methods: null }];
+  const firstName = project.client
+    ? clientFirstName(project.client)
+    : "your client";
 
   return (
     <div className="grid gap-8">
-      <div className="grid gap-3">
-        <BackLink href="/projects">Projects</BackLink>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="grid min-w-0 gap-1.5">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-[-0.02em] text-balance">
-                {project.name}
-              </h1>
-              <ProjectStatusBadge status={project.status} />
-            </div>
-            {client && (
-              <p className="text-[15px] text-muted-foreground">
-                For{" "}
-                <Link
-                  href={`/clients/${client.id}`}
-                  className="font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  {client.name}
-                </Link>
-                {client.company ? ` · ${client.company}` : ""}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {editable && (
-              <Button asChild variant="outline">
-                <Link href={`/projects/${project.id}/edit`}>
-                  <Pencil aria-hidden />
-                  Edit scope
-                </Link>
-              </Button>
-            )}
-            <Button asChild>
-              <Link href={`/projects/${project.id}/preview`}>
-                <Eye aria-hidden />
-                Preview as client
-              </Link>
-            </Button>
-          </div>
-        </div>
-        {project.description && (
-          <p className="max-w-prose text-[15px] leading-relaxed text-pretty">
-            {project.description}
-          </p>
-        )}
-      </div>
+      <ProjectHeader project={project} hasLink={share.hasLink} />
 
-      {project.status === "draft" && (
-        <div className="rounded-xl border border-dashed bg-canvas px-5 py-4 text-sm leading-relaxed text-pretty">
-          <span className="font-medium">Draft.</span> Only you can see this.
-          Next, you&apos;ll send the scope to{" "}
-          {client ? clientFirstName(client) : "your client"} to approve. Once
-          they do, it&apos;s locked, and anything extra becomes a priced change
-          request.
-        </div>
-      )}
-
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="grid gap-8">
-          <section
-            aria-labelledby={`scope-${project.id}`}
-            className="grid gap-3"
-          >
-            <h2
-              id={`scope-${project.id}`}
-              className="text-[15px] font-semibold"
-            >
-              Agreed scope
-            </h2>
-            <ScopeTable project={project} />
-          </section>
-          <section
-            aria-labelledby={`payments-${project.id}`}
-            className="grid gap-3"
-          >
-            <h2
-              id={`payments-${project.id}`}
-              className="text-[15px] font-semibold"
-            >
-              Payment terms
-            </h2>
-            <MilestoneTable project={project} />
-          </section>
+      {/* Phones: the share card first (it's the main action). Desktop: it
+          sits top-right, with the client card below it. */}
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr] lg:gap-y-4">
+        <div className="lg:col-start-2 lg:row-start-1">
+          <SharePanel
+            projectId={project.id}
+            status={project.status}
+            url={share.url}
+            hasLink={share.hasLink}
+            sentAt={share.sentAt}
+            lastDecision={project.lastDecision}
+            emailVerified={user.emailVerified}
+            client={{ firstName, phone: project.client?.phone ?? null }}
+            message={proposalShareMessage({
+              clientFirstName: firstName,
+              projectName: project.name,
+              total: formatMoney(
+                minor(share.sentTotal ?? project.baseline.total),
+                project.currency,
+              ),
+            })}
+          />
         </div>
 
-        <aside className="grid gap-4">
-          {client && (
-            <div className="rounded-xl border bg-canvas p-5">
-              <h2 className="text-sm font-semibold">Client</h2>
-              <dl className="mt-3 grid gap-2.5 text-sm">
-                <div>
-                  <dt className="text-muted-foreground">Name</dt>
-                  <dd className="font-medium">{client.name}</dd>
-                </div>
-                {client.phone && (
-                  <div>
-                    <dt className="text-muted-foreground">WhatsApp</dt>
-                    <dd className="font-medium tabular-nums">
-                      {formatPhone(client.phone)}
-                    </dd>
-                  </div>
-                )}
-                {client.email && (
-                  <div>
-                    <dt className="text-muted-foreground">Email</dt>
-                    <dd className="truncate font-medium">{client.email}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          )}
-          <p className="px-1 text-xs text-muted-foreground">
-            Created {formatDateTime(project.createdAt)}
-            {project.updatedAt.getTime() !== project.createdAt.getTime() &&
-              ` · Updated ${formatDateTime(project.updatedAt)}`}
-          </p>
-          {editable && (
-            <div className="px-1">
-              <DeleteProjectButton
+        <div className="grid gap-8 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+          <TitledSection id={`scope-${project.id}`} title="Agreed scope">
+            <ScopeTable
+              project={project}
+              changes={approved ? changeSummary(changes) : undefined}
+            />
+          </TitledSection>
+          {payments ? (
+            <TitledSection id={`payments-${project.id}`} title="Payments">
+              <PaymentsPanel
                 projectId={project.id}
                 projectName={project.name}
+                currency={project.currency}
+                items={payments.items}
+                totals={payments.totals}
+                portalUrl={share.url}
+                client={{ firstName, phone: project.client?.phone ?? null }}
+                methodsReady={methods ? hasAnyMethod(methods) : false}
+                unlockedBy={unlockingSteps(project)}
               />
-            </div>
+            </TitledSection>
+          ) : (
+            <TitledSection id={`payments-${project.id}`} title="Payment terms">
+              <MilestoneTable project={project} />
+            </TitledSection>
           )}
+          {approved && (
+            <ChangeList
+              projectId={project.id}
+              changes={changes}
+              currency={project.currency}
+              canCreate={project.status === "active"}
+              addons={project.proposal.addons}
+              headingId={`changes-${project.id}`}
+            />
+          )}
+          <TitledSection
+            id={`activity-${project.id}`}
+            title="Activity"
+            action={
+              <SeeAll
+                href={`/projects/${project.id}/activity`}
+                total={activity.total}
+                shown={activity.items.length}
+              />
+            }
+          >
+            <ActivityTimeline
+              items={activity.items}
+              visible={ACTIVITY_SHOWN}
+              quotes="clamped"
+              empty="Sending, approvals and change requests will show here as they happen."
+            />
+          </TitledSection>
+          {approvals.total > 0 && (
+            <TitledSection
+              id={`answers-${project.id}`}
+              title="Client answers"
+              action={
+                <SeeAll
+                  href={`/projects/${project.id}/answers`}
+                  total={approvals.total}
+                  shown={approvals.items.length}
+                />
+              }
+            >
+              <ApprovalRows
+                approvals={approvals.items}
+                projectId={project.id}
+              />
+            </TitledSection>
+          )}
+        </div>
+
+        <aside className="grid gap-4 lg:col-start-2 lg:row-start-2">
+          <ProjectSidebar project={project} />
         </aside>
       </div>
     </div>

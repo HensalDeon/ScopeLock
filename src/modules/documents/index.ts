@@ -2,7 +2,10 @@
  * Documents module: public, client-safe API. Templates, document style and
  * default proposal text. Server-only settings queries are in ./server.ts.
  */
-export type { ProposalDocumentData } from "./domain/document-data";
+export type {
+  ChangeOrderData,
+  ProposalDocumentData,
+} from "./domain/document-data";
 export { NO_IMAGES, type DocumentImages } from "./domain/images";
 export {
   defaultsToFormValues,
@@ -21,6 +24,7 @@ export {
   type DocumentStyle,
 } from "./domain/style";
 export { sampleProposal } from "./domain/sample";
+export { ChangeOrderDocument } from "./ui/change-order-document";
 export { ClassicDocument } from "./ui/classic-document";
 export { ProposalDefaultsForm } from "./ui/defaults-form";
 export { DocumentStyleEditor } from "./ui/style-editor";

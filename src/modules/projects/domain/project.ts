@@ -16,6 +16,7 @@ import {
   EMPTY_PROPOSAL,
   proposalInputSchema,
   type ProposalContent,
+  type TimelineStep,
 } from "./proposal";
 import {
   SCOPE_LIMITS,
@@ -41,10 +42,36 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   archived: "Archived",
 };
 
+/** The client has approved the baseline (change requests can follow). */
+export function isScopeApproved(status: ProjectStatus): boolean {
+  return status === "active" || status === "completed";
+}
+
+/** The WhatsApp text that goes before the proposal link. */
+export function proposalShareMessage(input: {
+  clientFirstName: string;
+  projectName: string;
+  /** Formatted, e.g. "₹80,000". */
+  total: string;
+}): string {
+  return `Hi ${input.clientFirstName}, here's the proposal for ${input.projectName} (${input.total}). You can read it and approve it here:`;
+}
+
 /** Only drafts can be edited or deleted; after sending, scope is locked. */
 export function isEditable(status: ProjectStatus): boolean {
   return status === "draft";
 }
+
+/** The client's latest answer to the sent proposal (summary; the full
+ * signed record lives in the approvals module). */
+export type ProjectDecision = {
+  decision: "approved" | "rejected";
+  at: Date;
+  name: string;
+  email: string;
+  comment: string | null;
+  approvalId: string;
+};
 
 export type ProjectTotals = {
   baseline: Minor;
@@ -77,6 +104,13 @@ export type Project = {
    * Once saved (even with sections cleared), the person's choice wins.
    */
   proposalSaved: boolean;
+  /** When the proposal was last sent to the client (null: never). */
+  sentAt: Date | null;
+  lastDecision: ProjectDecision | null;
+  /** A client link exists (it may be shown again; see portal). */
+  hasPortalLink: boolean;
+  /** How many change requests were ever created (CR numbers used). */
+  changeCount: number;
   totals: ProjectTotals;
   createdAt: Date;
   updatedAt: Date;
@@ -215,7 +249,10 @@ export function buildProjectPlan(
     items,
     total,
     milestones: buildMilestones(total, milestoneInputs, newId),
-    proposal: buildProposal({ ...EMPTY_PROPOSAL, ...input.proposal }, newId),
+    proposal: linkTimelineToPayments(
+      buildProposal({ ...EMPTY_PROPOSAL, ...input.proposal }, newId),
+      input.billingModel === "milestones" ? input.milestones.length : 0,
+    ),
   };
 }
 
@@ -227,4 +264,72 @@ export function emptyTotals(baseline: Minor): ProjectTotals {
     paid: minor(0),
     due: minor(0),
   };
+}
+
+/** Keeps a timeline step's payment link only on milestones, and only to a payment that exists. */
+function linkTimelineToPayments(
+  proposal: ProposalContent,
+  paymentCount: number,
+): ProposalContent {
+  const used = new Set<number>();
+  return {
+    ...proposal,
+    timeline: proposal.timeline.map((step) => {
+      const order = step.paymentOrder ?? null;
+      const valid =
+        step.isMilestone &&
+        order !== null &&
+        order < paymentCount &&
+        !used.has(order);
+      if (valid) used.add(order);
+      return { ...step, paymentOrder: valid ? order : null };
+    }),
+  };
+}
+
+export type PaymentTiming = {
+  /** The step that unlocks this payment, if any. */
+  step: { phase: string; duration: string | null } | null;
+  /** "Before work starts", "After Design (Week 2)", or null. */
+  dueWhen: string | null;
+};
+
+/**
+ * For each payment (in schedule order): the timeline step that unlocks it
+ * and when it falls due, in words. An unlinked first payment is the
+ * advance: "Before work starts".
+ */
+export function paymentTimings(
+  paymentCount: number,
+  timeline: readonly Pick<
+    TimelineStep,
+    "phase" | "duration" | "isMilestone" | "paymentOrder"
+  >[],
+): PaymentTiming[] {
+  return Array.from({ length: paymentCount }, (_, order) => {
+    const step = timeline.find(
+      (s) => s.isMilestone && (s.paymentOrder ?? null) === order,
+    );
+    if (step) {
+      return {
+        step: { phase: step.phase, duration: step.duration },
+        dueWhen: `After ${step.phase}${step.duration ? ` (${step.duration})` : ""}`,
+      };
+    }
+    return { step: null, dueWhen: order === 0 ? "Before work starts" : null };
+  });
+}
+
+/** Payment (milestone id) → the timeline step that unlocks it, by name. */
+export function unlockingSteps(
+  project: Pick<Project, "milestones" | "proposal">,
+): Record<string, string> {
+  const ordered = [...project.milestones].sort((a, b) => a.order - b.order);
+  const timings = paymentTimings(ordered.length, project.proposal.timeline);
+  return Object.fromEntries(
+    ordered.flatMap((m, i) => {
+      const step = timings[i]?.step;
+      return step ? [[m.id, step.phase]] : [];
+    }),
+  );
 }

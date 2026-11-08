@@ -3,7 +3,7 @@ import {
   optionalCurrencyField,
   type CurrencyCode,
 } from "@/shared/lib/currency";
-import { optionalPhoneField } from "@/shared/lib/phone";
+import { formatPhone, optionalPhoneField } from "@/shared/lib/phone";
 
 export const CLIENT_NAME_MAX_LENGTH = 120;
 export const CLIENT_COMPANY_MAX_LENGTH = 120;
@@ -77,4 +77,29 @@ export function clientLabel(client: Pick<Client, "name" | "company">): string {
 /** First name for friendly copy: "Send it to Rahul". */
 export function clientFirstName(client: Pick<Client, "name">): string {
   return client.name.trim().split(/\s+/)[0] ?? client.name;
+}
+
+/** A saved client as the edit form's values. */
+export function clientFormValues(client: Client): Record<ClientField, string> {
+  return {
+    name: client.name,
+    company: client.company ?? "",
+    email: client.email ?? "",
+    phone: client.phone ? formatPhone(client.phone) : "",
+    currency: client.currency ?? "",
+  };
+}
+
+/** "Mehta Interiors · +91 98765 43210 · Bills in USD", for the client's page. */
+export function clientContactLine(client: Client): string {
+  return (
+    [
+      client.company,
+      client.phone && formatPhone(client.phone),
+      client.email,
+      client.currency && `Bills in ${client.currency}`,
+    ]
+      .filter(Boolean)
+      .join(" · ") || "No contact details yet"
+  );
 }

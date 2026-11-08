@@ -68,3 +68,56 @@ export function Section({
     </section>
   );
 }
+
+/** A page block with an h2, wired up with aria-labelledby. */
+export function TitledSection({
+  id,
+  title,
+  action,
+  children,
+}: {
+  /** Unique on the page (pages stay mounted; include an entity id). */
+  id: string;
+  title: React.ReactNode;
+  /** Shown at the right of the heading, e.g. a "New …" button. */
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id} className="grid gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id={id} className="text-[15px] font-semibold">
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/**
+ * A block of a long form: what it is on the left, the fields on the right
+ * (stacked on phones). Used by the project and change request forms.
+ */
+export function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="grid gap-5 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-10">
+      <div className="grid content-start gap-1">
+        <h2 className="text-[15px] font-semibold">{title}</h2>
+        <p className="text-sm text-pretty text-muted-foreground">
+          {description}
+        </p>
+      </div>
+      <div className="min-w-0">{children}</div>
+    </section>
+  );
+}

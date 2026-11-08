@@ -2,6 +2,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
+import { paginate, type Page } from "@/shared/lib/pagination";
 import type { Client } from "../domain/client";
 import * as repo from "./repository";
 
@@ -11,11 +12,30 @@ import * as repo from "./repository";
  * caller, so a page can't accidentally read another workspace's clients.
  */
 
-export async function listClients(options?: {
-  archived?: boolean;
-}): Promise<Client[]> {
+/** Every active client, A–Z, for pickers (capped at 500). */
+export async function listClients(): Promise<Client[]> {
   const { workspace } = await requireWorkspace();
-  return repo.findClients(workspace.workspaceId, options);
+  return repo.findClients(workspace.workspaceId);
+}
+
+/** One page of clients (active or archived), A–Z, for the clients list. */
+export async function listClientsPage(options: {
+  archived?: boolean;
+  page: number;
+}): Promise<Page<Client>> {
+  const { workspace } = await requireWorkspace();
+  const ws = workspace.workspaceId;
+  const filter = { archived: options.archived ?? false };
+  return paginate(
+    options.page,
+    () => repo.countClients(ws, filter),
+    (window) => repo.findClients(ws, filter, window),
+  );
+}
+
+export async function countArchivedClients(): Promise<number> {
+  const { workspace } = await requireWorkspace();
+  return repo.countClients(workspace.workspaceId, { archived: true });
 }
 
 export async function countClients(): Promise<number> {

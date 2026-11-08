@@ -1,0 +1,138 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { HowToPay } from "@/modules/payments";
+import { formatDateTime, formatIsoDate } from "@/shared/lib/dates";
+import { isStorageConfigured } from "@/shared/lib/env";
+import { formatMoney } from "@/shared/lib/money";
+import { reportPayment } from "../server/payment-actions";
+import { getPortalPayment } from "../server/queries";
+import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";
+import { ReportPaymentForm } from "./report-payment-form";
+
+/** One payment on the client's link: how much, how to pay, "I've paid". */
+export async function PortalPaymentPage({
+  token,
+  paymentId,
+}: {
+  token: string;
+  paymentId: string;
+}) {
+  const view = await getPortalPayment(token, paymentId);
+  if (view.state === "limited") {
+    return (
+      <Notice title="Too many requests from this connection">
+        Wait about 10 minutes, then reload this page.
+      </Notice>
+    );
+  }
+  const { payment, businessName } = view;
+  const total = formatMoney(payment.amount, payment.currency);
+  const back = (
+    <Link
+      href={`/c/${token}`}
+      aria-label={`Back to ${view.projectTitle}`}
+      className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted"
+    >
+      <ArrowLeft aria-hidden className="size-4" />
+    </Link>
+  );
+
+  return (
+    <>
+      <PortalHeader
+        title={`${payment.label} payment · ${businessName}`}
+        detail={`${view.projectTitle} · ${total}`}
+        back={back}
+      />
+      {payment.status === "confirmed" && payment.confirmation && (
+        <StatusStrip tone="done">
+          Paid. {businessName} confirmed they received it on{" "}
+          {formatIsoDate(payment.confirmation.receivedOn)}. Thank you.
+        </StatusStrip>
+      )}
+      {payment.status === "client_reported" && payment.report && (
+        <StatusStrip tone="waiting">
+          You said you paid on {formatIsoDate(payment.report.paidOn)} (UTR{" "}
+          {payment.report.reference}). {businessName} will check and confirm.
+        </StatusStrip>
+      )}
+      {payment.status === "due" && payment.lastRejection && (
+        <StatusStrip tone="waiting">
+          {businessName} hasn&apos;t received it yet: “
+          {payment.lastRejection.note}”
+        </StatusStrip>
+      )}
+
+      <main className="mx-auto grid max-w-[210mm] gap-6 px-4 py-6 sm:py-8">
+        <section className="grid gap-3 rounded-lg border bg-white p-5 sm:p-6">
+          <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+            {payment.status === "confirmed" ? "Paid" : "Amount due"}
+          </p>
+          <p className="text-3xl font-semibold tracking-[-0.02em] tabular-nums">
+            {total}
+          </p>
+          <ul className="grid gap-1 border-t pt-3 text-sm">
+            {payment.lines.map((line) => (
+              <li
+                key={`${line.kind}-${line.refId}`}
+                className="flex justify-between gap-4"
+              >
+                <span className="text-pretty text-muted-foreground">
+                  {line.description}
+                </span>
+                <span className="tabular-nums">
+                  {formatMoney(line.amount, payment.currency)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted-foreground">
+            Asked for on {formatDateTime(payment.requestedAt)}. You pay{" "}
+            {businessName} directly; ScopeLock never holds your money.
+          </p>
+        </section>
+
+        {payment.status === "due" && (
+          <>
+            <section aria-labelledby="how-heading" className="grid gap-3">
+              <h2 id="how-heading" className="text-base font-semibold">
+                How to pay
+              </h2>
+              <HowToPay
+                available={view.available}
+                methods={view.methods}
+                amount={payment.amount}
+                currency={payment.currency}
+                qrUrl={view.qrUrl}
+                upi={view.upi}
+                businessName={businessName}
+              />
+            </section>
+            <section
+              aria-labelledby="paid-heading"
+              className="grid gap-4 rounded-lg border bg-white p-5 sm:p-6"
+            >
+              <div className="grid gap-1">
+                <h2 id="paid-heading" className="text-base font-semibold">
+                  Already paid?
+                </h2>
+                <p className="text-sm text-pretty text-muted-foreground">
+                  Tell {businessName}, with the UTR, so they can find it and
+                  confirm.
+                </p>
+              </div>
+              <ReportPaymentForm
+                action={reportPayment.bind(null, token, payment.id)}
+                methods={view.available}
+                amount={total}
+                businessName={businessName}
+                allowProof={isStorageConfigured()}
+              />
+            </section>
+          </>
+        )}
+      </main>
+      <Footer />
+    </>
+  );
+}

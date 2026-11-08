@@ -74,18 +74,16 @@ export function AccountNameForm({ name }: { name: string }) {
           {error && <FieldError>{error}</FieldError>}
         </Field>
         <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="submit"
-            variant="outline"
-            disabled={pending || !form.isDirty}
-          >
+          <Button type="submit" disabled={pending || !form.isDirty}>
             {pending ? "Saving…" : "Update name"}
           </Button>
-          {status.kind === "saved" && !form.isDirty && (
-            <p role="status" className="text-sm text-muted-foreground">
-              Name updated.
-            </p>
-          )}
+          <p role="status" className="text-sm text-muted-foreground">
+            {status.kind === "saved" && !form.isDirty
+              ? "Name updated."
+              : !form.isDirty
+                ? "No changes yet"
+                : ""}
+          </p>
         </div>
       </FieldGroup>
     </form>

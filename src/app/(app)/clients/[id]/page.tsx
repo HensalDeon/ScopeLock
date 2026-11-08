@@ -1,26 +1,36 @@
 import { Plus } from "lucide-react";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArchiveClientButton, ClientForm } from "@/modules/clients";
+import {
+  ArchiveClientButton,
+  ClientForm,
+  clientContactLine,
+  clientFormValues,
+} from "@/modules/clients";
 import { getClientOrNotFound } from "@/modules/clients/server";
 import { ProjectList } from "@/modules/projects";
 import { listProjectsForClient } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { formatDate } from "@/shared/lib/dates";
-import { formatPhone, whatsappLink } from "@/shared/lib/phone";
+import { parsePage } from "@/shared/lib/pagination";
+import { whatsappLink } from "@/shared/lib/phone";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
 import { EmptyState } from "@/shared/ui/list-states";
 import { PageContainer, Section } from "@/shared/ui/page";
+import { Pagination } from "@/shared/ui/pagination";
 
 export const metadata: Metadata = { title: "Client" };
 
-export default function ClientPage({ params }: PageProps<"/clients/[id]">) {
+export default function ClientPage({
+  params,
+  searchParams,
+}: PageProps<"/clients/[id]">) {
   return (
     <PageContainer>
       <Suspense fallback={<div className="h-96 rounded-xl bg-canvas" />}>
-        <ClientDetail params={params} />
+        <ClientDetail params={params} searchParams={searchParams} />
       </Suspense>
     </PageContainer>
   );
@@ -28,13 +38,12 @@ export default function ClientPage({ params }: PageProps<"/clients/[id]">) {
 
 async function ClientDetail({
   params,
-}: {
-  params: PageProps<"/clients/[id]">["params"];
-}) {
-  const { id } = await params;
+  searchParams,
+}: Pick<PageProps<"/clients/[id]">, "params" | "searchParams">) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const [client, projects, { workspace }] = await Promise.all([
     getClientOrNotFound(id),
-    listProjectsForClient(id),
+    listProjectsForClient(id, parsePage(query.page)),
     requireWorkspace(),
   ]);
   const archived = client.archivedAt !== null;
@@ -49,14 +58,7 @@ async function ClientDetail({
               {client.name}
             </h1>
             <p className="text-[15px] text-muted-foreground">
-              {[
-                client.company,
-                client.phone && formatPhone(client.phone),
-                client.email,
-                client.currency && `Bills in ${client.currency}`,
-              ]
-                .filter(Boolean)
-                .join(" · ") || "No contact details yet"}
+              {clientContactLine(client)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -93,8 +95,19 @@ async function ClientDetail({
         <h2 id={`projects-${client.id}`} className="text-[15px] font-semibold">
           Projects
         </h2>
-        {projects.length > 0 ? (
-          <ProjectList projects={projects} showClient={false} />
+        {projects.total > 0 ? (
+          <>
+            <ProjectList projects={projects.items} showClient={false} />
+            <Pagination
+              page={projects}
+              noun="projects"
+              href={(n) =>
+                (n === 1
+                  ? `/clients/${client.id}`
+                  : `/clients/${client.id}?page=${n}`) as Route
+              }
+            />
+          </>
         ) : (
           <EmptyState title={`No projects for ${client.name} yet`}>
             Projects you create for {client.name} will appear here, with their
@@ -112,13 +125,7 @@ async function ClientDetail({
             mode="edit"
             clientId={client.id}
             defaultCurrency={workspace.currency}
-            defaults={{
-              name: client.name,
-              company: client.company ?? "",
-              email: client.email ?? "",
-              phone: client.phone ? formatPhone(client.phone) : "",
-              currency: client.currency ?? "",
-            }}
+            defaults={clientFormValues(client)}
           />
         </Section>
         <Section

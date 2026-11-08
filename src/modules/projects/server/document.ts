@@ -1,4 +1,6 @@
 import "server-only";
+import type { ObjectId } from "mongodb";
+import { parseObjectId } from "@/shared/db/ids";
 import type {
   ProposalDefaults,
   ProposalDocumentData,
@@ -8,9 +10,13 @@ import {
   getDocumentSettings,
 } from "@/modules/documents/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
-import { requireWorkspace } from "@/modules/workspace/server";
-import type { Project } from "../domain/project";
+import {
+  requireWorkspace,
+  type WorkspaceContext,
+} from "@/modules/workspace/server";
+import { paymentTimings, type Project } from "../domain/project";
 import { getProjectOrNotFound, type ProjectWithClient } from "./queries";
+import { findPortalState } from "./repository";
 
 /** Short, readable reference for a project's documents: "P-1F107C". */
 export function projectReference(project: Pick<Project, "id">): string {
@@ -18,31 +24,63 @@ export function projectReference(project: Pick<Project, "id">): string {
 }
 
 /**
- * The proposal document for a project, as the client will see it, plus the
- * workspace's document style. Used by "Preview as client" now and by the
- * client portal and the approval snapshot in Phase 3B.
+ * The proposal document for a project plus the workspace's document style,
+ * for "Preview as client". Once sent, it's the proposal exactly as sent
+ * (what the client sees and approves); drafts render from current data.
  */
 export async function getProposalDocument(projectId: string) {
-  const [project, { workspace, user }, settings] = await Promise.all([
+  const [project, context, settings] = await Promise.all([
     getProjectOrNotFound(projectId),
     requireWorkspace(),
     getDocumentSettings(),
   ]);
+  const sent =
+    project.status === "draft"
+      ? null
+      : (
+          await findPortalState(
+            context.workspace.workspaceId,
+            parseObjectId(project.id) as ObjectId,
+          )
+        )?.sent;
   return {
     project,
     style: settings.style,
     images: await getDocumentImages(settings),
-    data: toProposalDocument(
-      project,
-      {
-        name: workspace.businessName,
-        tagline: BUSINESS_TYPE_LABELS[workspace.businessType].title,
-        email: user.email,
-        phone: workspace.phone,
-        voice: workspace.businessType === "freelancer" ? "I" : "we",
-      },
-      settings.defaults,
-    ),
+    data:
+      sent?.data ?? currentProposalData(project, context, settings.defaults),
+  };
+}
+
+/** The proposal as it would be sent right now. */
+export function currentProposalData(
+  project: ProjectWithClient,
+  { workspace, user }: Pick<WorkspaceContext, "workspace" | "user">,
+  defaults: ProposalDefaults,
+): ProposalDocumentData {
+  return toProposalDocument(
+    project,
+    documentBusiness({ workspace, user }),
+    defaults,
+  );
+}
+
+/** The business details every client document shows (proposal, CRs). */
+export function documentBusiness({
+  workspace,
+  user,
+}: Pick<
+  WorkspaceContext,
+  "workspace" | "user"
+>): ProposalDocumentData["business"] & {
+  voice: "I" | "we";
+} {
+  return {
+    name: workspace.businessName,
+    tagline: BUSINESS_TYPE_LABELS[workspace.businessType].title,
+    email: user.email,
+    phone: workspace.phone,
+    voice: workspace.businessType === "freelancer" ? "I" : "we",
   };
 }
 
@@ -60,6 +98,8 @@ export function toProposalDocument(
     !project.proposalSaved && defaults
       ? { ...project.proposal, ...defaults }
       : project.proposal;
+  const ordered = [...project.milestones].sort((a, b) => a.order - b.order);
+  const timings = paymentTimings(ordered.length, p.timeline);
   return {
     voice,
     business: from,
@@ -85,13 +125,32 @@ export function toProposalDocument(
     items: project.baseline.items,
     total: project.baseline.total,
     billingModel: project.billingModel,
-    milestones: project.milestones.map((m) => ({
+    milestones: ordered.map((m, i) => ({
       id: m.id,
       name: m.name,
       percent: m.percent,
       amount: m.baseAmount,
+      dueWhen:
+        project.billingModel === "milestones"
+          ? (timings[i]?.dueWhen ?? null)
+          : null,
     })),
-    timeline: p.timeline,
+    timeline: p.timeline.map((step) => {
+      const linked =
+        step.isMilestone && step.paymentOrder != null
+          ? ordered[step.paymentOrder]
+          : undefined;
+      return {
+        id: step.id,
+        phase: step.phase,
+        duration: step.duration,
+        description: step.description,
+        isMilestone: step.isMilestone,
+        payment: linked
+          ? { name: linked.name, amount: linked.baseAmount }
+          : null,
+      };
+    }),
     addons: p.addons,
     clientProvides: p.clientProvides,
     exclusions: p.exclusions,

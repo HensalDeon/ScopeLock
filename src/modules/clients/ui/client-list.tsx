@@ -4,7 +4,14 @@ import { formatPhone } from "@/shared/lib/phone";
 import type { Client } from "../domain/client";
 
 /** Rows of clients linking to their pages. Server component. */
-export function ClientList({ clients }: { clients: Client[] }) {
+export function ClientList({
+  clients,
+  projectCounts,
+}: {
+  clients: Client[];
+  /** Projects per client id, when the page has them. */
+  projectCounts?: ReadonlyMap<string, number>;
+}) {
   return (
     <ul className="divide-y rounded-xl border bg-background">
       {clients.map((client) => (
@@ -15,9 +22,17 @@ export function ClientList({ clients }: { clients: Client[] }) {
           >
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{client.name}</p>
-              <p className="truncate text-sm text-muted-foreground">
-                {client.company ?? "No company"}
-              </p>
+              {(client.company || projectCounts) && (
+                <p className="truncate text-sm text-muted-foreground">
+                  {[
+                    client.company,
+                    projectCounts &&
+                      projectLabel(projectCounts.get(client.id) ?? 0),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              )}
             </div>
             <div className="hidden min-w-0 text-right text-sm text-muted-foreground sm:block">
               {client.phone && (
@@ -34,4 +49,9 @@ export function ClientList({ clients }: { clients: Client[] }) {
       ))}
     </ul>
   );
+}
+
+function projectLabel(count: number): string {
+  if (count === 0) return "No projects yet";
+  return `${count} project${count === 1 ? "" : "s"}`;
 }

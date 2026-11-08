@@ -3,7 +3,9 @@
  * Server-only queries are in ./server.ts.
  */
 export {
+  clientContactLine,
   clientFirstName,
+  clientFormValues,
   clientInputSchema,
   clientLabel,
   type Client,

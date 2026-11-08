@@ -9,7 +9,12 @@ import { generateToken } from "@/shared/lib/token";
  * read through short-lived signed URLs, never by public link.
  */
 
-export const STORAGE_KINDS = ["logo", "cover"] as const;
+export const STORAGE_KINDS = [
+  "logo",
+  "cover",
+  "payment-qr",
+  "payment-proof",
+] as const;
 export type StorageKind = (typeof STORAGE_KINDS)[number];
 
 function client() {
@@ -103,6 +108,29 @@ export async function signedUrl(key: string): Promise<string> {
   const signed = await aws.sign(url.toString(), {
     method: "GET",
     aws: { signQuery: true, datetime },
+  });
+  return signed.url;
+}
+
+/**
+ * A short-lived (10 minute) link that downloads the file instead of opening
+ * it in the browser. For files a client uploaded (payment screenshots):
+ * never rendered on our pages, so a crafted file can't run as a page.
+ */
+export async function signedDownloadUrl(
+  key: string,
+  filename: string,
+): Promise<string> {
+  const { aws, base } = client();
+  const url = new URL(objectUrl(base, key));
+  url.searchParams.set("X-Amz-Expires", String(10 * 60));
+  url.searchParams.set(
+    "response-content-disposition",
+    `attachment; filename="${filename.replace(/[^\w.-]/g, "_")}"`,
+  );
+  const signed = await aws.sign(url.toString(), {
+    method: "GET",
+    aws: { signQuery: true },
   });
   return signed.url;
 }

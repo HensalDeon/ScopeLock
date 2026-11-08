@@ -1,16 +1,22 @@
 import { Plus } from "lucide-react";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ClientList } from "@/modules/clients";
-import { listClients } from "@/modules/clients/server";
+import {
+  countArchivedClients,
+  listClientsPage,
+} from "@/modules/clients/server";
+import { countProjectsByClient } from "@/modules/projects/server";
+import { parsePage } from "@/shared/lib/pagination";
 import { Button } from "@/shared/ui/button";
 import { EmptyState, ListSkeleton } from "@/shared/ui/list-states";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
+import { Pagination } from "@/shared/ui/pagination";
 
 export const metadata: Metadata = { title: "Clients" };
 
-export default function ClientsPage() {
+export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
   return (
     <PageContainer>
       <PageHeader
@@ -26,22 +32,57 @@ export default function ClientsPage() {
         }
       />
       <Suspense fallback={<ListSkeleton rows={4} />}>
-        <Clients />
+        <Clients searchParams={searchParams} />
       </Suspense>
     </PageContainer>
   );
 }
 
-async function Clients() {
-  const [active, archived] = await Promise.all([
-    listClients(),
-    listClients({ archived: true }),
+async function Clients({
+  searchParams,
+}: {
+  searchParams: PageProps<"/clients">["searchParams"];
+}) {
+  const query = await searchParams;
+  const archived = query.view === "archived";
+  const [page, archivedCount, projectCounts] = await Promise.all([
+    listClientsPage({ archived, page: parsePage(query.page) }),
+    archived ? Promise.resolve(0) : countArchivedClients(),
+    countProjectsByClient(),
   ]);
+  const base = archived ? "/clients?view=archived" : "/clients";
+  const href = (n: number) =>
+    (n === 1 ? base : `${base}${archived ? "&" : "?"}page=${n}`) as Route;
+
+  if (archived) {
+    return (
+      <div className="grid gap-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="text-[15px] font-semibold">Archived clients</h2>
+          <Link
+            href="/clients"
+            className="text-sm font-medium underline-offset-4 hover:underline"
+          >
+            Back to active clients
+          </Link>
+        </div>
+        {page.total > 0 ? (
+          <ClientList clients={page.items} projectCounts={projectCounts} />
+        ) : (
+          <EmptyState title="No archived clients">
+            Clients you archive are kept here with their history, and can be
+            restored from their page.
+          </EmptyState>
+        )}
+        <Pagination page={page} noun="archived clients" href={href} />
+      </div>
+    );
+  }
 
   return (
-    <div className="grid gap-8">
-      {active.length > 0 ? (
-        <ClientList clients={active} />
+    <div className="grid gap-4">
+      {page.total > 0 ? (
+        <ClientList clients={page.items} projectCounts={projectCounts} />
       ) : (
         <EmptyState
           title="No clients yet"
@@ -56,16 +97,14 @@ async function Clients() {
           under their name.
         </EmptyState>
       )}
-
-      {archived.length > 0 && (
-        <details className="group">
-          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-            Archived clients ({archived.length})
-          </summary>
-          <div className="mt-3">
-            <ClientList clients={archived} />
-          </div>
-        </details>
+      <Pagination page={page} noun="clients" href={href} />
+      {archivedCount > 0 && (
+        <Link
+          href="/clients?view=archived"
+          className="justify-self-start text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Archived clients ({archivedCount})
+        </Link>
       )}
     </div>
   );

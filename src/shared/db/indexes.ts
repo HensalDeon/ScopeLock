@@ -39,7 +39,48 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     { key: { workspaceId: 1, archivedAt: 1, nameLower: 1 } },
   ],
   [COLLECTIONS.documentSettings]: [{ key: { workspaceId: 1 }, unique: true }],
+  // Rate-limit counters expire on their own.
+  [COLLECTIONS.requestLimits]: [
+    { key: { expiresAt: 1 }, expireAfterSeconds: 0 },
+  ],
+  [COLLECTIONS.changeRequests]: [
+    // CR-001, CR-002… are unique within a project.
+    { key: { workspaceId: 1, projectId: 1, number: 1 }, unique: true },
+  ],
+  [COLLECTIONS.activity]: [{ key: { workspaceId: 1, projectId: 1, at: -1 } }],
+  [COLLECTIONS.paymentSettings]: [{ key: { workspaceId: 1 }, unique: true }],
+  [COLLECTIONS.payments]: [
+    { key: { workspaceId: 1, projectId: 1, requestedAt: -1 } },
+    // One open request per slot (milestone or separate change): a double
+    // tap can't ask for the same payment twice. `open` is removed on cancel.
+    {
+      key: { workspaceId: 1, projectId: 1, key: 1 },
+      unique: true,
+      partialFilterExpression: { open: true },
+      name: "one_open_payment_per_slot",
+    },
+    // The overview: payments still owed across the workspace.
+    { key: { workspaceId: 1, status: 1, requestedAt: 1 } },
+  ],
+  [COLLECTIONS.approvals]: [
+    { key: { workspaceId: 1, projectId: 1, decidedAt: -1 } },
+    // A subject (a sent proposal) can be approved only once, even on a
+    // double tap or two tabs racing.
+    {
+      key: { workspaceId: 1, "subject.type": 1, "subject.id": 1 },
+      unique: true,
+      partialFilterExpression: { decision: "approved" },
+      name: "one_approval_per_subject",
+    },
+  ],
   [COLLECTIONS.projects]: [
+    // Client portal: find a project by its link's hash (public lookup).
+    {
+      key: { "portal.tokenHash": 1 },
+      unique: true,
+      partialFilterExpression: { "portal.tokenHash": { $type: "string" } },
+      name: "portal_token_hash",
+    },
     { key: { workspaceId: 1, updatedAt: -1 } },
     { key: { workspaceId: 1, clientId: 1, updatedAt: -1 } },
   ],

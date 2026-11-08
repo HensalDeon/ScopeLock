@@ -1,7 +1,8 @@
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
 import { emailTransport, env, isSmtpConfigured } from "@/shared/lib/env";
-import { renderEmail, type EmailContent } from "./layout";
+import { MARK_CID, renderEmail, type EmailContent } from "./layout";
+import { emailMarkPng } from "./mark";
 
 let transporter: Transporter | undefined;
 
@@ -60,5 +61,25 @@ export async function sendEmail({
   if (!isSmtpConfigured()) {
     throw new Error("EMAIL_TRANSPORT=smtp but SMTP_HOST/USER/PASS are missing");
   }
-  await smtp().sendMail({ from: e.EMAIL_FROM, to, subject, html, text });
+  const mark = await emailMarkPng();
+  await smtp().sendMail({
+    from: e.EMAIL_FROM,
+    to,
+    subject,
+    html,
+    text,
+    // The logo travels with the email (cid:), so it shows in Gmail and
+    // Outlook, and when remote images are blocked.
+    attachments: mark
+      ? [
+          {
+            filename: "scopelock.png",
+            content: mark,
+            cid: MARK_CID,
+            contentType: "image/png",
+            contentDisposition: "inline",
+          },
+        ]
+      : [],
+  });
 }

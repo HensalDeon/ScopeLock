@@ -15,6 +15,11 @@ export type TimelineStep = {
   duration: string | null;
   description: string | null;
   isMilestone: boolean;
+  /**
+   * The payment this milestone unlocks, by its position in the payment
+   * schedule (0 = first). Null: no payment. Missing on older projects.
+   */
+  paymentOrder?: number | null;
 };
 export type Addon = {
   id: string;
@@ -122,6 +127,7 @@ export const proposalInputSchema = z.object({
         duration: optionalText(L.duration, "duration"),
         description: optionalText(L.stepDescription, "description"),
         isMilestone: z.boolean().default(false),
+        paymentOrder: z.number().int().min(0).max(9).nullable().default(null),
       }),
     )
     .max(L.timeline, `Up to ${L.timeline} steps.`),
@@ -172,7 +178,11 @@ export type ProposalInput = z.output<typeof proposalInputSchema>;
 
 /** Stored proposal content: ids for timeline steps and add-ons. */
 export function buildProposal(
-  input: ProposalInput,
+  input: Omit<ProposalInput, "timeline"> & {
+    timeline: (Omit<ProposalInput["timeline"][number], "paymentOrder"> & {
+      paymentOrder?: number | null;
+    })[];
+  },
   newId: () => string,
 ): ProposalContent {
   return {
@@ -180,6 +190,7 @@ export function buildProposal(
     timeline: input.timeline.map((step) => ({
       ...step,
       id: step.id ?? newId(),
+      paymentOrder: step.paymentOrder ?? null,
     })),
     addons: input.addons.map((addon) => ({
       ...addon,

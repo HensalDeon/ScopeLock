@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { formatINR, minor } from "@/shared/lib/money";
 import { percentTotal, splitByMilestones } from "./billing";
-import { buildProjectPlan, isEditable, projectInputSchema } from "./project";
+import {
+  buildProjectPlan,
+  isEditable,
+  isScopeApproved,
+  paymentTimings,
+  unlockingSteps,
+  projectInputSchema,
+  proposalShareMessage,
+} from "./project";
+import { EMPTY_PROPOSAL } from "./proposal";
 import { draftTotal } from "./scope";
 
 const CLIENT = "6728f0c2a1b2c3d4e5f60718";
@@ -193,5 +202,158 @@ describe("project currency", () => {
     );
     expect(plan.total).toBe(240_001);
     expect(plan.milestones.reduce((a, m) => a + m.baseAmount, 0)).toBe(240_001);
+  });
+});
+
+describe("status helpers and share text", () => {
+  it("knows when the scope is approved", () => {
+    expect(isScopeApproved("active")).toBe(true);
+    expect(isScopeApproved("completed")).toBe(true);
+    expect(isScopeApproved("awaiting_approval")).toBe(false);
+    expect(isScopeApproved("draft")).toBe(false);
+  });
+
+  it("writes the WhatsApp message", () => {
+    expect(
+      proposalShareMessage({
+        clientFirstName: "Rahul",
+        projectName: "Website redesign",
+        total: "₹80,000",
+      }),
+    ).toBe(
+      "Hi Rahul, here's the proposal for Website redesign (₹80,000). You can read it and approve it here:",
+    );
+  });
+});
+
+describe("payment timings", () => {
+  const step = (
+    phase: string,
+    duration: string | null,
+    paymentOrder: number | null,
+    isMilestone = true,
+  ) => ({
+    phase,
+    duration,
+    isMilestone,
+    paymentOrder,
+  });
+  it("names the step that unlocks each payment; an unlinked first one is the advance", () => {
+    expect(
+      paymentTimings(3, [
+        step("Discovery", "Week 1", null, false),
+        step("Design", "Week 2", 1),
+        step("Launch", null, 2),
+      ]),
+    ).toEqual([
+      { step: null, dueWhen: "Before work starts" },
+      {
+        step: { phase: "Design", duration: "Week 2" },
+        dueWhen: "After Design (Week 2)",
+      },
+      { step: { phase: "Launch", duration: null }, dueWhen: "After Launch" },
+    ]);
+  });
+
+  it("ignores links on non-milestone steps and older steps without a link", () => {
+    expect(
+      paymentTimings(2, [
+        step("Design", null, 1, false),
+        { phase: "Old", duration: null, isMilestone: true },
+      ]),
+    ).toEqual([
+      { step: null, dueWhen: "Before work starts" },
+      { step: null, dueWhen: null },
+    ]);
+  });
+
+  it("drops links to payments that don't exist, or twice to the same one", () => {
+    const plan = buildProjectPlan(
+      {
+        items: [
+          {
+            title: "Site",
+            description: null,
+            includes: [],
+            amount: minor(1_000_000),
+          },
+        ],
+        billingModel: "milestones",
+        milestones: [
+          { name: "Advance", percent: 50 },
+          { name: "Launch", percent: 50 },
+        ],
+        proposal: {
+          ...EMPTY_PROPOSAL,
+          timeline: [
+            {
+              phase: "Design",
+              duration: null,
+              description: null,
+              isMilestone: true,
+              paymentOrder: 1,
+            },
+            {
+              phase: "Again",
+              duration: null,
+              description: null,
+              isMilestone: true,
+              paymentOrder: 1,
+            },
+            {
+              phase: "Ghost",
+              duration: null,
+              description: null,
+              isMilestone: true,
+              paymentOrder: 5,
+            },
+          ],
+        },
+      },
+      newId,
+    );
+    expect(plan.proposal.timeline.map((s) => s.paymentOrder)).toEqual([
+      1,
+      null,
+      null,
+    ]);
+  });
+});
+
+describe("unlockingSteps", () => {
+  it("maps each payment to the milestone step that unlocks it", () => {
+    expect(
+      unlockingSteps({
+        milestones: [
+          {
+            id: "m2",
+            name: "Launch",
+            percent: 50,
+            baseAmount: minor(1),
+            order: 1,
+          },
+          {
+            id: "m1",
+            name: "Advance",
+            percent: 50,
+            baseAmount: minor(1),
+            order: 0,
+          },
+        ],
+        proposal: {
+          ...EMPTY_PROPOSAL,
+          timeline: [
+            {
+              id: "t",
+              phase: "Testing & launch",
+              duration: null,
+              description: null,
+              isMilestone: true,
+              paymentOrder: 1,
+            },
+          ],
+        },
+      }),
+    ).toEqual({ m2: "Testing & launch" });
   });
 });

@@ -1,0 +1,69 @@
+import type { CurrencyCode } from "@/shared/lib/currency";
+import { minor, sum, type Minor } from "@/shared/lib/money";
+import type { ProjectFigures } from "./overview";
+
+export type CurrencyTotals = {
+  currency: CurrencyCode;
+  /** Approved proposals plus approved changes. */
+  approved: Minor;
+  approvedProjects: number;
+  /** Sent proposals and change requests the client hasn't answered. */
+  waiting: Minor;
+  /** Drafts not yet sent. */
+  draft: Minor;
+  draftProjects: number;
+  /** Payments received, and asked for but not received yet. */
+  received: Minor;
+  due: Minor;
+};
+
+/**
+ * The money picture across projects, one row per currency (amounts in
+ * different currencies are never added together). Rows with nothing in
+ * them are left out; INR comes first.
+ */
+export function portfolioTotals(
+  projects: readonly ProjectFigures[],
+): CurrencyTotals[] {
+  const rows = new Map<CurrencyCode, CurrencyTotals>();
+  const row = (currency: CurrencyCode) => {
+    let r = rows.get(currency);
+    if (!r) {
+      r = {
+        currency,
+        approved: minor(0),
+        approvedProjects: 0,
+        waiting: minor(0),
+        draft: minor(0),
+        draftProjects: 0,
+        received: minor(0),
+        due: minor(0),
+      };
+      rows.set(currency, r);
+    }
+    return r;
+  };
+  for (const p of projects) {
+    if (p.status === "archived") continue;
+    const r = row(p.currency);
+    r.received = sum([r.received, p.totals.paid]);
+    r.due = sum([r.due, p.totals.due]);
+    if (p.status === "active" || p.status === "completed") {
+      r.approved = sum([r.approved, p.baselineTotal, p.totals.approvedChanges]);
+      r.approvedProjects += 1;
+      r.waiting = sum([r.waiting, p.totals.pendingChanges]);
+    } else if (p.status === "awaiting_approval") {
+      r.waiting = sum([r.waiting, p.baselineTotal]);
+    } else {
+      r.draft = sum([r.draft, p.baselineTotal]);
+      r.draftProjects += 1;
+    }
+  }
+  return [...rows.values()].sort((a, b) =>
+    a.currency === "INR"
+      ? -1
+      : b.currency === "INR"
+        ? 1
+        : a.currency.localeCompare(b.currency),
+  );
+}

@@ -89,18 +89,26 @@ export function sampleProposal(
     total: minor(8_000_000),
     billingModel: "milestones",
     milestones: [
-      { id: "m1", name: "Advance", percent: 30, amount: minor(2_400_000) },
+      {
+        id: "m1",
+        name: "Advance",
+        percent: 30,
+        amount: minor(2_400_000),
+        dueWhen: "Before work starts",
+      },
       {
         id: "m2",
         name: "Design approved",
         percent: 30,
         amount: minor(2_400_000),
+        dueWhen: "After Design approval (Days 3–10)",
       },
       {
         id: "m3",
         name: "Before launch",
         percent: 40,
         amount: minor(3_200_000),
+        dueWhen: "After Build and launch (Days 11–25)",
       },
     ],
     timeline: [
@@ -117,6 +125,7 @@ export function sampleProposal(
         duration: "Days 3–10",
         description: "Desktop and mobile designs, two rounds of changes.",
         isMilestone: true,
+        payment: { name: "Design approved", amount: minor(2_400_000) },
       },
       {
         id: "t3",
@@ -124,6 +133,7 @@ export function sampleProposal(
         duration: "Days 11–25",
         description: "Development, testing and go-live.",
         isMilestone: true,
+        payment: { name: "Before launch", amount: minor(3_200_000) },
       },
     ],
     addons: [
