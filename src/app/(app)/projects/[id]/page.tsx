@@ -7,6 +7,7 @@ import { ApprovalRows } from "@/modules/approvals";
 import { listApprovalsForProject } from "@/modules/approvals/server";
 import { ChangeList, changeSummary } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
+import { gstHints } from "@/modules/invoices";
 import { getInvoicing } from "@/modules/invoices/server";
 import { hasAnyMethod, PaymentsPanel } from "@/modules/payments";
 import {
@@ -26,7 +27,6 @@ import {
 } from "@/modules/projects";
 import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
-import { isIndia } from "@/shared/lib/india";
 import { formatMoney, minor } from "@/shared/lib/money";
 import { PageContainer, TitledSection } from "@/shared/ui/page";
 
@@ -87,6 +87,10 @@ async function ProjectDetail({
         getInvoicing(),
       ])
     : [null, { methods: null }, null];
+  const gst = gstHints(
+    invoicing?.settings ?? { gstin: null, state: null },
+    project.client,
+  );
   const firstName = project.client
     ? clientFirstName(project.client)
     : "your client";
@@ -138,9 +142,14 @@ async function ProjectDetail({
                 client={{ firstName, phone: project.client?.phone ?? null }}
                 methodsReady={methods ? hasAnyMethod(methods) : false}
                 unlockedBy={unlockingSteps(project)}
-                addsGst={
-                  Boolean(invoicing?.settings.gstin) &&
-                  isIndia(project.client?.country)
+                addsGst={gst.addsGst}
+                stateFallback={
+                  gst.fallbackState && project.client
+                    ? {
+                        yourState: gst.fallbackState,
+                        clientHref: `/clients/${project.client.id}`,
+                      }
+                    : null
                 }
               />
             </TitledSection>

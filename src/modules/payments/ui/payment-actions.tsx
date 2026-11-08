@@ -1,28 +1,18 @@
 "use client";
 
-import { Download } from "lucide-react";
-import {
-  useActionState,
-  useId,
-  useLayoutEffect,
-  useState,
-  useTransition,
-} from "react";
-import { formatIsoDate, todayInIndia } from "@/shared/lib/dates";
+import type { Route } from "next";
+import Link from "next/link";
+import { useActionState, useLayoutEffect, useState } from "react";
+import { formatIsoDate } from "@/shared/lib/dates";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { NativeSelect } from "@/shared/ui/native-select";
 import { ShareLink } from "@/shared/ui/share-link";
-import { Textarea } from "@/shared/ui/textarea";
-import { METHOD_KINDS, METHOD_LABELS } from "../domain/methods";
+import { ProofLink, ReceivedForm, RejectForm } from "./payment-forms";
+import { METHOD_LABELS } from "../domain/methods";
 import type { ScheduleItem } from "../domain/payment";
 import {
   cancelPaymentRequest,
   confirmReportedPayment,
-  markNotReceived,
-  markPaymentReceived,
-  paymentProofUrl,
   requestPayment,
   type PaymentFormState,
 } from "../server/actions";
@@ -78,6 +68,7 @@ export function PaymentActions({
   clientFirstName,
   share,
   unlockedBy,
+  stateFallback,
 }: {
   item: ScheduleItem;
   projectId: string;
@@ -88,6 +79,8 @@ export function PaymentActions({
   share: { url: string; phone: string | null; message: string } | null;
   /** The timeline step that unlocks this payment ("Design"), if linked. */
   unlockedBy?: string;
+  /** GST with no client state on record: the invoice uses yours. */
+  stateFallback?: { yourState: string; clientHref: string } | null;
 }) {
   const [open, setOpen] = useOpen();
   const ids = { projectId, paymentId: item.payment?.id ?? "" };
@@ -101,6 +94,20 @@ export function PaymentActions({
           issues a numbered invoice. They see both on their link, and by email
           if you&apos;ve added theirs.
         </p>
+        {stateFallback && (
+          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
+            {clientFirstName}&apos;s state isn&apos;t set, so this invoice uses
+            yours ({stateFallback.yourState}) and charges CGST + SGST. If
+            they&apos;re in another state,{" "}
+            <Link
+              href={stateFallback.clientHref as Route}
+              className="font-medium underline underline-offset-4"
+            >
+              add their state or GSTIN
+            </Link>{" "}
+            first.
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <Run
             action={requestPayment}
@@ -222,160 +229,5 @@ export function PaymentActions({
         </div>
       )}
     </div>
-  );
-}
-
-function ProofLink({ paymentId }: { paymentId: string }) {
-  const [pending, start] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <span className="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        disabled={pending}
-        className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
-        onClick={() =>
-          start(async () => {
-            const result = await paymentProofUrl(paymentId);
-            if ("url" in result) window.location.assign(result.url);
-            else setError(result.error);
-          })
-        }
-      >
-        <Download aria-hidden className="size-3.5" />
-        {pending ? "Getting screenshot…" : "Download screenshot"}
-      </button>
-      {error && <span className="text-destructive">{error}</span>}
-    </span>
-  );
-}
-
-function ReceivedForm({
-  ids,
-  onCancel,
-}: {
-  ids: { projectId: string; paymentId: string };
-  onCancel: () => void;
-}) {
-  const uid = useId();
-  const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    markPaymentReceived,
-    IDLE,
-  );
-  const err = (name: string) =>
-    state.status === "error" ? state.fieldErrors?.[name] : undefined;
-  return (
-    <form
-      action={action}
-      className="grid gap-3 rounded-lg border bg-background p-3"
-    >
-      <input type="hidden" name="projectId" value={ids.projectId} />
-      <input type="hidden" name="paymentId" value={ids.paymentId} />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <label className="grid gap-1 text-sm" htmlFor={`${uid}-method`}>
-          How it was paid
-          <NativeSelect
-            id={`${uid}-method`}
-            name="method"
-            defaultValue="upi"
-            className="w-full"
-          >
-            {METHOD_KINDS.map((k) => (
-              <option key={k} value={k}>
-                {METHOD_LABELS[k]}
-              </option>
-            ))}
-          </NativeSelect>
-        </label>
-        <label className="grid gap-1 text-sm" htmlFor={`${uid}-reference`}>
-          Reference (optional)
-          <Input
-            id={`${uid}-reference`}
-            name="reference"
-            placeholder="UTR"
-            maxLength={40}
-          />
-        </label>
-        <label className="grid gap-1 text-sm" htmlFor={`${uid}-receivedOn`}>
-          Received on
-          <Input
-            id={`${uid}-receivedOn`}
-            name="receivedOn"
-            type="date"
-            max={todayInIndia()}
-            defaultValue={todayInIndia()}
-          />
-        </label>
-      </div>
-      {state.status === "error" &&
-        (state.message ||
-          err("receivedOn") ||
-          err("method") ||
-          err("reference")) && (
-          <p role="alert" className="text-sm text-destructive">
-            {state.message ??
-              err("receivedOn") ??
-              err("method") ??
-              err("reference")}
-          </p>
-        )}
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
-          {pending ? "Saving…" : "Mark as received"}
-        </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-function RejectForm({
-  ids,
-  onCancel,
-  clientFirstName,
-}: {
-  ids: { projectId: string; paymentId: string };
-  onCancel: () => void;
-  clientFirstName: string;
-}) {
-  const uid = useId();
-  const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    markNotReceived,
-    IDLE,
-  );
-  return (
-    <form
-      action={action}
-      className="grid gap-2 rounded-lg border bg-background p-3"
-    >
-      <input type="hidden" name="projectId" value={ids.projectId} />
-      <input type="hidden" name="paymentId" value={ids.paymentId} />
-      <label className="grid gap-1 text-sm" htmlFor={`${uid}-note`}>
-        What should {clientFirstName} check?
-        <Textarea
-          id={`${uid}-note`}
-          name="note"
-          rows={2}
-          maxLength={300}
-          placeholder="I can't see this UTR in my account. Could you check it?"
-        />
-      </label>
-      {state.status === "error" &&
-        (state.message || state.fieldErrors?.note) && (
-          <p role="alert" className="text-sm text-destructive">
-            {state.message ?? state.fieldErrors?.note}
-          </p>
-        )}
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
-          {pending ? "Sending…" : "Send to client"}
-        </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </form>
   );
 }

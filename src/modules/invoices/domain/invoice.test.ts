@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
+  gstHints,
   buyerProblems,
   invoiceNumber,
   invoiceTax,
@@ -165,5 +166,32 @@ describe("buyerProblems", () => {
     expect(
       buyerProblems({ ...buyer, country: "Canada" }, minor(100), kerala),
     ).toHaveLength(1);
+  });
+});
+
+describe("gstHints", () => {
+  const india = { state: null, country: null, gstin: null };
+  it("warns when GST applies but the client's state isn't set", () => {
+    expect(gstHints(kerala, india)).toEqual({
+      addsGst: true,
+      fallbackState: "Kerala",
+    });
+    expect(gstHints(kerala, { ...india, state: "27" })).toEqual({
+      addsGst: true,
+      fallbackState: null,
+    });
+    expect(
+      gstHints(kerala, { ...india, gstin: "27AAACM1234A1Z2" }).fallbackState,
+    ).toBeNull();
+  });
+
+  it("no GST without your GSTIN, or for a client abroad", () => {
+    expect(gstHints({ gstin: null, state: null }, india)).toEqual({
+      addsGst: false,
+      fallbackState: null,
+    });
+    expect(gstHints(kerala, { ...india, country: "Canada" }).addsGst).toBe(
+      false,
+    );
   });
 });

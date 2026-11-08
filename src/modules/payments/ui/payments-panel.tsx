@@ -55,6 +55,7 @@ export function PaymentsPanel({
   methodsReady,
   unlockedBy = {},
   addsGst = false,
+  stateFallback = null,
 }: {
   projectId: string;
   projectName: string;
@@ -70,6 +71,8 @@ export function PaymentsPanel({
   unlockedBy?: Record<string, string>;
   /** Invoices for this client carry GST (shown on payments not asked yet). */
   addsGst?: boolean;
+  /** GST applies but the client has no state or GSTIN on record. */
+  stateFallback?: { yourState: string; clientHref: string } | null;
 }) {
   const money = (amount: Minor) => formatMoney(amount, currency);
   return (
@@ -138,6 +141,7 @@ export function PaymentsPanel({
                       : money(payable)
                   }
                   clientFirstName={client.firstName}
+                  stateFallback={stateFallback}
                   unlockedBy={
                     item.milestoneId ? unlockedBy[item.milestoneId] : undefined
                   }

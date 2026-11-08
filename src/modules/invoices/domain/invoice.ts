@@ -275,3 +275,22 @@ export function buyerProblems(
   }
   return problems;
 }
+
+/**
+ * For the project page, before a payment is asked for: will its invoice
+ * carry GST, and is the client's state missing (so the invoice falls back
+ * to yours, IGST Act s.12(2)(b), and charges CGST + SGST)?
+ */
+export function gstHints(
+  seller: Pick<InvoicingSettings, "gstin" | "state">,
+  buyer: Pick<Buyer, "state" | "country" | "gstin"> | null,
+): { addsGst: boolean; fallbackState: string | null } {
+  const addsGst =
+    Boolean(seller.gstin && seller.state) && isIndia(buyer?.country);
+  const missing = Boolean(buyer) && !buyer?.gstin && !buyer?.state;
+  return {
+    addsGst,
+    fallbackState:
+      addsGst && missing && seller.state ? stateName(seller.state) : null,
+  };
+}
