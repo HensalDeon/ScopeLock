@@ -97,8 +97,9 @@ export function PaymentActions({
       <div className="grid gap-2 rounded-lg border bg-background p-3">
         <p className="text-sm">
           Ask {clientFirstName} for{" "}
-          <span className="font-medium tabular-nums">{amount}</span>? They see
-          it on their link, and by email if you&apos;ve added theirs.
+          <span className="font-medium tabular-nums">{amount}</span>? This
+          issues a numbered invoice. They see both on their link, and by email
+          if you&apos;ve added theirs.
         </p>
         <div className="flex flex-wrap gap-2">
           <Run

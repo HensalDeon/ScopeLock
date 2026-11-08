@@ -26,7 +26,7 @@ export async function PortalPaymentPage({
     );
   }
   const { payment, businessName } = view;
-  const total = formatMoney(payment.amount, payment.currency);
+  const total = formatMoney(payment.payable, payment.currency);
   const back = (
     <Link
       href={`/c/${token}`}
@@ -85,7 +85,29 @@ export async function PortalPaymentPage({
                 </span>
               </li>
             ))}
+            {payment.tax > 0 && (
+              <li className="flex justify-between gap-4">
+                <span className="text-muted-foreground">GST</span>
+                <span className="tabular-nums">
+                  {formatMoney(payment.tax, payment.currency)}
+                </span>
+              </li>
+            )}
           </ul>
+          {payment.invoice && (
+            <p className="text-sm">
+              <Link
+                href={`/c/${token}/invoice/${payment.invoice.id}`}
+                className="font-medium underline underline-offset-4"
+              >
+                Invoice {payment.invoice.number}
+              </Link>
+              <span className="text-muted-foreground">
+                {" "}
+                · view, print or save as PDF
+              </span>
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             Asked for on {formatDateTime(payment.requestedAt)}. You pay{" "}
             {businessName} directly; ScopeLock never holds your money.
@@ -101,7 +123,7 @@ export async function PortalPaymentPage({
               <HowToPay
                 available={view.available}
                 methods={view.methods}
-                amount={payment.amount}
+                amount={payment.payable}
                 currency={payment.currency}
                 qrUrl={view.qrUrl}
                 upi={view.upi}

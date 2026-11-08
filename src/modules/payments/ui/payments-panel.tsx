@@ -54,6 +54,7 @@ export function PaymentsPanel({
   client,
   methodsReady,
   unlockedBy = {},
+  addsGst = false,
 }: {
   projectId: string;
   projectName: string;
@@ -67,6 +68,8 @@ export function PaymentsPanel({
   methodsReady: boolean;
   /** Milestone id → the timeline step that unlocks it ("Design"). */
   unlockedBy?: Record<string, string>;
+  /** Invoices for this client carry GST (shown on payments not asked yet). */
+  addsGst?: boolean;
 }) {
   const money = (amount: Minor) => formatMoney(amount, currency);
   return (
@@ -84,53 +87,74 @@ export function PaymentsPanel({
         </p>
       )}
       <ol className="divide-y rounded-xl border bg-background">
-        {items.map((item, index) => (
-          <li key={item.key} className="grid gap-3 px-4 py-4 sm:px-5">
-            <div className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
-              <span className="pt-0.5 font-mono text-xs text-muted-foreground tabular-nums">
-                {item.milestoneId ? index + 1 : "+"}
-              </span>
-              <div className="grid min-w-0 gap-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-medium">{item.label}</p>
-                  <PaymentStateBadge state={item.state} />
+        {items.map((item, index) => {
+          const payable = item.payment?.payable ?? item.total;
+          return (
+            <li key={item.key} className="grid gap-3 px-4 py-4 sm:px-5">
+              <div className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
+                <span className="pt-0.5 font-mono text-xs text-muted-foreground tabular-nums">
+                  {item.milestoneId ? index + 1 : "+"}
+                </span>
+                <div className="grid min-w-0 gap-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <PaymentStateBadge state={item.state} />
+                  </div>
+                  {(item.lines.length > 1 || item.percent === null) && (
+                    <ul className="grid gap-0.5 text-xs text-muted-foreground tabular-nums">
+                      {item.lines.map((line) => (
+                        <li key={`${line.kind}-${line.refId}`}>
+                          {line.description}: {money(line.amount)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {item.payment?.invoice && (
+                    <p className="text-xs text-muted-foreground">
+                      <Link
+                        href={
+                          `/projects/${projectId}/invoices/${item.payment.invoice.id}` as Route
+                        }
+                        className="font-medium text-foreground underline-offset-4 hover:underline"
+                      >
+                        Invoice {item.payment.invoice.number}
+                      </Link>
+                      {item.payment.tax > 0 &&
+                        ` · includes ${money(item.payment.tax)} GST`}
+                    </p>
+                  )}
                 </div>
-                {(item.lines.length > 1 || item.percent === null) && (
-                  <ul className="grid gap-0.5 text-xs text-muted-foreground tabular-nums">
-                    {item.lines.map((line) => (
-                      <li key={`${line.kind}-${line.refId}`}>
-                        {line.description}: {money(line.amount)}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <p className="text-sm font-semibold tabular-nums">
+                  {money(payable)}
+                </p>
               </div>
-              <p className="text-sm font-semibold tabular-nums">
-                {money(item.total)}
-              </p>
-            </div>
-            <div className="sm:pl-[2.5rem]">
-              <PaymentActions
-                item={item}
-                projectId={projectId}
-                amount={money(item.total)}
-                clientFirstName={client.firstName}
-                unlockedBy={
-                  item.milestoneId ? unlockedBy[item.milestoneId] : undefined
-                }
-                share={
-                  portalUrl && item.payment
-                    ? {
-                        url: `${portalUrl}/pay/${item.payment.id}`,
-                        phone: client.phone,
-                        message: `Hi ${client.firstName}, the ${item.label} payment for ${projectName} is due (${money(item.total)}). You can pay by UPI or bank transfer here:`,
-                      }
-                    : null
-                }
-              />
-            </div>
-          </li>
-        ))}
+              <div className="sm:pl-[2.5rem]">
+                <PaymentActions
+                  item={item}
+                  projectId={projectId}
+                  amount={
+                    !item.payment && addsGst
+                      ? `${money(payable)} + GST`
+                      : money(payable)
+                  }
+                  clientFirstName={client.firstName}
+                  unlockedBy={
+                    item.milestoneId ? unlockedBy[item.milestoneId] : undefined
+                  }
+                  share={
+                    portalUrl && item.payment
+                      ? {
+                          url: `${portalUrl}/pay/${item.payment.id}`,
+                          phone: client.phone,
+                          message: `Hi ${client.firstName}, the ${item.label} payment for ${projectName} is due (${money(payable)}). You can pay by UPI or bank transfer here:`,
+                        }
+                      : null
+                  }
+                />
+              </div>
+            </li>
+          );
+        })}
       </ol>
       <dl className="flex flex-wrap justify-end gap-x-6 gap-y-1 px-1 text-sm tabular-nums">
         <div className="flex gap-1.5">
@@ -150,6 +174,11 @@ export function PaymentsPanel({
           <dd className="font-semibold">{money(totals.total)}</dd>
         </div>
       </dl>
+      {items.some((i) => (i.payment?.tax ?? 0) > 0) && (
+        <p className="-mt-2 px-1 text-right text-xs text-muted-foreground">
+          Totals are before GST, like the agreed price.
+        </p>
+      )}
     </div>
   );
 }

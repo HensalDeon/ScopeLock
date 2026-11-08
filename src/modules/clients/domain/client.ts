@@ -3,6 +3,13 @@ import {
   optionalCurrencyField,
   type CurrencyCode,
 } from "@/shared/lib/currency";
+import {
+  gstinState,
+  isGstinFormat,
+  isIndia,
+  STATE_CODES,
+  type StateCode,
+} from "@/shared/lib/india";
 import { formatPhone, optionalPhoneField } from "@/shared/lib/phone";
 
 export const CLIENT_NAME_MAX_LENGTH = 120;
@@ -18,6 +25,13 @@ export type Client = {
   phone: string | null;
   /** Default currency for this client's new projects; null = workspace default. */
   currency: CurrencyCode | null;
+  /** Billing details for invoices (all optional until GST needs them). */
+  address: string | null;
+  /** Indian state code (GST), for clients in India. */
+  state: StateCode | null;
+  /** Null means India. */
+  country: string | null;
+  gstin: string | null;
   /** Archived clients are hidden from lists and pickers; history keeps them. */
   archivedAt: Date | null;
   createdAt: Date;
@@ -31,6 +45,10 @@ export const CLIENT_FIELDS = [
   "email",
   "phone",
   "currency",
+  "address",
+  "state",
+  "country",
+  "gstin",
 ] as const;
 export type ClientField = (typeof CLIENT_FIELDS)[number];
 
@@ -65,6 +83,26 @@ export const clientInputSchema = z.object({
   phone: optionalPhoneField,
   // Optional so older forms (and the quick-add panel) can leave it out.
   currency: optionalCurrencyField.optional().transform((v) => v ?? null),
+  address: optionalText(300, "address")
+    .optional()
+    .transform((v) => v ?? null),
+  state: z
+    .union([z.enum(STATE_CODES), z.literal("")])
+    .optional()
+    .transform((v) => (v || null) as StateCode | null),
+  country: optionalText(60, "country")
+    .optional()
+    .transform((v) => (v && !isIndia(v) ? v : null)),
+  gstin: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .optional()
+    .transform((v) => v || null)
+    .refine((v) => v === null || isGstinFormat(v), {
+      message:
+        "That doesn't look like a GSTIN. It's 15 characters, like 27ABCDE1234F1Z5.",
+    }),
 });
 
 export type ClientInput = z.output<typeof clientInputSchema>;
@@ -87,6 +125,10 @@ export function clientFormValues(client: Client): Record<ClientField, string> {
     email: client.email ?? "",
     phone: client.phone ? formatPhone(client.phone) : "",
     currency: client.currency ?? "",
+    address: client.address ?? "",
+    state: client.state ?? "",
+    country: client.country ?? "",
+    gstin: client.gstin ?? "",
   };
 }
 
@@ -102,4 +144,17 @@ export function clientContactLine(client: Client): string {
       .filter(Boolean)
       .join(" · ") || "No contact details yet"
   );
+}
+
+/**
+ * Billing details as stored: a GSTIN decides the state (its first two
+ * digits), and clients abroad have no Indian state.
+ */
+export function normalizeBilling<
+  T extends Pick<ClientInput, "state" | "country" | "gstin">,
+>(input: T): T {
+  if (input.country) return { ...input, state: null, gstin: null };
+  return input.gstin
+    ? { ...input, state: gstinState(input.gstin) ?? input.state }
+    : input;
 }

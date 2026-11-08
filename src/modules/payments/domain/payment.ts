@@ -31,7 +31,14 @@ export type Payment = {
   key: string;
   label: string;
   lines: PaymentLine[];
+  /** The work being paid for (taxable value). */
   amount: Minor;
+  /** GST on the invoice (zero without a GSTIN, and on older requests). */
+  tax: Minor;
+  /** What the client pays: amount + GST. */
+  payable: Minor;
+  /** The invoice issued with the request (older requests have none). */
+  invoice: { id: string; number: string } | null;
   currency: CurrencyCode;
   status: PaymentStatus;
   requestedAt: Date;

@@ -2,7 +2,11 @@ import "server-only";
 import type { ObjectId } from "mongodb";
 import { COLLECTIONS } from "@/shared/db/names";
 import { scopedCollection, type WorkspaceOwned } from "@/shared/db/scoped";
-import type { Client, ClientInput } from "../domain/client";
+import {
+  normalizeBilling,
+  type Client,
+  type ClientInput,
+} from "../domain/client";
 
 type ClientDoc = WorkspaceOwned &
   ClientInput & {
@@ -23,6 +27,10 @@ function toClient(doc: ClientDoc): Client {
     email: doc.email ?? null,
     phone: doc.phone ?? null,
     currency: doc.currency ?? null,
+    address: doc.address ?? null,
+    state: doc.state ?? null,
+    country: doc.country ?? null,
+    gstin: doc.gstin ?? null,
     archivedAt: doc.archivedAt ?? null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -86,7 +94,7 @@ export async function insertClient(
   input: ClientInput,
 ): Promise<string> {
   const { insertedId } = await clients(workspaceId).insertOne({
-    ...input,
+    ...normalizeBilling(input),
     nameLower: input.name.toLowerCase(),
     archivedAt: null,
   });
@@ -101,7 +109,9 @@ export async function updateClient(
 ): Promise<boolean> {
   const { matchedCount } = await clients(workspaceId).updateOne(
     { _id: id },
-    { $set: { ...input, nameLower: input.name.toLowerCase() } },
+    {
+      $set: { ...normalizeBilling(input), nameLower: input.name.toLowerCase() },
+    },
   );
   return matchedCount === 1;
 }

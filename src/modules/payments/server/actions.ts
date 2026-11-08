@@ -15,7 +15,9 @@ import {
   workspaceAction,
   type WorkspaceContext,
 } from "@/modules/workspace/server";
+import { setInvoiceStatus } from "@/modules/invoices/server";
 import { parseObjectId } from "@/shared/db/ids";
+import { withTransaction } from "@/shared/db/transaction";
 import { sendEmail } from "@/shared/email";
 import { todayInIndia } from "@/shared/lib/dates";
 import { isStorageConfigured } from "@/shared/lib/env";
@@ -45,6 +47,7 @@ import {
 } from "./emails";
 import * as repo from "./repository";
 import { scheduleFor } from "./schedule";
+import { createRequest } from "./request";
 import { refreshPaymentTotals, sendQuietly } from "./totals";
 
 export type PaymentFormState = FormState<string>;
@@ -59,6 +62,9 @@ const idField = (what: string) =>
     }
     return id;
   });
+
+/** What the client pays (amount + GST; older requests have no GST). */
+const payable = (doc: repo.PaymentDoc) => minor(doc.amount + (doc.tax ?? 0));
 
 const GONE = "This payment doesn't exist any more. Refresh the page.";
 const member = ({ user }: Pick<WorkspaceContext, "user">) =>
@@ -187,12 +193,8 @@ export const requestPayment = workspaceAction(
   async ({ projectId, key }, context) => {
     const ws = context.workspace.workspaceId;
     const project = await activeProject(projectId);
-    const schedule = await scheduleFor(
-      ws,
-      projectId,
-      project,
-      await listChanges(project.id),
-    );
+    const changes = await listChanges(project.id);
+    const schedule = await scheduleFor(ws, projectId, project, changes);
     const item = schedule.items.find((i) => i.key === key);
     if (!item)
       throw new UserError(
@@ -203,25 +205,29 @@ export const requestPayment = workspaceAction(
     if (item.total <= 0)
       throw new UserError("There's nothing to ask for on this payment.");
 
-    const id = await repo.insertPayment(ws, {
+    const { id, tax, payable, invoiceNumber } = await createRequest({
+      workspaceId: ws,
+      project,
       projectId,
-      key,
-      label: item.label,
-      lines: item.lines,
-      amount: item.total,
-      currency: project.currency,
+      schedule,
+      item,
+      changes,
+      business: {
+        name: context.workspace.businessName,
+        email: context.user.email,
+      },
       by: { userId: context.user.id, name: context.user.name },
     });
-    if (!id) throw new UserError("You've already asked for this payment.");
     await refreshPaymentTotals(ws, projectId);
-    const amount = formatMoney(item.total, project.currency);
+    const amount = formatMoney(payable, project.currency);
     await logActivity(ws, {
       projectId,
       type: "payment.requested",
       actor: member(context),
       data: {
         title: item.label,
-        amount: item.total,
+        label: invoiceNumber,
+        amount: payable,
         currency: project.currency,
       },
     });
@@ -235,10 +241,16 @@ export const requestPayment = workspaceAction(
             project: project.name,
             label: item.label,
             amount,
-            lines: item.lines.map(
-              (l) =>
-                `${l.description}: ${formatMoney(l.amount, project.currency)}`,
-            ),
+            lines: [
+              ...item.lines.map(
+                (l) =>
+                  `${l.description}: ${formatMoney(l.amount, project.currency)}`,
+              ),
+              ...(tax > 0
+                ? [`GST: ${formatMoney(tax, project.currency)}`]
+                : []),
+            ],
+            invoiceNumber,
             url,
           }),
         }),
@@ -277,12 +289,18 @@ export const cancelPaymentRequest = workspaceAction(
   async ({ projectId, paymentId }, context) => {
     const ws = context.workspace.workspaceId;
     const doc = await ownPayment(ws, projectId, paymentId);
-    if (
-      !(await repo.cancelPayment(ws, paymentId, {
-        kind: "member",
-        name: context.user.name,
-      }))
-    ) {
+    // The payment and its invoice change together.
+    const cancelled = await withTransaction(async (session) => {
+      const ok = await repo.cancelPayment(
+        ws,
+        paymentId,
+        { kind: "member", name: context.user.name },
+        session,
+      );
+      if (ok) await setInvoiceStatus(ws, paymentId, "cancelled", session);
+      return ok;
+    });
+    if (!cancelled) {
       throw new UserError(
         "This payment has already been received, so it can't be cancelled.",
       );
@@ -295,7 +313,11 @@ export const cancelPaymentRequest = workspaceAction(
       data: { title: doc.label },
     });
     refresh();
-    return { message: "Request cancelled. You can ask for it again." };
+    return {
+      message: doc.invoice
+        ? `Request cancelled, and invoice ${doc.invoice.number} with it. Asking again issues a new invoice.`
+        : "Request cancelled. You can ask for it again.",
+    };
   },
 );
 
@@ -306,7 +328,12 @@ async function confirmed(
   confirmation: NonNullable<repo.PaymentDoc["confirmation"]>,
 ) {
   const ws = context.workspace.workspaceId;
-  if (!(await repo.confirmPayment(ws, doc._id, confirmation))) {
+  const done = await withTransaction(async (session) => {
+    const ok = await repo.confirmPayment(ws, doc._id, confirmation, session);
+    if (ok) await setInvoiceStatus(ws, doc._id, "paid", session);
+    return ok;
+  });
+  if (!done) {
     throw new UserError(
       "This payment was already received or cancelled. Refresh the page.",
     );
@@ -316,7 +343,7 @@ async function confirmed(
     projectId,
     type: "payment.confirmed",
     actor: member(context),
-    data: { title: doc.label, amount: doc.amount, currency: doc.currency },
+    data: { title: doc.label, amount: payable(doc), currency: doc.currency },
   });
   const project = await findProjectWithClient(projectId.toHexString());
   const portal = project ? (await getShareState(project.id)).url : null;
@@ -328,7 +355,7 @@ async function confirmed(
           business: context.workspace.businessName,
           project: project.name,
           label: doc.label,
-          amount: formatMoney(minor(doc.amount), doc.currency),
+          amount: formatMoney(payable(doc), doc.currency),
           url: portal,
         }),
       }),
@@ -359,7 +386,7 @@ export const confirmReportedPayment = workspaceAction(
       by: { userId: context.user.id, name: context.user.name },
     });
     return {
-      message: `Marked ${formatMoney(minor(doc.amount), doc.currency)} as received.`,
+      message: `Marked ${formatMoney(payable(doc), doc.currency)} as received.`,
     };
   },
 );
@@ -387,7 +414,7 @@ export const markPaymentReceived = workspaceAction(
       by: { userId: context.user.id, name: context.user.name },
     });
     return {
-      message: `Marked ${formatMoney(minor(doc.amount), doc.currency)} as received.`,
+      message: `Marked ${formatMoney(payable(doc), doc.currency)} as received.`,
     };
   },
 );
@@ -432,7 +459,7 @@ export const markNotReceived = workspaceAction(
             business: context.workspace.businessName,
             project: project.name,
             label: doc.label,
-            amount: formatMoney(minor(doc.amount), doc.currency),
+            amount: formatMoney(payable(doc), doc.currency),
             note,
             url,
           }),

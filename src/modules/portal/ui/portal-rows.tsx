@@ -112,7 +112,9 @@ export function PaymentRow({
           {CLIENT_PAYMENT_LABELS[item.state]}
         </span>
       </span>
-      <span className="tabular-nums">{money(item.total)}</span>
+      <span className="tabular-nums">
+        {money(item.payment?.payable ?? item.total)}
+      </span>
       {item.payment ? (
         <span className="flex items-center gap-1 text-sm font-medium">
           {item.state === "due" ? "Pay" : "View"}

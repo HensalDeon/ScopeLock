@@ -51,7 +51,7 @@ export async function getOverview(): Promise<OverviewData> {
             id: p.id,
             projectId: p.projectId,
             label: p.label,
-            amount: p.amount,
+            amount: p.payable,
             status: p.status,
             requestedAt: p.requestedAt,
             reportedAt: p.report?.reportedAt ?? null,

@@ -20,6 +20,7 @@ import {
 } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
+import { BillingFields } from "./billing-fields";
 import {
   CLIENT_COMPANY_MAX_LENGTH,
   CLIENT_NAME_MAX_LENGTH,
@@ -39,6 +40,10 @@ const EMPTY: Values = {
   email: "",
   phone: "",
   currency: "",
+  address: "",
+  state: "",
+  country: "",
+  gstin: "",
 };
 
 /**
@@ -204,6 +209,17 @@ export function ClientForm(
             <FieldError>{form.errorFor("currency")}</FieldError>
           )}
         </Field>
+
+        <BillingFields
+          uid={uid}
+          values={values}
+          setValue={(name, value) => {
+            setValues((v) => ({ ...v, [name]: value }));
+            form.edited(name);
+          }}
+          touch={form.touch}
+          errorFor={form.errorFor}
+        />
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" disabled={pending || !canSave}>

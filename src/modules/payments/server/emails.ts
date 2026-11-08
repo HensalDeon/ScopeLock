@@ -9,6 +9,7 @@ export function paymentDueEmail(input: {
   label: string;
   amount: string;
   lines: string[];
+  invoiceNumber: string;
   url: string;
 }): Email {
   return {
@@ -17,9 +18,9 @@ export function paymentDueEmail(input: {
       preview: `${input.label} · ${input.amount}`,
       heading: `${input.amount} due for ${input.project}`,
       paragraphs: [
-        `${input.business} has asked for the ${input.label} payment.`,
+        `${input.business} has asked for the ${input.label} payment (invoice ${input.invoiceNumber}).`,
         ...input.lines,
-        "Open the link to see how to pay (UPI, bank transfer or a payment link). After paying, tap “I've paid” and add the UTR, so it can be confirmed.",
+        "Open the link to see how to pay (UPI, bank transfer or a payment link) and to download the invoice. After paying, tap “I've paid” and add the UTR, so it can be confirmed.",
       ],
       action: { label: "See how to pay", url: input.url },
       footnote:

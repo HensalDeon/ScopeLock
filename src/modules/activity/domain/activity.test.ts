@@ -83,6 +83,14 @@ describe("describeActivity", () => {
       describeActivity(due, { kind: "client", businessName: "Deon Digital" })
         .text,
     ).toBe("Deon Digital asked for the Before launch payment (₹47,000)");
+    expect(
+      describeActivity(
+        { ...due, data: { ...due.data, label: "INV/26-27/007" } },
+        { kind: "member", userId: "u1" },
+      ).text,
+    ).toBe(
+      "You asked for the Before launch payment (₹47,000), invoice INV/26-27/007",
+    );
     const paid = ev({
       type: "payment.reported",
       actor: rahul,

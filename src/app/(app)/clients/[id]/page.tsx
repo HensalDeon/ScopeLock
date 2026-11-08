@@ -118,8 +118,8 @@ async function ClientDetail({
 
       <div>
         <Section
-          title="Contact details"
-          description="Used to send approval links and receipts."
+          title="Contact and billing details"
+          description="Used to send approval links, and for the “Billed to” on invoices."
         >
           <ClientForm
             mode="edit"

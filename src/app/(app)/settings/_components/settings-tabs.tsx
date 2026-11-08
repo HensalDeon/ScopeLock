@@ -8,12 +8,16 @@ const TABS = [
   { href: "/settings", label: "Business & account" },
   { href: "/settings/documents", label: "Documents" },
   { href: "/settings/payments", label: "Payments" },
+  { href: "/settings/invoicing", label: "Invoicing" },
 ] as const;
 
 export function SettingsTabs() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Settings" className="mb-8 flex gap-1 border-b">
+    <nav
+      aria-label="Settings"
+      className="mb-8 flex gap-1 overflow-x-auto border-b"
+    >
       {TABS.map((tab) => {
         const active = pathname === tab.href;
         return (
@@ -22,7 +26,7 @@ export function SettingsTabs() {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "-mb-px border-b-2 px-3 pb-2.5 text-sm transition-colors",
+              "-mb-px shrink-0 border-b-2 px-3 pb-2.5 text-sm whitespace-nowrap transition-colors",
               active
                 ? "border-foreground font-medium text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",

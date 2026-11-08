@@ -1,0 +1,41 @@
+import "server-only";
+import { requireWorkspace } from "@/modules/workspace/server";
+import { parseObjectId } from "@/shared/db/ids";
+import { financialYear } from "@/shared/lib/india";
+import { invoiceNumber, type InvoicingSettings } from "../domain/invoice";
+import type { Invoice } from "../domain/snapshot";
+import * as repo from "./repository";
+
+/** Settings → Invoicing, with the number the next invoice will get. */
+export async function getInvoicing(): Promise<{
+  settings: InvoicingSettings;
+  nextNumber: string;
+}> {
+  const { workspace } = await requireWorkspace();
+  const ws = workspace.workspaceId;
+  const fy = financialYear(new Date());
+  const [settings, last] = await Promise.all([
+    repo.findInvoicing(ws),
+    repo.lastSerial(ws, fy.key),
+  ]);
+  return {
+    settings,
+    nextNumber: invoiceNumber(
+      settings.prefix,
+      fy.short,
+      Math.max(last + 1, settings.startNumber),
+    ),
+  };
+}
+
+/** The signed-in workspace's invoice on this project, or null. */
+export async function getInvoice(
+  projectId: string,
+  invoiceId: string,
+): Promise<Invoice | null> {
+  const project = parseObjectId(projectId);
+  const id = parseObjectId(invoiceId);
+  if (!project || !id) return null;
+  const { workspace } = await requireWorkspace();
+  return repo.findInvoice(workspace.workspaceId, id, project);
+}

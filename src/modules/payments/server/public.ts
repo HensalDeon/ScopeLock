@@ -69,7 +69,7 @@ export async function portalPayment(
     const link = upiLink({
       vpa: methods.upi.vpa,
       payeeName: methods.upi.payeeName,
-      amount: payment.amount,
+      amount: payment.payable,
       note: `${reference} ${payment.label}`,
     });
     const qrSvg = await QRCode.toString(link, {
@@ -152,7 +152,8 @@ export async function reportFromPortal(input: {
   }
 
   await refreshPaymentTotals(input.workspaceId, input.projectId);
-  const amount = formatMoney(minor(doc.amount), doc.currency);
+  const payable = minor(doc.amount + (doc.tax ?? 0));
+  const amount = formatMoney(payable, doc.currency);
   await logActivity(input.workspaceId, {
     projectId: input.projectId,
     type: "payment.reported",
@@ -163,7 +164,7 @@ export async function reportFromPortal(input: {
     },
     data: {
       title: doc.label,
-      amount: doc.amount,
+      amount: payable,
       currency: doc.currency,
       comment: input.report.note,
     },

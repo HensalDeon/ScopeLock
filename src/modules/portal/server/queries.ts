@@ -21,6 +21,8 @@ import {
   getDocumentImages,
   getPortalDocumentSettings,
 } from "@/modules/documents/server";
+import type { Invoice } from "@/modules/invoices";
+import { findInvoice } from "@/modules/invoices/server";
 import type { Project } from "@/modules/projects";
 import {
   findByPortalTokenHash,
@@ -197,5 +199,38 @@ export async function getPortalPayment(
     projectTitle: opened.sent.data.title,
     reference: opened.sent.data.reference,
     ...found,
+  };
+}
+
+export type PortalInvoiceView =
+  | { state: "limited" }
+  | {
+      state: "ok";
+      invoice: Invoice;
+      projectTitle: string;
+      logoUrl: string | null;
+      accent: string;
+    };
+
+/** An invoice on the portal: /c/[token]/invoice/[id], this project's only. */
+export async function getPortalInvoice(
+  token: string,
+  invoiceIdParam: string,
+): Promise<PortalInvoiceView> {
+  const opened = await openPortal(token);
+  if (opened === "limited") return { state: "limited" };
+  const id = parseObjectId(invoiceIdParam);
+  if (!id) notFound();
+  const [invoice, { style, images }] = await Promise.all([
+    findInvoice(opened.workspaceId, id, opened.projectId),
+    look(opened.workspaceId),
+  ]);
+  if (!invoice) notFound();
+  return {
+    state: "ok",
+    invoice,
+    projectTitle: opened.sent.data.title,
+    logoUrl: style.showLogo ? images.logoUrl : null,
+    accent: style.accent,
   };
 }

@@ -32,7 +32,7 @@ export type ActivityActor =
   | { kind: "client"; name: string; email: string };
 
 export type ActivityData = {
-  /** Change request label, e.g. "CR-001". */
+  /** Change request label ("CR-001"), or the invoice number on a payment request. */
   label?: string;
   title?: string;
   amount?: number;
@@ -146,7 +146,7 @@ export function describeActivity(
       return line(`${who} declined ${change}`, "neutral", data.comment ?? null);
     case "payment.requested":
       return line(
-        `${who} asked for the ${data.title} payment${amount}`,
+        `${who} asked for the ${data.title} payment${amount}${data.label ? `, invoice ${data.label}` : ""}`,
         "waiting",
       );
     case "payment.cancelled":

@@ -7,6 +7,7 @@ import { ApprovalRows } from "@/modules/approvals";
 import { listApprovalsForProject } from "@/modules/approvals/server";
 import { ChangeList, changeSummary } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
+import { getInvoicing } from "@/modules/invoices/server";
 import { hasAnyMethod, PaymentsPanel } from "@/modules/payments";
 import {
   getPaymentMethods,
@@ -25,6 +26,7 @@ import {
 } from "@/modules/projects";
 import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
+import { isIndia } from "@/shared/lib/india";
 import { formatMoney, minor } from "@/shared/lib/money";
 import { PageContainer, TitledSection } from "@/shared/ui/page";
 
@@ -78,12 +80,13 @@ async function ProjectDetail({
       requireWorkspace(),
     ]);
   const approved = isScopeApproved(project.status);
-  const [payments, { methods }] = approved
+  const [payments, { methods }, invoicing] = approved
     ? await Promise.all([
         getProjectPayments(project, changes),
         getPaymentMethods(),
+        getInvoicing(),
       ])
-    : [null, { methods: null }];
+    : [null, { methods: null }, null];
   const firstName = project.client
     ? clientFirstName(project.client)
     : "your client";
@@ -135,6 +138,10 @@ async function ProjectDetail({
                 client={{ firstName, phone: project.client?.phone ?? null }}
                 methodsReady={methods ? hasAnyMethod(methods) : false}
                 unlockedBy={unlockingSteps(project)}
+                addsGst={
+                  Boolean(invoicing?.settings.gstin) &&
+                  isIndia(project.client?.country)
+                }
               />
             </TitledSection>
           ) : (

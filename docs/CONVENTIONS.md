@@ -192,6 +192,14 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - [ ] Client uploads (payment screenshots) go through `readImageUpload` (bytes checked, ≤ 4 MB), live under `ws/{id}/payment-proof/`, and are only ever served with `signedDownloadUrl` (attachment, 10 minutes), never rendered on our pages.
 - [ ] Public "I've paid" works out the project from the token and checks the payment belongs to it; rate-limited per IP and per link.
 
+**Invoices (Phase 5B)**
+
+- [ ] An invoice is issued inside the same transaction as its payment request: the per-financial-year counter (`$inc` on `seq.<fy>`), the invoice insert and the payment insert commit together, so a failed or duplicate request never uses up a number.
+- [ ] Unique indexes on `{ workspaceId, number }` and `{ workspaceId, paymentId }`. The starting number only moves the counter forward (`$max`).
+- [ ] The invoice is a frozen snapshot built from the database (settings, client, schedule), stored with `hashSnapshot()`. Only `status` ever changes, and only alongside its payment (cancel → cancelled, confirm → paid), in one transaction.
+- [ ] Tax rules live in `invoices/domain` as pure, tested functions. Amounts stay integers; GST is worked out on the invoice's taxable value and rounded half up to the paisa.
+- [ ] The portal invoice page works out the workspace and project from the token and only shows an invoice of that project.
+
 **Webhooks (Razorpay, Phase 8)**
 
 - [ ] Verify the HMAC over the raw body (`await req.text()`) with `timingSafeEqual`.
