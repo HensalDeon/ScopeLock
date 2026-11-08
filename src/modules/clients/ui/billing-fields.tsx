@@ -42,8 +42,9 @@ export function BillingFields({
         <span className="font-normal text-muted-foreground">(optional)</span>
       </legend>
       <p className="-mt-2 text-sm text-pretty text-muted-foreground">
-        Shown under “Billed to”. If you charge GST, the state decides CGST +
-        SGST or IGST, and a client outside India gets an export invoice.
+        Shown under “Billed to”. If you charge GST, their state decides the
+        type: your state, CGST + SGST; another state, IGST. Left blank, your
+        state is used. A client outside India gets an export invoice.
       </p>
       <Field data-invalid={Boolean(errorFor("address")) || undefined}>
         <FieldLabel htmlFor={`${uid}-address`}>Billing address</FieldLabel>

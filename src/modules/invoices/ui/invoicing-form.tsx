@@ -131,7 +131,7 @@ export function InvoicingForm({
       </Section>
       <Section
         title="GST"
-        description="Only if you're registered. With a GSTIN, invoices become tax invoices with 18% GST: CGST + SGST for clients in your state, IGST for other states."
+        description="Only if you're registered. With a GSTIN, invoices become tax invoices with 18% GST. Each invoice compares the client's state with yours: same state, CGST 9% + SGST 9%; another state, IGST 18%; outside India, no GST (export under LUT). Add each client's GSTIN or state on their client page; without either, your state is used."
       >
         <div className="grid gap-5 sm:grid-cols-2">
           {row(
