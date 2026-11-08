@@ -2,7 +2,13 @@ import "server-only";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { financialYear } from "@/shared/lib/india";
-import { invoiceNumber, type InvoicingSettings } from "../domain/invoice";
+import {
+  GST_RATE_PERCENT,
+  gstHints,
+  invoiceNumber,
+  type Buyer,
+  type InvoicingSettings,
+} from "../domain/invoice";
 import type { Invoice } from "../domain/snapshot";
 import * as repo from "./repository";
 
@@ -38,4 +44,17 @@ export async function getInvoice(
   if (!project || !id) return null;
   const { workspace } = await requireWorkspace();
   return repo.findInvoice(workspace.workspaceId, id, project);
+}
+
+/**
+ * The GST rate a proposal or change request should show ("plus 18% GST"),
+ * or null when its invoices won't carry GST (not registered, or a client
+ * outside India).
+ */
+export async function gstOnDocuments(
+  workspaceId: string,
+  client: Pick<Buyer, "state" | "country" | "gstin"> | null,
+): Promise<number | null> {
+  const settings = await repo.findInvoicing(workspaceId);
+  return gstHints(settings, client).addsGst ? GST_RATE_PERCENT : null;
 }

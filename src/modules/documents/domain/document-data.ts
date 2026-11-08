@@ -40,6 +40,8 @@ export type ProposalDocumentData = {
     amount: Minor;
   }[];
   total: Minor;
+  /** GST added on invoices (18), or null when no GST applies. Missing on older proposals. */
+  gstPercent?: number | null;
   billingModel: "upfront" | "milestones";
   milestones: {
     id: string;
@@ -93,6 +95,8 @@ export type ChangeOrderData = {
     amount: Minor;
   }[];
   total: Minor;
+  /** GST added on invoices (18), or null. Missing on older change orders. */
+  gstPercent?: number | null;
   /** Where the money goes, in words: "Added to the “Before launch” payment." */
   billing: string;
   /** The approved proposal's total, for context. */

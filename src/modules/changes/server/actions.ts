@@ -16,6 +16,7 @@ import {
   workspaceAction,
   type WorkspaceContext,
 } from "@/modules/workspace/server";
+import { gstOnDocuments } from "@/modules/invoices/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { UserError, type FormState } from "@/shared/lib/form-state";
 import {
@@ -202,7 +203,10 @@ export const sendChange = workspaceAction(
     }
     const now = new Date();
     const sent = await repo.markChangeSent(ws, doc._id, {
-      data: changeOrderData(project, doc, context, now),
+      data: changeOrderData(project, doc, context, {
+        issuedOn: now,
+        gstPercent: await gstOnDocuments(ws, project.client),
+      }),
       sentAt: now,
       sentBy: { userId: context.user.id, email: context.user.email },
     });

@@ -142,7 +142,11 @@ async function ProjectDetail({
                 client={{ firstName, phone: project.client?.phone ?? null }}
                 methodsReady={methods ? hasAnyMethod(methods) : false}
                 unlockedBy={unlockingSteps(project)}
-                addsGst={gst.addsGst}
+                gst={
+                  invoicing
+                    ? { seller: invoicing.settings, buyer: project.client }
+                    : null
+                }
                 stateFallback={
                   gst.fallbackState && project.client
                     ? {

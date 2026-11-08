@@ -1,5 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { taxPreview } from "@/modules/invoices";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
@@ -54,7 +55,7 @@ export function PaymentsPanel({
   client,
   methodsReady,
   unlockedBy = {},
-  addsGst = false,
+  gst = null,
   stateFallback = null,
 }: {
   projectId: string;
@@ -70,7 +71,11 @@ export function PaymentsPanel({
   /** Milestone id → the timeline step that unlocks it ("Design"). */
   unlockedBy?: Record<string, string>;
   /** Invoices for this client carry GST (shown on payments not asked yet). */
-  addsGst?: boolean;
+  /** Your GST details and the client's, to show what each invoice will add. */
+  gst?: {
+    seller: Parameters<typeof taxPreview>[0];
+    buyer: Parameters<typeof taxPreview>[1];
+  } | null;
   /** GST applies but the client has no state or GSTIN on record. */
   stateFallback?: { yourState: string; clientHref: string } | null;
 }) {
@@ -92,6 +97,11 @@ export function PaymentsPanel({
       <ol className="divide-y rounded-xl border bg-background">
         {items.map((item, index) => {
           const payable = item.payment?.payable ?? item.total;
+          // Not asked yet: what its invoice will add (same rule as the invoice).
+          const preview =
+            !item.payment && gst
+              ? taxPreview(gst.seller, gst.buyer, item.total)
+              : null;
           return (
             <li key={item.key} className="grid gap-3 px-4 py-4 sm:px-5">
               <div className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
@@ -135,10 +145,11 @@ export function PaymentsPanel({
                 <PaymentActions
                   item={item}
                   projectId={projectId}
-                  amount={
-                    !item.payment && addsGst
-                      ? `${money(payable)} + GST`
-                      : money(payable)
+                  amount={money(preview ? preview.total : payable)}
+                  breakdown={
+                    preview
+                      ? `${money(item.total)} + ${money(preview.tax)} GST: ${preview.split}`
+                      : undefined
                   }
                   clientFirstName={client.firstName}
                   stateFallback={stateFallback}

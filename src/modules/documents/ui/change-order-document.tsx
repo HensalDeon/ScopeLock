@@ -186,6 +186,9 @@ export function ChangeOrderDocument({
             >
               {money(data.total)}
             </p>
+            {data.gstPercent ? (
+              <p className="text-sm font-medium">plus {data.gstPercent}% GST</p>
+            ) : null}
           </div>
           <div className="grid content-center gap-2 rounded-xl border border-[#e7e4dd] px-5 py-4 text-[0.88rem] leading-relaxed text-pretty">
             <p>

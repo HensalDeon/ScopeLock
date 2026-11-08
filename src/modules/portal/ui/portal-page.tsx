@@ -147,6 +147,12 @@ export async function PortalPage({ token }: { token: string }) {
                     />
                   ))}
                 </ul>
+                {data.gstPercent ? (
+                  <p className="text-xs text-muted-foreground">
+                    Amounts not asked for yet are before GST. {data.gstPercent}%
+                    GST is added on each invoice.
+                  </p>
+                ) : null}
               </section>
             )}
 

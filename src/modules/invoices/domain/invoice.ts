@@ -294,3 +294,29 @@ export function gstHints(
       addsGst && missing && seller.state ? stateName(seller.state) : null,
   };
 }
+
+/**
+ * What an invoice for `amount` would add, before it's issued (same rule as
+ * the invoice). Null when it carries no GST.
+ */
+export function taxPreview(
+  seller: Pick<InvoicingSettings, "gstin" | "state">,
+  buyer: Pick<Buyer, "state" | "country" | "gstin"> | null,
+  amount: Minor,
+): { tax: Minor; total: Minor; split: string } | null {
+  const tax = invoiceTax({
+    seller,
+    buyer: buyer ?? { state: null, country: null, gstin: null },
+    taxable: amount,
+  });
+  if (tax.kind !== "intra" && tax.kind !== "inter") return null;
+  const gst = taxTotal(tax);
+  return {
+    tax: gst,
+    total: sum([amount, gst]),
+    split:
+      tax.kind === "intra"
+        ? `CGST ${GST_RATE_PERCENT / 2}% + SGST ${GST_RATE_PERCENT / 2}%`
+        : `IGST ${GST_RATE_PERCENT}%`,
+  };
+}

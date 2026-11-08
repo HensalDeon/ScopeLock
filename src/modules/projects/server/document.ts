@@ -9,6 +9,7 @@ import {
   getDocumentImages,
   getDocumentSettings,
 } from "@/modules/documents/server";
+import { gstOnDocuments } from "@/modules/invoices/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import {
   requireWorkspace,
@@ -34,6 +35,10 @@ export async function getProposalDocument(projectId: string) {
     requireWorkspace(),
     getDocumentSettings(),
   ]);
+  const gst =
+    project.status === "draft"
+      ? await gstOnDocuments(context.workspace.workspaceId, project.client)
+      : null;
   const sent =
     project.status === "draft"
       ? null
@@ -48,7 +53,8 @@ export async function getProposalDocument(projectId: string) {
     style: settings.style,
     images: await getDocumentImages(settings),
     data:
-      sent?.data ?? currentProposalData(project, context, settings.defaults),
+      sent?.data ??
+      currentProposalData(project, context, settings.defaults, gst),
   };
 }
 
@@ -57,12 +63,16 @@ export function currentProposalData(
   project: ProjectWithClient,
   { workspace, user }: Pick<WorkspaceContext, "workspace" | "user">,
   defaults: ProposalDefaults,
+  gstPercent: number | null = null,
 ): ProposalDocumentData {
-  return toProposalDocument(
-    project,
-    documentBusiness({ workspace, user }),
-    defaults,
-  );
+  return {
+    ...toProposalDocument(
+      project,
+      documentBusiness({ workspace, user }),
+      defaults,
+    ),
+    gstPercent,
+  };
 }
 
 /** The business details every client document shows (proposal, CRs). */

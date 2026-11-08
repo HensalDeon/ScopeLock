@@ -69,6 +69,7 @@ export function PaymentActions({
   share,
   unlockedBy,
   stateFallback,
+  breakdown,
 }: {
   item: ScheduleItem;
   projectId: string;
@@ -79,6 +80,8 @@ export function PaymentActions({
   share: { url: string; phone: string | null; message: string } | null;
   /** The timeline step that unlocks this payment ("Design"), if linked. */
   unlockedBy?: string;
+  /** "₹28,800 + ₹5,184 GST: CGST 9% + SGST 9%", before it's asked for. */
+  breakdown?: string;
   /** GST with no client state on record: the invoice uses yours. */
   stateFallback?: { yourState: string; clientHref: string } | null;
 }) {
@@ -90,9 +93,15 @@ export function PaymentActions({
       <div className="grid gap-2 rounded-lg border bg-background p-3">
         <p className="text-sm">
           Ask {clientFirstName} for{" "}
-          <span className="font-medium tabular-nums">{amount}</span>? This
-          issues a numbered invoice. They see both on their link, and by email
-          if you&apos;ve added theirs.
+          <span className="font-medium tabular-nums">{amount}</span>
+          {breakdown && (
+            <span className="text-muted-foreground tabular-nums">
+              {" "}
+              ({breakdown})
+            </span>
+          )}
+          ? This issues a numbered invoice. They see both on their link, and by
+          email if you&apos;ve added theirs.
         </p>
         {stateFallback && (
           <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">

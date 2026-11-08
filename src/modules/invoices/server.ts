@@ -4,7 +4,7 @@
  */
 import "server-only";
 
-export { getInvoice, getInvoicing } from "./server/queries";
+export { getInvoice, getInvoicing, gstOnDocuments } from "./server/queries";
 export { issueInvoice, type IssuedInvoice } from "./server/issue";
 // For the payments module (status follows the payment) and the portal
 // (public; workspace and project come from the link).

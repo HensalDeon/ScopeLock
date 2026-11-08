@@ -397,9 +397,15 @@ function buildSections(
           >
             {money(data.total)}
           </p>
+          {data.gstPercent ? (
+            <p className="text-sm font-medium">plus {data.gstPercent}% GST</p>
+          ) : null}
           <p className="mt-1 text-xs text-(--doc-cover-muted)">
-            For the scope above. Anything extra is quoted separately before work
-            starts.
+            For the scope above.{" "}
+            {data.gstPercent
+              ? `Prices are before GST; ${data.gstPercent}% GST is added on each invoice. `
+              : ""}
+            Anything extra is quoted separately before work starts.
           </p>
         </div>
       </div>

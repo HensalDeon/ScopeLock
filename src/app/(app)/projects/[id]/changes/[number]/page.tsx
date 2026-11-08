@@ -9,7 +9,10 @@ import {
   changeShareMessage,
   SOURCE_LABELS,
 } from "@/modules/changes";
-import { changeOrderData, getChangeOrNotFound } from "@/modules/changes/server";
+import {
+  draftChangeOrder,
+  getChangeOrNotFound,
+} from "@/modules/changes/server";
 import { ChangeOrderDocument } from "@/modules/documents";
 import {
   getDocumentImages,
@@ -54,7 +57,7 @@ async function ChangeDetail({
   const data =
     change.status !== "draft" && sent
       ? sent
-      : changeOrderData(project, change, context);
+      : await draftChangeOrder(project, change, context);
   const total = formatMoney(change.total, change.currency);
   const firstName = project.client
     ? clientFirstName(project.client)

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
   gstHints,
+  taxPreview,
   buyerProblems,
   invoiceNumber,
   invoiceTax,
@@ -193,5 +194,32 @@ describe("gstHints", () => {
     expect(gstHints(kerala, { ...india, country: "Canada" }).addsGst).toBe(
       false,
     );
+  });
+});
+
+describe("taxPreview", () => {
+  const amount = minor(2_880_000); // ₹28,800
+  it("same state: ₹28,800 + ₹5,184 (CGST + SGST) = ₹33,984", () => {
+    expect(
+      taxPreview(kerala, { state: "32", country: null, gstin: null }, amount),
+    ).toEqual({
+      tax: minor(518_400),
+      total: minor(3_398_400),
+      split: "CGST 9% + SGST 9%",
+    });
+  });
+  it("another state: IGST; no GST abroad or when not registered", () => {
+    expect(
+      taxPreview(kerala, { state: "27", country: null, gstin: null }, amount)
+        ?.split,
+    ).toBe("IGST 18%");
+    expect(
+      taxPreview(
+        kerala,
+        { state: null, country: "Canada", gstin: null },
+        amount,
+      ),
+    ).toBeNull();
+    expect(taxPreview({ gstin: null, state: null }, null, amount)).toBeNull();
   });
 });
