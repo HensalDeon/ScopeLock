@@ -7,7 +7,8 @@ import {
   type ProjectWithClient,
 } from "@/modules/projects/server";
 import type { WorkspaceContext } from "@/modules/workspace/server";
-import { billingSummary, changeLabel } from "../domain/change-request";
+import { billingSummary } from "../domain/billing";
+import { changeLabel } from "../domain/change-request";
 import type { ChangeData } from "./repository";
 
 /** The change order as it would be sent right now. */

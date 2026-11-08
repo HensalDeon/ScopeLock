@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
-import type { SetupStep } from "../domain/overview";
+import type { SetupStep } from "../domain/setup";
 
 /** First-run steps. Shown on the overview only until they're all done. */
 export function SetupChecklist({ steps }: { steps: SetupStep[] }) {

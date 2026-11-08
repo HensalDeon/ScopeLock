@@ -3,17 +3,21 @@ import { minor } from "@/shared/lib/money";
 import {
   billingChoices,
   billingSummary,
+  changeTotals,
+  placeChange,
+  scheduleWithChanges,
+  type MilestoneRef,
+} from "./billing";
+import {
   blankChangeValues,
   changeShareMessage,
   changeValuesFrom,
   changeValuesFromAddon,
+} from "./form-values";
+import {
   changeInputSchema,
   changeLabel,
-  changeTotals,
   parseChangeNumber,
-  placeChange,
-  scheduleWithChanges,
-  type MilestoneRef,
 } from "./change-request";
 
 const milestones: MilestoneRef[] = [

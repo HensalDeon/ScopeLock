@@ -6,13 +6,11 @@ export { PricingCards } from "./ui/pricing";
 export { Container, Eyebrow, SectionHeading } from "./ui/primitives";
 export { SiteFooter, SiteHeader } from "./ui/site-chrome";
 export { SmoothScroll } from "./ui/smooth-scroll";
-export {
-  ClientView,
-  Evidence,
-  HowItWorks,
-  Payments,
-  SmallRequests,
-} from "./ui/story-sections";
+export { ClientView } from "./ui/client-view";
+export { Evidence } from "./ui/evidence-story";
+export { HowItWorks } from "./ui/how-it-works";
+export { Payments } from "./ui/payments-story";
+export { SmallRequests } from "./ui/small-requests";
 export {
   BusinessDetails,
   LegalDocument,

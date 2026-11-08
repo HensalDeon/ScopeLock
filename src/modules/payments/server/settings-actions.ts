@@ -22,7 +22,7 @@ import {
   toMethods,
   type MethodField,
 } from "../domain/methods";
-import * as repo from "./repository";
+import * as settingsRepo from "./settings-repository";
 
 export type MethodsFormState = FormState<MethodField>;
 
@@ -36,7 +36,7 @@ export const updatePaymentMethods = workspaceAction(
     failureMessage: "Payment details weren't saved. Please try again.",
   },
   async (input, { workspace }) => {
-    const { qrKey } = await repo.findMethods(workspace.workspaceId);
+    const { qrKey } = await settingsRepo.findMethods(workspace.workspaceId);
     const methods = toMethods(input, Boolean(qrKey));
     if (input.defaultMethod && !methods[input.defaultMethod]) {
       throw new UserError(
@@ -44,7 +44,7 @@ export const updatePaymentMethods = workspaceAction(
       );
     }
     // Keep the QR's label even while no image is uploaded.
-    await repo.saveMethods(workspace.workspaceId, {
+    await settingsRepo.saveMethods(workspace.workspaceId, {
       ...methods,
       qr: { label: input.qrLabel ?? "Scan to pay" },
     });
@@ -83,7 +83,7 @@ export async function uploadPaymentQr(formData: FormData): Promise<QrResult> {
       extensionFor(upload.type),
     );
     await putObject(key, upload.buffer, upload.type);
-    const previous = await repo.setQrKey(workspace.workspaceId, key);
+    const previous = await settingsRepo.setQrKey(workspace.workspaceId, key);
     if (previous && keyBelongsTo(previous, workspace.workspaceId)) {
       await deleteObject(previous).catch(() => {});
     }
@@ -106,7 +106,7 @@ export async function removePaymentQr(): Promise<QrResult> {
       message: "Only the workspace owner or an admin can change this.",
     };
   }
-  const previous = await repo.setQrKey(workspace.workspaceId, null);
+  const previous = await settingsRepo.setQrKey(workspace.workspaceId, null);
   if (
     previous &&
     isStorageConfigured() &&

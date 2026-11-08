@@ -10,7 +10,8 @@ import { Input } from "@/shared/ui/input";
 import { MoneyInput } from "@/shared/ui/money-input";
 import { FormSection } from "@/shared/ui/page";
 import { Textarea } from "@/shared/ui/textarea";
-import { CHANGE_LIMITS, type ChangeFormValues } from "../domain/change-request";
+import { CHANGE_LIMITS } from "../domain/change-request";
+import { type ChangeFormValues } from "../domain/form-values";
 
 export type ChangeRow = ChangeFormValues["items"][number] & {
   key: string;

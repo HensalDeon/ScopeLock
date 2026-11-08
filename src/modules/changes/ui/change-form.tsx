@@ -27,8 +27,8 @@ import {
   changeInputSchema,
   SOURCE_CHANNELS,
   SOURCE_LABELS,
-  type ChangeFormValues,
 } from "../domain/change-request";
+import { type ChangeFormValues } from "../domain/form-values";
 import { BillingChoice } from "./billing-choice";
 import { ChangeLinesEditor, toChangeRows } from "./change-lines-editor";
 import {

@@ -8,6 +8,7 @@ import { paginate, toPage, type Page } from "@/shared/lib/pagination";
 import type { Project } from "../domain/project";
 import { portalUrl } from "./portal";
 import * as repo from "./repository";
+import * as portalRepo from "./portal-repository";
 
 export type ProjectWithClient = Project & { client: Client | null };
 
@@ -123,7 +124,7 @@ export async function getShareState(projectId: string): Promise<ShareState> {
   const id = parseObjectId(projectId);
   if (!id) notFound();
   const { workspace } = await requireWorkspace();
-  const state = await repo.findPortalState(workspace.workspaceId, id);
+  const state = await portalRepo.findPortalState(workspace.workspaceId, id);
   if (!state) notFound();
   return {
     url: state.portal ? portalUrl(state.portal) : null,

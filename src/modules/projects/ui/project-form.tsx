@@ -13,7 +13,7 @@ import { Button } from "@/shared/ui/button";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { FormSection } from "@/shared/ui/page";
 import { MILESTONE_PRESETS, type BillingModel } from "../domain/billing";
-import { projectInputSchema } from "../domain/project";
+import { projectInputSchema } from "../domain/project-input";
 import { draftTotal } from "../domain/scope";
 import {
   createProject,

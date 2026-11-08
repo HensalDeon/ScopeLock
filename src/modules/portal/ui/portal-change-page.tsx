@@ -5,7 +5,7 @@ import { ChangeOrderDocument } from "@/modules/documents";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
-import { decideChange } from "../server/actions";
+import { decideChange } from "../server/change-decision";
 import { getPortalChange } from "../server/queries";
 import { DecisionPanel } from "./decision-panel";
 import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";

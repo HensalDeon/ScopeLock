@@ -15,9 +15,10 @@ import {
   requireWorkspace,
   type WorkspaceContext,
 } from "@/modules/workspace/server";
-import { paymentTimings, type Project } from "../domain/project";
+import { paymentTimings } from "../domain/payment-timing";
+import { type Project } from "../domain/project";
 import { getProjectOrNotFound, type ProjectWithClient } from "./queries";
-import { findPortalState } from "./repository";
+import { findPortalState } from "./portal-repository";
 
 /** Short, readable reference for a project's documents: "P-1F107C". */
 export function projectReference(project: Pick<Project, "id">): string {

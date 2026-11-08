@@ -12,13 +12,12 @@ import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import { requireWorkspace } from "@/modules/workspace/server";
 import {
   needsYou,
-  setupSteps,
   waitingOnClients,
   type AttentionItem,
   type OverviewChange,
   type OverviewPayment,
-  type SetupStep,
 } from "../domain/overview";
+import { setupSteps, type SetupStep } from "../domain/setup";
 import { portfolioTotals, type CurrencyTotals } from "../domain/portfolio";
 
 export type OverviewData = {

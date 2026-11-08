@@ -4,32 +4,36 @@
  */
 export {
   BILLING_OPTIONS,
-  billingSummary,
-  blankChangeValues,
-  changeShareMessage,
-  changeValuesFrom,
-  changeValuesFromAddon,
   CHANGE_FIELDS,
   CHANGE_LIMITS,
   CHANGE_STATUS_LABELS,
   changeInputSchema,
   changeLabel,
-  changeSummary,
   parseChangeNumber,
+  SOURCE_CHANNELS,
+  SOURCE_LABELS,
+  type BillingOption,
+  type ChangeRequest,
+  type ChangeStatus,
+  type Placement,
+} from "./domain/change-request";
+export {
+  billingSummary,
+  changeSummary,
   placeChange,
   placementOf,
   scheduleAdditions,
   scheduleWithChanges,
-  SOURCE_CHANNELS,
-  SOURCE_LABELS,
-  type BillingOption,
-  type ChangeFormValues,
-  type ChangeRequest,
-  type ChangeStatus,
   type MilestoneRef,
-  type Placement,
   type ScheduleRow,
-} from "./domain/change-request";
+} from "./domain/billing";
+export {
+  blankChangeValues,
+  changeShareMessage,
+  changeValuesFrom,
+  changeValuesFromAddon,
+  type ChangeFormValues,
+} from "./domain/form-values";
 export { ChangeActions } from "./ui/change-actions";
 export { ChangeForm } from "./ui/change-form";
 export { ChangeList } from "./ui/change-list";

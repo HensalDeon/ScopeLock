@@ -5,13 +5,13 @@
 export {
   isEditable,
   isScopeApproved,
-  unlockingSteps,
   proposalShareMessage,
   PROJECT_STATUS_LABELS,
   type Project,
   type ProjectDecision,
   type ProjectStatus,
 } from "./domain/project";
+export { unlockingSteps } from "./domain/payment-timing";
 export { EMPTY_PROPOSAL, type ProposalContent } from "./domain/proposal";
 export { DeleteProjectButton } from "./ui/delete-project-button";
 export {

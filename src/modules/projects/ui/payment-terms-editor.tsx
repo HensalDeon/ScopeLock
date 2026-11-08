@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useId, type Dispatch, type SetStateAction } from "react";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
@@ -8,7 +8,6 @@ import type { FormValidation } from "@/shared/lib/use-form-validation";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Field, FieldLabel } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
 import { FormSection } from "@/shared/ui/page";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import {
@@ -17,6 +16,7 @@ import {
   splitByMilestones,
   type BillingModel,
 } from "../domain/billing";
+import { MilestoneRowInput } from "./milestone-row-input";
 import { rowKey } from "./row-key";
 
 export type MilestoneRow = {
@@ -167,90 +167,26 @@ export function PaymentTermsEditor({
             </div>
 
             <ol className="grid gap-2">
-              {milestones.map((milestone, index) => {
-                const nameError = err(
-                  `milestones.${index}.name`,
-                  `${milestone.key}.name`,
-                );
-                const percentError = err(
-                  `milestones.${index}.percent`,
-                  `${milestone.key}.percent`,
-                );
-                return (
-                  <li key={milestone.key}>
-                    <div className="grid grid-cols-[minmax(0,1fr)_5.5rem_2.25rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_5.5rem_7rem_2.25rem]">
-                      <Input
-                        aria-label={`Payment ${index + 1} name`}
-                        value={milestone.name}
-                        maxLength={MILESTONE_LIMITS.nameMax}
-                        onChange={(e) => {
-                          updateMilestone(milestone.key, {
-                            name: e.target.value,
-                          });
-                          form.edited(`milestones.${index}.name`);
-                        }}
-                        onBlur={() => form.touch(`${milestone.key}.name`)}
-                        aria-invalid={Boolean(nameError) || undefined}
-                        className="h-9"
-                      />
-                      <div className="relative">
-                        <Input
-                          aria-label={`Payment ${index + 1} percentage`}
-                          inputMode="numeric"
-                          value={milestone.percent}
-                          onChange={(e) => {
-                            updateMilestone(milestone.key, {
-                              percent: e.target.value
-                                .replace(/[^\d]/g, "")
-                                .slice(0, 3),
-                            });
-                            form.edited(`milestones.${index}.percent`);
-                          }}
-                          onBlur={() => form.touch(`${milestone.key}.percent`)}
-                          aria-invalid={Boolean(percentError) || undefined}
-                          className="h-9 pr-7 text-right tabular-nums"
-                        />
-                        <span
-                          aria-hidden
-                          className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-sm text-muted-foreground"
-                        >
-                          %
-                        </span>
-                      </div>
-                      <p className="hidden text-right text-sm tabular-nums sm:block">
-                        {amounts?.[index] !== undefined
-                          ? money(amounts[index])
-                          : "–"}
-                      </p>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-9 text-muted-foreground"
-                        disabled={milestones.length <= MILESTONE_LIMITS.min}
-                        onClick={() =>
-                          setMilestones((rows) =>
-                            rows.filter((row) => row.key !== milestone.key),
-                          )
-                        }
-                        aria-label={`Remove payment ${index + 1}`}
-                      >
-                        <X aria-hidden />
-                      </Button>
-                    </div>
-                    {amounts?.[index] !== undefined && (
-                      <p className="mt-1 text-sm text-muted-foreground tabular-nums sm:hidden">
-                        {money(amounts[index])}
-                      </p>
-                    )}
-                    {(nameError || percentError) && (
-                      <p role="alert" className="mt-1 text-sm text-destructive">
-                        {nameError ?? percentError}
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
+              {milestones.map((milestone, index) => (
+                <MilestoneRowInput
+                  key={milestone.key}
+                  milestone={milestone}
+                  index={index}
+                  amount={amounts?.[index]}
+                  money={money}
+                  canRemove={milestones.length > MILESTONE_LIMITS.min}
+                  onChange={(patch, field) => {
+                    updateMilestone(milestone.key, patch);
+                    form.edited(`milestones.${index}.${field}`);
+                  }}
+                  onRemove={() =>
+                    setMilestones((rows) =>
+                      rows.filter((row) => row.key !== milestone.key),
+                    )
+                  }
+                  form={form}
+                />
+              ))}
             </ol>
 
             <div className="flex flex-wrap items-center justify-between gap-3">

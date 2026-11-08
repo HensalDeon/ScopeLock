@@ -6,7 +6,8 @@ import { cn } from "@/shared/lib/utils";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { FormSection } from "@/shared/ui/page";
-import { billingChoices, type BillingOption } from "../domain/change-request";
+import { billingChoices } from "../domain/billing";
+import { type BillingOption } from "../domain/change-request";
 
 /** Which payment the change joins (or a separate one), plus the payment picker. */
 export function BillingChoice({

@@ -18,7 +18,7 @@ import { Textarea } from "@/shared/ui/textarea";
 import {
   PROJECT_DESCRIPTION_MAX_LENGTH,
   PROJECT_NAME_MAX_LENGTH,
-} from "../domain/project";
+} from "../domain/project-input";
 import type { ClientOption } from "./project-form";
 import { QuickAddClient } from "./quick-add-client";
 

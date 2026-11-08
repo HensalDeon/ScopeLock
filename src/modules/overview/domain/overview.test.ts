@@ -3,11 +3,11 @@ import { minor } from "@/shared/lib/money";
 import {
   needsYou,
   reminderLink,
-  setupSteps,
   waitingOnClients,
   type OverviewChange,
   type OverviewProject,
 } from "./overview";
+import { setupSteps } from "./setup";
 
 const now = new Date("2026-11-06T12:00:00Z");
 const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000);

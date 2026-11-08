@@ -1,15 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { formatINR, minor } from "@/shared/lib/money";
 import { percentTotal, splitByMilestones } from "./billing";
-import {
-  buildProjectPlan,
-  isEditable,
-  isScopeApproved,
-  paymentTimings,
-  unlockingSteps,
-  projectInputSchema,
-  proposalShareMessage,
-} from "./project";
+import { buildProjectPlan, projectInputSchema } from "./project-input";
+import { isEditable, isScopeApproved, proposalShareMessage } from "./project";
+import { paymentTimings, unlockingSteps } from "./payment-timing";
 import { EMPTY_PROPOSAL } from "./proposal";
 import { draftTotal } from "./scope";
 

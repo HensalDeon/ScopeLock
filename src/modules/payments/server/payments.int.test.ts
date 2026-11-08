@@ -5,6 +5,7 @@ import { collection } from "@/shared/db/collections";
 import { ensureIndexes } from "@/shared/db/indexes";
 import { minor } from "@/shared/lib/money";
 import * as repo from "./repository";
+import * as settingsRepo from "./settings-repository";
 import { refreshPaymentTotals } from "./totals";
 
 beforeAll(async () => {
@@ -159,8 +160,8 @@ describe("payments", () => {
 
   it("saves payment methods and swaps the QR image key", async () => {
     const ws = "ws_pay_methods";
-    expect((await repo.findMethods(ws)).methods.upi).toBeNull();
-    await repo.saveMethods(ws, {
+    expect((await settingsRepo.findMethods(ws)).methods.upi).toBeNull();
+    await settingsRepo.saveMethods(ws, {
       upi: { vpa: "asha@okhdfc", payeeName: "Asha" },
       bank: null,
       link: null,
@@ -168,11 +169,13 @@ describe("payments", () => {
       other: null,
       defaultMethod: "upi",
     });
-    expect(await repo.setQrKey(ws, `ws/${ws}/payment-qr/a.png`)).toBeNull();
-    expect(await repo.setQrKey(ws, `ws/${ws}/payment-qr/b.png`)).toBe(
+    expect(
+      await settingsRepo.setQrKey(ws, `ws/${ws}/payment-qr/a.png`),
+    ).toBeNull();
+    expect(await settingsRepo.setQrKey(ws, `ws/${ws}/payment-qr/b.png`)).toBe(
       `ws/${ws}/payment-qr/a.png`,
     );
-    const { methods, qrKey } = await repo.findMethods(ws);
+    const { methods, qrKey } = await settingsRepo.findMethods(ws);
     expect(qrKey).toBe(`ws/${ws}/payment-qr/b.png`);
     expect(methods).toMatchObject({
       upi: { vpa: "asha@okhdfc" },

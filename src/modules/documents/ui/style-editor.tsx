@@ -1,25 +1,16 @@
 "use client";
 
-import { Check } from "lucide-react";
 import { useActionState, useId, useRef, useState, useTransition } from "react";
 import { IDLE } from "@/shared/lib/form-state";
-import { cn } from "@/shared/lib/utils";
 import {
   focusFirstInvalid,
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
 import { Button } from "@/shared/ui/button";
-import { FieldError, FieldLabel } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
-import { Input } from "@/shared/ui/input";
-import { Switch } from "@/shared/ui/switch";
 import type { ProposalDocumentData } from "../domain/document-data";
 import type { DocumentImages } from "../domain/images";
 import {
-  ACCENT_PRESETS,
-  accentNeedsDarkening,
-  COVER_STYLE_LABELS,
-  COVER_STYLES,
   documentStyleSchema,
   styleToFormValues,
   type DocumentStyle,
@@ -31,6 +22,8 @@ import {
   type DocumentStyleFormState,
 } from "../server/actions";
 import { ClassicDocument } from "./classic-document";
+import { AccentPicker, HeadingPicker } from "./style-pickers";
+import { CoverPicker } from "./style-cover-picker";
 import { ImageUpload } from "./image-upload";
 
 type Values = Record<DocumentStyleField, string>;
@@ -123,158 +116,24 @@ export function DocumentStyleEditor({
           </div>
         </fieldset>
 
-        <fieldset className="grid gap-3">
-          <legend className="mb-2 text-sm font-medium">Accent colour</legend>
-          <div
-            role="radiogroup"
-            aria-label="Accent colour"
-            className="flex flex-wrap gap-2"
-          >
-            {ACCENT_PRESETS.map((preset) => {
-              const selected = values.accent === preset.hex;
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  aria-label={preset.label}
-                  title={preset.label}
-                  onClick={() => {
-                    set("accent", preset.hex);
-                    setLastValidAccent(preset.hex);
-                  }}
-                  className={cn(
-                    "flex size-9 items-center justify-center rounded-full ring-offset-2 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    selected && "ring-2 ring-foreground",
-                  )}
-                  style={{ background: preset.hex }}
-                >
-                  {selected && (
-                    <Check
-                      aria-hidden
-                      className="size-4 text-white drop-shadow"
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="sr-only" htmlFor={`${uid}-picker`}>
-              Pick a custom colour
-            </label>
-            <input
-              id={`${uid}-picker`}
-              type="color"
-              value={accent}
-              onChange={(e) => {
-                set("accent", e.target.value);
-                setLastValidAccent(e.target.value as DocumentStyle["accent"]);
-              }}
-              className="h-9 w-11 cursor-pointer rounded-md border bg-background p-1"
-            />
-            <FieldLabel htmlFor={`${uid}-hex`} className="sr-only">
-              Colour code
-            </FieldLabel>
-            <Input
-              id={`${uid}-hex`}
-              value={values.accent}
-              maxLength={7}
-              spellCheck={false}
-              onChange={(e) => {
-                const next = e.target.value.trim();
-                set("accent", next);
-                if (isHex(next)) setLastValidAccent(next);
-              }}
-              onBlur={() => form.touch("accent")}
-              aria-invalid={Boolean(form.errorFor("accent")) || undefined}
-              className="h-9 w-28 font-mono text-sm uppercase"
-            />
-          </div>
-          {form.errorFor("accent") && (
-            <FieldError>{form.errorFor("accent")}</FieldError>
-          )}
-          {isHex(values.accent) && accentNeedsDarkening(values.accent) && (
-            <p className="text-sm text-muted-foreground">
-              This colour is light, so a slightly darker shade of it is used for
-              text to keep it readable.
-            </p>
-          )}
-        </fieldset>
+        <AccentPicker
+          uid={uid}
+          value={values.accent}
+          shown={accent}
+          onChange={(next) => {
+            set("accent", next);
+            if (isHex(next)) setLastValidAccent(next);
+          }}
+          onBlur={() => form.touch("accent")}
+          error={form.errorFor("accent")}
+        />
 
-        <fieldset className="grid gap-2">
-          <legend className="mb-2 text-sm font-medium">Cover</legend>
-          <div
-            role="radiogroup"
-            aria-label="Cover"
-            className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-          >
-            {COVER_STYLES.map((cover) => {
-              const selected = values.cover === cover;
-              return (
-                <button
-                  key={cover}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => set("cover", cover)}
-                  className={cn(
-                    "grid gap-1.5 rounded-lg border p-2 text-left text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    selected
-                      ? "border-brand/45 bg-success-soft/70"
-                      : "hover:bg-canvas",
-                  )}
-                >
-                  <span
-                    aria-hidden
-                    className="h-7 rounded-sm border"
-                    style={
-                      cover === "image" && images.coverUrl
-                        ? {
-                            backgroundImage: `linear-gradient(rgb(15 16 20 / 0.5), rgb(15 16 20 / 0.5)), url(${JSON.stringify(images.coverUrl)})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                          }
-                        : {
-                            background:
-                              cover === "dark" || cover === "image"
-                                ? "#15161a"
-                                : cover === "accent"
-                                  ? accent
-                                  : `${accent}24`,
-                          }
-                    }
-                  />
-                  <span className="font-medium">
-                    {COVER_STYLE_LABELS[cover].title}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          {values.cover === "image" && !images.coverUrl && (
-            <p className="text-sm text-muted-foreground">
-              Upload a cover image below. Until then, the dark cover is used.
-            </p>
-          )}
-          <label className="mt-2 flex items-center justify-between gap-3 text-sm">
-            Decorative rings on the cover
-            <Switch
-              checked={values.coverPattern === "true"}
-              onCheckedChange={(on) => set("coverPattern", String(on))}
-            />
-          </label>
-          <label className="flex items-center justify-between gap-3 text-sm">
-            {images.logoUrl
-              ? "Show your logo on the cover"
-              : "Show your initials on the cover"}
-            <Switch
-              checked={values.showLogo === "true"}
-              onCheckedChange={(on) => set("showLogo", String(on))}
-            />
-          </label>
-        </fieldset>
+        <CoverPicker
+          values={values}
+          accent={accent}
+          images={images}
+          set={set}
+        />
 
         <fieldset className="grid gap-5">
           <legend className="mb-2 text-sm font-medium">
@@ -303,54 +162,10 @@ export function DocumentStyleEditor({
           />
         </fieldset>
 
-        <fieldset className="grid gap-2">
-          <legend className="mb-2 text-sm font-medium">Headings</legend>
-          <div
-            role="radiogroup"
-            aria-label="Headings"
-            className="grid grid-cols-2 gap-2"
-          >
-            {(
-              [
-                {
-                  value: "serif",
-                  label: "Serif",
-                  sample: "Aa",
-                  className:
-                    "font-(family-name:--font-doc-serif) text-xl font-semibold",
-                },
-                {
-                  value: "sans",
-                  label: "Sans",
-                  sample: "Aa",
-                  className: "text-lg font-semibold",
-                },
-              ] as const
-            ).map((option) => {
-              const selected = values.headingFont === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => set("headingFont", option.value)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg border p-2.5 text-left text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    selected
-                      ? "border-brand/45 bg-success-soft/70"
-                      : "hover:bg-canvas",
-                  )}
-                >
-                  <span aria-hidden className={option.className}>
-                    {option.sample}
-                  </span>
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
+        <HeadingPicker
+          value={values.headingFont}
+          onChange={(font) => set("headingFont", font)}
+        />
 
         <div className="flex flex-wrap items-center gap-3 border-t pt-5">
           <Button type="submit" disabled={pending || !form.isDirty}>
