@@ -63,18 +63,21 @@ export type Payment = {
 /** Requested and not cancelled: the slot is taken. */
 export const isActive = (status: PaymentStatus) => status !== "cancelled";
 
-/** Received and still owed, across a project's payments. */
+/**
+ * Received and still owed across a project's payments: what the client
+ * pays, GST included (money that actually moves).
+ */
 export function paymentTotals(
-  payments: readonly Pick<Payment, "status" | "amount">[],
+  payments: readonly Pick<Payment, "status" | "payable">[],
 ): { received: Minor; due: Minor } {
   return {
     received: sum(
-      payments.filter((p) => p.status === "confirmed").map((p) => p.amount),
+      payments.filter((p) => p.status === "confirmed").map((p) => p.payable),
     ),
     due: sum(
       payments
         .filter((p) => p.status === "due" || p.status === "client_reported")
-        .map((p) => p.amount),
+        .map((p) => p.payable),
     ),
   };
 }

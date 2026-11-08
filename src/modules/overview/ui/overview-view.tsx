@@ -12,7 +12,7 @@ export function OverviewView({ data }: { data: OverviewData }) {
   return (
     <div className="grid gap-8">
       {checklist}
-      <MoneyStrip rows={data.money} />
+      <MoneyStrip rows={data.money} gst={data.gst} />
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid gap-8">
           <AttentionList

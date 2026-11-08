@@ -141,9 +141,6 @@ describe("payments", () => {
       "client_reported",
       "confirmed",
     ]);
-    expect(await repo.sumReceived(ws)).toEqual([
-      { currency: "INR", total: 4_700_000 },
-    ]);
     expect(await repo.findOwedPaymentDocs(ws)).toHaveLength(0);
   });
 

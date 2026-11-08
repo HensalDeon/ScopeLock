@@ -6,6 +6,7 @@ import {
 import { changeLabel } from "@/modules/changes";
 import { listOpenChanges } from "@/modules/changes/server";
 import { countClients } from "@/modules/clients/server";
+import { getInvoicing } from "@/modules/invoices/server";
 import { listOwedPayments } from "@/modules/payments/server";
 import { getShareState, listProjectSummaries } from "@/modules/projects/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
@@ -25,6 +26,8 @@ export type OverviewData = {
   setup: SetupStep[] | null;
   hasProjects: boolean;
   money: CurrencyTotals[];
+  /** GST-registered: received and due include GST, approved work doesn't. */
+  gst: boolean;
   waiting: AttentionItem[];
   needs: AttentionItem[];
   activity: (ActivityItem & {
@@ -34,15 +37,23 @@ export type OverviewData = {
 
 /** Everything the overview shows, for the signed-in workspace. */
 export async function getOverview(): Promise<OverviewData> {
-  const [{ workspace }, clientCount, projects, changes, activity, owed] =
-    await Promise.all([
-      requireWorkspace(),
-      countClients(),
-      listProjectSummaries(),
-      listOpenChanges(),
-      listRecentActivity(6),
-      listOwedPayments(),
-    ]);
+  const [
+    { workspace },
+    clientCount,
+    projects,
+    changes,
+    activity,
+    owed,
+    invoicing,
+  ] = await Promise.all([
+    requireWorkspace(),
+    countClients(),
+    listProjectSummaries(),
+    listOpenChanges(),
+    listRecentActivity(6),
+    listOwedPayments(),
+    getInvoicing(),
+  ]);
   const payments: OverviewPayment[] = owed.flatMap((p) =>
     p.status === "due" || p.status === "client_reported"
       ? [
@@ -90,6 +101,7 @@ export async function getOverview(): Promise<OverviewData> {
     setup: steps.every((s) => s.done) ? null : steps,
     hasProjects: projects.length > 0,
     money: portfolioTotals(projects),
+    gst: Boolean(invoicing.settings.gstin && invoicing.settings.state),
     waiting: waitingOnClients(projects, open, links, new Date(), payments),
     needs: needsYou(projects, open, new Date(), payments),
     activity: activity.map((a) => ({

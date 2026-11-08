@@ -179,19 +179,6 @@ export async function findOwedPaymentDocs(
     .toArray();
 }
 
-/** Received, for the overview's money figures. */
-export async function sumReceived(
-  workspaceId: string,
-): Promise<{ currency: CurrencyCode; total: number }[]> {
-  const rows = (await payments(workspaceId)
-    .aggregate([
-      { $match: { status: "confirmed" } },
-      { $group: { _id: "$currency", total: { $sum: "$amount" } } },
-    ])
-    .toArray()) as { _id: CurrencyCode; total: number }[];
-  return rows.map((r) => ({ currency: r._id, total: r.total }));
-}
-
 const entry = (
   status: PaymentStatus,
   by: Who,

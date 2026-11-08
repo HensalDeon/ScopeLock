@@ -64,9 +64,3 @@ export async function listOwedPayments(): Promise<Payment[]> {
     repo.toPayment,
   );
 }
-
-/** Received so far, per currency (overview). */
-export async function receivedByCurrency() {
-  const { workspace } = await requireWorkspace();
-  return repo.sumReceived(workspace.workspaceId);
-}

@@ -8,7 +8,6 @@ export {
   getPaymentMethods,
   getProjectPayments,
   listOwedPayments,
-  receivedByCurrency,
 } from "./server/queries";
 export type { PaymentSchedule, ProjectForSchedule } from "./server/schedule";
 // For the portal module (public; workspace comes from the link).

@@ -6,7 +6,14 @@ import { cn } from "@/shared/lib/utils";
  * Where the money stands, one line per currency: approved work, what's been
  * received, what's due now, and what's still waiting for the client's yes.
  */
-export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
+export function MoneyStrip({
+  rows,
+  gst,
+}: {
+  rows: CurrencyTotals[];
+  /** Say which figures include GST (approved work is the price before it). */
+  gst: boolean;
+}) {
   const plural = (n: number, word: string) =>
     `${n} ${word}${n === 1 ? "" : "s"}`;
   const approvedCount = rows.reduce((s, r) => s + r.approvedProjects, 0);
@@ -16,21 +23,23 @@ export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
       label: "Approved work",
       amounts: rows.map((r) => ({ c: r.currency, v: r.approved })),
       note: approvedCount
-        ? plural(approvedCount, "project")
+        ? `${plural(approvedCount, "project")}${gst ? " · before GST" : ""}`
         : "None approved yet",
       tone: "neutral" as const,
     },
     {
       label: "Received",
       amounts: rows.map((r) => ({ c: r.currency, v: r.received })),
-      note: "Payments you've confirmed",
+      note: gst ? "Confirmed, GST included" : "Payments you've confirmed",
       tone: "neutral" as const,
     },
     {
       label: "Due now",
       amounts: rows.map((r) => ({ c: r.currency, v: r.due })),
       note: rows.some((r) => r.due > 0)
-        ? "Asked for, not received yet"
+        ? gst
+          ? "Asked for, GST included"
+          : "Asked for, not received yet"
         : "Nothing due",
       tone: rows.some((r) => r.due > 0)
         ? ("waiting" as const)
