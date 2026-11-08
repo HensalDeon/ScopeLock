@@ -5,11 +5,20 @@ import {
   placementOf,
   type ChangeRequest,
 } from "@/modules/changes";
+import { findClientInWorkspace } from "@/modules/clients/server";
+import { taxPreview } from "@/modules/invoices";
+import { findInvoicing } from "@/modules/invoices/server";
+import { parseObjectId } from "@/shared/db/ids";
 import type { CurrencyCode } from "@/shared/lib/currency";
-import { sum, type Minor } from "@/shared/lib/money";
+import type { Minor } from "@/shared/lib/money";
+import {
+  scheduleTotals,
+  withGst,
+  type ScheduleTotals,
+  type TaxPreview,
+} from "../domain/gst";
 import {
   buildSchedule,
-  paymentTotals,
   type MilestoneInput,
   type Payment,
   type ScheduleItem,
@@ -18,6 +27,7 @@ import { findPaymentDocs, toPayment } from "./repository";
 
 export type ProjectForSchedule = {
   id: string;
+  clientId: string;
   currency: CurrencyCode;
   milestones: MilestoneInput[];
   baseline: { total: Minor };
@@ -26,7 +36,7 @@ export type ProjectForSchedule = {
 export type PaymentSchedule = {
   items: ScheduleItem[];
   payments: Payment[];
-  totals: { received: Minor; due: Minor; total: Minor };
+  totals: ScheduleTotals;
 };
 
 /**
@@ -57,7 +67,19 @@ export async function scheduleFor(
       })),
     payments,
   });
-  const { received, due } = paymentTotals(payments);
-  const total = sum(items.map((i) => i.total));
-  return { items, payments, totals: { received, due, total } };
+  const priced = withGst(items, await gstPreview(workspaceId, project));
+  return { items: priced, payments, totals: scheduleTotals(priced) };
+}
+
+/** What an invoice to this project's client would add (none if no GST). */
+async function gstPreview(
+  workspaceId: string,
+  project: ProjectForSchedule,
+): Promise<TaxPreview> {
+  const clientId = parseObjectId(project.clientId);
+  const [settings, client] = await Promise.all([
+    findInvoicing(workspaceId),
+    clientId ? findClientInWorkspace(workspaceId, clientId) : null,
+  ]);
+  return (amount) => taxPreview(settings, client, amount);
 }

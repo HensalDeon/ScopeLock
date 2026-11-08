@@ -9,12 +9,12 @@ import { Input } from "@/shared/ui/input";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { Textarea } from "@/shared/ui/textarea";
 import { METHOD_KINDS, METHOD_LABELS } from "../domain/methods";
+import type { PaymentFormState } from "../server/actions";
 import {
   markNotReceived,
   markPaymentReceived,
   paymentProofUrl,
-  type PaymentFormState,
-} from "../server/actions";
+} from "../server/confirm-actions";
 
 /** The forms under a payment row: received, not received, the proof link. */
 

@@ -44,7 +44,12 @@ export async function getProjectPayments(
     return {
       items: [],
       payments: [],
-      totals: { received: minor(0), due: minor(0), total: minor(0) },
+      totals: {
+        received: minor(0),
+        due: minor(0),
+        total: minor(0),
+        gst: null,
+      },
     };
   }
   const { workspace } = await requireWorkspace();

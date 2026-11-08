@@ -30,7 +30,7 @@ import {
   updatePaymentMethods,
   uploadPaymentQr,
   type MethodsFormState,
-} from "../server/actions";
+} from "../server/settings-actions";
 
 type Values = Record<MethodField, string>;
 

@@ -4,8 +4,6 @@
 export {
   buyerProblems,
   DEFAULT_SAC,
-  gstHints,
-  taxPreview,
   GST_RATE_PERCENT,
   INVOICING_FIELDS,
   invoicingFormValues,
@@ -13,6 +11,7 @@ export {
   type InvoicingField,
   type InvoicingSettings,
 } from "./domain/invoice";
+export { gstHints, taxPreview } from "./domain/preview";
 export {
   INVOICE_STATUS_LABELS,
   issueProblem,

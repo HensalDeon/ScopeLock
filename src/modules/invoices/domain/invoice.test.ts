@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
-  gstHints,
-  taxPreview,
   buyerProblems,
   invoiceNumber,
   invoiceTax,
@@ -10,6 +8,7 @@ import {
   taxTotal,
   toInvoicingSettings,
 } from "./invoice";
+import { gstHints, taxPreview } from "./preview";
 
 const kerala = { gstin: "32ABCDE1234F1Z5", state: "32" as const };
 const amount = minor(4_700_000); // ₹47,000

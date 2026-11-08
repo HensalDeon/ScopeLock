@@ -128,6 +128,7 @@ async function ProjectDetail({
             <ScopeTable
               project={project}
               changes={approved ? changeSummary(changes) : undefined}
+              gst={payments?.totals.gst}
             />
           </TitledSection>
           {payments ? (
@@ -142,11 +143,6 @@ async function ProjectDetail({
                 client={{ firstName, phone: project.client?.phone ?? null }}
                 methodsReady={methods ? hasAnyMethod(methods) : false}
                 unlockedBy={unlockingSteps(project)}
-                gst={
-                  invoicing
-                    ? { seller: invoicing.settings, buyer: project.client }
-                    : null
-                }
                 stateFallback={
                   gst.fallbackState && project.client
                     ? {

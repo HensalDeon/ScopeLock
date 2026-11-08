@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ActivityTimeline } from "@/modules/activity";
 import { changeLabel } from "@/modules/changes";
 import { ClassicDocument } from "@/modules/documents";
-import { ChangeRow, PaymentRow, Row } from "./portal-rows";
+import { ChangeRow, PaymentRow } from "./portal-rows";
+import { PortalTotals } from "./portal-totals";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, minor, sum } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
@@ -109,25 +110,12 @@ export async function PortalPage({ token }: { token: string }) {
               </section>
             )}
 
-            <section aria-labelledby="totals-heading" className="grid gap-2">
-              <h2 id="totals-heading" className="text-base font-semibold">
-                Project total
-              </h2>
-              <dl className="grid gap-1.5 text-sm">
-                <Row label="Approved proposal">{money(data.total)}</Row>
-                <Row label="Approved changes">
-                  {money(view.totals.approvedChanges)}
-                </Row>
-                <Row label="Total so far" strong>
-                  {money(projectTotal)}
-                </Row>
-                {view.payments && view.payments.totals.received > 0 && (
-                  <Row label="Paid so far">
-                    {money(view.payments.totals.received)}
-                  </Row>
-                )}
-              </dl>
-            </section>
+            <PortalTotals
+              proposalTotal={minor(data.total)}
+              approvedChanges={minor(view.totals.approvedChanges)}
+              payments={view.payments?.totals ?? null}
+              money={money}
+            />
 
             {view.payments && view.payments.items.length > 0 && (
               <section
@@ -147,12 +135,6 @@ export async function PortalPage({ token }: { token: string }) {
                     />
                   ))}
                 </ul>
-                {data.gstPercent ? (
-                  <p className="text-xs text-muted-foreground">
-                    Amounts not asked for yet are before GST. {data.gstPercent}%
-                    GST is added on each invoice.
-                  </p>
-                ) : null}
               </section>
             )}
 

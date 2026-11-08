@@ -112,8 +112,11 @@ export function PaymentRow({
           {CLIENT_PAYMENT_LABELS[item.state]}
         </span>
       </span>
-      <span className="tabular-nums">
-        {money(item.payment?.payable ?? item.total)}
+      <span className="grid text-right tabular-nums">
+        {money(item.payable)}
+        {item.tax > 0 && (
+          <span className="text-xs text-muted-foreground">incl. GST</span>
+        )}
       </span>
       {item.payment ? (
         <span className="flex items-center gap-1 text-sm font-medium">

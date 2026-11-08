@@ -12,10 +12,10 @@ import { METHOD_LABELS } from "../domain/methods";
 import type { ScheduleItem } from "../domain/payment";
 import {
   cancelPaymentRequest,
-  confirmReportedPayment,
   requestPayment,
   type PaymentFormState,
 } from "../server/actions";
+import { confirmReportedPayment } from "../server/confirm-actions";
 
 type Action = (s: PaymentFormState, d: FormData) => Promise<PaymentFormState>;
 

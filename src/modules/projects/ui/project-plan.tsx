@@ -15,9 +15,12 @@ export type ScopeChanges = {
 export function ScopeTable({
   project,
   changes,
+  gst,
 }: {
   project: Project;
   changes?: ScopeChanges;
+  /** GST the invoices add over the whole project, when there is any. */
+  gst?: { tax: Minor; total: Minor } | null;
 }) {
   const money = (amount: Minor) => formatMoney(amount, project.currency);
   const approved = changes?.approved;
@@ -72,6 +75,15 @@ export function ScopeTable({
               {money(project.baseline.total)}
             </dd>
           </div>
+        )}
+        {gst && (
+          <p className="text-right text-sm text-muted-foreground tabular-nums">
+            Plus {money(gst.tax)} GST on invoices ·{" "}
+            <span className="font-medium text-foreground">
+              {money(gst.total)}
+            </span>{" "}
+            with GST
+          </p>
         )}
         {pending && pending.count > 0 && (
           <p className="text-sm text-warning-ink tabular-nums">

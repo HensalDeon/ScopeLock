@@ -4,11 +4,11 @@ import { parseObjectId } from "@/shared/db/ids";
 import { financialYear } from "@/shared/lib/india";
 import {
   GST_RATE_PERCENT,
-  gstHints,
   invoiceNumber,
   type Buyer,
   type InvoicingSettings,
 } from "../domain/invoice";
+import { gstHints } from "../domain/preview";
 import type { Invoice } from "../domain/snapshot";
 import * as repo from "./repository";
 

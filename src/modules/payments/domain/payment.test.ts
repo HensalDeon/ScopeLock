@@ -3,11 +3,10 @@ import { minor } from "@/shared/lib/money";
 import {
   buildSchedule,
   closedKeys,
-  notReceivedSchema,
   paymentTotals,
-  reportInputSchema,
   type Payment,
 } from "./payment";
+import { notReceivedSchema, reportInputSchema } from "./payment-forms";
 
 const milestones = [
   {
