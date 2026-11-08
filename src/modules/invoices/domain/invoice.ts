@@ -7,7 +7,7 @@ import {
   stateName,
   type StateCode,
 } from "@/shared/lib/india";
-import { minor, sum, type Minor } from "@/shared/lib/money";
+import { minor, percentOf, sum, type Minor } from "@/shared/lib/money";
 
 /**
  * Invoices under India's GST rules (CGST Rule 46). Every payment request
@@ -205,10 +205,6 @@ export type InvoiceTax =
     }
   | { kind: "inter"; placeOfSupply: StateCode; igst: Minor }
   | { kind: "export"; country: string };
-
-/** Rounded to the paisa, half up (always a whole number of minor units). */
-const percentOf = (amount: Minor, percent: number): Minor =>
-  minor(Math.round((amount * percent) / 100));
 
 /**
  * GST for one invoice (IGST Act s.12(2) for clients in India):

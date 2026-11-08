@@ -1,6 +1,8 @@
 import { Check } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import type { Minor } from "@/shared/lib/money";
 import type { ProposalDocumentData } from "../domain/document-data";
+import { gstOver, withGst } from "../domain/gst";
 import type { Section, SectionKit } from "./classic-section-kit";
 
 /** Overview, what's included, investment and the payment schedule. */
@@ -9,6 +11,19 @@ export function scopeSections(
   { money, paragraphs, headingFont }: SectionKit,
 ): Section[] {
   const sections: Section[] = [];
+  // Each payment is its own invoice, so GST is added per payment.
+  const gst = gstOver(
+    data.milestones.map((m) => m.amount),
+    data.gstPercent,
+  );
+  const gstLine = (amount: Minor) => {
+    const total = withGst(amount, data.gstPercent);
+    return total === null ? null : (
+      <span className="block text-xs font-normal text-[#6b6f78]">
+        {money(total)} with GST
+      </span>
+    );
+  };
 
   if (data.overview || data.callout) {
     sections.push({
@@ -112,9 +127,17 @@ export function scopeSections(
           >
             {money(data.total)}
           </p>
-          {data.gstPercent ? (
-            <p className="text-sm font-medium">plus {data.gstPercent}% GST</p>
-          ) : null}
+          {gst && (
+            <div className="grid gap-0.5 text-sm tabular-nums">
+              <p className="font-medium">
+                plus {data.gstPercent}% GST ({money(gst.tax)})
+              </p>
+              <p>
+                <span className="font-semibold">{money(gst.total)}</span> with
+                GST
+              </p>
+            </div>
+          )}
           <p className="mt-1 text-xs text-(--doc-cover-muted)">
             For the scope above.{" "}
             {data.gstPercent
@@ -150,6 +173,7 @@ export function scopeSections(
               <td className="py-2.5 text-right tabular-nums">100%</td>
               <td className="py-2.5 text-right font-semibold tabular-nums">
                 {money(data.total)}
+                {gstLine(data.total)}
               </td>
             </tr>
           ) : (
@@ -166,6 +190,7 @@ export function scopeSections(
                 <td className="py-2.5 text-right tabular-nums">{m.percent}%</td>
                 <td className="py-2.5 text-right font-semibold tabular-nums">
                   {money(m.amount)}
+                  {gstLine(m.amount)}
                 </td>
               </tr>
             ))

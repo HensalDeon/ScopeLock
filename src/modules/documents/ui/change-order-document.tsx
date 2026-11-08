@@ -5,6 +5,7 @@ import { formatMoney, type Minor } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import type { ChangeOrderData } from "../domain/document-data";
+import { gstOver } from "../domain/gst";
 import { NO_IMAGES, type DocumentImages } from "../domain/images";
 import { documentPalette, type DocumentStyle } from "../domain/style";
 import { documentSerif } from "./fonts";
@@ -42,6 +43,7 @@ export function ChangeOrderDocument({
       ? "font-(family-name:--font-doc-serif) font-semibold tracking-[-0.01em]"
       : "font-sans font-semibold tracking-[-0.02em]";
   const money = (amount: Minor) => formatMoney(amount, data.currency);
+  const gst = gstOver([data.total], data.gstPercent);
   const photo =
     style.cover === "image" && images.coverUrl
       ? {
@@ -186,9 +188,14 @@ export function ChangeOrderDocument({
             >
               {money(data.total)}
             </p>
-            {data.gstPercent ? (
-              <p className="text-sm font-medium">plus {data.gstPercent}% GST</p>
-            ) : null}
+            {gst && (
+              <p className="text-sm tabular-nums">
+                <span className="font-medium">
+                  plus {data.gstPercent}% GST ({money(gst.tax)})
+                </span>{" "}
+                · {money(gst.total)} with GST
+              </p>
+            )}
           </div>
           <div className="grid content-center gap-2 rounded-xl border border-[#e7e4dd] px-5 py-4 text-[0.88rem] leading-relaxed text-pretty">
             <p>
