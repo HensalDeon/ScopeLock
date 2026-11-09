@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
-import { PortalPage } from "@/modules/portal/server";
+import { PortalPage, portalTitle } from "@/modules/portal/server";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/c/[token]">): Promise<Metadata> {
+  // Also the saved PDF's file name: "Proposal P-007 · Website redesign · …".
+  const title = await portalTitle((await params).token, { kind: "proposal" });
+  return { title: title ? { absolute: title } : "Proposal" };
+}
 
 export default function ClientPortalPage({ params }: PageProps<"/c/[token]">) {
   return (

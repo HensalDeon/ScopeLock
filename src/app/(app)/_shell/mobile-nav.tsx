@@ -23,7 +23,7 @@ export function MobileNav({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden print:hidden">
       <Link
         href="/dashboard"
         aria-label="Overview"

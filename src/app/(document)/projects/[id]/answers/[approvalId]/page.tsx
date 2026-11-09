@@ -18,8 +18,26 @@ import {
 import { formatDateTime } from "@/shared/lib/dates";
 import { Button } from "@/shared/ui/button";
 import { PrintButton } from "@/shared/ui/print-button";
+import { PrintSetup } from "@/shared/ui/print-setup";
+import { documentTitle } from "@/shared/lib/document-title";
 
-export const metadata: Metadata = { title: "Signed record" };
+// Also the saved PDF's file name: "CR-002 declined by Rahul Mehta · …".
+export async function generateMetadata({
+  params,
+}: PageProps<"/projects/[id]/answers/[approvalId]">): Promise<Metadata> {
+  const { id, approvalId } = await params;
+  const record = await getApprovalWithSnapshot(id, approvalId);
+  return {
+    title: record
+      ? {
+          absolute: documentTitle(
+            `${record.approval.label} ${verdictLabel(record.approval).toLowerCase()} by ${record.approval.decidedBy.name}`,
+            "Signed record",
+          ),
+        }
+      : "Signed record",
+  };
+}
 
 export default function AnswerPage({
   params,
@@ -86,6 +104,10 @@ async function Answer({
         This is the exact content {approval.decidedBy.name} saw, from the signed
         record. It shows in your current document style.
       </div>
+      <PrintSetup
+        cover
+        footer={`${approval.label}: ${verdict.toLowerCase()} by ${approval.decidedBy.name} · ${formatDateTime(approval.decidedAt)}`}
+      />
       <main className="px-0 py-0 sm:px-4 sm:py-4 print:p-0">
         {approval.subject.type === "baseline" ? (
           <ClassicDocument

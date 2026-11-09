@@ -24,8 +24,27 @@ import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer } from "@/shared/ui/page";
+import { PrintSetup } from "@/shared/ui/print-setup";
+import { documentTitle } from "@/shared/lib/document-title";
 
-export const metadata: Metadata = { title: "Change request" };
+// Also the saved PDF's file name: "CR-002 Gallery page · Website redesign".
+export async function generateMetadata({
+  params,
+}: PageProps<"/projects/[id]/changes/[number]">): Promise<Metadata> {
+  const { id, number } = await params;
+  const [project, { change }] = await Promise.all([
+    getProjectOrNotFound(id),
+    getChangeOrNotFound(id, number),
+  ]);
+  return {
+    title: {
+      absolute: documentTitle(
+        `${changeLabel(change.number)} ${change.title}`,
+        project.name,
+      ),
+    },
+  };
+}
 
 export default function ChangePage({
   params,
@@ -66,7 +85,14 @@ async function ChangeDetail({
 
   return (
     <div className="grid gap-6">
-      <div className="grid gap-3">
+      {/* Printing gives just the change order, like the client's copy. */}
+      {data && (
+        <PrintSetup
+          cover
+          footer={`${data.business.name} · ${data.reference} · Proposal ${data.projectReference}`}
+        />
+      )}
+      <div className="grid gap-3 print:hidden">
         <BackLink href={base as Route}>Back to project</BackLink>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid min-w-0 gap-1.5">
@@ -93,7 +119,7 @@ async function ChangeDetail({
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="grid gap-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground print:hidden">
             {change.status === "draft"
               ? `What ${firstName} will see`
               : `What ${firstName} saw (sent ${change.sentAt ? formatDateTime(change.sentAt) : ""})`}
@@ -104,10 +130,10 @@ async function ChangeDetail({
             titleAs="h2"
             style={settings.style}
             images={images}
-            className="rounded-lg border"
+            className="rounded-lg border print:rounded-none print:border-0"
           />
         </div>
-        <aside className="grid gap-4 max-lg:order-first lg:sticky lg:top-6">
+        <aside className="grid gap-4 max-lg:order-first lg:sticky lg:top-6 print:hidden">
           <ChangeActions
             change={change}
             projectId={project.id}

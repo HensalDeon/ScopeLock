@@ -7,10 +7,25 @@ import { ClassicDocument } from "@/modules/documents";
 import { isEditable } from "@/modules/projects";
 import { getProposalDocument } from "@/modules/projects/server";
 import { Button } from "@/shared/ui/button";
-import { cssString } from "@/shared/lib/css-string";
 import { PrintButton } from "@/shared/ui/print-button";
+import { documentTitle } from "@/shared/lib/document-title";
+import { PrintSetup } from "@/shared/ui/print-setup";
 
-export const metadata: Metadata = { title: "Proposal preview" };
+// Also the saved PDF's file name.
+export async function generateMetadata({
+  params,
+}: PageProps<"/projects/[id]/preview">): Promise<Metadata> {
+  const { data } = await getProposalDocument((await params).id);
+  return {
+    title: {
+      absolute: documentTitle(
+        `Proposal ${data.reference}`,
+        data.title,
+        data.business.name,
+      ),
+    },
+  };
+}
 
 export default function ProposalPreviewPage({
   params,
@@ -33,14 +48,7 @@ async function Preview({
 
   return (
     <>
-      {/* Printed pages: A4, full-bleed cover, footer with page numbers. */}
-      <style>{`
-        @page { size: A4; margin: 12mm 0 14mm;
-          @bottom-left { content: ${cssString(footer)}; font: 8pt system-ui, sans-serif; color: #8a8f98; padding-left: 14mm; }
-          @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt system-ui, sans-serif; color: #8a8f98; padding-right: 14mm; }
-        }
-        @page :first { margin-top: 0; }
-      `}</style>
+      <PrintSetup cover footer={footer} />
 
       <div className="sticky top-0 z-10 border-b border-black/10 bg-white/95 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-[210mm] flex-wrap items-center justify-between gap-3 px-4 py-3">

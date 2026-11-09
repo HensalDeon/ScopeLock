@@ -9,6 +9,7 @@ import { decideChange } from "../server/change-decision";
 import { getPortalChange } from "../server/queries";
 import { DecisionPanel } from "./decision-panel";
 import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";
+import { PrintSetup } from "@/shared/ui/print-setup";
 
 /** One change request on the client's link: the change order and an answer. */
 export async function PortalChangePage({
@@ -96,6 +97,12 @@ export async function PortalChangePage({
         </StatusStrip>
       )}
 
+      {data && (
+        <PrintSetup
+          cover
+          footer={`${businessName} · ${data.reference} · Proposal ${data.projectReference}`}
+        />
+      )}
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         <ChangeOrderDocument
           data={data}

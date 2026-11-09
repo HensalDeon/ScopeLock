@@ -33,7 +33,7 @@ export async function Shell() {
 
   return (
     <>
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-5 border-r bg-sidebar p-3 pt-4 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-5 border-r bg-sidebar p-3 pt-4 lg:flex print:hidden">
         <Link
           href="/dashboard"
           className="w-fit rounded-md px-1.5"

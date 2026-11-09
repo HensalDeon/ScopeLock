@@ -13,6 +13,7 @@ import { decideProposal } from "../server/actions";
 import { getPortalView } from "../server/queries";
 import { DecisionPanel } from "./decision-panel";
 import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";
+import { PrintSetup } from "@/shared/ui/print-setup";
 
 /** The client's page for a link: the proposal, its changes and history. */
 export async function PortalPage({ token }: { token: string }) {
@@ -80,6 +81,7 @@ export async function PortalPage({ token }: { token: string }) {
         </StatusStrip>
       )}
 
+      <PrintSetup cover footer={`${business} · Proposal ${data.reference}`} />
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         {state === "approved" && (
           <div className="mx-auto mb-0 grid max-w-[210mm] grid-cols-[minmax(0,1fr)] gap-6 border-b bg-white px-5 py-7 sm:mb-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden">

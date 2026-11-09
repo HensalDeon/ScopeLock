@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { financialYear } from "@/shared/lib/india";
@@ -38,7 +39,7 @@ export async function getInvoicing(): Promise<{
 }
 
 /** The signed-in workspace's invoice on this project, or null. */
-export async function getInvoice(
+async function loadGetInvoice(
   projectId: string,
   invoiceId: string,
 ): Promise<Invoice | null> {
@@ -76,3 +77,6 @@ export async function getGstRule(): Promise<
   return (client) =>
     gstHints(settings, client).addsGst ? GST_RATE_PERCENT : null;
 }
+
+/** Cached per request: the page and its title share one lookup. */
+export const getInvoice = cache(loadGetInvoice);

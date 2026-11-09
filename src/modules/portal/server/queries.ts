@@ -1,11 +1,17 @@
 import "server-only";
+import { cache } from "react";
+import { documentTitle } from "@/shared/lib/document-title";
 import type { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
 import {
   listClientHistory,
   type ActivityItem,
 } from "@/modules/activity/server";
-import { parseChangeNumber, type ChangeRequest } from "@/modules/changes";
+import {
+  parseChangeNumber,
+  type ChangeRequest,
+  changeLabel,
+} from "@/modules/changes";
 import {
   findChangeDoc,
   findChangeDocs,
@@ -57,7 +63,11 @@ const VIEW_LIMIT = { limit: 120, windowSeconds: 600 };
  * Every portal page starts here. Unknown, malformed and replaced links all
  * end in the same notFound(), so the page never says which one it was.
  */
-async function openPortal(token: string): Promise<Opened | "limited"> {
+// Cached per request: a page and its title (generateMetadata) share one
+// lookup, so a visit counts once against the rate limit.
+const openPortal = cache(openPortalUncached);
+
+async function openPortalUncached(token: string): Promise<Opened | "limited"> {
   if (!PORTAL_TOKEN_PATTERN.test(token)) notFound();
   const { ip } = await requestInfo();
   const { allowed } = await rateLimit(
@@ -93,7 +103,7 @@ export type PortalView =
       payments: PaymentSchedule | null;
     };
 
-export async function getPortalView(token: string): Promise<PortalView> {
+async function loadPortalView(token: string): Promise<PortalView> {
   const opened = await openPortal(token);
   if (opened === "limited") return { state: "limited" };
   const { workspaceId, project, sent, projectId } = opened;
@@ -147,7 +157,7 @@ export type PortalChangeView =
     };
 
 /** One change request on the portal: /c/[token]/changes/[number]. */
-export async function getPortalChange(
+async function loadPortalChange(
   token: string,
   numberParam: string,
 ): Promise<PortalChangeView> {
@@ -178,7 +188,7 @@ export type PortalPaymentView =
     } & PortalPayment);
 
 /** One payment request on the portal: /c/[token]/pay/[id]. */
-export async function getPortalPayment(
+async function loadPortalPayment(
   token: string,
   paymentIdParam: string,
 ): Promise<PortalPaymentView> {
@@ -213,7 +223,7 @@ export type PortalInvoiceView =
     };
 
 /** An invoice on the portal: /c/[token]/invoice/[id], this project's only. */
-export async function getPortalInvoice(
+async function loadPortalInvoice(
   token: string,
   invoiceIdParam: string,
 ): Promise<PortalInvoiceView> {
@@ -233,4 +243,52 @@ export async function getPortalInvoice(
     logoUrl: style.showLogo ? images.logoUrl : null,
     accent: style.accent,
   };
+}
+
+export const getPortalView = cache(loadPortalView);
+
+export const getPortalChange = cache(loadPortalChange);
+
+export const getPortalPayment = cache(loadPortalPayment);
+
+export const getPortalInvoice = cache(loadPortalInvoice);
+
+/**
+ * The title for a portal page, which the browser also uses as the saved
+ * PDF's file name ("Proposal P-007 · Asha Designs"). Shares the page's
+ * cached lookup. Null when the link is rate limited (the page says so).
+ */
+export async function portalTitle(
+  token: string,
+  page:
+    | { kind: "proposal" }
+    | { kind: "change"; number: string }
+    | { kind: "invoice"; invoiceId: string },
+): Promise<string | null> {
+  if (page.kind === "proposal") {
+    const view = await getPortalView(token);
+    return view.state === "limited"
+      ? null
+      : documentTitle(
+          `Proposal ${view.data.reference}`,
+          view.data.title,
+          view.data.business.name,
+        );
+  }
+  if (page.kind === "change") {
+    const view = await getPortalChange(token, page.number);
+    return view.state === "limited"
+      ? null
+      : documentTitle(
+          `${changeLabel(view.change.number)} ${view.change.title}`,
+          view.businessName,
+        );
+  }
+  const view = await getPortalInvoice(token, page.invoiceId);
+  return view.state === "limited"
+    ? null
+    : documentTitle(
+        `${view.invoice.title} ${view.invoice.number}`,
+        view.invoice.seller.name,
+      );
 }

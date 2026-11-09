@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { PortalInvoicePage } from "@/modules/portal/server";
+import { PortalInvoicePage, portalTitle } from "@/modules/portal/server";
 
-export const metadata: Metadata = { title: "Invoice" };
+export async function generateMetadata({
+  params,
+}: PageProps<"/c/[token]/invoice/[invoiceId]">): Promise<Metadata> {
+  const { token, invoiceId } = await params;
+  const title = await portalTitle(token, {
+    kind: "invoice",
+    invoiceId: invoiceId,
+  });
+  return { title: title ? { absolute: title } : "Invoice" };
+}
 
 export default function ClientInvoicePage({
   params,

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { ObjectId } from "mongodb";
 import { parseObjectId } from "@/shared/db/ids";
 import type {
@@ -30,7 +31,7 @@ export function projectReference(project: Pick<Project, "id">): string {
  * for "Preview as client". Once sent, it's the proposal exactly as sent
  * (what the client sees and approves); drafts render from current data.
  */
-export async function getProposalDocument(projectId: string) {
+async function loadGetProposalDocument(projectId: string) {
   const [project, context, settings] = await Promise.all([
     getProjectOrNotFound(projectId),
     requireWorkspace(),
@@ -168,3 +169,6 @@ export function toProposalDocument(
     terms: p.terms,
   };
 }
+
+/** Cached per request: the page and its title share one lookup. */
+export const getProposalDocument = cache(loadGetProposalDocument);

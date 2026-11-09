@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { PortalChangePage } from "@/modules/portal/server";
+import { PortalChangePage, portalTitle } from "@/modules/portal/server";
 
-export const metadata: Metadata = { title: "Change request" };
+export async function generateMetadata({
+  params,
+}: PageProps<"/c/[token]/changes/[number]">): Promise<Metadata> {
+  const { token, number } = await params;
+  const title = await portalTitle(token, { kind: "change", number: number });
+  return { title: title ? { absolute: title } : "Change request" };
+}
 
 export default function ClientChangePage({
   params,

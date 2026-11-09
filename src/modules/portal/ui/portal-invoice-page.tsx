@@ -4,6 +4,7 @@ import { INVOICE_STATUS_LABELS, InvoiceDocument } from "@/modules/invoices";
 import { PrintButton } from "@/shared/ui/print-button";
 import { getPortalInvoice } from "../server/queries";
 import { Footer, Notice, PortalHeader } from "./portal-chrome";
+import { PrintSetup } from "@/shared/ui/print-setup";
 
 /** An invoice on the client's link, ready to print or save as PDF. */
 export async function PortalInvoicePage({
@@ -43,6 +44,9 @@ export async function PortalInvoicePage({
       >
         <PrintButton variant="outline" />
       </PortalHeader>
+      <PrintSetup
+        footer={`${invoice.seller.name} · ${invoice.title} ${invoice.number}`}
+      />
       <main className="px-0 py-0 sm:px-4 sm:py-6 print:p-0">
         <InvoiceDocument
           invoice={invoice}
