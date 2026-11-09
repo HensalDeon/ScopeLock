@@ -100,7 +100,7 @@ describe("describeActivity", () => {
         { kind: "member", userId: "u1" },
       ).text,
     ).toBe(
-      "You cancelled the Design approved payment request, and invoice INV/26-27/008 with it",
+      "You cancelled the Design approved payment request. Invoice INV/26-27/008 is cancelled",
     );
     const paid = ev({
       type: "payment.reported",

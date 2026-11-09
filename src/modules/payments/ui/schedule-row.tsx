@@ -15,7 +15,7 @@ export type ScheduleRowContext = {
   projectId: string;
   projectName: string;
   currency: CurrencyCode;
-  client: { firstName: string; phone: string | null };
+  client: { firstName: string; phone: string | null; email: string | null };
   /** The client's link (null if it can't be shown). */
   portalUrl: string | null;
   /** Milestone id → the timeline step that unlocks it ("Design"). */
@@ -32,11 +32,11 @@ export function ScheduleRow({
   item,
   number,
   ctx,
-  actedAbove = false,
+  actedAbove = null,
 }: {
   item: ScheduleItem;
   /** The money strip offers this payment's next action: point there. */
-  actedAbove?: boolean;
+  actedAbove?: "ask" | "confirm" | "waiting" | null;
   /** Position among milestones; null for a change paid separately. */
   number: number | null;
   ctx: ScheduleRowContext;
@@ -89,7 +89,10 @@ export function ScheduleRow({
         </p>
       </div>
       <div className="pl-[2.5rem]">
-        {actedAbove ? (
+        {actedAbove === "waiting" ? (
+          // The strip sends the reminder; the row keeps the bookkeeping.
+          <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
+        ) : actedAbove ? (
           <div className="grid gap-1">
             {item.payment?.report && (
               <p className="text-sm text-pretty text-warning-ink">
@@ -133,6 +136,7 @@ export function paymentActionProps(
       ? `${money(item.total)} + ${money(item.tax)} GST: ${item.taxSplit}`
       : undefined,
     clientFirstName: ctx.client.firstName,
+    clientEmail: ctx.client.email,
     stateFallback: ctx.stateFallback,
     share:
       ctx.portalUrl && item.payment

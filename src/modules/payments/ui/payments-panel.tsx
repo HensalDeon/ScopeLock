@@ -30,10 +30,7 @@ export function PaymentsPanel({
   // Asking for or confirming the next payment happens in the money strip;
   // its row points there instead of offering the same button twice.
   const step = nextStep(items);
-  const actedAbove =
-    step && (step.kind === "ask" || step.kind === "confirm")
-      ? step.item.key
-      : null;
+  const above = step && step.kind !== "settled" ? step : null;
   return (
     <div className="grid gap-3">
       {!methodsReady && (
@@ -56,7 +53,7 @@ export function PaymentsPanel({
             item={item}
             number={item.milestoneId ? index + 1 : null}
             ctx={rowCtx}
-            actedAbove={actedAbove === item.key}
+            actedAbove={above?.item.key === item.key ? above.kind : null}
           />
         ))}
       </ol>

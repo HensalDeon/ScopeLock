@@ -5,6 +5,7 @@ import { useActionState, useId, useState, useTransition } from "react";
 import { todayInIndia } from "@/shared/lib/dates";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
+import { announcing } from "@/shared/ui/announce";
 import { TOUCH } from "@/shared/ui/touch";
 import { Input } from "@/shared/ui/input";
 import { NativeSelect } from "@/shared/ui/native-select";
@@ -53,7 +54,7 @@ export function ReceivedForm({
 }) {
   const uid = useId();
   const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    markPaymentReceived,
+    announcing(markPaymentReceived, `money-${ids.projectId}`),
     IDLE,
   );
   const err = (name: string) =>
@@ -142,7 +143,7 @@ export function RejectForm({
 }) {
   const uid = useId();
   const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    markNotReceived,
+    announcing(markNotReceived, `money-${ids.projectId}`),
     IDLE,
   );
   return (

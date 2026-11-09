@@ -20,6 +20,7 @@ export function ProjectHeader({
 }) {
   const { client } = project;
   const editable = isEditable(project.status);
+  const sent = Boolean(project.sentAt) && !editable;
   const firstName = client ? clientFirstName(client) : "your client";
 
   return (
@@ -46,6 +47,20 @@ export function ProjectHeader({
                 {client.name}
               </Link>
               {client.company ? ` · ${client.company}` : ""}
+              {sent && (
+                <>
+                  {" · "}
+                  <Link
+                    href={`/projects/${project.id}/preview` as Route}
+                    className={cn(
+                      "font-medium text-foreground underline-offset-4 hover:underline sm:hidden",
+                      TOUCH_LINK,
+                    )}
+                  >
+                    View sent proposal
+                  </Link>
+                </>
+              )}
             </p>
           )}
         </div>
@@ -58,12 +73,14 @@ export function ProjectHeader({
               </Link>
             </Button>
           )}
-          <Button asChild variant="outline" className={TOUCH}>
+          <Button
+            asChild
+            variant="outline"
+            className={cn(TOUCH, sent && client && "max-sm:hidden")}
+          >
             <Link href={`/projects/${project.id}/preview` as Route}>
               <Eye aria-hidden />
-              {project.sentAt && !editable
-                ? "View sent proposal"
-                : "Preview as client"}
+              {sent ? "View sent proposal" : "Preview as client"}
             </Link>
           </Button>
         </div>

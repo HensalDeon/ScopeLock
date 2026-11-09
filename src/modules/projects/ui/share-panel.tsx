@@ -169,7 +169,7 @@ function ReplaceLink({ projectId }: { projectId: string }) {
       <Button
         type="button"
         variant="ghost"
-        className={cn("justify-self-start", TOUCH)}
+        className={cn("-ml-2.5 justify-self-start", TOUCH)}
         {...panel.trigger("open")}
       >
         Replace link

@@ -7,6 +7,7 @@ import { formatIsoDate } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
+import { announcing } from "@/shared/ui/announce";
 import { TOUCH } from "@/shared/ui/touch";
 import { ShareLink } from "@/shared/ui/share-link";
 import {
@@ -39,8 +40,10 @@ function Run({
   pendingLabel: string;
   variant?: "default" | "outline" | "ghost" | "destructive";
 }) {
+  // On success the row moves on and this button is gone: say what happened
+  // and put focus on the money strip, which now shows the new state.
   const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    run,
+    announcing(run, `money-${fields.projectId}`),
     IDLE,
   );
   return (
@@ -71,6 +74,7 @@ export function PaymentActions({
   projectId,
   amount,
   clientFirstName,
+  clientEmail = null,
   share,
   stateFallback,
   breakdown,
@@ -81,6 +85,8 @@ export function PaymentActions({
   /** Formatted total, e.g. "₹47,000". */
   amount: string;
   clientFirstName: string;
+  /** Where the request email goes, if the client has one on record. */
+  clientEmail?: string | null;
   /** The client's page for this payment, for copy / WhatsApp. */
   share: { url: string; phone: string | null; message: string } | null;
   /** The page's next step: the ask button is the one filled button. */
@@ -114,9 +120,10 @@ export function PaymentActions({
             </p>
           )}
           <p className="text-sm text-pretty text-muted-foreground">
-            This issues a numbered invoice and a pay page on {clientFirstName}
-            &apos;s link. {clientFirstName} also gets it by email if you&apos;ve
-            added theirs.
+            {`This issues a numbered invoice and a pay page on ${clientFirstName}'s link. `}
+            {clientEmail
+              ? `${clientFirstName} also gets it by email at ${clientEmail}.`
+              : `There's no email for ${clientFirstName}, so send the link on WhatsApp.`}
           </p>
         </div>
         {stateFallback && (

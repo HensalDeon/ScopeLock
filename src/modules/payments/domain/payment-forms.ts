@@ -71,7 +71,7 @@ export const notReceivedSchema = z.object({
 });
 
 export const PAYMENT_STATE_LABELS: Record<ScheduleState, string> = {
-  upcoming: "Not requested",
+  upcoming: "Not asked yet",
   due: "Due",
   client_reported: "Client says paid",
   received: "Received",

@@ -73,6 +73,8 @@ export function ProjectMoneyStrip({
               className={cn(
                 "text-xl font-semibold tracking-[-0.02em] tabular-nums sm:text-2xl",
                 cell.waiting && "text-warning-ink",
+                // A zero is an answer, not money: keep it quiet.
+                cell.value === 0 && "text-muted-foreground",
               )}
             >
               {money(cell.value)}
@@ -170,9 +172,9 @@ function NextStepRow({
       )}
     >
       <p className="text-sm font-medium text-pretty">
-        {unlockedBy ? `${unlockedBy} done? ` : ""}Next payment:{" "}
-        <span className="tabular-nums">{money(item.payable)}</span> (
-        {item.label}).
+        Next: the {item.label} payment,{" "}
+        <span className="tabular-nums">{money(item.payable)}</span>.
+        {unlockedBy ? ` Ask once ${unlockedBy} is done.` : ""}
       </p>
       <div className="justify-self-start">
         <PaymentActions {...paymentActionProps(item, ctx)} primary />

@@ -151,7 +151,7 @@ export function describeActivity(
       );
     case "payment.cancelled":
       return line(
-        `${who} cancelled the ${data.title} payment request${data.label ? `, and invoice ${data.label} with it` : ""}`,
+        `${who} cancelled the ${data.title} payment request${data.label ? `. Invoice ${data.label} is cancelled` : ""}`,
       );
     case "payment.reported":
       return line(

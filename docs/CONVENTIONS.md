@@ -127,6 +127,7 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - **Repeated rows:** errors use dotted paths (`items.0.amount`), and "touched" uses the row's stable key.
 - **Phone tap targets:** buttons and small links in rows, strips and side cards add `TOUCH` / `TOUCH_LINK` from `shared/ui/touch` so they are at least 44px tall below the `sm` breakpoint; desktop keeps the compact sizes.
 - **One filled button per view**, chosen by the project's state (Send for approval, Ask for ₹X, Confirm received, Remind on WhatsApp); everything else is outline or ghost.
+- **Actions whose button disappears on success** (the row moves on) wrap their form action in `announcing(action, focusId)` from `shared/ui/announce`: the result is read out by screen readers and focus moves to the part of the page that now shows it (e.g. the money strip).
 - **Inline confirmations and small panels** (a button that turns into "Ask Rahul for ₹34,220?", "Delete draft?", a short form) use `useInlinePanel()` from `shared/ui/use-inline-panel`: spread `trigger(key)` on the button and `panel(label)` on the panel. Opening moves focus into the panel (announced by its label), Escape closes it, and closing returns focus to the button. Never hand-roll the open/closed state.
 
 ## 5. Pages and rendering (Next.js 16, Cache Components)

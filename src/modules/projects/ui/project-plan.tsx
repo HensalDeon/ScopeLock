@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { formatMoney, sum, type Minor } from "@/shared/lib/money";
+import { cn } from "@/shared/lib/utils";
 import type { Project } from "../domain/project";
 
 /** Approved and pending change requests, summed (by the changes module). */
@@ -23,7 +24,7 @@ export function ScopeTable({
   changes?: ScopeChanges;
   /** Settled scope (after approval): lines folded under the totals. */
   folded?: boolean;
-  /** GST the invoices add over the whole project, when there is any. */
+  /** GST applies (the strip shows the total with it): label this "before GST". */
   gst?: { tax: Minor; total: Minor } | null;
 }) {
   const money = (amount: Minor) => formatMoney(amount, project.currency);
@@ -52,6 +53,9 @@ export function ScopeTable({
     </ol>
   );
   const approved = changes?.approved;
+  // With GST the money strip shows the total the client pays; here the
+  // agreed maths stays at body size so the page has one headline total.
+  const totalSize = gst ? "text-sm" : "text-lg";
   const pending = changes?.pending;
   return (
     <div className="overflow-hidden rounded-xl border bg-background">
@@ -95,7 +99,7 @@ export function ScopeTable({
               <dt className="text-sm font-medium">
                 Project total{gst ? " (before GST)" : ""}
               </dt>
-              <dd className="text-lg font-semibold tabular-nums">
+              <dd className={cn(totalSize, "font-semibold tabular-nums")}>
                 {money(sum([project.baseline.total, approved.total]))}
               </dd>
             </div>
@@ -105,19 +109,10 @@ export function ScopeTable({
             <dt className="text-sm font-medium">
               Agreed total{gst ? " (before GST)" : ""}
             </dt>
-            <dd className="text-lg font-semibold tabular-nums">
+            <dd className={cn(totalSize, "font-semibold tabular-nums")}>
               {money(project.baseline.total)}
             </dd>
           </div>
-        )}
-        {gst && (
-          <p className="text-right text-sm text-muted-foreground tabular-nums">
-            Plus {money(gst.tax)} GST on invoices ·{" "}
-            <span className="font-medium text-foreground">
-              {money(gst.total)}
-            </span>{" "}
-            with GST
-          </p>
         )}
         {pending && pending.count > 0 && (
           <p className="text-sm text-warning-ink tabular-nums">

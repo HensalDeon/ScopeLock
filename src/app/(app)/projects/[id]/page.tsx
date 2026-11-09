@@ -70,6 +70,7 @@ async function ProjectDetail({
   const client = {
     firstName: project.client ? clientFirstName(project.client) : "your client",
     phone: project.client?.phone ?? null,
+    email: project.client?.email ?? null,
   };
   const ctx: ScheduleRowContext | null = money && {
     projectId: project.id,
