@@ -63,6 +63,8 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     { key: { workspaceId: 1, status: 1, requestedAt: 1 } },
   ],
   [COLLECTIONS.invoicingSettings]: [{ key: { workspaceId: 1 }, unique: true }],
+  // Per-workspace sequences ("proposal": P-001, P-002…).
+  [COLLECTIONS.counters]: [{ key: { workspaceId: 1, name: 1 }, unique: true }],
   [COLLECTIONS.invoices]: [
     // Rule 46(b): a number is used once (it carries the financial year).
     { key: { workspaceId: 1, number: 1 }, unique: true },

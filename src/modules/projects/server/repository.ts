@@ -1,4 +1,6 @@
 import "server-only";
+import { COLLECTIONS } from "@/shared/db/names";
+import { scopedCollection, type WorkspaceOwned } from "@/shared/db/scoped";
 import type { ClientSession, ObjectId } from "mongodb";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 import { minor } from "@/shared/lib/money";
@@ -148,6 +150,7 @@ export async function insertProject(
   data: ProjectData,
 ): Promise<string> {
   const { insertedId } = await projects(workspaceId).insertOne({
+    number: await nextProposalNumber(workspaceId),
     clientId: data.clientId,
     name: data.name,
     description: data.description,
@@ -245,4 +248,20 @@ export async function setPaymentTotals(
     { $set: { "totals.paid": totals.paid, "totals.due": totals.due } },
     { session },
   );
+}
+
+const counters = (workspaceId: string) =>
+  scopedCollection<WorkspaceOwned & { name: string; seq: number }>(
+    COLLECTIONS.counters,
+    workspaceId,
+  );
+
+/** The workspace's next proposal number (1, 2, 3…), atomically. */
+async function nextProposalNumber(workspaceId: string): Promise<number> {
+  const doc = await counters(workspaceId).findOneAndUpdate(
+    { name: "proposal" },
+    { $inc: { seq: 1 } },
+    { upsert: true, returnDocument: "after" },
+  );
+  return doc?.seq ?? 1;
 }

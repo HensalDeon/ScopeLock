@@ -10,7 +10,9 @@ import {
   getDocumentImages,
   getDocumentSettings,
 } from "@/modules/documents/server";
-import { gstOnDocuments } from "@/modules/invoices/server";
+import { termsForTax } from "@/modules/documents";
+import type { TaxCase } from "@/modules/invoices";
+import { documentTax } from "@/modules/invoices/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import {
   requireWorkspace,
@@ -21,9 +23,17 @@ import { type Project } from "../domain/project";
 import { getProjectOrNotFound, type ProjectWithClient } from "./queries";
 import { findPortalState } from "./portal-repository";
 
-/** Short, readable reference for a project's documents: "P-1F107C". */
-export function projectReference(project: Pick<Project, "id">): string {
-  return `P-${project.id.slice(-6).toUpperCase()}`;
+/**
+ * A project's reference on its documents: "P-007" (numbered per workspace),
+ * or "P-1F107C" for projects from before numbering, matching what their
+ * clients already saw and signed.
+ */
+export function projectReference(
+  project: Pick<Project, "id" | "number">,
+): string {
+  return project.number
+    ? `P-${String(project.number).padStart(3, "0")}`
+    : `P-${project.id.slice(-6).toUpperCase()}`;
 }
 
 /**
@@ -37,9 +47,9 @@ async function loadGetProposalDocument(projectId: string) {
     requireWorkspace(),
     getDocumentSettings(),
   ]);
-  const gst =
+  const tax =
     project.status === "draft"
-      ? await gstOnDocuments(context.workspace.workspaceId, project.client)
+      ? await documentTax(context.workspace.workspaceId, project.client)
       : null;
   const sent =
     project.status === "draft"
@@ -56,7 +66,7 @@ async function loadGetProposalDocument(projectId: string) {
     images: await getDocumentImages(settings),
     data:
       sent?.data ??
-      currentProposalData(project, context, settings.defaults, gst),
+      currentProposalData(project, context, settings.defaults, tax),
   };
 }
 
@@ -65,15 +75,22 @@ export function currentProposalData(
   project: ProjectWithClient,
   { workspace, user }: Pick<WorkspaceContext, "workspace" | "user">,
   defaults: ProposalDefaults,
-  gstPercent: number | null = null,
+  tax: { gstPercent: number | null; taxCase: TaxCase } | null = null,
 ): ProposalDocumentData {
+  const doc = toProposalDocument(
+    project,
+    documentBusiness({ workspace, user }),
+    defaults,
+  );
   return {
-    ...toProposalDocument(
-      project,
-      documentBusiness({ workspace, user }),
-      defaults,
+    ...doc,
+    // The starter GST term says what really happens for this client.
+    terms: termsForTax(
+      doc.terms,
+      tax?.taxCase ?? null,
+      tax?.gstPercent ?? null,
     ),
-    gstPercent,
+    gstPercent: tax?.gstPercent ?? null,
   };
 }
 

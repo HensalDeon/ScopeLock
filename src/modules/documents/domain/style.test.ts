@@ -1,3 +1,4 @@
+import { termsForTax } from "./defaults";
 import { describe, expect, it } from "vitest";
 import { contrast, mix, readableShade, textOn } from "./color";
 import {
@@ -82,5 +83,27 @@ describe("documentStyleSchema", () => {
       showLogo: "true",
     });
     expect(result.error?.issues[0]?.message).toBe("Use a colour like #b08d57.");
+  });
+});
+
+describe("termsForTax", () => {
+  const terms = [
+    "Work starts once this scope is approved.",
+    "Prices are in the currency shown on this proposal. GST or other taxes are extra where applicable.",
+  ];
+  it("says what happens with GST for this client", () => {
+    expect(termsForTax(terms, "gst", 18)[1]).toBe(
+      "Prices are in the currency shown on this proposal. 18% GST is added on each invoice.",
+    );
+    expect(termsForTax(terms, "export", null)[1]).toMatch(
+      /No GST is charged: this is an export/,
+    );
+    expect(termsForTax(terms, "none", null)[1]).toBe(
+      "Prices are in the currency shown on this proposal.",
+    );
+  });
+  it("leaves your own wording and older documents alone", () => {
+    expect(termsForTax(["GST extra."], "none", null)).toEqual(["GST extra."]);
+    expect(termsForTax(terms, null, null)).toEqual(terms);
   });
 });

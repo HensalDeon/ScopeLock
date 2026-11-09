@@ -9,7 +9,7 @@ import {
   type Buyer,
   type InvoicingSettings,
 } from "../domain/invoice";
-import { gstHints } from "../domain/preview";
+import { gstHints, taxCaseOf, type TaxCase } from "../domain/preview";
 import type { Invoice } from "../domain/snapshot";
 import * as repo from "./repository";
 
@@ -87,4 +87,19 @@ export async function getReplacementNumber(
 ): Promise<string | null> {
   const { workspace } = await requireWorkspace();
   return repo.findReplacementNumber(workspace.workspaceId, invoice);
+}
+
+/**
+ * GST on a client's documents: the rate shown (18 or null) and the case,
+ * which picks the wording of the proposal's GST term.
+ */
+export async function documentTax(
+  workspaceId: string,
+  client: Pick<Buyer, "state" | "country" | "gstin"> | null,
+): Promise<{ gstPercent: number | null; taxCase: TaxCase }> {
+  const settings = await repo.findInvoicing(workspaceId);
+  return {
+    gstPercent: gstHints(settings, client).addsGst ? GST_RATE_PERCENT : null,
+    taxCase: taxCaseOf(settings, client),
+  };
 }

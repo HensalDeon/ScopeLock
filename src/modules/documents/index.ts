@@ -13,6 +13,7 @@ export {
   PROPOSAL_DEFAULTS_FIELDS,
   proposalDefaultsSchema,
   STARTER_PROPOSAL_DEFAULTS,
+  termsForTax,
   type ProposalDefaults,
 } from "./domain/defaults";
 export {

@@ -9,6 +9,7 @@ export {
   getInvoice,
   getReplacementNumber,
   getInvoicing,
+  documentTax,
   gstOnDocuments,
 } from "./server/queries";
 export { issueInvoice, type IssuedInvoice } from "./server/issue";

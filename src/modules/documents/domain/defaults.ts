@@ -60,3 +60,32 @@ export function defaultsToFormValues(
     clientProvides: joinLines(defaults.clientProvides),
   };
 }
+
+/** The GST sentence in the starter terms, rewritten per client below. */
+const GST_SENTENCE = "GST or other taxes are extra where applicable.";
+
+/**
+ * Terms as this client should read them: the starter "GST … extra where
+ * applicable" says what actually happens (GST added; none on an export;
+ * nothing at all when you're not registered). Text you wrote stays as is.
+ */
+export function termsForTax(
+  terms: readonly string[],
+  taxCase: "gst" | "export" | "none" | null,
+  gstPercent: number | null,
+): string[] {
+  if (!taxCase) return [...terms];
+  const sentence =
+    taxCase === "gst"
+      ? `${gstPercent ?? 18}% GST is added on each invoice.`
+      : taxCase === "export"
+        ? "No GST is charged: this is an export of services, zero-rated under LUT."
+        : "";
+  return terms
+    .map((t) =>
+      t.includes(GST_SENTENCE)
+        ? t.replace(GST_SENTENCE, sentence).replace(/\s+$/, "")
+        : t,
+    )
+    .filter((t) => t.trim().length > 0);
+}
