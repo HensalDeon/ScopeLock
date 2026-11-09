@@ -17,15 +17,19 @@ export function ShareLink({
   phone,
   message,
   primary = true,
+  compact = false,
 }: {
   url: string;
   phone: string | null;
   message: string;
   /** False when sending the link isn't the page's main action. */
   primary?: boolean;
+  /** Buttons only; the link text shows only if copying fails. */
+  compact?: boolean;
 }) {
   const uid = useId();
   const [copied, setCopied] = useState(false);
+  const [showField, setShowField] = useState(!compact);
   useEffect(() => {
     if (!copied) return;
     const t = setTimeout(() => setCopied(false), 2000);
@@ -39,16 +43,20 @@ export function ShareLink({
 
   return (
     <div className="grid gap-2">
-      <label htmlFor={`${uid}-link`} className="sr-only">
-        Client link
-      </label>
-      <Input
-        id={`${uid}-link`}
-        readOnly
-        value={url}
-        onFocus={(e) => e.currentTarget.select()}
-        className="font-mono text-xs"
-      />
+      {showField && (
+        <>
+          <label htmlFor={`${uid}-link`} className="sr-only">
+            Client link
+          </label>
+          <Input
+            id={`${uid}-link`}
+            readOnly
+            value={url}
+            onFocus={(e) => e.currentTarget.select()}
+            className="font-mono text-xs"
+          />
+        </>
+      )}
       <div className="grid grid-cols-2 gap-2">
         <Button
           type="button"
@@ -59,7 +67,11 @@ export function ShareLink({
               await navigator.clipboard.writeText(url);
               setCopied(true);
             } catch {
-              document.getElementById(`${uid}-link`)?.focus();
+              // No clipboard (old browser, permissions): show the link to copy.
+              setShowField(true);
+              requestAnimationFrame(() =>
+                document.getElementById(`${uid}-link`)?.focus(),
+              );
             }
           }}
         >

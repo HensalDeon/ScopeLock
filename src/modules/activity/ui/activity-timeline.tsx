@@ -75,9 +75,10 @@ function Lines({
               aria-hidden
               className={cn(
                 "relative z-10 mt-1.5 size-2 rounded-full",
-                item.tone === "done" && "bg-brand",
-                item.tone === "waiting" && "bg-warning",
-                item.tone === "neutral" && "bg-muted-foreground/40",
+                // History is past events: emerald marks something settled
+                // (approved, received); nothing here is still waiting, so no
+                // amber (that's for live badges).
+                item.tone === "done" ? "bg-brand" : "bg-muted-foreground/40",
               )}
             />
             {(i < items.length - 1 || !last) && (

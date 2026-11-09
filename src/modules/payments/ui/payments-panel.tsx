@@ -1,5 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { nextStep } from "../domain/next-step";
 import type { ScheduleItem } from "../domain/payment";
 import { ScheduleRow, type ScheduleRowContext } from "./schedule-row";
 
@@ -26,6 +27,13 @@ export function PaymentsPanel({
   stateFallback?: ScheduleRowContext["stateFallback"];
 }) {
   const rowCtx = { ...ctx, unlockedBy, stateFallback };
+  // Asking for or confirming the next payment happens in the money strip;
+  // its row points there instead of offering the same button twice.
+  const step = nextStep(items);
+  const actedAbove =
+    step && (step.kind === "ask" || step.kind === "confirm")
+      ? step.item.key
+      : null;
   return (
     <div className="grid gap-3">
       {!methodsReady && (
@@ -48,6 +56,7 @@ export function PaymentsPanel({
             item={item}
             number={item.milestoneId ? index + 1 : null}
             ctx={rowCtx}
+            actedAbove={actedAbove === item.key}
           />
         ))}
       </ol>

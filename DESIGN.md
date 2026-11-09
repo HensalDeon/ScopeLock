@@ -174,7 +174,7 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 
 **The Ink Action Rule.** Every action is ink navy. A screen has at most one filled ink button for the next step; everything else is outline or ghost.
 
-**The Waiting Amber Rule.** Amber marks only things waiting on a person (the client or you), and always pairs a wash background with waiting ink text, never amber text on white.
+**The Waiting Amber Rule.** Amber marks only things waiting on a person (the client or you), and always pairs a wash background with waiting ink text, never amber text on white. History (activity timelines) never uses amber: past events are neutral, or emerald when something was settled.
 
 ## Typography
 
@@ -271,7 +271,7 @@ The signature container: a white panel with a hairline border and 11px corners, 
 
 ### Money strip
 
-Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Approved work, Received, Due now, Awaiting approval. At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in").
+Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Approved work, Received, Due now, Awaiting approval. At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in"). The strip is the only place that step's button appears; the payment's own row keeps its details and points up ("Next step, at the top of the page").
 
 ### Client document
 

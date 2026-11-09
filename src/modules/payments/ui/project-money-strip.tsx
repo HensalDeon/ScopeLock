@@ -55,8 +55,10 @@ export function ProjectMoneyStrip({
   ];
   return (
     <section
+      id={`money-${ctx.projectId}`}
+      tabIndex={-1}
       aria-label="Where the money stands"
-      className="overflow-hidden rounded-xl border bg-background"
+      className="overflow-hidden rounded-xl border bg-background outline-none"
     >
       <dl className="grid grid-cols-2 lg:grid-cols-4 lg:[&>*]:border-b-0 lg:[&>*:not(:last-child)]:border-r [&>*:nth-child(-n+2)]:border-b [&>*:nth-child(odd)]:border-r">
         {cells.map((cell) => (
@@ -162,11 +164,16 @@ function NextStepRow({
     : undefined;
   return (
     <div className={row}>
-      <p className="text-sm text-pretty text-muted-foreground">
-        Next: the {item.label} payment
-        {unlockedBy ? `, once “${unlockedBy}” is done` : ""}. Asking issues its
-        invoice and gives {name} a page to pay it.
-      </p>
+      <div className="grid gap-0.5">
+        <p className="text-sm font-medium text-pretty">
+          {unlockedBy ? `${unlockedBy} done? ` : ""}The next payment is{" "}
+          <span className="tabular-nums">{money(item.payable)}</span>, for{" "}
+          {item.label}.
+        </p>
+        <p className="text-sm text-pretty text-muted-foreground">
+          Asking issues its invoice and gives {name} a page to pay it.
+        </p>
+      </div>
       <div className="justify-self-start">
         <PaymentActions {...paymentActionProps(item, ctx)} primary />
       </div>

@@ -25,6 +25,7 @@ import {
 import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { formatMoney, minor } from "@/shared/lib/money";
+import { cn } from "@/shared/lib/utils";
 import { PageContainer, TitledSection } from "@/shared/ui/page";
 import { ProjectHistory } from "./_components/project-history";
 
@@ -119,7 +120,13 @@ async function ProjectDetail({
       {/* Phones: the share card comes first (after the money strip once
           approved). Desktop: it sits top-right, the client card below it. */}
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr] lg:gap-y-4">
-        <div className="lg:col-start-2 lg:row-start-1">
+        <div
+          className={cn(
+            "lg:col-start-2 lg:row-start-1",
+            // Phones, once approved: money first, the link after payments.
+            approved && "max-lg:order-1",
+          )}
+        >
           <SharePanel
             projectId={project.id}
             status={project.status}
@@ -169,7 +176,12 @@ async function ProjectDetail({
           />
         </div>
 
-        <aside className="grid gap-4 lg:col-start-2 lg:row-start-2">
+        <aside
+          className={cn(
+            "grid gap-4 lg:col-start-2 lg:row-start-2",
+            approved && "max-lg:order-2",
+          )}
+        >
           <ProjectSidebar project={project} />
         </aside>
       </div>

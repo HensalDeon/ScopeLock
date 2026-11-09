@@ -102,57 +102,60 @@ export function SharePanel({
     );
   }
 
-  const approved = status !== "awaiting_approval";
+  if (status !== "awaiting_approval") {
+    // Approved: the link is a utility now (the project page for the client),
+    // so the card shrinks to it. The approval itself lives in Client answers.
+    return (
+      <SideCard>
+        <div className="grid gap-1">
+          <SideCardTitle>{name}&apos;s link</SideCardTitle>
+          <SideCardText>
+            Opens {name}&apos;s project page: payments, changes and invoices.
+          </SideCardText>
+        </div>
+        {url ? (
+          <ShareLink
+            url={url}
+            phone={client.phone}
+            message={message}
+            primary={false}
+            compact
+          />
+        ) : (
+          <SideCardText>
+            This link can&apos;t be shown again because the app&apos;s security
+            key changed. Make a new link and share that one.
+          </SideCardText>
+        )}
+        <ReplaceLink projectId={projectId} />
+      </SideCard>
+    );
+  }
+
   return (
     <SideCard>
-      {approved && lastDecision?.decision === "approved" ? (
-        <>
-          <SideCardTitle>{name}&apos;s link</SideCardTitle>
-          <p className="text-sm text-muted-foreground tabular-nums">
-            Approved by {lastDecision.name}, {formatDateTime(lastDecision.at)}.
-            The link now opens the project page: payments, changes and invoices.
-          </p>
-          {lastDecision.comment && (
-            <blockquote className="border-l-2 border-brand pl-3 text-[15px] leading-relaxed whitespace-pre-line">
-              {lastDecision.comment}
-            </blockquote>
-          )}
-        </>
-      ) : (
-        <>
-          <SideCardTitle>Waiting for {name}</SideCardTitle>
-          {sentAt && (
-            <p className="text-sm text-muted-foreground tabular-nums">
-              Sent {formatDateTime(sentAt)}
-            </p>
-          )}
-        </>
+      <SideCardTitle>Waiting for {name}</SideCardTitle>
+      {sentAt && (
+        <p className="text-sm text-muted-foreground tabular-nums">
+          Sent {formatDateTime(sentAt)}
+        </p>
       )}
-
       {url ? (
-        <ShareLink
-          url={url}
-          phone={client.phone}
-          message={message}
-          primary={!approved}
-        />
+        <ShareLink url={url} phone={client.phone} message={message} />
       ) : (
         <SideCardText>
           This link can&apos;t be shown again because the app&apos;s security
           key changed. Make a new link and share that one.
         </SideCardText>
       )}
-
       <div className="flex flex-wrap gap-x-1 gap-y-2">
-        {!approved && (
-          <ActionButton
-            action={withdrawProposal}
-            projectId={projectId}
-            label="Withdraw to edit"
-            pendingLabel="Withdrawing…"
-            variant="outline"
-          />
-        )}
+        <ActionButton
+          action={withdrawProposal}
+          projectId={projectId}
+          label="Withdraw to edit"
+          pendingLabel="Withdrawing…"
+          variant="outline"
+        />
         <ReplaceLink projectId={projectId} />
       </div>
     </SideCard>
@@ -166,7 +169,7 @@ function ReplaceLink({ projectId }: { projectId: string }) {
       <Button
         type="button"
         variant="ghost"
-        className={TOUCH}
+        className={cn("justify-self-start", TOUCH)}
         {...panel.trigger("open")}
       >
         Replace link

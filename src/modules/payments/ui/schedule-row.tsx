@@ -2,9 +2,11 @@ import type { Route } from "next";
 import type { ComponentProps } from "react";
 import Link from "next/link";
 import type { CurrencyCode } from "@/shared/lib/currency";
+import { formatIsoDate } from "@/shared/lib/dates";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { TOUCH_LINK } from "@/shared/ui/touch";
+import { METHOD_LABELS } from "../domain/methods";
 import type { ScheduleItem } from "../domain/payment";
 import { PaymentActions } from "./payment-actions";
 import { PaymentStateBadge } from "./payment-state-badge";
@@ -30,8 +32,11 @@ export function ScheduleRow({
   item,
   number,
   ctx,
+  actedAbove = false,
 }: {
   item: ScheduleItem;
+  /** The money strip offers this payment's next action: point there. */
+  actedAbove?: boolean;
   /** Position among milestones; null for a change paid separately. */
   number: number | null;
   ctx: ScheduleRowContext;
@@ -50,7 +55,7 @@ export function ScheduleRow({
             <PaymentStateBadge state={item.state} />
           </div>
           {(item.lines.length > 1 || item.percent === null) && (
-            <ul className="grid gap-0.5 text-xs text-muted-foreground tabular-nums">
+            <ul className="grid gap-0.5 text-xs text-pretty text-muted-foreground tabular-nums">
               {item.lines.map((line) => (
                 <li key={`${line.kind}-${line.refId}`}>
                   {line.description}: {money(line.amount)}
@@ -84,7 +89,31 @@ export function ScheduleRow({
         </p>
       </div>
       <div className="pl-[2.5rem]">
-        <PaymentActions {...paymentActionProps(item, ctx)} />
+        {actedAbove ? (
+          <div className="grid gap-1">
+            {item.payment?.report && (
+              <p className="text-sm text-pretty text-warning-ink">
+                {ctx.client.firstName} says they paid by{" "}
+                {METHOD_LABELS[item.payment.report.method]} on{" "}
+                {formatIsoDate(item.payment.report.paidOn)} · UTR{" "}
+                <span className="font-mono text-xs">
+                  {item.payment.report.reference}
+                </span>
+              </p>
+            )}
+            <a
+              href={`#money-${ctx.projectId}`}
+              className={cn(
+                "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+                TOUCH_LINK,
+              )}
+            >
+              Next step, at the top of the page
+            </a>
+          </div>
+        ) : (
+          <PaymentActions {...paymentActionProps(item, ctx)} />
+        )}
       </div>
     </li>
   );
@@ -105,7 +134,6 @@ export function paymentActionProps(
       : undefined,
     clientFirstName: ctx.client.firstName,
     stateFallback: ctx.stateFallback,
-    unlockedBy: item.milestoneId ? ctx.unlockedBy[item.milestoneId] : undefined,
     share:
       ctx.portalUrl && item.payment
         ? {

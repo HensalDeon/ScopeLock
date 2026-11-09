@@ -72,7 +72,6 @@ export function PaymentActions({
   amount,
   clientFirstName,
   share,
-  unlockedBy,
   stateFallback,
   breakdown,
   primary = false,
@@ -84,8 +83,6 @@ export function PaymentActions({
   clientFirstName: string;
   /** The client's page for this payment, for copy / WhatsApp. */
   share: { url: string; phone: string | null; message: string } | null;
-  /** The timeline step that unlocks this payment ("Design"), if linked. */
-  unlockedBy?: string;
   /** The page's next step: the ask button is the one filled button. */
   primary?: boolean;
   /** "₹28,800 + ₹5,184 GST: CGST 9% + SGST 9%", before it's asked for. */
@@ -158,9 +155,7 @@ export function PaymentActions({
         variant={primary ? "default" : "outline"}
         {...panels.trigger("ask")}
       >
-        {unlockedBy
-          ? `“${unlockedBy}” done: ask for ${amount}`
-          : "Ask for payment"}
+        {primary ? `Ask ${clientFirstName} for ${amount}` : "Ask for payment"}
       </Button>
     );
   }
@@ -168,7 +163,7 @@ export function PaymentActions({
   if (item.state === "received") {
     const c = item.payment?.confirmation;
     return c ? (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-pretty text-muted-foreground">
         Received on {formatIsoDate(c.receivedOn)} · {METHOD_LABELS[c.method]}
         {c.reference ? ` · ${c.reference}` : ""}
       </p>
@@ -185,7 +180,7 @@ export function PaymentActions({
               {clientFirstName} says they paid by {METHOD_LABELS[r.method]} on{" "}
               {r.paidOn}.
             </p>
-            <p className="font-mono text-[13px]">UTR {r.reference}</p>
+            <p className="font-mono text-xs">UTR {r.reference}</p>
             {r.note && <p className="text-pretty">“{r.note}”</p>}
             {r.hasProof && <ProofLink paymentId={ids.paymentId} />}
           </div>
