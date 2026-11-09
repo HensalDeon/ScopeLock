@@ -184,3 +184,19 @@ export type Invoice = InvoiceSnapshot & {
   /** sha256 of the snapshot as issued, to show it hasn't changed. */
   snapshotHash: string;
 };
+
+/**
+ * A line as the invoice prints it. Milestone lines are stored as "30% of
+ * the agreed ₹80,000", which doesn't say what was bought (Rule 46 wants a
+ * description of the service), so they're named after the project and the
+ * payment: "Website redesign, Design approved (30% of the agreed ₹80,000)".
+ * Change request lines ("CR-001 Blog section") already say it.
+ */
+export function lineDescription(
+  description: string,
+  invoice: Pick<InvoiceSnapshot, "projectName" | "paymentLabel">,
+): string {
+  return /^\d+(\.\d+)?% of the agreed /.test(description)
+    ? `${invoice.projectName}, ${invoice.paymentLabel} (${description})`
+    : description;
+}

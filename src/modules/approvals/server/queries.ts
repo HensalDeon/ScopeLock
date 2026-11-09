@@ -17,6 +17,8 @@ import {
   toApproval,
   type ApprovalDoc,
 } from "./repository";
+import type { DocumentAcceptance } from "@/modules/documents";
+import { acceptanceOf } from "../domain/approval";
 
 export type CheckedApproval = Approval & {
   /** The snapshot still matches its hash and the record its signature. */
@@ -62,11 +64,22 @@ function checked(doc: ApprovalDoc): CheckedApproval {
 export async function getApprovalWithSnapshot(
   projectId: string,
   approvalId: string,
-): Promise<{ approval: CheckedApproval; snapshot: unknown } | null> {
+): Promise<{
+  approval: CheckedApproval;
+  snapshot: unknown;
+  /** As printed on the document: who, when, and the integrity check. */
+  acceptance: DocumentAcceptance;
+} | null> {
   const project = parseObjectId(projectId);
   const id = parseObjectId(approvalId);
   if (!project || !id) return null;
   const { workspace } = await requireWorkspace();
   const doc = await findApproval(workspace.workspaceId, project, id);
-  return doc ? { approval: checked(doc), snapshot: doc.snapshot } : null;
+  if (!doc) return null;
+  const approval = checked(doc);
+  return {
+    approval,
+    snapshot: doc.snapshot,
+    acceptance: acceptanceOf(approval, new Date()),
+  };
 }

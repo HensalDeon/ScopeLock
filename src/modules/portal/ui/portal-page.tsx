@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ActivityTimeline } from "@/modules/activity";
 import { changeLabel } from "@/modules/changes";
-import { ClassicDocument } from "@/modules/documents";
+import { ClassicDocument, approvalAmount } from "@/modules/documents";
 import { PortalNextStep } from "./portal-next-step";
 import { ChangeRow, PaymentRow } from "./portal-rows";
 import { PortalTotals } from "./portal-totals";
@@ -65,7 +65,7 @@ export async function PortalPage({ token }: { token: string }) {
             Approve or ask for changes
           </a>
         )}
-        <PrintButton label="Save PDF" variant="outline" />
+        <PrintButton variant="outline" />
       </PortalHeader>
 
       {state === "approved" && decision && (
@@ -186,6 +186,16 @@ export async function PortalPage({ token }: { token: string }) {
 
         <ClassicDocument
           data={data}
+          acceptance={
+            state === "approved" && decision
+              ? {
+                  verdict: "Approved",
+                  name: decision.name,
+                  email: null,
+                  at: decision.at,
+                }
+              : null
+          }
           style={view.style}
           images={view.images}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
@@ -216,7 +226,11 @@ export async function PortalPage({ token }: { token: string }) {
               kind="proposal"
               action={decideProposal.bind(null, token)}
               businessName={business}
-              total={money(data.total)}
+              total={approvalAmount(
+                minor(data.total),
+                data.gstPercent,
+                data.currency,
+              )}
               defaults={{
                 name: data.client?.name ?? "",
                 email: data.client?.email ?? "",

@@ -1,3 +1,4 @@
+import { approvalAmount } from "./document-data";
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import { gstOver, withGst } from "./gst";
@@ -15,5 +16,14 @@ describe("document GST figures", () => {
   it("no rate (older documents, or no GST): nothing to show", () => {
     expect(gstOver([minor(100)], null)).toBeNull();
     expect(withGst(minor(100), undefined)).toBeNull();
+  });
+});
+
+describe("approvalAmount", () => {
+  it("is what the client will pay", () => {
+    expect(approvalAmount(minor(8_000_000), 18, "INR")).toBe(
+      "₹94,400 with GST",
+    );
+    expect(approvalAmount(minor(8_000_000), null, "INR")).toBe("₹80,000");
   });
 });

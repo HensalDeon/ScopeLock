@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { changeLabel } from "@/modules/changes";
-import { ChangeOrderDocument } from "@/modules/documents";
+import { ChangeOrderDocument, approvalAmount } from "@/modules/documents";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
@@ -75,7 +75,7 @@ export async function PortalChangePage({
             Approve or decline
           </a>
         )}
-        <PrintButton label="Save PDF" variant="outline" />
+        <PrintButton variant="outline" />
       </PortalHeader>
 
       {change.status === "approved" && decision && (
@@ -100,6 +100,17 @@ export async function PortalChangePage({
         <ChangeOrderDocument
           data={data}
           approved={change.status === "approved"}
+          acceptance={
+            decision
+              ? {
+                  verdict:
+                    decision.decision === "approved" ? "Approved" : "Declined",
+                  name: decision.name,
+                  email: null,
+                  at: decision.at,
+                }
+              : null
+          }
           style={view.style}
           images={view.images}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
@@ -126,7 +137,7 @@ export async function PortalChangePage({
               kind="change"
               action={decideChange.bind(null, token, change.number)}
               businessName={businessName}
-              total={total}
+              total={approvalAmount(data.total, data.gstPercent, data.currency)}
               defaults={{
                 name: data.client?.name ?? "",
                 email: data.client?.email ?? "",

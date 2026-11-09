@@ -1,5 +1,5 @@
 import type { CurrencyCode } from "@/shared/lib/currency";
-import type { Minor } from "@/shared/lib/money";
+import { formatMoney, percentOf, sum, type Minor } from "@/shared/lib/money";
 
 /**
  * Everything a proposal document shows, as plain data. Pages build it from
@@ -103,3 +103,16 @@ export type ChangeOrderData = {
   originalTotal: Minor;
   issuedOn: Date;
 };
+
+/**
+ * The amount a client approves, as they'll pay it: "₹94,400 with GST" when
+ * the document adds GST, else just "₹80,000". Same figure as the sheet.
+ */
+export function approvalAmount(
+  total: Minor,
+  gstPercent: number | null | undefined,
+  currency: CurrencyCode,
+): string {
+  if (!gstPercent) return formatMoney(total, currency);
+  return `${formatMoney(sum([total, percentOf(total, gstPercent)]), currency)} with GST`;
+}

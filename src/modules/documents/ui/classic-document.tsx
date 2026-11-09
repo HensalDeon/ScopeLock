@@ -9,6 +9,7 @@ import { planSections } from "./classic-plan-sections";
 import { scopeSections } from "./classic-scope-sections";
 import { sectionKit } from "./classic-section-kit";
 import { documentSerif } from "./fonts";
+import { AcceptanceBlock, type DocumentAcceptance } from "./acceptance-block";
 
 /**
  * "Classic" proposal template: dark (or tinted) cover, highlights strip and
@@ -25,7 +26,10 @@ export function ClassicDocument({
   images = NO_IMAGES,
   className,
   titleAs = "h1",
+  acceptance = null,
 }: {
+  /** The client's answer, printed before the footer. */
+  acceptance?: DocumentAcceptance | null;
   /** "h2" when the page around it has its own h1 (settings preview). */
   titleAs?: "h1" | "h2";
   data: ProposalDocumentData;
@@ -116,6 +120,8 @@ export function ClassicDocument({
             {section.body}
           </section>
         ))}
+
+        {acceptance && <AcceptanceBlock acceptance={acceptance} />}
 
         <footer className="mt-2 flex flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
           <p>

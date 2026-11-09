@@ -9,6 +9,7 @@ import { gstOver } from "../domain/gst";
 import { NO_IMAGES, type DocumentImages } from "../domain/images";
 import { documentPalette, type DocumentStyle } from "../domain/style";
 import { documentSerif } from "./fonts";
+import { AcceptanceBlock, type DocumentAcceptance } from "./acceptance-block";
 
 /**
  * A change request as a short document in the same style as the proposal:
@@ -22,7 +23,10 @@ export function ChangeOrderDocument({
   className,
   approved = false,
   titleAs: Title = "h1",
+  acceptance = null,
 }: {
+  /** The client's answer, printed before the footer. */
+  acceptance?: DocumentAcceptance | null;
   /** "h2" when the page around it already has an h1 (the app's CR page). */
   titleAs?: "h1" | "h2";
   data: ChangeOrderData;
@@ -124,7 +128,7 @@ export function ChangeOrderDocument({
         </Title>
 
         <dl className="mt-7 grid gap-4 border-t border-(--doc-cover-rule) pt-5 text-sm @md:grid-cols-3">
-          <Meta label="For">
+          <Meta label="Prepared for">
             {data.client
               ? (data.client.company ?? data.client.name)
               : "Your client"}
@@ -182,13 +186,13 @@ export function ChangeOrderDocument({
         </table>
 
         <div className="grid break-inside-avoid items-stretch gap-4 @xl:grid-cols-[1fr_1.2fr]">
-          <div className="grid content-center gap-1 rounded-xl bg-(--doc-cover-bg) px-6 py-5 text-(--doc-cover-text)">
+          <div className="grid content-center gap-1 rounded-[2px] bg-(--doc-cover-bg) px-6 py-5 text-(--doc-cover-text)">
             <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
               This change
             </p>
             <p
               className={cn(
-                "text-[2.2rem] leading-none tabular-nums",
+                "text-[2.2rem] leading-none [font-variant-numeric:lining-nums_proportional-nums]",
                 headingFont,
               )}
             >
@@ -203,7 +207,7 @@ export function ChangeOrderDocument({
               </p>
             )}
           </div>
-          <div className="grid content-center gap-2 rounded-xl border border-[#e7e4dd] px-5 py-4 text-[0.88rem] leading-relaxed text-pretty">
+          <div className="grid content-center gap-2 rounded-[2px] border border-[#e7e4dd] px-5 py-4 text-[0.88rem] leading-relaxed text-pretty">
             <p>
               <span className="mb-0.5 block text-[11px] tracking-[0.14em] text-(--doc-soft-text) uppercase">
                 How it&apos;s paid
@@ -219,6 +223,8 @@ export function ChangeOrderDocument({
             </p>
           </div>
         </div>
+
+        {acceptance && <AcceptanceBlock acceptance={acceptance} />}
 
         <footer className="flex flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
           <p>

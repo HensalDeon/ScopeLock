@@ -48,7 +48,7 @@ export function scopeSections(
         {data.items.map((item, i) => (
           <div
             key={item.id}
-            className="grid break-inside-avoid content-start gap-2 rounded-xl border border-[#e7e4dd] p-4"
+            className="grid break-inside-avoid content-start gap-2 rounded-[2px] border border-[#e7e4dd] p-4"
           >
             <div className="flex items-start gap-3">
               <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-(--doc-soft) text-[11px] font-semibold text-(--doc-soft-text) tabular-nums">
@@ -115,13 +115,13 @@ export function scopeSections(
             </tr>
           </tfoot>
         </table>
-        <div className="grid content-center gap-1 rounded-xl bg-(--doc-cover-bg) px-6 py-6 text-(--doc-cover-text)">
+        <div className="grid content-center gap-1 rounded-[2px] bg-(--doc-cover-bg) px-6 py-6 text-(--doc-cover-text)">
           <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
-            Total investment
+            Project fee
           </p>
           <p
             className={cn(
-              "text-[2.4rem] leading-none tabular-nums",
+              "text-[2.4rem] leading-none [font-variant-numeric:lining-nums_proportional-nums]",
               headingFont,
             )}
           >

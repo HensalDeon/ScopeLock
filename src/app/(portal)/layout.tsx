@@ -6,7 +6,7 @@ import type { Metadata } from "next";
  */
 export const metadata: Metadata = {
   // An object, so the pages below keep the "· ScopeLock" suffix.
-  title: { default: "Proposal · ScopeLock", template: "%s · ScopeLock" },
+  title: { default: "Proposal", template: "%s · ScopeLock" },
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

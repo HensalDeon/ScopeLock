@@ -47,7 +47,7 @@ async function Answer({
     getDocumentSettings(),
   ]);
   if (!record) notFound();
-  const { approval, snapshot } = record;
+  const { approval, snapshot, acceptance } = record;
   const images = await getDocumentImages(settings);
   const verdict = verdictLabel(approval);
 
@@ -90,6 +90,7 @@ async function Answer({
         {approval.subject.type === "baseline" ? (
           <ClassicDocument
             data={snapshot as ProposalDocumentData}
+            acceptance={acceptance}
             style={settings.style}
             images={images}
             className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
@@ -97,6 +98,8 @@ async function Answer({
         ) : (
           <ChangeOrderDocument
             data={snapshot as ChangeOrderData}
+            acceptance={acceptance}
+            approved={approval.decision === "approved"}
             style={settings.style}
             images={images}
             className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"

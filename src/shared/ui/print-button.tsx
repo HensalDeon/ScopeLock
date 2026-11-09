@@ -6,7 +6,7 @@ import { TOUCH } from "@/shared/ui/touch";
 
 /** Opens the browser's print dialog, where "Save as PDF" lives. */
 export function PrintButton({
-  label = "Print / Save PDF",
+  label = "Save PDF",
   variant = "default",
 }: {
   label?: string;

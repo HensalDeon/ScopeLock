@@ -3,7 +3,11 @@ import { initialsOf } from "@/shared/lib/initials";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { GST_RATE_PERCENT } from "../domain/invoice";
-import type { InvoiceSnapshot, InvoiceStatus } from "../domain/snapshot";
+import {
+  lineDescription,
+  type InvoiceSnapshot,
+  type InvoiceStatus,
+} from "../domain/snapshot";
 import { Label, Party } from "./invoice-parties";
 import { InvoiceStatement } from "./invoice-statement";
 
@@ -96,7 +100,9 @@ export function InvoiceDocument({
         {invoice.placeOfSupply ? (
           <Meta label="Place of supply">{invoice.placeOfSupply}</Meta>
         ) : invoice.export ? (
-          <Meta label="Country of supply">{invoice.export.country}</Meta>
+          <Meta label="Place of supply">
+            Outside India ({invoice.export.country})
+          </Meta>
         ) : (
           <Meta label="For">{invoice.paymentLabel}</Meta>
         )}
@@ -124,7 +130,9 @@ export function InvoiceDocument({
             <tr key={i} className="border-b align-top">
               <td className="py-3 text-[#6b6f78] tabular-nums">{i + 1}</td>
               <td className="py-3 pr-4">
-                <p className="text-pretty">{line.description}</p>
+                <p className="text-pretty">
+                  {lineDescription(line.description, invoice)}
+                </p>
                 <p className="text-xs text-[#6b6f78] @md:hidden">
                   SAC {line.sac}
                 </p>

@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import { DEFAULT_INVOICING, LUT_ENDORSEMENT } from "./invoice";
-import { buildInvoice, issueProblem, projectStatement } from "./snapshot";
+import {
+  buildInvoice,
+  issueProblem,
+  lineDescription,
+  projectStatement,
+} from "./snapshot";
 
 const registered = {
   ...DEFAULT_INVOICING,
@@ -124,5 +129,20 @@ describe("projectStatement", () => {
         thisInvoice: minor(4_700_000),
       }),
     ).toMatchObject({ projectTotal: minor(9_500_000), balanceAfter: minor(0) });
+  });
+});
+
+describe("lineDescription", () => {
+  const inv = {
+    projectName: "Website redesign",
+    paymentLabel: "Design approved",
+  };
+  it("names the service on milestone lines", () => {
+    expect(lineDescription("30% of the agreed ₹80,000", inv)).toBe(
+      "Website redesign, Design approved (30% of the agreed ₹80,000)",
+    );
+    expect(lineDescription("CR-001 Blog section", inv)).toBe(
+      "CR-001 Blog section",
+    );
   });
 });

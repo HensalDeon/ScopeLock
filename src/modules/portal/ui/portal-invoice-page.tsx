@@ -41,7 +41,7 @@ export async function PortalInvoicePage({
           </Link>
         }
       >
-        <PrintButton label="Print or save PDF" variant="outline" />
+        <PrintButton variant="outline" />
       </PortalHeader>
       <main className="px-0 py-0 sm:px-4 sm:py-6 print:p-0">
         <InvoiceDocument
