@@ -105,7 +105,7 @@ export function ChangeOrderDocument({
             </p>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+            <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
               Change request
             </p>
             <p className="mt-0.5 text-sm font-semibold tabular-nums">
@@ -157,7 +157,7 @@ export function ChangeOrderDocument({
 
         <table className="w-full border-collapse text-[0.9rem]">
           <thead>
-            <tr className="border-b border-[#1d1f24] text-left text-[10px] tracking-[0.14em] text-[#6b6f78] uppercase">
+            <tr className="border-b border-[#1d1f24] text-left text-[11px] tracking-[0.14em] text-[#6b6f78] uppercase">
               <th className="py-2 font-medium">What changes</th>
               <th className="py-2 text-right font-medium">Amount</th>
             </tr>
@@ -183,7 +183,7 @@ export function ChangeOrderDocument({
 
         <div className="grid break-inside-avoid items-stretch gap-4 @xl:grid-cols-[1fr_1.2fr]">
           <div className="grid content-center gap-1 rounded-xl bg-(--doc-cover-bg) px-6 py-5 text-(--doc-cover-text)">
-            <p className="text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+            <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
               This change
             </p>
             <p
@@ -205,7 +205,7 @@ export function ChangeOrderDocument({
           </div>
           <div className="grid content-center gap-2 rounded-xl border border-[#e7e4dd] px-5 py-4 text-[0.88rem] leading-relaxed text-pretty">
             <p>
-              <span className="mb-0.5 block text-[10px] tracking-[0.14em] text-(--doc-soft-text) uppercase">
+              <span className="mb-0.5 block text-[11px] tracking-[0.14em] text-(--doc-soft-text) uppercase">
                 How it&apos;s paid
               </span>
               {data.billing}
@@ -246,7 +246,7 @@ function Meta({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="mb-1 text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+      <dt className="mb-1 text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
         {label}
       </dt>
       <dd className="font-semibold break-words">{children}</dd>

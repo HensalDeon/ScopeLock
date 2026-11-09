@@ -8,6 +8,7 @@ import {
   isGstinFormat,
   isIndia,
   STATE_CODES,
+  stateName,
   type StateCode,
 } from "@/shared/lib/india";
 import { formatPhone, optionalPhoneField } from "@/shared/lib/phone";
@@ -73,7 +74,8 @@ export const clientInputSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Enter the client's name.")
+    .min(1, "Enter the client's name.")
+    .min(2, "Enter at least 2 letters of the client's name.")
     .max(
       CLIENT_NAME_MAX_LENGTH,
       `Keep the name under ${CLIENT_NAME_MAX_LENGTH} characters.`,
@@ -132,13 +134,22 @@ export function clientFormValues(client: Client): Record<ClientField, string> {
   };
 }
 
-/** "Mehta Interiors · +91 98765 43210 · Bills in USD", for the client's page. */
+/**
+ * "Mehta Interiors · +91 98765 43210 · Maharashtra · Bills in USD", for the
+ * client's page. Where they are decides the invoice's tax, so it's shown.
+ */
 export function clientContactLine(client: Client): string {
+  const place = !isIndia(client.country)
+    ? client.country
+    : stateName(
+        (client.gstin && gstinState(client.gstin)) || client.state || "",
+      );
   return (
     [
       client.company,
       client.phone && formatPhone(client.phone),
       client.email,
+      place,
       client.currency && `Bills in ${client.currency}`,
     ]
       .filter(Boolean)

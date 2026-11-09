@@ -26,7 +26,7 @@ async function SettingsContent() {
     <div>
       <Section
         title="Business details"
-        description="Clients see these on approval pages, change orders and PDFs."
+        description="Your business name and WhatsApp number appear on everything your client opens."
       >
         <BusinessDetailsForm
           initial={{
@@ -50,7 +50,7 @@ async function SettingsContent() {
               ) : (
                 <Badge
                   variant="outline"
-                  className="border-warning/30 text-warning"
+                  className="border-transparent bg-warning-soft text-warning-ink"
                 >
                   Not confirmed
                 </Badge>

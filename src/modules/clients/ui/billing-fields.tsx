@@ -1,6 +1,14 @@
 "use client";
 
-import { INDIAN_STATES, isIndia } from "@/shared/lib/india";
+import { gstOutcome, type InvoicingSettings } from "@/modules/invoices";
+import {
+  gstinState,
+  INDIAN_STATES,
+  isGstinFormat,
+  isIndia,
+  stateName,
+  type StateCode,
+} from "@/shared/lib/india";
 import {
   Field,
   FieldDescription,
@@ -27,7 +35,13 @@ export function BillingFields({
   setValue,
   touch,
   errorFor,
+  seller,
+  who,
 }: {
+  /** Your GSTIN and state (Settings → Invoices & GST), for the outcome line. */
+  seller: Pick<InvoicingSettings, "gstin" | "state">;
+  /** The client's first name, or "this client". */
+  who: string;
   uid: string;
   values: Record<BillingField, string>;
   setValue: (name: BillingField, value: string) => void;
@@ -35,6 +49,18 @@ export function BillingFields({
   errorFor: (name: string) => string | undefined;
 }) {
   const inIndia = isIndia(values.country);
+  // A valid GSTIN decides the state (as it will on the invoice): show it.
+  const gstin = values.gstin.trim();
+  const fromGstin = isGstinFormat(gstin) ? gstinState(gstin) : null;
+  const outcome = gstOutcome(
+    seller,
+    {
+      state: fromGstin ?? ((values.state || null) as StateCode | null),
+      country: values.country.trim() || null,
+      gstin: fromGstin ? gstin : null,
+    },
+    who,
+  );
   return (
     <fieldset className="grid gap-5 rounded-lg border p-4">
       <legend className="px-1 text-sm font-medium">
@@ -42,9 +68,7 @@ export function BillingFields({
         <span className="font-normal text-muted-foreground">(optional)</span>
       </legend>
       <p className="-mt-2 text-sm text-pretty text-muted-foreground">
-        Shown under “Billed to”. If you charge GST, their state decides the
-        type: your state, CGST + SGST; another state, IGST. Left blank, your
-        state is used. A client outside India gets an export invoice.
+        Shown under “Billed to” on invoices.
       </p>
       <Field data-invalid={Boolean(errorFor("address")) || undefined}>
         <FieldLabel htmlFor={`${uid}-address`}>Billing address</FieldLabel>
@@ -92,10 +116,14 @@ export function BillingFields({
         {inIndia ? (
           <Field data-invalid={Boolean(errorFor("state")) || undefined}>
             <FieldLabel htmlFor={`${uid}-state`}>State</FieldLabel>
+            {fromGstin && (
+              <input type="hidden" name="state" value={fromGstin} />
+            )}
             <NativeSelect
               id={`${uid}-state`}
-              name="state"
-              value={values.state}
+              name={fromGstin ? undefined : "state"}
+              value={fromGstin ?? values.state}
+              disabled={Boolean(fromGstin)}
               onChange={(e) => setValue("state", e.target.value)}
               className="w-full"
             >
@@ -106,6 +134,11 @@ export function BillingFields({
                 </option>
               ))}
             </NativeSelect>
+            {fromGstin && (
+              <FieldDescription>
+                {stateName(fromGstin)}, from the GSTIN.
+              </FieldDescription>
+            )}
             <FieldError>{errorFor("state")}</FieldError>
           </Field>
         ) : (
@@ -134,6 +167,12 @@ export function BillingFields({
       ) : (
         <input type="hidden" name="gstin" value="" />
       )}
+      <p
+        aria-live="polite"
+        className="rounded-md bg-canvas px-3 py-2 text-sm text-pretty"
+      >
+        {outcome}
+      </p>
     </fieldset>
   );
 }

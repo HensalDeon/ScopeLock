@@ -68,7 +68,7 @@ export function ArchiveClientButton({
         </Button>
         {!archived && (
           <Button type="button" variant="ghost" onClick={panel.close}>
-            Keep
+            Don&apos;t archive
           </Button>
         )}
       </div>

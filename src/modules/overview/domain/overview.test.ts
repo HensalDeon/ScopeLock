@@ -158,6 +158,7 @@ describe("setupSteps", () => {
       businessTypeTitle: "Freelancer",
       clientCount: 1,
       paymentsReady: false,
+      invoicingReady: true,
       projects: [{ id: "p1", status: "active", changeCount: 0 }],
     });
     expect(steps.map((s) => s.done)).toEqual([
@@ -166,11 +167,12 @@ describe("setupSteps", () => {
       false,
       true,
       true,
+      true,
       false,
     ]);
     expect(steps[2]?.href).toBe("/settings/payments");
     // Logging an extra request goes to the approved project's new CR page.
-    expect(steps[5]?.href).toBe("/projects/p1/changes/new");
+    expect(steps[6]?.href).toBe("/projects/p1/changes/new");
   });
 });
 

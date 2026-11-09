@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { StateCode } from "@/shared/lib/india";
 import { minor } from "@/shared/lib/money";
 import {
   buyerProblems,
@@ -8,7 +9,7 @@ import {
   taxTotal,
   toInvoicingSettings,
 } from "./invoice";
-import { gstHints, taxPreview } from "./preview";
+import { gstHints, gstOutcome, taxPreview } from "./preview";
 
 const kerala = { gstin: "32ABCDE1234F1Z5", state: "32" as const };
 const amount = minor(4_700_000); // ₹47,000
@@ -220,5 +221,42 @@ describe("taxPreview", () => {
       ),
     ).toBeNull();
     expect(taxPreview({ gstin: null, state: null }, null, amount)).toBeNull();
+  });
+});
+
+describe("gstOutcome", () => {
+  const kerala = { gstin: "32ABCDE1234F1Z5", state: "32" as const };
+  const buyer = (b: {
+    state?: StateCode;
+    country?: string;
+    gstin?: string;
+  }) => ({
+    state: b.state ?? null,
+    country: b.country ?? null,
+    gstin: b.gstin ?? null,
+  });
+  it("names the tax and the state, as the invoice will", () => {
+    expect(gstOutcome(kerala, buyer({ state: "32" }), "Kavya")).toBe(
+      "Invoices to Kavya: CGST 9% + SGST 9% (Kerala, same as yours).",
+    );
+    // The GSTIN's state wins over a different chosen state.
+    expect(
+      gstOutcome(
+        kerala,
+        buyer({ state: "32", gstin: "33ABCDE1234F1Z5" }),
+        "Kavya",
+      ),
+    ).toBe(
+      "Invoices to Kavya: IGST 18% (Tamil Nadu, a different state from yours).",
+    );
+    expect(gstOutcome(kerala, buyer({}), "Kavya")).toMatch(/^No state yet/);
+    expect(
+      gstOutcome(kerala, buyer({ country: "United States" }), "Rahul"),
+    ).toMatch(/no GST. They're export invoices/);
+  });
+  it("says GST doesn't apply when you're not registered", () => {
+    expect(
+      gstOutcome({ gstin: null, state: null }, buyer({ state: "27" }), "Kavya"),
+    ).toMatch(/^You don't charge GST/);
   });
 });

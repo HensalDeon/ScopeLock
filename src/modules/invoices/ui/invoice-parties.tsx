@@ -3,7 +3,7 @@ import type { InvoiceParty } from "../domain/snapshot";
 
 export function Label({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[10px] font-medium tracking-[0.16em] text-[#6b6f78] uppercase">
+    <p className="text-[11px] font-medium tracking-[0.16em] text-[#6b6f78] uppercase">
       {children}
     </p>
   );

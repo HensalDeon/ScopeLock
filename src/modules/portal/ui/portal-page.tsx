@@ -82,7 +82,7 @@ export async function PortalPage({ token }: { token: string }) {
 
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         {state === "approved" && (
-          <div className="mx-auto mb-0 grid max-w-[210mm] grid-cols-[minmax(0,1fr)] gap-6 border-b bg-white px-5 py-7 sm:mb-6 sm:rounded-sm sm:border sm:px-10 print:hidden">
+          <div className="mx-auto mb-0 grid max-w-[210mm] grid-cols-[minmax(0,1fr)] gap-6 border-b bg-white px-5 py-7 sm:mb-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden">
             {waiting.length > 0 && (
               <section aria-labelledby="waiting-heading" className="grid gap-3">
                 <h2 id="waiting-heading" className="text-base font-semibold">
@@ -188,7 +188,7 @@ export async function PortalPage({ token }: { token: string }) {
           data={data}
           style={view.style}
           images={view.images}
-          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
+          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
 
         {state === "awaiting" && (
@@ -196,7 +196,7 @@ export async function PortalPage({ token }: { token: string }) {
             id="answer"
             tabIndex={-1}
             aria-labelledby="answer-heading"
-            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 outline-none sm:mt-6 sm:rounded-sm sm:border sm:px-10 print:hidden"
+            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 outline-none sm:mt-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden"
           >
             <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
               Your answer

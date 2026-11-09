@@ -83,7 +83,7 @@ async function Preview({
           data={data}
           style={style}
           images={images}
-          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
+          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
       </main>
     </>
@@ -93,8 +93,8 @@ async function Preview({
 function PreviewSkeleton() {
   return (
     <div aria-hidden className="mx-auto max-w-[210mm] px-4 py-16">
-      <div className="h-72 rounded-sm bg-[#1d1f24]/80" />
-      <div className="mt-4 h-96 rounded-sm bg-white" />
+      <div className="h-72 rounded-[2px] bg-[#1d1f24]/80" />
+      <div className="mt-4 h-96 rounded-[2px] bg-white" />
     </div>
   );
 }

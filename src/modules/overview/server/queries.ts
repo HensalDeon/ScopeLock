@@ -6,6 +6,7 @@ import {
 import { changeLabel } from "@/modules/changes";
 import { listChanges, listOpenChanges } from "@/modules/changes/server";
 import { countClients } from "@/modules/clients/server";
+import { getInvoicing } from "@/modules/invoices/server";
 import { hasAnyMethod, nextStep, stillToAsk } from "@/modules/payments";
 import {
   getPaymentMethods,
@@ -52,6 +53,7 @@ export async function getOverview(): Promise<OverviewData> {
     activity,
     owed,
     { methods },
+    invoicing,
     projects,
   ] = await Promise.all([
     requireWorkspace(),
@@ -60,6 +62,7 @@ export async function getOverview(): Promise<OverviewData> {
     listRecentActivity(6),
     listOwedPayments(),
     getPaymentMethods(),
+    getInvoicing(),
     listProjectSummaries().then(withMoney),
   ]);
   const payments: OverviewPayment[] = owed.flatMap((p) =>
@@ -82,6 +85,11 @@ export async function getOverview(): Promise<OverviewData> {
     businessTypeTitle: BUSINESS_TYPE_LABELS[workspace.businessType].title,
     clientCount,
     paymentsReady: hasAnyMethod(methods),
+    invoicingReady: Boolean(
+      invoicing.settings.legalName ||
+      invoicing.settings.address ||
+      invoicing.settings.gstin,
+    ),
     projects,
   });
 
@@ -162,4 +170,17 @@ async function withMoney(
       };
     }),
   );
+}
+
+/**
+ * One client's money, counted like the overview and each project strip:
+ * received, due now, still to ask for, approved (with GST).
+ */
+export async function getClientMoney(
+  clientId: string,
+): Promise<CurrencyTotals[]> {
+  const summaries = (await listProjectSummaries()).filter(
+    (p) => p.clientId === clientId,
+  );
+  return portfolioTotals(await withMoney(summaries));
 }

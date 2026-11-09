@@ -2,19 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { cn } from "@/shared/lib/utils";
 
+// In the order a new freelancer sets things up: who you are, how you get
+// paid, how invoices are taxed, then how documents look.
 const TABS = [
   { href: "/settings", label: "Business & account" },
-  { href: "/settings/documents", label: "Documents" },
   { href: "/settings/payments", label: "Payments" },
-  { href: "/settings/invoicing", label: "Invoicing" },
+  { href: "/settings/invoicing", label: "Invoices & GST" },
+  { href: "/settings/documents", label: "Documents" },
 ] as const;
 
 export function SettingsTabs() {
   const pathname = usePathname();
+  const nav = useRef<HTMLElement>(null);
+  // Phones: the strip scrolls sideways; keep the current tab in view.
+  useEffect(() => {
+    nav.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [pathname]);
   return (
     <nav
+      ref={nav}
       aria-label="Settings"
       className="mb-8 flex gap-1 overflow-x-auto border-b"
     >
@@ -26,7 +37,7 @@ export function SettingsTabs() {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "-mb-px shrink-0 border-b-2 px-3 pb-2.5 text-sm whitespace-nowrap transition-colors",
+              "-mb-px shrink-0 border-b-2 px-3 pb-2.5 text-sm whitespace-nowrap transition-colors max-sm:flex max-sm:h-11 max-sm:items-center max-sm:pb-0",
               active
                 ? "border-foreground font-medium text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",

@@ -20,7 +20,7 @@ export function planSections(
               key={step.id}
               className="grid break-inside-avoid grid-cols-[5.5rem_minmax(0,1fr)] gap-4"
             >
-              <p className="pt-px text-right text-[10px] font-semibold tracking-[0.08em] text-(--doc-accent-text) uppercase">
+              <p className="pt-px text-right text-[11px] font-semibold tracking-[0.08em] text-(--doc-accent-text) uppercase">
                 {step.duration}
               </p>
               <div
@@ -39,7 +39,7 @@ export function planSections(
                 <h3 className="text-[0.9rem] font-semibold">
                   {step.phase}
                   {step.isMilestone && (
-                    <span className="ml-2 rounded-full bg-(--doc-soft) px-2 py-0.5 text-[10px] font-medium tracking-wide text-(--doc-soft-text) uppercase">
+                    <span className="ml-2 rounded-full bg-(--doc-soft) px-2 py-0.5 text-[11px] font-medium tracking-wide text-(--doc-soft-text) uppercase">
                       Milestone
                       {step.payment
                         ? ` · ${money(step.payment.amount)} due`

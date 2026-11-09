@@ -104,7 +104,7 @@ export function InvoiceDocument({
 
       <table className="mt-6 w-full border-collapse text-[0.9rem]">
         <thead>
-          <tr className="border-b text-left text-[10px] tracking-[0.14em] text-[#6b6f78] uppercase">
+          <tr className="border-b text-left text-[11px] tracking-[0.14em] text-[#6b6f78] uppercase">
             <th scope="col" className="w-8 py-2 font-medium">
               #
             </th>

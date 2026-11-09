@@ -13,11 +13,13 @@ export function Cover({
   style,
   images,
   headingFont,
+  titleAs: Title,
 }: {
   data: ProposalDocumentData;
   style: DocumentStyle;
   images: DocumentImages;
   headingFont: string;
+  titleAs: "h1" | "h2";
 }) {
   // The photo sits under a dark layer so text stays readable even on a very
   // bright photo (a pure white image ends up around #525254: white text
@@ -76,14 +78,14 @@ export function Cover({
               {data.business.name}
             </p>
             {data.business.tagline && (
-              <p className="mt-0.5 text-[10px] font-medium tracking-[0.2em] text-(--doc-cover-label) uppercase">
+              <p className="mt-0.5 text-[11px] font-medium tracking-[0.2em] text-(--doc-cover-label) uppercase">
                 {data.business.tagline}
               </p>
             )}
           </div>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+          <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
             Proposal
           </p>
           <p className="mt-0.5 text-sm font-semibold tabular-nums">
@@ -92,14 +94,14 @@ export function Cover({
         </div>
       </div>
 
-      <h1
+      <Title
         className={cn(
           "relative mt-12 max-w-[85%] text-[2.1rem] leading-[1.06] text-balance @xl:mt-14 @xl:text-[2.85rem]",
           headingFont,
         )}
       >
         {data.title}
-      </h1>
+      </Title>
       {data.subtitle && (
         <p className="relative mt-3 max-w-[60ch] text-[0.95rem] leading-relaxed text-pretty text-(--doc-cover-muted)">
           {data.subtitle}
@@ -128,7 +130,7 @@ export function Cover({
           <strong>{formatDate(data.issuedOn, { withYear: true })}</strong>
           {data.validUntil && (
             <>
-              <span className="mt-3 block text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+              <span className="mt-3 block text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
                 Valid until
               </span>
               <strong>{formatDate(data.validUntil, { withYear: true })}</strong>
@@ -149,7 +151,7 @@ function CoverItem({
 }) {
   return (
     <div className="min-w-0 [&_em]:block [&_em]:text-xs [&_em]:break-words [&_em]:text-(--doc-cover-muted) [&_em]:not-italic [&_strong]:block [&_strong]:text-sm [&_strong]:font-semibold">
-      <dt className="mb-1 text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+      <dt className="mb-1 text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
         {label}
       </dt>
       <dd>{children}</dd>

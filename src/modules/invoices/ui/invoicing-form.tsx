@@ -7,7 +7,9 @@ import {
   focusFirstInvalid,
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
+import { useUnsavedGuard } from "@/shared/ui/use-unsaved-guard";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import {
   Field,
   FieldDescription,
@@ -47,6 +49,7 @@ export function InvoicingForm({
     initial: defaults,
     serverState: state,
   });
+  useUnsavedGuard(form.isDirty && !pending);
 
   const set = (name: InvoicingField, value: string) => {
     setValues((v) => {
@@ -110,42 +113,48 @@ export function InvoicingForm({
           {row(
             "legalName",
             registered ? "Legal name" : "Legal name (optional)",
-            "As on your PAN or GST registration.",
-            {
-              placeholder: "Asha Menon",
-            },
+            "As on your PAN or GST registration, like Asha Menon.",
           )}
           <Field data-invalid={Boolean(form.errorFor("address")) || undefined}>
             <FieldLabel htmlFor={`${uid}-address`}>
               {registered ? "Registered address" : "Address (optional)"}
             </FieldLabel>
-            <Textarea
-              rows={3}
-              maxLength={300}
-              placeholder="12/482 Pallimukku Road, Kochi, Kerala 682016"
-              {...field("address")}
-            />
+            <Textarea rows={3} maxLength={300} {...field("address")} />
             <FieldError>{form.errorFor("address")}</FieldError>
           </Field>
         </div>
       </Section>
       <Section
         title="GST"
-        description="Only if you're registered. With a GSTIN, invoices become tax invoices with 18% GST. Each invoice compares the client's state with yours: same state, CGST 9% + SGST 9%; another state, IGST 18%; outside India, no GST (export under LUT). Add each client's GSTIN or state on their client page; without either, your state is used."
+        description="Fill this in only if you're registered for GST. Leave the GSTIN blank and your invoices carry no GST."
       >
+        {/* What each invoice will charge, so nobody has to remember the rule. */}
+        <dl className="mb-5 grid gap-x-6 gap-y-1.5 rounded-lg border bg-canvas px-4 py-3 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
+          <dt className="text-muted-foreground">Client in your state</dt>
+          <dd className="tabular-nums">CGST 9% + SGST 9%</dd>
+          <dt className="text-muted-foreground">Client in another state</dt>
+          <dd className="tabular-nums">IGST 18%</dd>
+          <dt className="text-muted-foreground">Client outside India</dt>
+          <dd>No GST, with your LUT (below)</dd>
+        </dl>
+        <p className="mb-5 text-sm text-muted-foreground">
+          The client&apos;s state comes from their GSTIN or the state on their
+          client page; without either, yours is used.
+        </p>
         <div className="grid gap-5 sm:grid-cols-2">
           {row(
             "gstin",
             "GSTIN (optional)",
-            "15 characters. Your state is taken from it.",
+            "15 characters, like 32ABCDE1234F1Z5. Your state is taken from it.",
             {
-              placeholder: "32ABCDE1234F1Z5",
               maxLength: 15,
               className: "font-mono uppercase",
             },
           )}
           <Field data-invalid={Boolean(form.errorFor("state")) || undefined}>
-            <FieldLabel htmlFor={`${uid}-state`}>Your state</FieldLabel>
+            <FieldLabel htmlFor={`${uid}-state`}>
+              {registered ? "Your state" : "Your state (optional)"}
+            </FieldLabel>
             <NativeSelect
               id={`${uid}-state`}
               name="state"
@@ -165,7 +174,7 @@ export function InvoicingForm({
           {row(
             "sac",
             "SAC code",
-            "998314 covers IT design and development. Change it if your CA says so.",
+            "The service code printed on each invoice line. 998314 covers IT design and development, which fits most web, app and design work.",
             {
               inputMode: "numeric",
               maxLength: 8,
@@ -173,10 +182,9 @@ export function InvoicingForm({
           )}
           {row(
             "lutArn",
-            "LUT ARN (for clients abroad)",
-            "From your Letter of Undertaking (form RFD-11) for this financial year. Export invoices are then zero-rated.",
+            "LUT ARN (only if you bill clients outside India)",
+            "File a Letter of Undertaking (form RFD-11) on the GST portal once each financial year. It's free and lets you bill clients abroad without GST. Paste the ARN from the acknowledgement, like AD320426012345X. Without it, you can't ask clients outside India for payment.",
             {
-              placeholder: "AD320426012345X",
               className: "font-mono uppercase",
             },
           )}
@@ -188,14 +196,19 @@ export function InvoicingForm({
       >
         <div className="grid gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
-            {row("prefix", "Prefix", "Up to 5 letters or digits.", {
-              maxLength: 5,
-              className: "font-mono uppercase",
-            })}
+            {row(
+              "prefix",
+              "Prefix",
+              "Up to 5 letters, digits or hyphens, like INV.",
+              {
+                maxLength: 5,
+                className: "font-mono uppercase",
+              },
+            )}
             {row(
               "startNumber",
               "Start this year from",
-              "If you've already issued invoices this year elsewhere, continue from the next number.",
+              "Only used before your first ScopeLock invoice this year: if you've issued some elsewhere, continue from the next number.",
               {
                 inputMode: "numeric",
               },
@@ -209,7 +222,11 @@ export function InvoicingForm({
             {form.isDirty && " (before these changes)"}
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={pending || !form.isDirty}>
+            <Button
+              type="submit"
+              className={TOUCH}
+              disabled={pending || !form.isDirty}
+            >
               {pending ? "Saving…" : "Save invoice details"}
             </Button>
             <p role="status" className="text-sm text-muted-foreground">

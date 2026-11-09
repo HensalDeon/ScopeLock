@@ -42,7 +42,10 @@ export async function getProjectMoney(
     now: new Date(),
     stateFallback:
       gst.fallbackState && client
-        ? { yourState: gst.fallbackState, clientHref: `/clients/${client.id}` }
+        ? {
+            yourState: gst.fallbackState,
+            clientHref: `/clients/${client.id}#billing`,
+          }
         : null,
   };
 }

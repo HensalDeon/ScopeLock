@@ -138,7 +138,7 @@ export function HeadingPicker({
               className={cn(
                 "flex items-center gap-3 rounded-lg border p-2.5 text-left text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 selected
-                  ? "border-brand/45 bg-success-soft/70"
+                  ? "border-primary ring-1 ring-primary"
                   : "hover:bg-canvas",
               )}
             >

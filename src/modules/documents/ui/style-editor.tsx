@@ -6,8 +6,10 @@ import {
   focusFirstInvalid,
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
+import { useUnsavedGuard } from "@/shared/ui/use-unsaved-guard";
 import { Button } from "@/shared/ui/button";
 import { FormAlert } from "@/shared/ui/form-alert";
+import { TOUCH } from "@/shared/ui/touch";
 import type { ProposalDocumentData } from "../domain/document-data";
 import type { DocumentImages } from "../domain/images";
 import {
@@ -58,6 +60,7 @@ export function DocumentStyleEditor({
     initial: saved,
     serverState: state,
   });
+  useUnsavedGuard(form.isDirty && !pending);
 
   const set = (field: DocumentStyleField, value: string) => {
     setValues((v) => ({ ...v, [field]: value }));
@@ -78,6 +81,7 @@ export function DocumentStyleEditor({
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,21rem)_minmax(0,1fr)]">
       <form
+        id={`${uid}-form`}
         ref={formRef}
         noValidate
         className="grid gap-7"
@@ -97,24 +101,6 @@ export function DocumentStyleEditor({
         {state.status === "error" && state.message && (
           <FormAlert>{state.message}</FormAlert>
         )}
-
-        <fieldset className="grid gap-2">
-          <legend className="mb-2 text-sm font-medium">Template</legend>
-          <div className="flex items-start gap-3 rounded-lg border border-brand/45 bg-success-soft/70 p-3">
-            <div
-              aria-hidden
-              className="h-12 w-9 shrink-0 overflow-hidden rounded-sm border bg-white"
-            >
-              <div className="h-4" style={{ background: "#15161a" }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-medium">Classic</p>
-              <p className="text-sm text-muted-foreground">
-                Cover page, highlights and numbered sections.
-              </p>
-            </div>
-          </div>
-        </fieldset>
 
         <AccentPicker
           uid={uid}
@@ -168,7 +154,11 @@ export function DocumentStyleEditor({
         />
 
         <div className="flex flex-wrap items-center gap-3 border-t pt-5">
-          <Button type="submit" disabled={pending || !form.isDirty}>
+          <Button
+            type="submit"
+            className={TOUCH}
+            disabled={pending || !form.isDirty}
+          >
             {pending ? "Saving…" : "Save style"}
           </Button>
           {!pending && !form.isDirty && (
@@ -183,12 +173,43 @@ export function DocumentStyleEditor({
         <p className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
           Live preview
         </p>
+        {/* The preview shows edits at once; clients only get them on save. */}
+        {form.isDirty && (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg bg-warning-soft px-4 py-2.5 text-sm text-warning-ink">
+            <p>Not saved yet. Clients still see your saved style.</p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className={TOUCH}
+                onClick={() => {
+                  setValues(saved);
+                  setLastValidAccent(initial.accent);
+                }}
+              >
+                Discard
+              </Button>
+              <Button
+                type="submit"
+                form={`${uid}-form`}
+                size="sm"
+                variant="outline"
+                className={TOUCH}
+                disabled={pending}
+              >
+                {pending ? "Saving…" : "Save style"}
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="max-h-[78vh] overflow-auto rounded-lg border bg-[#ebe8e2] p-3 lg:p-5">
           <ClassicDocument
+            titleAs="h2"
             data={preview}
             style={style}
             images={images}
-            className="mx-auto max-w-[210mm] rounded-sm shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] lg:[zoom:0.72]"
+            className="mx-auto max-w-[210mm] rounded-[2px] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] lg:[zoom:0.72]"
           />
         </div>
       </div>

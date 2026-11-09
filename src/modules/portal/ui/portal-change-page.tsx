@@ -102,13 +102,13 @@ export async function PortalChangePage({
           approved={change.status === "approved"}
           style={view.style}
           images={view.images}
-          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
+          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
         {change.status === "sent" && (
           <section
             id="answer"
             aria-labelledby="answer-heading"
-            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 sm:mt-6 sm:rounded-sm sm:border sm:px-10 print:hidden"
+            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 sm:mt-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden"
           >
             <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
               Your answer

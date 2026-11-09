@@ -3,4 +3,8 @@
  */
 import "server-only";
 
-export { getOverview, type OverviewData } from "./server/queries";
+export {
+  getClientMoney,
+  getOverview,
+  type OverviewData,
+} from "./server/queries";

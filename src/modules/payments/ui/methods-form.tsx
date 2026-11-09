@@ -6,7 +6,9 @@ import {
   focusFirstInvalid,
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
+import { useUnsavedGuard } from "@/shared/ui/use-unsaved-guard";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import {
   Field,
   FieldDescription,
@@ -60,6 +62,7 @@ export function PaymentMethodsForm({
     initial: defaults,
     serverState: state,
   });
+  useUnsavedGuard(form.isDirty && !pending);
 
   const field = (
     name: MethodField,
@@ -123,9 +126,11 @@ export function PaymentMethodsForm({
       >
         <div className="grid gap-5 sm:grid-cols-2">
           {row("upiVpa", "UPI ID", undefined, { placeholder: "asha@okhdfc" })}
-          {row("upiPayee", "Name on UPI", "As your UPI app shows it.", {
-            placeholder: "Asha Menon",
-          })}
+          {row(
+            "upiPayee",
+            "Name on UPI",
+            "As your UPI app shows it, so clients know the payment reaches you.",
+          )}
         </div>
       </Section>
       <Section
@@ -226,7 +231,11 @@ export function PaymentMethodsForm({
             </NativeSelect>
           </Field>
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={pending || !form.isDirty}>
+            <Button
+              type="submit"
+              className={TOUCH}
+              disabled={pending || !form.isDirty}
+            >
               {pending ? "Saving…" : "Save payment details"}
             </Button>
             <p role="status" className="text-sm text-muted-foreground">

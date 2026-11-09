@@ -85,7 +85,7 @@ export function WorkspaceFields({
             <FieldLabel
               key={type}
               htmlFor={`${uid}-type-${type}`}
-              className="has-data-checked:border-brand/45 has-data-checked:bg-success-soft/70"
+              className="has-data-checked:border-primary has-data-checked:ring-1 has-data-checked:ring-primary"
             >
               <Field orientation="horizontal">
                 <FieldContent>

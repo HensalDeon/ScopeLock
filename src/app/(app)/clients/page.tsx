@@ -101,7 +101,7 @@ async function Clients({
       {archivedCount > 0 && (
         <Link
           href="/clients?view=archived"
-          className="justify-self-start text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          className="justify-self-start text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
         >
           Archived clients ({archivedCount})
         </Link>

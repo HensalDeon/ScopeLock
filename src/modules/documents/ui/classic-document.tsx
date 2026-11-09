@@ -24,7 +24,10 @@ export function ClassicDocument({
   style,
   images = NO_IMAGES,
   className,
+  titleAs = "h1",
 }: {
+  /** "h2" when the page around it has its own h1 (settings preview). */
+  titleAs?: "h1" | "h2";
   data: ProposalDocumentData;
   style: DocumentStyle;
   /** Signed URLs for the uploaded logo and cover image, if any. */
@@ -67,6 +70,7 @@ export function ClassicDocument({
         style={style}
         images={images}
         headingFont={headingFont}
+        titleAs={titleAs}
       />
 
       {data.highlights.length > 0 && (
@@ -84,7 +88,7 @@ export function ClassicDocument({
               >
                 {h.value}
               </p>
-              <p className="mt-1.5 text-[10px] font-medium tracking-[0.16em] text-(--doc-soft-text) uppercase">
+              <p className="mt-1.5 text-[11px] font-medium tracking-[0.16em] text-(--doc-soft-text) uppercase">
                 {h.label}
               </p>
             </div>

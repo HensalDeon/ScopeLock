@@ -91,7 +91,7 @@ export function scopeSections(
       <div className="grid break-inside-avoid items-start gap-4 @xl:grid-cols-[1.4fr_1fr]">
         <table className="w-full border-collapse text-[0.85rem]">
           <thead>
-            <tr className="border-b border-[#1d1f24] text-left text-[10px] tracking-[0.14em] text-[#6b6f78] uppercase">
+            <tr className="border-b border-[#1d1f24] text-left text-[11px] tracking-[0.14em] text-[#6b6f78] uppercase">
               <th className="py-2 font-medium">Deliverable</th>
               <th className="py-2 text-right font-medium">Amount</th>
             </tr>
@@ -116,7 +116,7 @@ export function scopeSections(
           </tfoot>
         </table>
         <div className="grid content-center gap-1 rounded-xl bg-(--doc-cover-bg) px-6 py-6 text-(--doc-cover-text)">
-          <p className="text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+          <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
             Total investment
           </p>
           <p
@@ -155,7 +155,7 @@ export function scopeSections(
     body: (
       <table className="w-full border-collapse break-inside-avoid text-[0.85rem]">
         <thead>
-          <tr className="border-b border-[#1d1f24] text-left text-[10px] tracking-[0.14em] text-[#6b6f78] uppercase">
+          <tr className="border-b border-[#1d1f24] text-left text-[11px] tracking-[0.14em] text-[#6b6f78] uppercase">
             <th className="py-2 font-medium">Payment</th>
             <th className="py-2 text-right font-medium">Share</th>
             <th className="py-2 text-right font-medium">Amount</th>

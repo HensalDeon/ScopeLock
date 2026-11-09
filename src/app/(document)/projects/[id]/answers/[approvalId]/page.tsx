@@ -92,14 +92,14 @@ async function Answer({
             data={snapshot as ProposalDocumentData}
             style={settings.style}
             images={images}
-            className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
+            className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
           />
         ) : (
           <ChangeOrderDocument
             data={snapshot as ChangeOrderData}
             style={settings.style}
             images={images}
-            className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
+            className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
           />
         )}
       </main>

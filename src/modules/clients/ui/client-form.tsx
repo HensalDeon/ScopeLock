@@ -9,7 +9,9 @@ import {
   focusFirstInvalid,
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
+import type { InvoicingSettings } from "@/modules/invoices";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { CurrencySelect } from "@/shared/ui/currency-select";
 import {
   Field,
@@ -58,6 +60,8 @@ export function ClientForm(
   ) & {
     /** The workspace default, shown as "Use my default (INR)". */
     defaultCurrency: CurrencyCode;
+    /** Your GSTIN and state, to say what GST invoices to them carry. */
+    seller: Pick<InvoicingSettings, "gstin" | "state">;
   },
 ) {
   // Unique per instance: visited pages stay mounted, so two copies of
@@ -219,10 +223,16 @@ export function ClientForm(
           }}
           touch={form.touch}
           errorFor={form.errorFor}
+          seller={props.seller}
+          who={values.name.trim().split(/\s+/)[0] || "this client"}
         />
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending || !canSave}>
+          <Button
+            type="submit"
+            className={TOUCH}
+            disabled={pending || !canSave}
+          >
             {props.mode === "create"
               ? pending
                 ? "Adding client…"
@@ -232,7 +242,7 @@ export function ClientForm(
                 : "Save changes"}
           </Button>
           {props.mode === "create" && (
-            <Button asChild variant="ghost">
+            <Button asChild variant="ghost" className={TOUCH}>
               <Link href={props.cancelHref}>Cancel</Link>
             </Button>
           )}

@@ -41,7 +41,7 @@ export function CoverPicker({
               className={cn(
                 "grid gap-1.5 rounded-lg border p-2 text-left text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 selected
-                  ? "border-brand/45 bg-success-soft/70"
+                  ? "border-primary ring-1 ring-primary"
                   : "hover:bg-canvas",
               )}
             >

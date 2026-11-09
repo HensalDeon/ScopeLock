@@ -61,7 +61,7 @@ describe("clientInputSchema", () => {
       result.error!.issues.map((i) => [i.path[0], i.message]),
     );
     expect(messages).toEqual({
-      name: "Enter the client's name.",
+      name: "Enter at least 2 letters of the client's name.",
       email: "Enter a valid email address, or leave it empty.",
       phone: "Enter a 10-digit mobile number, or include the country code.",
     });

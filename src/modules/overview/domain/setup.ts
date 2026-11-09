@@ -15,6 +15,8 @@ export function setupSteps(input: {
   clientCount: number;
   /** A UPI ID, bank account, payment link or QR is saved. */
   paymentsReady: boolean;
+  /** Invoice details saved (legal name, address or GSTIN). */
+  invoicingReady: boolean;
   projects: readonly Pick<OverviewProject, "id" | "status" | "changeCount">[];
 }): SetupStep[] {
   const { projects } = input;
@@ -39,6 +41,13 @@ export function setupSteps(input: {
         "UPI ID, bank account or a payment link, so clients know where to pay.",
       done: input.paymentsReady,
       href: "/settings/payments",
+    },
+    {
+      title: "Add your invoice details",
+      detail:
+        "Your legal name and address, and your GSTIN if you're registered for GST. Do it before your first invoice: issued invoices can't be changed.",
+      done: input.invoicingReady,
+      href: "/settings/invoicing",
     },
     {
       title: "Write down a project's scope",

@@ -11,7 +11,7 @@ export {
   type InvoicingField,
   type InvoicingSettings,
 } from "./domain/invoice";
-export { gstHints, taxPreview } from "./domain/preview";
+export { gstHints, gstOutcome, taxPreview } from "./domain/preview";
 export {
   INVOICE_STATUS_LABELS,
   issueProblem,
