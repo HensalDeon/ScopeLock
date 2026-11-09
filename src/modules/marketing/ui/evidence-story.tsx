@@ -15,7 +15,7 @@ export function Evidence() {
           invert
           eyebrow="The record"
           title={<>When they say &ldquo;that was included&rdquo;</>}
-          intro="Every approval is stored exactly as the client saw it, with who approved it and when. The original deal, every change, every approval and every payment sit on one project page you can print or save as a PDF."
+          intro="Every approval is stored exactly as the client saw it, with who approved it and when. The original deal, every change, every approval and every payment on one project statement you can print or save as a PDF."
         />
 
         <div className="rounded-xl border border-white/[0.08] bg-[#111a2c] p-5 font-mono text-[12.5px] leading-[1.9] sm:p-6">

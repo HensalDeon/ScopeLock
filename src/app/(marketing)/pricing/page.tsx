@@ -57,10 +57,7 @@ const COMPARISON: { group: string; rows: Row[] }[] = [
         values: [true, true, true],
       },
       { label: "Change order PDFs", values: [true, true, true] },
-      {
-        label: "Full project statement PDFs (soon)",
-        values: [false, true, true],
-      },
+      { label: "Project statement PDFs", values: [false, true, true] },
       { label: "Payment reminders", values: [false, true, true] },
       { label: "Revenue recovered reports", values: [false, false, true] },
     ],

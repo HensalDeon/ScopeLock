@@ -134,6 +134,12 @@ export async function PortalPage({ token }: { token: string }) {
               payments={view.payments?.totals ?? null}
               money={money}
             />
+            <Link
+              href={`/c/${token}/statement`}
+              className="justify-self-start text-sm font-medium underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
+            >
+              Project statement: every change and payment on one page
+            </Link>
 
             {view.payments && view.payments.items.length > 0 && (
               <section

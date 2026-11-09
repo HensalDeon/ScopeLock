@@ -1,5 +1,7 @@
 import "server-only";
 import { cache } from "react";
+import type { Statement } from "@/modules/statement";
+import { statementFrom } from "@/modules/statement/server";
 import { formatMoney } from "@/shared/lib/money";
 import { findClientInWorkspace } from "@/modules/clients/server";
 
@@ -288,8 +290,19 @@ export async function portalTitle(
   page:
     | { kind: "proposal" }
     | { kind: "change"; number: string }
-    | { kind: "invoice"; invoiceId: string },
+    | { kind: "invoice"; invoiceId: string }
+    | { kind: "statement" },
 ): Promise<string | null> {
+  if (page.kind === "statement") {
+    const view = await getPortalStatement(token);
+    return view.state === "limited"
+      ? null
+      : documentTitle(
+          `Project statement ${view.statement.reference}`,
+          view.statement.projectTitle,
+          view.statement.business.name,
+        );
+  }
   if (page.kind === "proposal") {
     const view = await getPortalView(token);
     return view.state === "limited"
@@ -317,3 +330,27 @@ export async function portalTitle(
         view.invoice.seller.name,
       );
 }
+
+export type PortalStatementView =
+  { state: "limited" } | { state: "ok"; statement: Statement; accent: string };
+
+/** The project statement on the portal: /c/[token]/statement. */
+async function loadPortalStatement(
+  token: string,
+): Promise<PortalStatementView> {
+  const view = await getPortalView(token);
+  if (view.state === "limited") return { state: "limited" };
+  return {
+    state: "ok",
+    statement: statementFrom({
+      data: view.data,
+      approval: view.decision,
+      changes: view.changes,
+      items: view.payments?.items ?? [],
+      asOf: new Date(),
+    }),
+    accent: view.style.accent,
+  };
+}
+
+export const getPortalStatement = cache(loadPortalStatement);
