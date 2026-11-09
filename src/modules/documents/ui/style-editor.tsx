@@ -102,6 +102,13 @@ export function DocumentStyleEditor({
           <FormAlert>{state.message}</FormAlert>
         )}
 
+        <a
+          href={`#${uid}-preview`}
+          className="-mt-3 inline-flex min-h-11 items-center text-sm font-medium underline-offset-4 hover:underline lg:hidden"
+        >
+          See the preview
+        </a>
+
         <AccentPicker
           uid={uid}
           value={values.accent}
@@ -169,7 +176,10 @@ export function DocumentStyleEditor({
         </div>
       </form>
 
-      <div className="min-w-0 lg:sticky lg:top-6">
+      <div
+        id={`${uid}-preview`}
+        className="min-w-0 scroll-mt-20 lg:sticky lg:top-6"
+      >
         <p className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
           Live preview
         </p>
@@ -203,7 +213,8 @@ export function DocumentStyleEditor({
             </div>
           </div>
         )}
-        <div className="max-h-[78vh] overflow-auto rounded-lg border bg-[#ebe8e2] p-3 lg:p-5">
+        {/* Phones scroll the page, not a box inside it. */}
+        <div className="rounded-lg border bg-[#ebe8e2] p-3 lg:max-h-[78vh] lg:overflow-auto lg:p-5">
           <ClassicDocument
             titleAs="h2"
             data={preview}

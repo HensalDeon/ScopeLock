@@ -11,6 +11,8 @@ type Item = {
   at: Date;
   /** Which project, for feeds that mix projects (the overview). */
   context?: { label: string; href: string };
+  /** The change request it's about ("CR-002"), linked. */
+  link?: { label: string; href: string } | null;
 } & ActivityLine;
 
 /** A project's history, newest first. Used in the app and the portal. */
@@ -102,6 +104,17 @@ function Lines({
             )}
             <p className="text-xs text-muted-foreground tabular-nums">
               {formatDateTime(item.at)}
+              {item.link && (
+                <>
+                  {" · "}
+                  <Link
+                    href={item.link.href as Route}
+                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                  >
+                    {item.link.label}
+                  </Link>
+                </>
+              )}
               {item.context && (
                 <>
                   {" · "}

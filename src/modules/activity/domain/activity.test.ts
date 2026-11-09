@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  changeLinkOf,
   describeActivity,
   isClientVisible,
   type ActivityEvent,
@@ -128,5 +129,22 @@ describe("describeActivity", () => {
       describeActivity(e, { kind: "client", businessName: "Asha Designs" })
         .text,
     ).toBe("Asha Designs marked the Advance payment as not received yet");
+  });
+});
+
+describe("changeLinkOf", () => {
+  const ev = (type: string, label?: string) =>
+    ({ type, projectId: "p1", data: { label } }) as Parameters<
+      typeof changeLinkOf
+    >[0];
+  it("links events about a change request to its page", () => {
+    expect(changeLinkOf(ev("change.approved", "CR-002"))).toEqual({
+      label: "CR-002",
+      href: "/projects/p1/changes/2",
+    });
+  });
+  it("doesn't link a deleted draft or other events", () => {
+    expect(changeLinkOf(ev("change.deleted", "CR-004"))).toBeNull();
+    expect(changeLinkOf(ev("payment.requested", "INV/26-27/001"))).toBeNull();
   });
 });

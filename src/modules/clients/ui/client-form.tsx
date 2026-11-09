@@ -10,6 +10,7 @@ import {
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
 import type { InvoicingSettings } from "@/modules/invoices";
+import { isIndia } from "@/shared/lib/india";
 import { Button } from "@/shared/ui/button";
 import { TOUCH } from "@/shared/ui/touch";
 import { CurrencySelect } from "@/shared/ui/currency-select";
@@ -207,7 +208,9 @@ export function ClientForm(
             onBlur={() => form.touch("currency")}
           />
           <FieldDescription>
-            New projects for this client start in this currency.
+            {!isIndia(values.country) && !values.currency
+              ? `Billing ${values.name.trim().split(/\s+/)[0] || "them"} in another currency, like USD? Choose it here and their new projects start in it.`
+              : "New projects for this client start in this currency."}
           </FieldDescription>
           {form.errorFor("currency") && (
             <FieldError>{form.errorFor("currency")}</FieldError>

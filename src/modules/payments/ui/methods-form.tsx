@@ -22,6 +22,7 @@ import { NativeSelect } from "@/shared/ui/native-select";
 import { Section } from "@/shared/ui/page";
 import { Textarea } from "@/shared/ui/textarea";
 import {
+  clientSeesLine,
   METHOD_LABELS,
   methodsInputSchema,
   type MethodField,
@@ -120,6 +121,19 @@ export function PaymentMethodsForm({
           <FormAlert>{state.message}</FormAlert>
         </div>
       )}
+      {/* Updates as you type, before saving. */}
+      <p
+        aria-live="polite"
+        className="mb-6 rounded-lg bg-canvas px-4 py-3 text-sm text-pretty"
+      >
+        {clientSeesLine({
+          filled,
+          defaultMethod: values.defaultMethod,
+          upiVpa: values.upiVpa,
+          bankName: values.bankName,
+          linkLabel: values.linkLabel,
+        })}
+      </p>
       <Section
         title="UPI"
         description="Clients paying in rupees scan a QR with the amount filled in, or tap to open their UPI app."

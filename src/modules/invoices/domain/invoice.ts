@@ -271,3 +271,29 @@ export function buyerProblems(
   }
   return problems;
 }
+
+/**
+ * The next invoice number for what's typed in settings, or null while the
+ * prefix can't make a valid number. Issued invoices already set the series:
+ * the start number only counts before the first one this year.
+ */
+export function previewInvoiceNumber(
+  prefix: string,
+  startNumber: string,
+  series: { fyShort: string; lastSerial: number },
+): string | null {
+  const start = Number(startNumber);
+  const serial = Math.max(
+    series.lastSerial + 1,
+    Number.isInteger(start) && start > 0 ? start : 1,
+  );
+  try {
+    return invoiceNumber(
+      prefix.trim().toUpperCase() || "INV",
+      series.fyShort,
+      serial,
+    );
+  } catch {
+    return null;
+  }
+}

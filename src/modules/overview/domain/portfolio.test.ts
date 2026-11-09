@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
-import { portfolioTotals } from "./portfolio";
+import { dueByClient, portfolioTotals } from "./portfolio";
 
 const p = (
   status: "draft" | "awaiting_approval" | "active" | "completed" | "archived",
@@ -79,5 +79,47 @@ describe("portfolioTotals", () => {
 
   it("is empty with no projects", () => {
     expect(portfolioTotals([])).toEqual([]);
+  });
+});
+
+describe("dueByClient", () => {
+  it("adds up what each client owes, per currency, never across", () => {
+    const due = dueByClient(
+      [
+        {
+          projectId: "p1",
+          amount: minor(2_832_000),
+          currency: "INR",
+          status: "due",
+        },
+        {
+          projectId: "p2",
+          amount: minor(1_000_000),
+          currency: "INR",
+          status: "client_reported",
+        },
+        {
+          projectId: "p3",
+          amount: minor(50_000),
+          currency: "USD",
+          status: "due",
+        },
+        {
+          projectId: "p1",
+          amount: minor(999),
+          currency: "INR",
+          status: "confirmed",
+        },
+      ],
+      new Map([
+        ["p1", "c1"],
+        ["p2", "c1"],
+        ["p3", "c1"],
+      ]),
+    );
+    expect(due.get("c1")).toEqual([
+      { currency: "INR", amount: 3_832_000 },
+      { currency: "USD", amount: 50_000 },
+    ]);
   });
 });

@@ -94,3 +94,30 @@ export function portfolioTotals(
         : a.currency.localeCompare(b.currency),
   );
 }
+
+/**
+ * What each client owes right now (payments asked for and not received),
+ * per currency. `clientOf` maps project id → client id.
+ */
+export function dueByClient(
+  payments: readonly {
+    projectId: string;
+    amount: Minor;
+    currency: CurrencyCode;
+    status: string;
+  }[],
+  clientOf: ReadonlyMap<string, string>,
+): Map<string, { currency: CurrencyCode; amount: Minor }[]> {
+  const out = new Map<string, { currency: CurrencyCode; amount: Minor }[]>();
+  for (const p of payments) {
+    if (p.status !== "due" && p.status !== "client_reported") continue;
+    const client = clientOf.get(p.projectId);
+    if (!client) continue;
+    const rows = out.get(client) ?? [];
+    const row = rows.find((r) => r.currency === p.currency);
+    if (row) row.amount = sum([row.amount, p.amount]);
+    else rows.push({ currency: p.currency, amount: p.amount });
+    out.set(client, rows);
+  }
+  return out;
+}

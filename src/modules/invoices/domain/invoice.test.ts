@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { StateCode } from "@/shared/lib/india";
 import { minor } from "@/shared/lib/money";
 import {
+  previewInvoiceNumber,
   buyerProblems,
   invoiceNumber,
   invoiceTax,
@@ -258,5 +259,19 @@ describe("gstOutcome", () => {
     expect(
       gstOutcome({ gstin: null, state: null }, buyer({ state: "27" }), "Kavya"),
     ).toMatch(/^You don't charge GST/);
+  });
+});
+
+describe("previewInvoiceNumber", () => {
+  const series = { fyShort: "26-27", lastSerial: 0 };
+  it("follows what's typed, before the first invoice", () => {
+    expect(previewInvoiceNumber("ad", "7", series)).toBe("AD/26-27/007");
+    expect(previewInvoiceNumber("", "", series)).toBe("INV/26-27/001");
+  });
+  it("continues the series once invoices exist, and copes with bad input", () => {
+    expect(previewInvoiceNumber("AD", "1", { ...series, lastSerial: 10 })).toBe(
+      "AD/26-27/011",
+    );
+    expect(previewInvoiceNumber("A B", "1", series)).toBeNull();
   });
 });

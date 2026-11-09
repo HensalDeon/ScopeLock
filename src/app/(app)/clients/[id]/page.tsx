@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import {
   ArchiveClientButton,
+  ClientDetails,
   ClientForm,
+  ClientSummary,
   clientContactLine,
   clientFirstName,
   clientFormValues,
@@ -140,12 +142,23 @@ async function ClientDetail({
           title="Contact and billing details"
           description="Used to send approval links, and for the “Billed to” on invoices."
         >
-          <ClientForm
-            mode="edit"
-            clientId={client.id}
-            defaultCurrency={workspace.currency}
-            defaults={clientFormValues(client)}
-            seller={invoicing.settings}
+          <ClientDetails
+            view={
+              <ClientSummary
+                client={client}
+                seller={invoicing.settings}
+                defaultCurrency={workspace.currency}
+              />
+            }
+            form={
+              <ClientForm
+                mode="edit"
+                clientId={client.id}
+                defaultCurrency={workspace.currency}
+                defaults={clientFormValues(client)}
+                seller={invoicing.settings}
+              />
+            }
           />
         </Section>
         <Section

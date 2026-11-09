@@ -175,3 +175,22 @@ export function describeActivity(
       );
   }
 }
+
+/**
+ * The change request an event is about, for the freelancer's history:
+ * "CR-002" → its page. None for a deleted draft (nothing to open) or for
+ * events not about a change.
+ */
+export function changeLinkOf(
+  event: Pick<ActivityEvent, "type" | "projectId" | "data">,
+): { label: string; href: string } | null {
+  if (!event.type.startsWith("change.") || event.type === "change.deleted")
+    return null;
+  const number = /^CR-0*(\d+)$/.exec(event.data.label ?? "")?.[1];
+  return number
+    ? {
+        label: event.data.label ?? "",
+        href: `/projects/${event.projectId}/changes/${number}`,
+      }
+    : null;
+}

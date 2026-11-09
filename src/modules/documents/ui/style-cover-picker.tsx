@@ -77,14 +77,14 @@ export function CoverPicker({
           Upload a cover image below. Until then, the dark cover is used.
         </p>
       )}
-      <label className="mt-2 flex items-center justify-between gap-3 text-sm">
+      <label className="mt-2 flex items-center justify-between gap-3 text-sm max-sm:min-h-11">
         Decorative rings on the cover
         <Switch
           checked={values.coverPattern === "true"}
           onCheckedChange={(on) => set("coverPattern", String(on))}
         />
       </label>
-      <label className="flex items-center justify-between gap-3 text-sm">
+      <label className="flex items-center justify-between gap-3 text-sm max-sm:min-h-11">
         {images.logoUrl
           ? "Show your logo on the cover"
           : "Show your initials on the cover"}

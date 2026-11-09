@@ -14,7 +14,7 @@ export default function InvoicingSettingsPage() {
 }
 
 async function InvoicingSettings() {
-  const { settings, nextNumber } = await getInvoicing();
+  const { settings, series } = await getInvoicing();
   return (
     <div className="grid gap-2">
       <p className="mb-6 max-w-prose text-sm text-pretty text-muted-foreground">
@@ -22,10 +22,7 @@ async function InvoicingSettings() {
         download. Once issued, an invoice doesn&apos;t change; cancelling the
         payment cancels its invoice.
       </p>
-      <InvoicingForm
-        defaults={invoicingFormValues(settings)}
-        nextNumber={nextNumber}
-      />
+      <InvoicingForm defaults={invoicingFormValues(settings)} series={series} />
     </div>
   );
 }

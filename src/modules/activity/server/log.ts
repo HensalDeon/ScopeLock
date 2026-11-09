@@ -14,6 +14,7 @@ import {
   isClientVisible,
   type ActivityLine,
   type Viewer,
+  changeLinkOf,
 } from "../domain/activity";
 import {
   countActivity,
@@ -47,7 +48,12 @@ export async function logActivityInTransaction(
   await insertActivity(workspaceId, event, session);
 }
 
-export type ActivityItem = { id: string; at: Date } & ActivityLine;
+export type ActivityItem = {
+  id: string;
+  at: Date;
+  /** The change request it's about, in the freelancer's history. */
+  link?: { label: string; href: string } | null;
+} & ActivityLine;
 
 /**
  * One page of a project's history for the signed-in member, newest first.
@@ -74,6 +80,7 @@ export async function listProjectActivity(
     items: result.items.map((e) => ({
       id: e.id,
       at: e.at,
+      link: changeLinkOf(e),
       ...describeActivity(e, viewer),
     })),
   };
@@ -120,6 +127,7 @@ export async function listRecentActivity(
     id: e.id,
     at: e.at,
     projectId: e.projectId,
+    link: changeLinkOf(e),
     ...describeActivity(e, viewer),
   }));
 }

@@ -30,11 +30,17 @@ import {
 } from "../domain/overview";
 import { needsYou } from "../domain/needs-you";
 import { setupSteps, type SetupStep } from "../domain/setup";
-import { portfolioTotals, type CurrencyTotals } from "../domain/portfolio";
+import {
+  dueByClient,
+  portfolioTotals,
+  type CurrencyTotals,
+} from "../domain/portfolio";
 
 export type OverviewData = {
   /** The first-run checklist, or null once every step is done. */
   setup: SetupStep[] | null;
+  /** The checklist was hidden by hand (it can be shown again). */
+  setupHidden: boolean;
   hasProjects: boolean;
   money: CurrencyTotals[];
   waiting: AttentionItem[];
@@ -116,6 +122,7 @@ export async function getOverview(): Promise<OverviewData> {
 
   return {
     setup: steps.every((s) => s.done) ? null : steps,
+    setupHidden: workspace.setupHidden,
     hasProjects: projects.length > 0,
     money: portfolioTotals(projects),
     waiting: waitingOnClients(projects, open, links, new Date(), payments),
@@ -183,4 +190,21 @@ export async function getClientMoney(
     (p) => p.clientId === clientId,
   );
   return portfolioTotals(await withMoney(summaries));
+}
+
+/** What each client owes now, per currency, for the clients list. */
+export async function getDueByClient() {
+  const [owed, projects] = await Promise.all([
+    listOwedPayments(),
+    listProjectSummaries(),
+  ]);
+  return dueByClient(
+    owed.map((p) => ({
+      projectId: p.projectId,
+      amount: p.payable,
+      currency: p.currency,
+      status: p.status,
+    })),
+    new Map(projects.map((p) => [p.id, p.clientId])),
+  );
 }

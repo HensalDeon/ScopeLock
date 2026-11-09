@@ -38,6 +38,8 @@ export type WorkspaceProfile = {
   phone: string | null;
   /** Default for new clients and projects. */
   currency: CurrencyCode;
+  /** The overview's setup checklist was hidden by hand. */
+  setupHidden: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

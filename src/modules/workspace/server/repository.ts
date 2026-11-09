@@ -3,7 +3,9 @@ import { COLLECTIONS } from "@/shared/db/names";
 import { scopedCollection } from "@/shared/db/scoped";
 import type { WorkspaceDetails, WorkspaceProfile } from "../domain/workspace";
 
-type WorkspaceProfileDoc = WorkspaceProfile;
+type WorkspaceProfileDoc = Omit<WorkspaceProfile, "setupHidden"> & {
+  setupHidden?: boolean;
+};
 
 const profiles = (workspaceId: string) =>
   scopedCollection<WorkspaceProfileDoc>(
@@ -18,6 +20,7 @@ function toWorkspaceProfile(doc: WorkspaceProfileDoc): WorkspaceProfile {
     businessType: doc.businessType,
     phone: doc.phone ?? null,
     currency: doc.currency ?? "INR",
+    setupHidden: doc.setupHidden ?? false,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
@@ -47,4 +50,12 @@ export async function saveWorkspaceProfile(
     },
     { upsert: true },
   );
+}
+
+/** Hide or show the overview's setup checklist. */
+export async function setSetupHidden(
+  workspaceId: string,
+  hidden: boolean,
+): Promise<void> {
+  await profiles(workspaceId).updateOne({}, { $set: { setupHidden: hidden } });
 }

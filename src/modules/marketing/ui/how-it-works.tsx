@@ -1,4 +1,4 @@
-import { Check, QrCode } from "lucide-react";
+import { Check } from "lucide-react";
 import { formatINR, rupeesToPaise } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { Container, Leader, SectionHeading } from "./primitives";
@@ -89,15 +89,18 @@ export function HowItWorks() {
             title="Get paid your way"
             text="Add it to the next milestone, the final payment, or ask for it now. Clients pay by UPI, bank transfer or your payment link."
           >
-            <div className="flex items-center gap-3 text-[13.5px]">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-md border bg-background">
-                <QrCode className="size-7" aria-hidden />
-              </span>
-              <div className="min-w-0">
-                <p className="font-medium">UPI QR with the amount filled in</p>
-                <p className="text-muted-foreground">
-                  Client pays, uploads the UTR, you confirm.
-                </p>
+            <div className="grid gap-1 rounded-md border bg-background px-3 py-2.5 text-[13.5px]">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-medium">Before launch</span>
+                <span className="font-medium tabular-nums">
+                  {rupees(47_000)}
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between gap-3 text-muted-foreground">
+                <span className="truncate font-mono text-[12px]">
+                  UPI · UTR 431209876543
+                </span>
+                <span className="shrink-0 text-success-ink">Received</span>
               </div>
             </div>
           </StepCard>

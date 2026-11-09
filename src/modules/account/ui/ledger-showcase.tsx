@@ -74,7 +74,7 @@ export function LedgerShowcase() {
             </p>
           </div>
 
-          <p className="border-t border-white/[0.07] px-5 pt-3 pb-1 font-mono text-[10.5px] tracking-[0.12em] text-[#8b95a7] uppercase">
+          <p className="border-t border-white/[0.07] px-5 pt-3 pb-1 font-mono text-[11px] tracking-[0.12em] text-[#8b95a7] uppercase">
             Changes
           </p>
           <ul className="px-5 pb-2">

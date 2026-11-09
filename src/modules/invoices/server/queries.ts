@@ -16,6 +16,8 @@ import * as repo from "./repository";
 export async function getInvoicing(): Promise<{
   settings: InvoicingSettings;
   nextNumber: string;
+  /** For the form's live preview: this year's series so far. */
+  series: { fyShort: string; lastSerial: number };
 }> {
   const { workspace } = await requireWorkspace();
   const ws = workspace.workspaceId;
@@ -31,6 +33,7 @@ export async function getInvoicing(): Promise<{
       fy.short,
       Math.max(last + 1, settings.startNumber),
     ),
+    series: { fyShort: fy.short, lastSerial: last },
   };
 }
 

@@ -7,6 +7,7 @@ import {
   countArchivedClients,
   listClientsPage,
 } from "@/modules/clients/server";
+import { getDueByClient } from "@/modules/overview/server";
 import { countProjectsByClient } from "@/modules/projects/server";
 import { parsePage } from "@/shared/lib/pagination";
 import { listHref, parseSearch } from "@/shared/lib/search";
@@ -48,10 +49,11 @@ async function Clients({
   const query = await searchParams;
   const archived = query.view === "archived";
   const search = parseSearch(query.q);
-  const [page, archivedCount, projectCounts] = await Promise.all([
+  const [page, archivedCount, projectCounts, due] = await Promise.all([
     listClientsPage({ archived, page: parsePage(query.page), search }),
     archived ? Promise.resolve(0) : countArchivedClients(),
     countProjectsByClient(),
+    getDueByClient(),
   ]);
   const view = archived ? "archived" : null;
   const href = (n: number) =>
@@ -85,7 +87,11 @@ async function Clients({
         </div>
         {searchBox}
         {page.total > 0 ? (
-          <ClientList clients={page.items} projectCounts={projectCounts} />
+          <ClientList
+            clients={page.items}
+            projectCounts={projectCounts}
+            due={due}
+          />
         ) : (
           noMatch || (
             <EmptyState title="No archived clients">
@@ -103,7 +109,11 @@ async function Clients({
     <div className="grid gap-4">
       {searchBox}
       {page.total > 0 ? (
-        <ClientList clients={page.items} projectCounts={projectCounts} />
+        <ClientList
+          clients={page.items}
+          projectCounts={projectCounts}
+          due={due}
+        />
       ) : (
         noMatch || (
           <EmptyState

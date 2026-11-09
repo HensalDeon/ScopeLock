@@ -21,7 +21,11 @@ import { Input } from "@/shared/ui/input";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { Section } from "@/shared/ui/page";
 import { Textarea } from "@/shared/ui/textarea";
-import { invoicingInputSchema, type InvoicingField } from "../domain/invoice";
+import {
+  invoicingInputSchema,
+  previewInvoiceNumber,
+  type InvoicingField,
+} from "../domain/invoice";
 import { updateInvoicing, type InvoicingFormState } from "../server/actions";
 
 type Values = Record<InvoicingField, string>;
@@ -32,10 +36,11 @@ type Values = Record<InvoicingField, string>;
  */
 export function InvoicingForm({
   defaults,
-  nextNumber,
+  series,
 }: {
   defaults: Values;
-  nextNumber: string;
+  /** This financial year's series so far, for the live next number. */
+  series: { fyShort: string; lastSerial: number };
 }) {
   const uid = useId();
   const formRef = useRef<HTMLFormElement>(null);
@@ -151,42 +156,63 @@ export function InvoicingForm({
               className: "font-mono uppercase",
             },
           )}
-          <Field data-invalid={Boolean(form.errorFor("state")) || undefined}>
-            <FieldLabel htmlFor={`${uid}-state`}>
-              {registered ? "Your state" : "Your state (optional)"}
-            </FieldLabel>
-            <NativeSelect
-              id={`${uid}-state`}
-              name="state"
-              value={values.state}
-              onChange={(e) => set("state", e.target.value)}
-              className="w-full"
-            >
-              <option value="">Choose a state</option>
-              {INDIAN_STATES.map((s) => (
-                <option key={s.code} value={s.code}>
-                  {s.name}
-                </option>
+          {/* State, SAC and LUT only matter with a GSTIN; kept when hidden. */}
+          {registered ? (
+            <>
+              <Field
+                data-invalid={Boolean(form.errorFor("state")) || undefined}
+              >
+                <FieldLabel htmlFor={`${uid}-state`}>
+                  {registered ? "Your state" : "Your state (optional)"}
+                </FieldLabel>
+                <NativeSelect
+                  id={`${uid}-state`}
+                  name="state"
+                  value={values.state}
+                  onChange={(e) => set("state", e.target.value)}
+                  className="w-full"
+                >
+                  <option value="">Choose a state</option>
+                  {INDIAN_STATES.map((s) => (
+                    <option key={s.code} value={s.code}>
+                      {s.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+                <FieldError>{form.errorFor("state")}</FieldError>
+              </Field>
+              {row(
+                "sac",
+                "SAC code",
+                "The service code printed on each invoice line. 998314 covers IT design and development, which fits most web, app and design work.",
+                {
+                  inputMode: "numeric",
+                  maxLength: 8,
+                },
+              )}
+              {row(
+                "lutArn",
+                "LUT ARN (only if you bill clients outside India)",
+                "File a Letter of Undertaking (form RFD-11) on the GST portal once each financial year. It's free and lets you bill clients abroad without GST. Paste the ARN from the acknowledgement, like AD320426012345X. Without it, you can't ask clients outside India for payment.",
+                {
+                  className: "font-mono uppercase",
+                },
+              )}
+            </>
+          ) : (
+            <>
+              {(["state", "sac", "lutArn"] as const).map((name) => (
+                <input
+                  key={name}
+                  type="hidden"
+                  name={name}
+                  value={values[name]}
+                />
               ))}
-            </NativeSelect>
-            <FieldError>{form.errorFor("state")}</FieldError>
-          </Field>
-          {row(
-            "sac",
-            "SAC code",
-            "The service code printed on each invoice line. 998314 covers IT design and development, which fits most web, app and design work.",
-            {
-              inputMode: "numeric",
-              maxLength: 8,
-            },
-          )}
-          {row(
-            "lutArn",
-            "LUT ARN (only if you bill clients outside India)",
-            "File a Letter of Undertaking (form RFD-11) on the GST portal once each financial year. It's free and lets you bill clients abroad without GST. Paste the ARN from the acknowledgement, like AD320426012345X. Without it, you can't ask clients outside India for payment.",
-            {
-              className: "font-mono uppercase",
-            },
+              <p className="text-sm text-muted-foreground sm:col-span-2">
+                Your state, SAC code and LUT appear here once you add a GSTIN.
+              </p>
+            </>
           )}
         </div>
       </Section>
@@ -208,18 +234,27 @@ export function InvoicingForm({
             {row(
               "startNumber",
               "Start this year from",
-              "Only used before your first ScopeLock invoice this year: if you've issued some elsewhere, continue from the next number.",
+              series.lastSerial > 0
+                ? "You've issued invoices this year, so the series continues from the last one."
+                : "If you've issued invoices elsewhere this year, continue from the next number.",
               {
                 inputMode: "numeric",
+                readOnly: series.lastSerial > 0,
               },
             )}
           </div>
           <p className="text-sm text-muted-foreground">
             Next invoice:{" "}
-            <span className="font-mono text-foreground tabular-nums">
-              {nextNumber}
+            <span
+              aria-live="polite"
+              className="font-mono text-foreground tabular-nums"
+            >
+              {previewInvoiceNumber(
+                values.prefix,
+                values.startNumber,
+                series,
+              ) ?? "fix the prefix to see it"}
             </span>
-            {form.isDirty && " (before these changes)"}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Button

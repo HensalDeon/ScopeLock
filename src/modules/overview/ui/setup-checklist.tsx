@@ -3,6 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
 import type { SetupStep } from "../domain/setup";
+import { SetupVisibility } from "./setup-visibility";
 
 /**
  * First-run steps, shown until they're all done. `folded`: once work is
@@ -38,6 +39,9 @@ export function SetupChecklist({
         </summary>
         <div className="border-t">
           <Steps steps={steps} />
+          <div className="border-t px-3 py-1">
+            <SetupVisibility hide label="Hide these steps" />
+          </div>
         </div>
       </details>
     );
@@ -56,6 +60,9 @@ export function SetupChecklist({
         </p>
       </div>
       <Steps steps={steps} />
+      <div className="border-t px-3 py-1">
+        <SetupVisibility hide label="Hide these steps" />
+      </div>
     </section>
   );
 }

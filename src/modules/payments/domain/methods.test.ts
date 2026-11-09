@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
+  clientSeesLine,
   methodsFor,
   methodsFormValues,
   methodsInputSchema,
@@ -100,5 +101,29 @@ describe("upiLink", () => {
     ).toBe(
       "upi://pay?pa=asha%40okhdfc&pn=Asha%20Menon&am=47000.00&cu=INR&tn=P-1F107C%20Before%20launch",
     );
+  });
+});
+
+describe("clientSeesLine", () => {
+  const base = {
+    defaultMethod: "",
+    upiVpa: "asha@okhdfc",
+    bankName: "HDFC Bank",
+    linkLabel: "",
+  };
+  it("lists what's set up, default first, with the useful next one", () => {
+    expect(clientSeesLine({ ...base, filled: ["upi"] })).toBe(
+      "Your client sees: UPI (asha@okhdfc). Add a bank account for clients who pay by NEFT or from abroad.",
+    );
+    expect(
+      clientSeesLine({
+        ...base,
+        filled: ["upi", "bank"],
+        defaultMethod: "bank",
+      }),
+    ).toBe("Your client sees: bank transfer to HDFC Bank · UPI (asha@okhdfc).");
+  });
+  it("says plainly when nothing is set up", () => {
+    expect(clientSeesLine({ ...base, filled: [] })).toMatch(/^Nothing yet/);
   });
 });
