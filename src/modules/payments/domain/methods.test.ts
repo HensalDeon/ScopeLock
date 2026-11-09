@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
+  abroadPaymentProblem,
   clientSeesLine,
   payToFrom,
   methodsFor,
@@ -141,5 +142,32 @@ describe("payToFrom", () => {
   it("freezes UPI on rupee invoices only", () => {
     expect(payToFrom(methods, "INR")?.upi?.vpa).toBe("asha@okhdfc");
     expect(payToFrom(methods, "USD")).toBeNull();
+    // A client abroad can't use UPI: it's left off their invoice.
+    expect(payToFrom(methods, "INR", true)).toBeNull();
+  });
+});
+
+describe("abroadPaymentProblem", () => {
+  const bank = {
+    accountName: "A",
+    accountNumber: "1",
+    ifsc: null,
+    bankName: "HDFC",
+    branch: null,
+    swift: "HDFCINBB",
+    iban: null,
+  };
+  it("blocks asking a client abroad with only UPI set up", () => {
+    expect(
+      abroadPaymentProblem({ bank: null, link: null }, true, "Rahul"),
+    ).toMatch(/^Rahul is outside India, where UPI doesn't work/);
+  });
+  it("is fine with a bank account or link, or a client in India", () => {
+    expect(
+      abroadPaymentProblem({ bank, link: null }, true, "Rahul"),
+    ).toBeNull();
+    expect(
+      abroadPaymentProblem({ bank: null, link: null }, false, "Rahul"),
+    ).toBeNull();
   });
 });

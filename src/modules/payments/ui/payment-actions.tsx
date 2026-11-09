@@ -1,73 +1,21 @@
 "use client";
 
-import type { Route } from "next";
-import Link from "next/link";
-import { useActionState } from "react";
 import { formatIsoDate } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
-import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
-import { announcing } from "@/shared/ui/announce";
 import { TOUCH } from "@/shared/ui/touch";
 import { ShareLink } from "@/shared/ui/share-link";
 import {
   INLINE_PANEL_FOCUS,
   useInlinePanel,
 } from "@/shared/ui/use-inline-panel";
+import { AskPanel } from "./ask-panel";
 import { ProofLink, ReceivedForm, RejectForm } from "./payment-forms";
+import { Run } from "./run-action";
 import { METHOD_LABELS } from "../domain/methods";
 import type { ScheduleItem } from "../domain/payment";
-import {
-  cancelPaymentRequest,
-  requestPayment,
-  type PaymentFormState,
-} from "../server/actions";
+import { cancelPaymentRequest } from "../server/actions";
 import { confirmReportedPayment } from "../server/confirm-actions";
-
-type Action = (s: PaymentFormState, d: FormData) => Promise<PaymentFormState>;
-
-/** One button that runs an action, with a pending label and its error. */
-function Run({
-  action: run,
-  fields,
-  label,
-  pendingLabel,
-  variant = "default",
-}: {
-  action: Action;
-  fields: Record<string, string>;
-  label: string;
-  pendingLabel: string;
-  variant?: "default" | "outline" | "ghost" | "destructive";
-}) {
-  // On success the row moves on and this button is gone: say what happened
-  // and put focus on the money strip, which now shows the new state.
-  const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    announcing(run, `money-${fields.projectId}`),
-    IDLE,
-  );
-  return (
-    <form action={action} className="grid gap-1.5">
-      {Object.entries(fields).map(([name, value]) => (
-        <input key={name} type="hidden" name={name} value={value} />
-      ))}
-      <Button
-        type="submit"
-        size="sm"
-        className={TOUCH}
-        variant={variant}
-        disabled={pending}
-      >
-        {pending ? pendingLabel : label}
-      </Button>
-      {state.status === "error" && (state.message || state.fieldErrors) && (
-        <p role="alert" className="text-sm text-destructive">
-          {state.message ?? Object.values(state.fieldErrors ?? {})[0]}
-        </p>
-      )}
-    </form>
-  );
-}
 
 export function PaymentActions({
   item,
@@ -78,11 +26,14 @@ export function PaymentActions({
   share,
   stateFallback,
   exportCheck = null,
+  abroadNeedsBankOrLink = false,
   breakdown,
   primary = false,
 }: {
   /** Abroad but billed in rupees: may not count as an export (s.2(6)). */
   exportCheck?: { clientHref: string } | null;
+  /** Client abroad with only UPI set up: asking is blocked until fixed. */
+  abroadNeedsBankOrLink?: boolean;
   item: ScheduleItem;
   projectId: string;
   /** Formatted total, e.g. "₹47,000". */
@@ -105,71 +56,19 @@ export function PaymentActions({
 
   if (item.state === "upcoming") {
     return open === "ask" ? (
-      <div
-        {...panels.panel(`Ask ${clientFirstName} for ${amount}`)}
-        className={cn(
-          "grid gap-2 rounded-lg border bg-background p-3",
-          INLINE_PANEL_FOCUS,
-        )}
-      >
-        <div className="grid gap-1">
-          <p className="text-sm font-medium">
-            Ask {clientFirstName} for{" "}
-            <span className="tabular-nums">{amount}</span>?
-          </p>
-          {breakdown && (
-            <p className="text-sm text-muted-foreground tabular-nums">
-              {breakdown}
-            </p>
-          )}
-          <p className="text-sm text-pretty text-muted-foreground">
-            {`This issues a numbered invoice and a pay page on ${clientFirstName}'s link. `}
-            {clientEmail
-              ? `${clientFirstName} also gets it by email at ${clientEmail}.`
-              : `There's no email for ${clientFirstName}, so send the link on WhatsApp.`}
-          </p>
-        </div>
-        {stateFallback && (
-          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
-            {clientFirstName}&apos;s state isn&apos;t set, so this invoice uses
-            yours ({stateFallback.yourState}) and charges CGST + SGST. If
-            they&apos;re in another state,{" "}
-            <Link
-              href={stateFallback.clientHref as Route}
-              className="font-medium underline underline-offset-4"
-            >
-              add their state or GSTIN
-            </Link>{" "}
-            first.
-          </p>
-        )}
-        {exportCheck && (
-          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
-            {clientFirstName} is outside India, so this invoice has no GST
-            (export under your LUT). GST law counts it as an export only if
-            you&apos;re paid in foreign currency, or in rupees through a bank
-            route the RBI allows. A rupee UPI payment from them may not qualify,
-            so check how they&apos;ll pay before relying on it.
-          </p>
-        )}
-        <div className="flex flex-wrap gap-2">
-          <Run
-            action={requestPayment}
-            fields={{ projectId, key: item.key }}
-            label={`Ask for ${amount}`}
-            pendingLabel="Asking…"
-          />
-          <Button
-            type="button"
-            size="sm"
-            className={TOUCH}
-            variant="ghost"
-            onClick={close}
-          >
-            Not yet
-          </Button>
-        </div>
-      </div>
+      <AskPanel
+        panelProps={panels.panel(`Ask ${clientFirstName} for ${amount}`)}
+        clientFirstName={clientFirstName}
+        clientEmail={clientEmail}
+        amount={amount}
+        breakdown={breakdown}
+        stateFallback={stateFallback}
+        exportCheck={exportCheck}
+        abroadNeedsBankOrLink={abroadNeedsBankOrLink}
+        projectId={projectId}
+        itemKey={item.key}
+        onClose={close}
+      />
     ) : (
       <Button
         type="button"

@@ -35,6 +35,11 @@ export function InvoiceStatement({
         <Line label="Left after this" strong>
           {money(statement.balanceAfter)}
         </Line>
+        {statement.owedWithGst !== undefined && (
+          <Line label="Still to pay on all invoices, with GST" strong>
+            {money(statement.owedWithGst)}
+          </Line>
+        )}
       </dl>
     </section>
   );

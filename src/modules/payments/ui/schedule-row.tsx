@@ -24,6 +24,8 @@ export type ScheduleRowContext = {
   exportCheck?: { clientHref: string } | null;
   /** The client is outside India: a zero-GST row is an export. */
   exportClient?: boolean;
+  /** Client abroad with only UPI set up: asking waits for bank or link. */
+  abroadNeedsBankOrLink?: boolean;
 };
 
 /**
@@ -137,6 +139,7 @@ export function paymentActionProps(
     clientEmail: ctx.client.email,
     stateFallback: ctx.stateFallback,
     exportCheck: ctx.exportCheck ?? null,
+    abroadNeedsBankOrLink: ctx.abroadNeedsBankOrLink ?? false,
     share:
       ctx.portalUrl && item.payment
         ? {

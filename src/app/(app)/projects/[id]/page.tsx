@@ -82,6 +82,7 @@ async function ProjectDetail({
     stateFallback: money.stateFallback,
     exportCheck: money.exportCheck,
     exportClient: money.exportClient,
+    abroadNeedsBankOrLink: money.abroadNeedsBankOrLink,
   };
 
   const scope = (
@@ -121,6 +122,7 @@ async function ProjectDetail({
           setup={{
             methodsReady: money.methodsReady,
             invoicingReady: money.invoicingReady,
+            abroadNeedsBankOrLink: money.abroadNeedsBankOrLink,
           }}
         />
       )}

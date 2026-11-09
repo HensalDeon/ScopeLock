@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
-import { buildStatement, type StatementInput } from "./statement";
+import {
+  buildStatement,
+  cancelledInvoices,
+  type StatementInput,
+} from "./statement";
 
 const at = new Date("2026-11-09T10:46:00Z");
 const input: StatementInput = {
@@ -90,5 +94,50 @@ describe("buildStatement", () => {
       due: 2_832_000,
       toAsk: 5_546_000,
     });
+  });
+});
+
+describe("cancelledInvoices", () => {
+  it("lists each cancelled invoice with the one that replaced it", () => {
+    const t = (h: number) => new Date(Date.UTC(2026, 10, 9, h));
+    expect(
+      cancelledInvoices([
+        {
+          key: "d",
+          label: "Design approved",
+          status: "due",
+          invoiceNumber: "AD/26-27/009",
+          requestedAt: t(3),
+        },
+        {
+          key: "d",
+          label: "Design approved",
+          status: "cancelled",
+          invoiceNumber: "AD/26-27/008",
+          requestedAt: t(2),
+        },
+        {
+          key: "a",
+          label: "Advance",
+          status: "confirmed",
+          invoiceNumber: "AD/26-27/007",
+          requestedAt: t(1),
+        },
+        {
+          key: "l",
+          label: "Before launch",
+          status: "cancelled",
+          invoiceNumber: "AD/26-27/010",
+          requestedAt: t(4),
+        },
+      ]),
+    ).toEqual([
+      {
+        invoice: "AD/26-27/008",
+        label: "Design approved",
+        replacedBy: "AD/26-27/009",
+      },
+      { invoice: "AD/26-27/010", label: "Before launch", replacedBy: null },
+    ]);
   });
 });

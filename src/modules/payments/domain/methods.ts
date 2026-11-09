@@ -324,6 +324,8 @@ export function clientSeesLine(input: {
 export function payToFrom(
   methods: PaymentMethods,
   currency: CurrencyCode,
+  /** The client is outside India: UPI can't be used from there. */
+  clientAbroad = false,
 ): {
   upi: { vpa: string; payeeName: string } | null;
   bank: {
@@ -336,7 +338,7 @@ export function payToFrom(
   } | null;
   link: { label: string; url: string } | null;
 } | null {
-  const upi = currency === "INR" ? methods.upi : null;
+  const upi = currency === "INR" && !clientAbroad ? methods.upi : null;
   const bank = methods.bank && {
     accountName: methods.bank.accountName,
     accountNumber: methods.bank.accountNumber,
@@ -349,4 +351,19 @@ export function payToFrom(
   return upi || bank || link
     ? { upi: upi ?? null, bank: bank ?? null, link: link ?? null }
     : null;
+}
+
+/**
+ * A client outside India can't pay by UPI, and GST law counts the work as a
+ * zero-rated export only when paid in foreign currency or INR through an
+ * RBI-permitted route (IGST Act s.2(6)). So asking needs a bank account
+ * (with SWIFT for international transfers) or a payment link first.
+ */
+export function abroadPaymentProblem(
+  methods: Pick<PaymentMethods, "bank" | "link">,
+  clientAbroad: boolean,
+  firstName: string,
+): string | null {
+  if (!clientAbroad || methods.bank || methods.link) return null;
+  return `${firstName} is outside India, where UPI doesn't work. Add a bank account (with its SWIFT code) or a payment link in Settings → Payments, then ask again.`;
 }

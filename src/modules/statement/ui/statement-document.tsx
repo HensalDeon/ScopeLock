@@ -101,6 +101,25 @@ export function StatementDocument({
         )}
       </Section>
 
+      {s.cancelledRows.length > 0 && (
+        <Section title="Cancelled invoices">
+          {s.cancelledRows.map((r) => (
+            <Line
+              key={r.invoice}
+              lead="×"
+              title={`Invoice ${r.invoice} · ${r.label}`}
+              status={
+                r.replacedBy
+                  ? `Cancelled, replaced by invoice ${r.replacedBy}. Nothing is owed on it.`
+                  : "Cancelled. Nothing is owed on it."
+              }
+              amount="–"
+              muted
+            />
+          ))}
+        </Section>
+      )}
+
       {/* Totals and the closing line print together, never a lone line. */}
       <div className="[break-inside:avoid]">
         <dl className="mt-8 ml-auto grid max-w-sm gap-1.5 text-[0.9rem] tabular-nums">

@@ -88,33 +88,9 @@ export function scopeSections(
   sections.push({
     title: "Investment",
     body: (
-      <div className="grid break-inside-avoid items-start gap-4 @xl:grid-cols-[1.4fr_1fr]">
-        <table className="w-full border-collapse text-[0.85rem]">
-          <thead>
-            <tr className="border-b border-[#1d1f24] text-left text-[11px] tracking-[0.14em] text-[#6b6f78] uppercase">
-              <th className="py-2 font-medium">Deliverable</th>
-              <th className="py-2 text-right font-medium">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item) => (
-              <tr key={item.id} className="border-b border-[#ece9e3]">
-                <td className="py-2 pr-3">{item.title}</td>
-                <td className="py-2 text-right tabular-nums">
-                  {money(item.amount)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td className="pt-2.5 font-semibold">Total</td>
-              <td className="pt-2.5 text-right font-semibold tabular-nums">
-                {money(data.total)}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+      // The lines and their prices are in "What's included" just above;
+      // the investment is the total, once, without repeating them.
+      <div className="grid break-inside-avoid items-start gap-4 @xl:grid-cols-[minmax(0,26rem)]">
         <div className="grid content-center gap-1 rounded-[2px] bg-(--doc-cover-bg) px-6 py-6 text-(--doc-cover-text)">
           <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
             Project fee

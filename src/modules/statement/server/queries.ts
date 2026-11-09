@@ -3,7 +3,7 @@ import { cache } from "react";
 import { changeLabel, type ChangeRequest } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
 import type { ProposalDocumentData } from "@/modules/documents";
-import type { ScheduleItem } from "@/modules/payments";
+import type { Payment, ScheduleItem } from "@/modules/payments";
 import { getProjectPayments } from "@/modules/payments/server";
 import { getProposalDocument } from "@/modules/projects/server";
 import { buildStatement, type Statement } from "../domain/statement";
@@ -22,6 +22,8 @@ export function statementFrom(input: {
   } | null;
   changes: readonly ChangeRequest[];
   items: readonly ScheduleItem[];
+  /** Every request, cancelled included (for the invoice series). */
+  requests?: readonly Payment[];
   asOf: Date;
 }): Statement {
   const { data } = input;
@@ -69,6 +71,13 @@ export function statementFrom(input: {
       requestedAt: i.payment?.requestedAt ?? null,
       receivedOn: i.payment?.confirmation?.receivedOn ?? null,
     })),
+    requests: (input.requests ?? []).map((r) => ({
+      key: r.key,
+      label: r.label,
+      status: r.status,
+      invoiceNumber: r.invoice?.number ?? null,
+      requestedAt: r.requestedAt,
+    })),
     asOf: input.asOf,
   });
 }
@@ -81,14 +90,15 @@ async function loadStatement(projectId: string): Promise<Statement> {
   ]);
   const approved =
     project.status === "active" || project.status === "completed";
-  const { items } = approved
+  const { items, payments: requests } = approved
     ? await getProjectPayments(project, changes)
-    : { items: [] };
+    : { items: [], payments: [] };
   return statementFrom({
     data,
     approval: project.lastDecision,
     changes,
     items,
+    requests,
     asOf: new Date(),
   });
 }

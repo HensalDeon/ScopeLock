@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { isIndia } from "@/shared/lib/india";
 import type { Statement } from "@/modules/statement";
 import { statementFrom } from "@/modules/statement/server";
 import { formatMoney } from "@/shared/lib/money";
@@ -235,13 +236,22 @@ async function loadPortalPayment(
   const invoice = invoiceId
     ? await findInvoice(opened.workspaceId, invoiceId, opened.projectId)
     : null;
+  // UPI and QR are Indian rails: a client abroad gets bank or link only.
+  const abroad = Boolean(invoice && !isIndia(invoice.buyer.country));
+  const payable = abroad
+    ? {
+        ...found,
+        available: found.available.filter((m) => m !== "upi" && m !== "qr"),
+        upi: null,
+      }
+    : found;
   return {
     state: "ok",
     isExport: invoice?.tax.kind === "export",
     businessName: opened.sent.data.business.name,
     projectTitle: opened.sent.data.title,
     reference: opened.sent.data.reference,
-    ...found,
+    ...payable,
   };
 }
 
@@ -366,6 +376,7 @@ async function loadPortalStatement(
       approval: view.decision,
       changes: view.changes,
       items: view.payments?.items ?? [],
+      requests: view.payments?.payments ?? [],
       asOf: new Date(),
     }),
     accent: view.style.accent,

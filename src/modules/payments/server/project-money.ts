@@ -3,6 +3,7 @@ import type { ChangeRequest } from "@/modules/changes";
 import { gstHints, taxCaseOf } from "@/modules/invoices";
 import { findInvoicing } from "@/modules/invoices/server";
 import { requireWorkspace } from "@/modules/workspace/server";
+import { isIndia } from "@/shared/lib/india";
 import { hasAnyMethod } from "../domain/methods";
 import { getProjectPayments } from "./queries";
 import type { PaymentSchedule, ProjectForSchedule } from "./schedule";
@@ -23,6 +24,8 @@ export type ProjectMoney = PaymentSchedule & {
   exportCheck: { clientHref: string } | null;
   /** The client is outside India: their invoices are exports, no GST. */
   exportClient: boolean;
+  /** Client abroad with only UPI/QR set up: they'd have no way to pay. */
+  abroadNeedsBankOrLink: boolean;
   /** When this was read (for "asked 3 days ago" style decisions). */
   now: Date;
 };
@@ -52,6 +55,10 @@ export async function getProjectMoney(
     exportClient:
       taxCaseOf(settings, client as Parameters<typeof taxCaseOf>[1]) ===
       "export",
+    abroadNeedsBankOrLink:
+      Boolean(client && !isIndia(client.country)) &&
+      !methods.bank &&
+      !methods.link,
     invoicingReady: Boolean(
       settings.legalName || settings.address || settings.gstin,
     ),

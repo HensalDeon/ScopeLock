@@ -27,6 +27,12 @@ export type ProjectStatement = {
   thisInvoice: Minor;
   /** Left after this invoice and the earlier ones are paid. */
   balanceAfter: Minor;
+  /**
+   * What the client still has to pay across this and earlier unpaid
+   * invoices, GST included (the lines above are before GST). Missing on
+   * invoices issued before it existed.
+   */
+  owedWithGst?: Minor;
 };
 
 export function projectStatement(input: {
@@ -35,6 +41,7 @@ export function projectStatement(input: {
   receivedBefore: Minor;
   awaitingBefore: Minor;
   thisInvoice: Minor;
+  owedWithGst?: Minor;
 }): ProjectStatement {
   const projectTotal = sum([
     input.originalScope,

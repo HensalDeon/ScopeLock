@@ -40,6 +40,17 @@ export type StatementInput = {
     /** YYYY-MM-DD, as the freelancer recorded it. */
     receivedOn: string | null;
   }[];
+  /**
+   * Every payment request ever made, cancelled ones included, so the
+   * statement shows the whole invoice series (no gaps for an accountant).
+   */
+  requests?: {
+    key: string;
+    label: string;
+    status: string;
+    invoiceNumber: string | null;
+    requestedAt: Date;
+  }[];
   asOf: Date;
 };
 
@@ -57,6 +68,12 @@ export type Statement = StatementInput & {
     status: string;
     amount: Minor;
     settled: boolean;
+  }[];
+  /** "AD/26-27/008 · Design approved · cancelled, replaced by …/009". */
+  cancelledRows: {
+    invoice: string;
+    label: string;
+    replacedBy: string | null;
   }[];
   totals: {
     agreed: Minor;
@@ -119,6 +136,7 @@ export function buildStatement(input: StatementInput): Statement {
       amount: c.total,
       counts: c.status === "approved",
     })),
+    cancelledRows: cancelledInvoices(input.requests ?? []),
     paymentRows: input.payments.map((p) => ({
       label: p.label,
       invoice: p.invoiceNumber,
@@ -139,4 +157,30 @@ export function buildStatement(input: StatementInput): Statement {
       toAsk: pick(["upcoming"]),
     },
   };
+}
+
+/**
+ * Cancelled invoices, each with the one issued in its place (the next
+ * request for the same payment), in the order they were issued.
+ */
+export function cancelledInvoices(
+  requests: NonNullable<StatementInput["requests"]>,
+): Statement["cancelledRows"] {
+  const ordered = [...requests].sort(
+    (a, b) => a.requestedAt.getTime() - b.requestedAt.getTime(),
+  );
+  return ordered
+    .filter((r) => r.status === "cancelled" && r.invoiceNumber)
+    .map((r) => ({
+      invoice: r.invoiceNumber ?? "",
+      label: r.label,
+      replacedBy:
+        ordered.find(
+          (q) =>
+            q.key === r.key &&
+            q.status !== "cancelled" &&
+            q.invoiceNumber &&
+            q.requestedAt > r.requestedAt,
+        )?.invoiceNumber ?? null,
+    }));
 }
