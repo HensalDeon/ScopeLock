@@ -10,19 +10,21 @@ import { getDocumentSettings } from "@/modules/documents/server";
 import { z } from "zod";
 import { findClient } from "@/modules/clients/server";
 import { workspaceAction } from "@/modules/workspace/server";
+import { gstOnDocuments } from "@/modules/invoices/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { UserError, type FormState } from "@/shared/lib/form-state";
 import {
   buildProjectPlan,
-  emptyTotals,
   PROJECT_FIELDS,
   projectInputSchema,
   type ProjectField,
   type ProjectInput,
-} from "../domain/project";
+} from "../domain/project-input";
+import { emptyTotals } from "../domain/project";
 import { currentProposalData } from "./document";
 import { newPortalLink } from "./portal";
 import * as repo from "./repository";
+import * as portalRepo from "./portal-repository";
 import { getProjectOrNotFound } from "./queries";
 
 export type ProjectFormState = FormState<ProjectField | "id">;
@@ -165,16 +167,17 @@ export const sendProposal = workspaceAction(
         "This project's client was removed. Edit the project and choose a client first.",
       );
     }
-    const [settings, state] = await Promise.all([
+    const [settings, state, gst] = await Promise.all([
       getDocumentSettings(),
-      repo.findPortalState(context.workspace.workspaceId, id),
+      portalRepo.findPortalState(context.workspace.workspaceId, id),
+      gstOnDocuments(context.workspace.workspaceId, project.client),
     ]);
     const now = new Date();
     const data = {
-      ...currentProposalData(project, context, settings.defaults),
+      ...currentProposalData(project, context, settings.defaults, gst),
       issuedOn: now,
     };
-    const sent = await repo.markSent(
+    const sent = await portalRepo.markSent(
       context.workspace.workspaceId,
       id,
       {
@@ -210,7 +213,7 @@ export const withdrawProposal = workspaceAction(
     failureMessage: "The proposal wasn't withdrawn. Please try again.",
   },
   async ({ id }, { workspace, user }) => {
-    const done = await repo.markWithdrawn(workspace.workspaceId, id);
+    const done = await portalRepo.markWithdrawn(workspace.workspaceId, id);
     if (!done) {
       throw new UserError(
         "The client has already answered, or the proposal was withdrawn. Refresh the page.",
@@ -231,12 +234,12 @@ export const regeneratePortalLink = workspaceAction(
   { ...idOnly, failureMessage: "No new link was made. Please try again." },
   async ({ id }, { workspace, user }) => {
     if (!user.emailVerified) throw new UserError(VERIFY_FIRST);
-    const state = await repo.findPortalState(workspace.workspaceId, id);
+    const state = await portalRepo.findPortalState(workspace.workspaceId, id);
     if (!state) throw new UserError(GONE);
     if (!state.portal) {
       throw new UserError("Send the proposal first. That creates the link.");
     }
-    await repo.replacePortal(workspace.workspaceId, id, newPortalLink());
+    await portalRepo.replacePortal(workspace.workspaceId, id, newPortalLink());
     await logActivity(workspace.workspaceId, {
       projectId: id,
       type: "link.replaced",

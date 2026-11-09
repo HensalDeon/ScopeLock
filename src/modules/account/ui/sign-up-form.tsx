@@ -93,7 +93,7 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor={`${uid}-email`}>Work email</FieldLabel>
+          <FieldLabel htmlFor={`${uid}-email`}>Email</FieldLabel>
           <Input
             id={`${uid}-email`}
             name="email"
@@ -121,6 +121,17 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
         <Button type="submit" size="lg" className="w-full" disabled={pending}>
           {pending ? "Creating account…" : "Create account"}
         </Button>
+        <p className="-mt-2 text-[13px] text-muted-foreground">
+          By creating an account you agree to the{" "}
+          <Link href="/terms" className="underline underline-offset-4">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="underline underline-offset-4">
+            Privacy policy
+          </Link>
+          .
+        </p>
 
         {googleEnabled && (
           <>

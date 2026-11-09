@@ -15,6 +15,7 @@ import {
   focusFirstInvalid,
   useFormValidation,
 } from "@/shared/lib/use-form-validation";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
   Field,
@@ -26,11 +27,17 @@ import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { Textarea } from "@/shared/ui/textarea";
+import { TOUCH } from "@/shared/ui/touch";
+import {
+  INLINE_PANEL_FOCUS,
+  useInlinePanel,
+} from "@/shared/ui/use-inline-panel";
 import type { ReportState } from "../server/payment-actions";
 
 /**
  * "I've paid": how, the UTR, when, and an optional screenshot (shrunk in
  * the browser, checked again on the server). The freelancer confirms it.
+ * Folded behind one button so the page leads with paying, not reporting.
  */
 export function ReportPaymentForm({
   action: report,
@@ -47,6 +54,7 @@ export function ReportPaymentForm({
   allowProof: boolean;
 }) {
   const uid = useId();
+  const fold = useInlinePanel();
   const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [state, action, pending] = useActionState<ReportState, FormData>(
@@ -91,11 +99,26 @@ export function ReportPaymentForm({
     );
   }
 
+  if (!fold.open) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        className={cn("w-full sm:w-auto sm:justify-self-start", TOUCH)}
+        {...fold.trigger("open")}
+      >
+        I&apos;ve paid {amount}
+      </Button>
+    );
+  }
+
   return (
     <form
       ref={formRef}
       noValidate
-      className="grid gap-5"
+      {...fold.panel(`Tell ${businessName} you've paid`)}
+      className={cn("grid gap-5 rounded-lg", INLINE_PANEL_FOCUS)}
       onSubmit={(event) => {
         event.preventDefault();
         if (!form.markSubmitted()) {
@@ -180,12 +203,12 @@ export function ReportPaymentForm({
           onBlur={() => form.touch("reference")}
           maxLength={40}
           autoComplete="off"
-          placeholder="431209876543"
           aria-invalid={Boolean(form.errorFor("reference")) || undefined}
           className="font-mono"
         />
         <FieldDescription>
-          In your UPI app or bank statement, next to this payment.
+          For UPI, the 12-digit number in your UPI app&apos;s payment details.
+          For a bank transfer, it&apos;s next to the payment on your statement.
         </FieldDescription>
         <FieldError>{form.errorFor("reference")}</FieldError>
       </Field>
@@ -200,7 +223,7 @@ export function ReportPaymentForm({
             type="file"
             accept={ALLOWED_IMAGE_TYPES.join(",")}
             onChange={() => setFileError(null)}
-            className="h-auto py-1.5"
+            className="h-auto py-1.5 max-sm:py-2.5"
           />
           <FieldDescription>
             Of the payment confirmation. PNG, JPG or WebP.
@@ -219,19 +242,30 @@ export function ReportPaymentForm({
         />
         <FieldError>{form.errorFor("note")}</FieldError>
       </Field>
-      <div className="grid gap-2">
-        <Button
-          type="submit"
-          size="lg"
-          disabled={pending}
-          className="w-full sm:w-auto sm:justify-self-start"
-        >
-          {pending ? "Sending…" : `I've paid ${amount}`}
-        </Button>
+      <div className="grid gap-3">
         <FieldDescription>
           {businessName} checks their account and confirms. You&apos;ll see it
           here when they do.
         </FieldDescription>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={pending}
+            className={cn("max-sm:w-full", TOUCH)}
+          >
+            {pending ? "Sending…" : `Send to ${businessName}`}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            className={cn("max-sm:w-full", TOUCH)}
+            onClick={fold.close}
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
     </form>
   );

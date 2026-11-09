@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildProjectPlan, projectInputSchema } from "./project";
+import { buildProjectPlan, projectInputSchema } from "./project-input";
 import { hasProposalSections, proposalInputSchema } from "./proposal";
 
 let n = 0;

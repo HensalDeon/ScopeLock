@@ -6,6 +6,7 @@ import { ALLOWED_IMAGE_TYPES } from "@/shared/lib/image-type";
 import { shrinkImage } from "@/shared/lib/shrink-image";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 /** What people may pick, and what reaches the server after resizing. */
 const MAX_SOURCE_BYTES = 5 * 1024 * 1024;
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -161,6 +162,7 @@ export function ImageUploadField({
           type="button"
           variant="outline"
           size="sm"
+          className={TOUCH}
           disabled={!enabled || pending}
           onClick={() => inputRef.current?.click()}
         >
@@ -176,7 +178,7 @@ export function ImageUploadField({
             type="button"
             variant="ghost"
             size="sm"
-            className="text-muted-foreground"
+            className={cn("text-muted-foreground", TOUCH)}
             disabled={pending}
             onClick={onRemove}
           >

@@ -200,6 +200,9 @@ export function DecisionPanel({
               </Field>
             )}
             <div className="grid gap-3">
+              <FieldDescription>
+                {choice === "approved" ? copy.approveNote : copy.rejectNote}
+              </FieldDescription>
               <Button
                 type="submit"
                 size="lg"
@@ -214,9 +217,6 @@ export function DecisionPanel({
                     ? "Sending…"
                     : copy.rejectSubmit}
               </Button>
-              <FieldDescription>
-                {choice === "approved" ? copy.approveNote : copy.rejectNote}
-              </FieldDescription>
             </div>
           </>
         )}

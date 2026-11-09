@@ -2,7 +2,7 @@ import "server-only";
 import { env } from "@/shared/lib/env";
 import { generateToken, hashToken } from "@/shared/lib/token";
 import { decryptText, encryptText } from "@/shared/security/keys";
-import type { PortalLink } from "./repository";
+import type { PortalLink } from "./project-docs";
 
 /** 32 random bytes, base64url: exactly 43 characters. */
 export const PORTAL_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;

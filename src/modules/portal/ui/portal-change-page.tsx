@@ -1,11 +1,11 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { changeLabel } from "@/modules/changes";
-import { ChangeOrderDocument } from "@/modules/documents";
+import { ChangeOrderDocument, approvalAmount } from "@/modules/documents";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
-import { decideChange } from "../server/actions";
+import { decideChange } from "../server/change-decision";
 import { getPortalChange } from "../server/queries";
 import { DecisionPanel } from "./decision-panel";
 import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";
@@ -32,7 +32,7 @@ export async function PortalChangePage({
     <Link
       href={`/c/${token}`}
       aria-label={`Back to ${view.projectTitle}`}
-      className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted"
+      className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted max-sm:size-11"
     >
       <ArrowLeft aria-hidden className="size-4" />
     </Link>
@@ -75,7 +75,7 @@ export async function PortalChangePage({
             Approve or decline
           </a>
         )}
-        <PrintButton label="Save PDF" />
+        <PrintButton variant="outline" />
       </PortalHeader>
 
       {change.status === "approved" && decision && (
@@ -99,15 +99,27 @@ export async function PortalChangePage({
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         <ChangeOrderDocument
           data={data}
+          approved={change.status === "approved"}
+          acceptance={
+            decision
+              ? {
+                  verdict:
+                    decision.decision === "approved" ? "Approved" : "Declined",
+                  name: decision.name,
+                  email: null,
+                  at: decision.at,
+                }
+              : null
+          }
           style={view.style}
           images={view.images}
-          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
+          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
         {change.status === "sent" && (
           <section
             id="answer"
             aria-labelledby="answer-heading"
-            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 sm:mt-6 sm:rounded-sm sm:border sm:px-10 print:hidden"
+            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 sm:mt-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden"
           >
             <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
               Your answer
@@ -125,7 +137,7 @@ export async function PortalChangePage({
               kind="change"
               action={decideChange.bind(null, token, change.number)}
               businessName={businessName}
-              total={total}
+              total={approvalAmount(data.total, data.gstPercent, data.currency)}
               defaults={{
                 name: data.client?.name ?? "",
                 email: data.client?.email ?? "",

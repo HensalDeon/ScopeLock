@@ -47,6 +47,21 @@ export function HowToPay({
           {kind === "upi" && methods.upi && (
             <div className="grid items-center gap-4 sm:grid-cols-[11rem_minmax(0,1fr)]">
               {upi && (
+                // Phones: the UPI app button comes first (you can't scan a
+                // QR shown on the same phone).
+                <a
+                  href={upi.link}
+                  className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/80 sm:hidden"
+                >
+                  Pay {total} with a UPI app
+                </a>
+              )}
+              {upi && (
+                <p className="-mb-2 text-sm text-muted-foreground sm:hidden">
+                  Paying from another phone or a laptop? Scan this.
+                </p>
+              )}
+              {upi && (
                 <div
                   role="img"
                   aria-label={`UPI QR code for ${total} to ${methods.upi.payeeName}`}
@@ -67,14 +82,6 @@ export function HowToPay({
                   <dt className="text-muted-foreground">Name</dt>
                   <dd>{methods.upi.payeeName}</dd>
                 </dl>
-                {upi && (
-                  <a
-                    href={upi.link}
-                    className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 sm:hidden"
-                  >
-                    Pay {total} with a UPI app
-                  </a>
-                )}
               </div>
             </div>
           )}

@@ -3,7 +3,9 @@ import type { Route } from "next";
 import Link from "next/link";
 import { clientFirstName, type Client } from "@/modules/clients";
 import { BackLink } from "@/shared/ui/back-link";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH, TOUCH_LINK } from "@/shared/ui/touch";
 import { isEditable, type Project } from "../domain/project";
 import { ProjectStatusBadge } from "./project-status-badge";
 
@@ -18,6 +20,7 @@ export function ProjectHeader({
 }) {
   const { client } = project;
   const editable = isEditable(project.status);
+  const sent = Boolean(project.sentAt) && !editable;
   const firstName = client ? clientFirstName(client) : "your client";
 
   return (
@@ -36,29 +39,48 @@ export function ProjectHeader({
               For{" "}
               <Link
                 href={`/clients/${client.id}` as Route}
-                className="font-medium text-foreground underline-offset-4 hover:underline"
+                className={cn(
+                  "font-medium text-foreground underline-offset-4 hover:underline",
+                  TOUCH_LINK,
+                )}
               >
                 {client.name}
               </Link>
               {client.company ? ` · ${client.company}` : ""}
+              {sent && (
+                <span className="sm:hidden">
+                  {" · "}
+                  <Link
+                    href={`/projects/${project.id}/preview` as Route}
+                    className={cn(
+                      "font-medium text-foreground underline-offset-4 hover:underline",
+                      TOUCH_LINK,
+                    )}
+                  >
+                    View sent proposal
+                  </Link>
+                </span>
+              )}
             </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
           {editable && (
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className={TOUCH}>
               <Link href={`/projects/${project.id}/edit` as Route}>
                 <Pencil aria-hidden />
                 Edit scope
               </Link>
             </Button>
           )}
-          <Button asChild>
+          <Button
+            asChild
+            variant="outline"
+            className={cn(TOUCH, sent && client && "max-sm:hidden")}
+          >
             <Link href={`/projects/${project.id}/preview` as Route}>
               <Eye aria-hidden />
-              {project.sentAt && !editable
-                ? "View sent proposal"
-                : "Preview as client"}
+              {sent ? "View sent proposal" : "Preview as client"}
             </Link>
           </Button>
         </div>

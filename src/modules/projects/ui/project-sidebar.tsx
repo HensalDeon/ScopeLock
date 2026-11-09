@@ -1,6 +1,8 @@
 import type { Client } from "@/modules/clients";
 import { formatDateTime } from "@/shared/lib/dates";
-import { formatPhone } from "@/shared/lib/phone";
+import { formatPhone, whatsappLink } from "@/shared/lib/phone";
+import { cn } from "@/shared/lib/utils";
+import { TOUCH_LINK } from "@/shared/ui/touch";
 import { SideCard, SideCardTitle } from "@/shared/ui/side-card";
 import { isEditable, type Project } from "../domain/project";
 import { DeleteProjectButton } from "./delete-project-button";
@@ -26,14 +28,34 @@ export function ProjectSidebar({
               <div>
                 <dt className="text-muted-foreground">WhatsApp</dt>
                 <dd className="font-medium tabular-nums">
-                  {formatPhone(client.phone)}
+                  <a
+                    href={whatsappLink(client.phone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "underline-offset-4 hover:underline",
+                      TOUCH_LINK,
+                    )}
+                  >
+                    {formatPhone(client.phone)}
+                  </a>
                 </dd>
               </div>
             )}
             {client.email && (
               <div>
                 <dt className="text-muted-foreground">Email</dt>
-                <dd className="truncate font-medium">{client.email}</dd>
+                <dd className="truncate font-medium">
+                  <a
+                    href={`mailto:${client.email}`}
+                    className={cn(
+                      "underline-offset-4 hover:underline",
+                      TOUCH_LINK,
+                    )}
+                  >
+                    {client.email}
+                  </a>
+                </dd>
               </div>
             )}
           </dl>

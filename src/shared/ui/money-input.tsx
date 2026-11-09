@@ -31,7 +31,7 @@ export function MoneyInput({
         inputMode="decimal"
         placeholder="0"
         {...props}
-        className={cn("tabular-nums", className)}
+        className={cn("text-right tabular-nums", className)}
         // Room for the symbol, however long it is ("₹" vs "AED").
         style={{ ...style, paddingLeft: `calc(0.9rem + ${symbol.length}ch)` }}
       />

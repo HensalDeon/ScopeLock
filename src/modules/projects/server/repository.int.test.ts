@@ -1,11 +1,8 @@
 import { ObjectId } from "mongodb";
 import { describe, expect, it } from "vitest";
 import { collection } from "@/shared/db/collections";
-import {
-  buildProjectPlan,
-  emptyTotals,
-  projectInputSchema,
-} from "../domain/project";
+import { buildProjectPlan, projectInputSchema } from "../domain/project-input";
+import { emptyTotals } from "../domain/project";
 import * as repo from "./repository";
 
 let n = 0;

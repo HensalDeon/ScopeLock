@@ -12,7 +12,7 @@ export function Hero() {
       <GridBackdrop />
       <Container className="relative grid items-center gap-14 py-16 sm:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16 lg:py-24">
         <div className="grid content-start gap-7">
-          <p className="w-fit rounded-full border bg-canvas px-3 py-1 text-[13px] text-muted-foreground">
+          <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
             For freelancers and agencies in India
           </p>
           <h1 className="text-[40px] leading-[1.02] font-semibold tracking-[-0.045em] text-balance sm:text-[56px] lg:text-[62px]">
@@ -90,8 +90,8 @@ function HeroExchange() {
             </dl>
             <div className="flex items-center justify-between gap-3 border-t px-4 py-2.5 text-[13px]">
               <span className="text-muted-foreground">Sent to Rahul</span>
-              <span className="inline-flex items-center gap-1.5 text-warning">
-                <span className="size-1.5 rounded-full bg-amber-500" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-warning-soft px-2 py-0.5 text-warning-ink">
+                <span className="size-1.5 rounded-full bg-warning" />
                 Waiting for approval
               </span>
             </div>

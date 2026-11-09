@@ -5,7 +5,9 @@ import { useId, useState } from "react";
 import { z } from "zod";
 import { authClient } from "@/shared/auth/client";
 import { useFormValidation } from "@/shared/lib/use-form-validation";
+import { useUnsavedGuard } from "@/shared/ui/use-unsaved-guard";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
@@ -36,6 +38,7 @@ export function AccountNameForm({ name }: { name: string }) {
     { name: value },
     { initial: { name } },
   );
+  useUnsavedGuard(form.isDirty && !pending);
   const error = form.errorFor("name");
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -74,7 +77,11 @@ export function AccountNameForm({ name }: { name: string }) {
           {error && <FieldError>{error}</FieldError>}
         </Field>
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending || !form.isDirty}>
+          <Button
+            type="submit"
+            className={TOUCH}
+            disabled={pending || !form.isDirty}
+          >
             {pending ? "Saving…" : "Update name"}
           </Button>
           <p role="status" className="text-sm text-muted-foreground">

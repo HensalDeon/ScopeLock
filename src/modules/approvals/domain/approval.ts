@@ -89,3 +89,29 @@ export function verdictLabel(
     ? "Changes requested"
     : "Declined";
 }
+
+/**
+ * The answer as the document prints it (who, when, and that the record still
+ * matches its fingerprint), so a saved PDF carries the signature.
+ */
+export function acceptanceOf(
+  approval: Pick<
+    Approval,
+    "decision" | "subject" | "decidedBy" | "decidedAt" | "snapshotHash"
+  > & { intact: boolean },
+  checkedAt: Date,
+): {
+  verdict: string;
+  name: string;
+  email: string;
+  at: Date;
+  record: { hash: string; intact: boolean; checkedAt: Date };
+} {
+  return {
+    verdict: verdictLabel(approval),
+    name: approval.decidedBy.name,
+    email: approval.decidedBy.email,
+    at: approval.decidedAt,
+    record: { hash: approval.snapshotHash, intact: approval.intact, checkedAt },
+  };
+}

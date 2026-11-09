@@ -1,4 +1,6 @@
+import { ChevronDown } from "lucide-react";
 import { formatMoney, sum, type Minor } from "@/shared/lib/money";
+import { cn } from "@/shared/lib/utils";
 import type { Project } from "../domain/project";
 
 /** Approved and pending change requests, summed (by the changes module). */
@@ -15,36 +17,71 @@ export type ScopeChanges = {
 export function ScopeTable({
   project,
   changes,
+  gst,
+  folded = false,
 }: {
   project: Project;
   changes?: ScopeChanges;
+  /** Settled scope (after approval): lines folded under the totals. */
+  folded?: boolean;
+  /** GST applies (the strip shows the total with it): label this "before GST". */
+  gst?: { tax: Minor; total: Minor } | null;
 }) {
   const money = (amount: Minor) => formatMoney(amount, project.currency);
+  const lineCount = project.baseline.items.length;
+  const lines = (
+    <ol className="divide-y">
+      {project.baseline.items.map((item, index) => (
+        <li
+          key={item.id}
+          className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] gap-x-3 px-4 py-3 sm:px-5"
+        >
+          <span className="pt-px font-mono text-xs text-muted-foreground tabular-nums">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{item.title}</p>
+            {item.description && (
+              <p className="mt-0.5 text-sm text-pretty text-muted-foreground">
+                {item.description}
+              </p>
+            )}
+          </div>
+          <p className="text-sm tabular-nums">{money(item.amount)}</p>
+        </li>
+      ))}
+    </ol>
+  );
   const approved = changes?.approved;
+  // With GST the money strip shows the total the client pays; here the
+  // agreed maths stays at body size so the page has one headline total.
+  const totalSize = gst ? "text-sm" : "text-lg";
   const pending = changes?.pending;
   return (
     <div className="overflow-hidden rounded-xl border bg-background">
-      <ol className="divide-y">
-        {project.baseline.items.map((item, index) => (
-          <li
-            key={item.id}
-            className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] gap-x-3 px-4 py-3 sm:px-5"
-          >
-            <span className="pt-px font-mono text-xs text-muted-foreground tabular-nums">
-              {String(index + 1).padStart(2, "0")}
+      {folded ? (
+        // Once approved the lines are settled: fold them under the totals,
+        // one click (no script needed) to read them again.
+        <details className="group border-b">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50 sm:px-5 [&::-webkit-details-marker]:hidden">
+            <span>
+              {lineCount} {lineCount === 1 ? "line" : "lines"} in the agreed
+              scope
             </span>
-            <div className="min-w-0">
-              <p className="text-sm font-medium">{item.title}</p>
-              {item.description && (
-                <p className="mt-0.5 text-sm text-pretty text-muted-foreground">
-                  {item.description}
-                </p>
-              )}
-            </div>
-            <p className="text-sm tabular-nums">{money(item.amount)}</p>
-          </li>
-        ))}
-      </ol>
+            <span className="flex items-center gap-1 font-medium text-foreground">
+              <span className="group-open:hidden">Show lines</span>
+              <span className="hidden group-open:inline">Hide lines</span>
+              <ChevronDown
+                aria-hidden
+                className="size-4 transition-transform group-open:rotate-180"
+              />
+            </span>
+          </summary>
+          <div className="border-t">{lines}</div>
+        </details>
+      ) : (
+        lines
+      )}
       <dl className="grid gap-2 border-t bg-canvas px-4 py-3.5 sm:px-5">
         {approved && approved.count > 0 ? (
           <>
@@ -59,16 +96,20 @@ export function ScopeTable({
               <dd className="tabular-nums">+ {money(approved.total)}</dd>
             </div>
             <div className="flex items-baseline justify-between gap-4 border-t pt-2.5">
-              <dt className="text-sm font-medium">Project total</dt>
-              <dd className="text-lg font-semibold tabular-nums">
+              <dt className="text-sm font-medium">
+                Project total{gst ? " (before GST)" : ""}
+              </dt>
+              <dd className={cn(totalSize, "font-semibold tabular-nums")}>
                 {money(sum([project.baseline.total, approved.total]))}
               </dd>
             </div>
           </>
         ) : (
           <div className="flex items-baseline justify-between gap-4">
-            <dt className="text-sm font-medium">Agreed total</dt>
-            <dd className="text-lg font-semibold tabular-nums">
+            <dt className="text-sm font-medium">
+              Agreed total{gst ? " (before GST)" : ""}
+            </dt>
+            <dd className={cn(totalSize, "font-semibold tabular-nums")}>
               {money(project.baseline.total)}
             </dd>
           </div>

@@ -3,11 +3,10 @@ import { minor } from "@/shared/lib/money";
 import {
   buildSchedule,
   closedKeys,
-  notReceivedSchema,
   paymentTotals,
-  reportInputSchema,
   type Payment,
 } from "./payment";
+import { notReceivedSchema, reportInputSchema } from "./payment-forms";
 
 const milestones = [
   {
@@ -45,6 +44,9 @@ const payment = (p: Partial<Payment>): Payment => ({
   label: "Advance",
   lines: [],
   amount: minor(2_400_000),
+  tax: minor(0),
+  payable: minor(2_400_000),
+  invoice: null,
   currency: "INR",
   status: "due",
   requestedAt: new Date(),
@@ -149,15 +151,15 @@ describe("buildSchedule", () => {
 });
 
 describe("totals and closed slots", () => {
-  it("counts received and still-owed amounts", () => {
+  it("counts received and still-owed amounts, GST included", () => {
     expect(
       paymentTotals([
-        payment({ status: "confirmed", amount: minor(2_400_000) }),
-        payment({ status: "client_reported", amount: minor(4_700_000) }),
-        payment({ status: "due", amount: minor(100) }),
-        payment({ status: "cancelled", amount: minor(999) }),
+        payment({ status: "confirmed", payable: minor(2_832_000) }),
+        payment({ status: "client_reported", payable: minor(4_700_000) }),
+        payment({ status: "due", payable: minor(100) }),
+        payment({ status: "cancelled", payable: minor(999) }),
       ]),
-    ).toEqual({ received: 2_400_000, due: 4_700_100 });
+    ).toEqual({ received: 2_832_000, due: 4_700_100 });
     expect(
       closedKeys([
         payment({ key: "m1" }),

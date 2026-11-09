@@ -14,6 +14,7 @@ export const ACTIVITY_TYPES = [
   "proposal.changes_requested",
   "link.replaced",
   "change.created",
+  "change.deleted",
   "change.sent",
   "change.withdrawn",
   "change.cancelled",
@@ -32,7 +33,7 @@ export type ActivityActor =
   | { kind: "client"; name: string; email: string };
 
 export type ActivityData = {
-  /** Change request label, e.g. "CR-001". */
+  /** Change request label ("CR-001"), or the invoice number on a payment request. */
   label?: string;
   title?: string;
   amount?: number;
@@ -130,6 +131,8 @@ export function describeActivity(
       return line(`${who} replaced the client link`);
     case "change.created":
       return line(`${who} drafted ${change}${amount}`);
+    case "change.deleted":
+      return line(`${who} deleted the draft ${change}`);
     case "change.sent":
       return line(`${who} sent ${change}${toYou}${amount}`, "waiting");
     case "change.withdrawn":
@@ -146,11 +149,13 @@ export function describeActivity(
       return line(`${who} declined ${change}`, "neutral", data.comment ?? null);
     case "payment.requested":
       return line(
-        `${who} asked for the ${data.title} payment${amount}`,
+        `${who} asked for the ${data.title} payment${amount}${data.label ? `, invoice ${data.label}` : ""}`,
         "waiting",
       );
     case "payment.cancelled":
-      return line(`${who} cancelled the ${data.title} payment request`);
+      return line(
+        `${who} cancelled the ${data.title} payment request${data.label ? `. Invoice ${data.label} is cancelled` : ""}`,
+      );
     case "payment.reported":
       return line(
         `${who} said the ${data.title} payment was made${amount}`,
@@ -169,4 +174,23 @@ export function describeActivity(
         data.comment ?? null,
       );
   }
+}
+
+/**
+ * The change request an event is about, for the freelancer's history:
+ * "CR-002" → its page. None for a deleted draft (nothing to open) or for
+ * events not about a change.
+ */
+export function changeLinkOf(
+  event: Pick<ActivityEvent, "type" | "projectId" | "data">,
+): { label: string; href: string } | null {
+  if (!event.type.startsWith("change.") || event.type === "change.deleted")
+    return null;
+  const number = /^CR-0*(\d+)$/.exec(event.data.label ?? "")?.[1];
+  return number
+    ? {
+        label: event.data.label ?? "",
+        href: `/projects/${event.projectId}/changes/${number}`,
+      }
+    : null;
 }

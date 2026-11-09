@@ -5,7 +5,7 @@ export type FaqItem = { q: string; a: string };
 export const PRODUCT_FAQ: FaqItem[] = [
   {
     q: "Do my clients need to sign up?",
-    a: "No. They get a link, usually on WhatsApp. It opens in the browser, shows the request and the price, and they tap Approve or Not now. Nothing to install, no password.",
+    a: "No. They get a link, usually on WhatsApp. It opens in the browser, shows the request and the price, and they tap Approve, add their name and email, and confirm. Nothing to install, no password.",
   },
   {
     q: "Does my client's money go through ScopeLock?",

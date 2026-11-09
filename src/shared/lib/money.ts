@@ -94,6 +94,11 @@ export function sum(amounts: readonly Minor[]): Minor {
   return minor(amounts.reduce<number>((total, a) => total + a, 0));
 }
 
+/** `percent`% of `amount`, rounded to the paisa, half up (GST uses this). */
+export function percentOf(amount: Minor, percent: number): Minor {
+  return minor(Math.round((amount * percent) / 100));
+}
+
 /**
  * Splits `total` into parts proportional to `weights` (e.g. milestone
  * percentages 30/30/40) so that the parts ALWAYS add up exactly to `total`.

@@ -62,6 +62,14 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     // The overview: payments still owed across the workspace.
     { key: { workspaceId: 1, status: 1, requestedAt: 1 } },
   ],
+  [COLLECTIONS.invoicingSettings]: [{ key: { workspaceId: 1 }, unique: true }],
+  [COLLECTIONS.invoices]: [
+    // Rule 46(b): a number is used once (it carries the financial year).
+    { key: { workspaceId: 1, number: 1 }, unique: true },
+    // One invoice per payment request.
+    { key: { workspaceId: 1, paymentId: 1 }, unique: true },
+    { key: { workspaceId: 1, projectId: 1, issuedAt: -1 } },
+  ],
   [COLLECTIONS.approvals]: [
     { key: { workspaceId: 1, projectId: 1, decidedAt: -1 } },
     // A subject (a sent proposal) can be approved only once, even on a

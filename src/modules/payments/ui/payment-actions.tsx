@@ -1,31 +1,28 @@
 "use client";
 
-import { Download } from "lucide-react";
-import {
-  useActionState,
-  useId,
-  useLayoutEffect,
-  useState,
-  useTransition,
-} from "react";
-import { formatIsoDate, todayInIndia } from "@/shared/lib/dates";
+import type { Route } from "next";
+import Link from "next/link";
+import { useActionState } from "react";
+import { formatIsoDate } from "@/shared/lib/dates";
+import { cn } from "@/shared/lib/utils";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { NativeSelect } from "@/shared/ui/native-select";
+import { announcing } from "@/shared/ui/announce";
+import { TOUCH } from "@/shared/ui/touch";
 import { ShareLink } from "@/shared/ui/share-link";
-import { Textarea } from "@/shared/ui/textarea";
-import { METHOD_KINDS, METHOD_LABELS } from "../domain/methods";
+import {
+  INLINE_PANEL_FOCUS,
+  useInlinePanel,
+} from "@/shared/ui/use-inline-panel";
+import { ProofLink, ReceivedForm, RejectForm } from "./payment-forms";
+import { METHOD_LABELS } from "../domain/methods";
 import type { ScheduleItem } from "../domain/payment";
 import {
   cancelPaymentRequest,
-  confirmReportedPayment,
-  markNotReceived,
-  markPaymentReceived,
-  paymentProofUrl,
   requestPayment,
   type PaymentFormState,
 } from "../server/actions";
+import { confirmReportedPayment } from "../server/confirm-actions";
 
 type Action = (s: PaymentFormState, d: FormData) => Promise<PaymentFormState>;
 
@@ -43,8 +40,10 @@ function Run({
   pendingLabel: string;
   variant?: "default" | "outline" | "ghost" | "destructive";
 }) {
+  // On success the row moves on and this button is gone: say what happened
+  // and put focus on the money strip, which now shows the new state.
   const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    run,
+    announcing(run, `money-${fields.projectId}`),
     IDLE,
   );
   return (
@@ -52,7 +51,13 @@ function Run({
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <Button type="submit" size="sm" variant={variant} disabled={pending}>
+      <Button
+        type="submit"
+        size="sm"
+        className={TOUCH}
+        variant={variant}
+        disabled={pending}
+      >
         {pending ? pendingLabel : label}
       </Button>
       {state.status === "error" && (state.message || state.fieldErrors) && (
@@ -64,42 +69,77 @@ function Run({
   );
 }
 
-/** Opens a small panel under the row; closes when the page is hidden. */
-function useOpen() {
-  const [open, setOpen] = useState<string | null>(null);
-  useLayoutEffect(() => () => setOpen(null), []);
-  return [open, setOpen] as const;
-}
-
 export function PaymentActions({
   item,
   projectId,
   amount,
   clientFirstName,
+  clientEmail = null,
   share,
-  unlockedBy,
+  stateFallback,
+  breakdown,
+  primary = false,
 }: {
   item: ScheduleItem;
   projectId: string;
   /** Formatted total, e.g. "₹47,000". */
   amount: string;
   clientFirstName: string;
+  /** Where the request email goes, if the client has one on record. */
+  clientEmail?: string | null;
   /** The client's page for this payment, for copy / WhatsApp. */
   share: { url: string; phone: string | null; message: string } | null;
-  /** The timeline step that unlocks this payment ("Design"), if linked. */
-  unlockedBy?: string;
+  /** The page's next step: the ask button is the one filled button. */
+  primary?: boolean;
+  /** "₹28,800 + ₹5,184 GST: CGST 9% + SGST 9%", before it's asked for. */
+  breakdown?: string;
+  /** GST with no client state on record: the invoice uses yours. */
+  stateFallback?: { yourState: string; clientHref: string } | null;
 }) {
-  const [open, setOpen] = useOpen();
+  const panels = useInlinePanel<"ask" | "reject" | "received" | "cancel">();
+  const { open, close } = panels;
   const ids = { projectId, paymentId: item.payment?.id ?? "" };
 
   if (item.state === "upcoming") {
     return open === "ask" ? (
-      <div className="grid gap-2 rounded-lg border bg-background p-3">
-        <p className="text-sm">
-          Ask {clientFirstName} for{" "}
-          <span className="font-medium tabular-nums">{amount}</span>? They see
-          it on their link, and by email if you&apos;ve added theirs.
-        </p>
+      <div
+        {...panels.panel(`Ask ${clientFirstName} for ${amount}`)}
+        className={cn(
+          "grid gap-2 rounded-lg border bg-background p-3",
+          INLINE_PANEL_FOCUS,
+        )}
+      >
+        <div className="grid gap-1">
+          <p className="text-sm font-medium">
+            Ask {clientFirstName} for{" "}
+            <span className="tabular-nums">{amount}</span>?
+          </p>
+          {breakdown && (
+            <p className="text-sm text-muted-foreground tabular-nums">
+              {breakdown}
+            </p>
+          )}
+          <p className="text-sm text-pretty text-muted-foreground">
+            {`This issues a numbered invoice and a pay page on ${clientFirstName}'s link. `}
+            {clientEmail
+              ? `${clientFirstName} also gets it by email at ${clientEmail}.`
+              : `There's no email for ${clientFirstName}, so send the link on WhatsApp.`}
+          </p>
+        </div>
+        {stateFallback && (
+          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
+            {clientFirstName}&apos;s state isn&apos;t set, so this invoice uses
+            yours ({stateFallback.yourState}) and charges CGST + SGST. If
+            they&apos;re in another state,{" "}
+            <Link
+              href={stateFallback.clientHref as Route}
+              className="font-medium underline underline-offset-4"
+            >
+              add their state or GSTIN
+            </Link>{" "}
+            first.
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <Run
             action={requestPayment}
@@ -110,8 +150,9 @@ export function PaymentActions({
           <Button
             type="button"
             size="sm"
+            className={TOUCH}
             variant="ghost"
-            onClick={() => setOpen(null)}
+            onClick={close}
           >
             Not yet
           </Button>
@@ -120,13 +161,12 @@ export function PaymentActions({
     ) : (
       <Button
         type="button"
-        size="sm"
-        variant="outline"
-        onClick={() => setOpen("ask")}
+        size={primary ? "default" : "sm"}
+        className={TOUCH}
+        variant={primary ? "default" : "outline"}
+        {...panels.trigger("ask")}
       >
-        {unlockedBy
-          ? `“${unlockedBy}” done: ask for ${amount}`
-          : "Ask for payment"}
+        {primary ? `Ask ${clientFirstName} for ${amount}` : "Ask for payment"}
       </Button>
     );
   }
@@ -134,7 +174,7 @@ export function PaymentActions({
   if (item.state === "received") {
     const c = item.payment?.confirmation;
     return c ? (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-pretty text-muted-foreground">
         Received on {formatIsoDate(c.receivedOn)} · {METHOD_LABELS[c.method]}
         {c.reference ? ` · ${c.reference}` : ""}
       </p>
@@ -149,19 +189,26 @@ export function PaymentActions({
           <div className="grid gap-0.5 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 text-sm text-warning-ink">
             <p>
               {clientFirstName} says they paid by {METHOD_LABELS[r.method]} on{" "}
-              {r.paidOn}.
+              {formatIsoDate(r.paidOn)}.
             </p>
-            <p className="font-mono text-[13px]">UTR {r.reference}</p>
+            <p className="font-mono text-xs">UTR {r.reference}</p>
             {r.note && <p className="text-pretty">“{r.note}”</p>}
             {r.hasProof && <ProofLink paymentId={ids.paymentId} />}
           </div>
         )}
         {open === "reject" ? (
-          <RejectForm
-            ids={ids}
-            onCancel={() => setOpen(null)}
-            clientFirstName={clientFirstName}
-          />
+          <div
+            {...panels.panel(
+              `Tell ${clientFirstName} the payment hasn't arrived`,
+            )}
+            className={cn("rounded-lg", INLINE_PANEL_FOCUS)}
+          >
+            <RejectForm
+              ids={ids}
+              onCancel={close}
+              clientFirstName={clientFirstName}
+            />
+          </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             <Run
@@ -169,12 +216,14 @@ export function PaymentActions({
               fields={ids}
               label="Confirm received"
               pendingLabel="Confirming…"
+              variant={primary ? "default" : "outline"}
             />
             <Button
               type="button"
               size="sm"
+              className={TOUCH}
               variant="outline"
-              onClick={() => setOpen("reject")}
+              {...panels.trigger("reject")}
             >
               Not received
             </Button>
@@ -197,184 +246,74 @@ export function PaymentActions({
           url={share.url}
           phone={share.phone}
           message={share.message}
+          primary={primary}
         />
       )}
-      {open === "received" ? (
-        <ReceivedForm ids={ids} onCancel={() => setOpen(null)} />
+      {open === "cancel" ? (
+        <div
+          {...panels.panel(`Cancel the ${amount} request`)}
+          className={cn(
+            "grid gap-2 rounded-lg border bg-background p-3",
+            INLINE_PANEL_FOCUS,
+          )}
+        >
+          <p className="text-sm text-pretty">
+            Cancel the{" "}
+            <span className="font-medium tabular-nums">{amount}</span> request?{" "}
+            {item.payment?.invoice
+              ? `Invoice ${item.payment.invoice.number} is marked cancelled and `
+              : ""}
+            {clientFirstName}&apos;s pay page stops asking. You can ask again
+            later; that issues a new invoice.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Run
+              action={cancelPaymentRequest}
+              fields={ids}
+              label="Cancel request"
+              pendingLabel="Cancelling…"
+              variant="destructive"
+            />
+            <Button
+              type="button"
+              size="sm"
+              className={TOUCH}
+              variant="ghost"
+              onClick={close}
+            >
+              Keep it
+            </Button>
+          </div>
+        </div>
+      ) : open === "received" ? (
+        <div
+          {...panels.panel("Mark the payment as received")}
+          className={cn("rounded-lg", INLINE_PANEL_FOCUS)}
+        >
+          <ReceivedForm ids={ids} onCancel={close} />
+        </div>
       ) : (
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             size="sm"
+            className={TOUCH}
             variant="outline"
-            onClick={() => setOpen("received")}
+            {...panels.trigger("received")}
           >
             Mark as received
           </Button>
-          <Run
-            action={cancelPaymentRequest}
-            fields={ids}
-            label="Cancel request"
-            pendingLabel="Cancelling…"
+          <Button
+            type="button"
+            size="sm"
+            className={TOUCH}
             variant="ghost"
-          />
+            {...panels.trigger("cancel")}
+          >
+            Cancel request
+          </Button>
         </div>
       )}
     </div>
-  );
-}
-
-function ProofLink({ paymentId }: { paymentId: string }) {
-  const [pending, start] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <span className="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        disabled={pending}
-        className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
-        onClick={() =>
-          start(async () => {
-            const result = await paymentProofUrl(paymentId);
-            if ("url" in result) window.location.assign(result.url);
-            else setError(result.error);
-          })
-        }
-      >
-        <Download aria-hidden className="size-3.5" />
-        {pending ? "Getting screenshot…" : "Download screenshot"}
-      </button>
-      {error && <span className="text-destructive">{error}</span>}
-    </span>
-  );
-}
-
-function ReceivedForm({
-  ids,
-  onCancel,
-}: {
-  ids: { projectId: string; paymentId: string };
-  onCancel: () => void;
-}) {
-  const uid = useId();
-  const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    markPaymentReceived,
-    IDLE,
-  );
-  const err = (name: string) =>
-    state.status === "error" ? state.fieldErrors?.[name] : undefined;
-  return (
-    <form
-      action={action}
-      className="grid gap-3 rounded-lg border bg-background p-3"
-    >
-      <input type="hidden" name="projectId" value={ids.projectId} />
-      <input type="hidden" name="paymentId" value={ids.paymentId} />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <label className="grid gap-1 text-sm" htmlFor={`${uid}-method`}>
-          How it was paid
-          <NativeSelect
-            id={`${uid}-method`}
-            name="method"
-            defaultValue="upi"
-            className="w-full"
-          >
-            {METHOD_KINDS.map((k) => (
-              <option key={k} value={k}>
-                {METHOD_LABELS[k]}
-              </option>
-            ))}
-          </NativeSelect>
-        </label>
-        <label className="grid gap-1 text-sm" htmlFor={`${uid}-reference`}>
-          Reference (optional)
-          <Input
-            id={`${uid}-reference`}
-            name="reference"
-            placeholder="UTR"
-            maxLength={40}
-          />
-        </label>
-        <label className="grid gap-1 text-sm" htmlFor={`${uid}-receivedOn`}>
-          Received on
-          <Input
-            id={`${uid}-receivedOn`}
-            name="receivedOn"
-            type="date"
-            max={todayInIndia()}
-            defaultValue={todayInIndia()}
-          />
-        </label>
-      </div>
-      {state.status === "error" &&
-        (state.message ||
-          err("receivedOn") ||
-          err("method") ||
-          err("reference")) && (
-          <p role="alert" className="text-sm text-destructive">
-            {state.message ??
-              err("receivedOn") ??
-              err("method") ??
-              err("reference")}
-          </p>
-        )}
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
-          {pending ? "Saving…" : "Mark as received"}
-        </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-function RejectForm({
-  ids,
-  onCancel,
-  clientFirstName,
-}: {
-  ids: { projectId: string; paymentId: string };
-  onCancel: () => void;
-  clientFirstName: string;
-}) {
-  const uid = useId();
-  const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    markNotReceived,
-    IDLE,
-  );
-  return (
-    <form
-      action={action}
-      className="grid gap-2 rounded-lg border bg-background p-3"
-    >
-      <input type="hidden" name="projectId" value={ids.projectId} />
-      <input type="hidden" name="paymentId" value={ids.paymentId} />
-      <label className="grid gap-1 text-sm" htmlFor={`${uid}-note`}>
-        What should {clientFirstName} check?
-        <Textarea
-          id={`${uid}-note`}
-          name="note"
-          rows={2}
-          maxLength={300}
-          placeholder="I can't see this UTR in my account. Could you check it?"
-        />
-      </label>
-      {state.status === "error" &&
-        (state.message || state.fieldErrors?.note) && (
-          <p role="alert" className="text-sm text-destructive">
-            {state.message ?? state.fieldErrors?.note}
-          </p>
-        )}
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
-          {pending ? "Sending…" : "Send to client"}
-        </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
-    </form>
   );
 }

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useId, useState } from "react";
 import { authClient } from "@/shared/auth/client";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH_LINK } from "@/shared/ui/touch";
 import {
   Field,
   FieldGroup,
@@ -30,14 +32,24 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "").trim();
+    const password = String(form.get("password") ?? "");
+    if (!email || !password) {
+      setError(
+        !email && !password
+          ? "Enter your email and password."
+          : !email
+            ? "Enter your email."
+            : "Enter your password.",
+      );
+      return;
+    }
     setPending(true);
     setError(null);
 
-    const { error } = await authClient.signIn.email({
-      email: String(form.get("email")),
-      password: String(form.get("password")),
-      callbackURL: next,
-    });
+    const { error } = await authClient.signIn
+      .email({ email, password, callbackURL: next })
+      .catch(() => ({ error: { status: 0 } }));
 
     if (error) {
       setError(authErrorMessage(error));
@@ -70,7 +82,10 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
             <FieldLabel htmlFor={`${uid}-password`}>Password</FieldLabel>
             <Link
               href="/forgot-password"
-              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              className={cn(
+                "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+                TOUCH_LINK,
+              )}
             >
               Forgot it?
             </Link>

@@ -27,9 +27,10 @@ import {
   changeInputSchema,
   SOURCE_CHANNELS,
   SOURCE_LABELS,
-  type ChangeFormValues,
 } from "../domain/change-request";
+import { type ChangeFormValues } from "../domain/form-values";
 import { BillingChoice } from "./billing-choice";
+import type { BillingContext } from "../domain/billing";
 import { ChangeLinesEditor, toChangeRows } from "./change-lines-editor";
 import {
   createChange,
@@ -49,7 +50,13 @@ export function ChangeForm({
   milestones,
   defaults,
   cancelHref,
+  gstPercent = null,
+  billing = null,
 }: {
+  /** The schedule as it stands, for amounts in "When it's paid". */
+  billing?: BillingContext | null;
+  /** GST this client's invoices add (18), or null. */
+  gstPercent?: number | null;
   mode: "create" | "edit";
   projectId: string;
   number?: number;
@@ -132,10 +139,6 @@ export function ChangeForm({
       <input type="hidden" name="items" value={itemsJson} />
       <input type="hidden" name="billingOption" value={values.billingOption} />
 
-      {state.status === "error" && state.message && (
-        <FormAlert>{state.message}</FormAlert>
-      )}
-
       <FormSection
         title="The change"
         description="Your client sees the name and description on the change request."
@@ -183,6 +186,7 @@ export function ChangeForm({
         setRows={setRows}
         total={total}
         currency={currency}
+        gstPercent={gstPercent}
         form={form}
       />
 
@@ -192,6 +196,9 @@ export function ChangeForm({
         setMilestoneId={(id) => set("milestoneId", id)}
         milestones={milestones}
         form={form}
+        total={total}
+        currency={currency}
+        context={billing}
       />
 
       <FormSection
@@ -225,7 +232,7 @@ export function ChangeForm({
               name="sourceNote"
               value={values.sourceNote}
               maxLength={CHANGE_LIMITS.sourceNote}
-              placeholder="Rahul asked on WhatsApp, 3 Nov"
+              placeholder="Wants it before the Diwali sale"
               onChange={(e) => set("sourceNote", e.target.value)}
               onBlur={() => form.touch("sourceNote")}
               aria-invalid={Boolean(form.errorFor("sourceNote")) || undefined}
@@ -235,6 +242,10 @@ export function ChangeForm({
         </div>
       </FormSection>
 
+      {/* Next to the button that was just tapped: the form is long. */}
+      {state.status === "error" && state.message && (
+        <FormAlert>{state.message}</FormAlert>
+      )}
       <div className="flex flex-wrap items-center gap-3 border-t pt-6">
         <Button
           type="submit"

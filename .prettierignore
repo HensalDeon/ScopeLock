@@ -2,3 +2,8 @@
 node_modules
 package-lock.json
 next-env.d.ts
+
+# Impeccable runtime files (written by the tool, not committed)
+.impeccable/critique/
+.impeccable/live/
+.impeccable/hook.cache.json

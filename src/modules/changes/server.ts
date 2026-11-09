@@ -8,7 +8,7 @@ export {
   listChanges,
   listOpenChanges,
 } from "./server/queries";
-export { changeOrderData } from "./server/document";
+export { changeOrderData, draftChangeOrder } from "./server/document";
 // For the portal module (repository level, workspace given by the link).
 export {
   applyChangeDecision,

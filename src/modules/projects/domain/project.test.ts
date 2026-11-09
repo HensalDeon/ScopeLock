@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { formatINR, minor } from "@/shared/lib/money";
 import { percentTotal, splitByMilestones } from "./billing";
+import { buildProjectPlan, projectInputSchema } from "./project-input";
 import {
-  buildProjectPlan,
   isEditable,
   isScopeApproved,
-  paymentTimings,
-  unlockingSteps,
-  projectInputSchema,
   proposalShareMessage,
+  shareMessage,
 } from "./project";
+import { paymentTimings, unlockingSteps } from "./payment-timing";
 import { EMPTY_PROPOSAL } from "./proposal";
 import { draftTotal } from "./scope";
 
@@ -222,6 +221,20 @@ describe("status helpers and share text", () => {
       }),
     ).toBe(
       "Hi Rahul, here's the proposal for Website redesign (₹80,000). You can read it and approve it here:",
+    );
+  });
+
+  it("after approval, the link is the project page, not the proposal", () => {
+    const input = {
+      clientFirstName: "Rahul",
+      projectName: "Website redesign",
+      total: "₹80,000",
+    };
+    expect(shareMessage({ ...input, status: "awaiting_approval" })).toBe(
+      proposalShareMessage(input),
+    );
+    expect(shareMessage({ ...input, status: "active" })).toBe(
+      "Hi Rahul, here's the page for Website redesign: what we agreed, the changes and the payments.",
     );
   });
 });

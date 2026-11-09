@@ -284,3 +284,35 @@ export function methodsFormValues(
     defaultMethod: m.defaultMethod ?? "",
   };
 }
+
+/**
+ * Settings → Payments, live: what a client will be offered, in words, and
+ * the one thing worth adding. Default method first.
+ */
+export function clientSeesLine(input: {
+  filled: readonly MethodKind[];
+  defaultMethod: string;
+  upiVpa: string;
+  bankName: string;
+  linkLabel: string;
+}): string {
+  if (input.filled.length === 0)
+    return "Nothing yet. Clients will be told to ask you how to pay, so add a UPI ID or a bank account below.";
+  const words: Record<MethodKind, string> = {
+    upi: `UPI (${input.upiVpa})`,
+    bank: `bank transfer${input.bankName ? ` to ${input.bankName}` : ""}`,
+    link: input.linkLabel || "your payment link",
+    qr: "your QR code",
+    other: "your own instructions",
+  };
+  const ordered = [...input.filled].sort(
+    (a, b) =>
+      Number(b === input.defaultMethod) - Number(a === input.defaultMethod),
+  );
+  const tip = !input.filled.includes("bank")
+    ? " Add a bank account for clients who pay by NEFT or from abroad."
+    : !input.filled.includes("upi")
+      ? " Add a UPI ID so clients in India can pay from their phone."
+      : "";
+  return `Your client sees: ${ordered.map((k) => words[k]).join(" · ")}.${tip}`;
+}

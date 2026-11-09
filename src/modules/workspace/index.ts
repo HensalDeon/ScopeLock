@@ -9,4 +9,5 @@ export {
 } from "./domain/workspace";
 export { BusinessDetailsForm } from "./ui/business-details-form";
 export { BusinessInitials } from "./ui/business-initials";
+export { setSetupVisibility } from "./server/actions";
 export { OnboardingForm } from "./ui/onboarding-form";

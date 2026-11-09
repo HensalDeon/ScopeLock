@@ -5,7 +5,8 @@ import type { Metadata } from "next";
  * no sign-in. next.config.ts adds no-referrer, noindex and no-store for /c/*.
  */
 export const metadata: Metadata = {
-  title: "Proposal",
+  // An object, so the pages below keep the "· ScopeLock" suffix.
+  title: { default: "Proposal", template: "%s · ScopeLock" },
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

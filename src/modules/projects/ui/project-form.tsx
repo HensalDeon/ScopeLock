@@ -13,7 +13,7 @@ import { Button } from "@/shared/ui/button";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { FormSection } from "@/shared/ui/page";
 import { MILESTONE_PRESETS, type BillingModel } from "../domain/billing";
-import { projectInputSchema } from "../domain/project";
+import { projectInputSchema } from "../domain/project-input";
 import { draftTotal } from "../domain/scope";
 import {
   createProject,
@@ -53,6 +53,8 @@ export type ClientOption = {
   label: string;
   /** The client's own currency; null follows the workspace default. */
   currency: CurrencyCode | null;
+  /** GST their invoices add (18), or null. */
+  gstPercent: number | null;
 };
 
 const withRowKeys = (p: ProposalFormDefaults): ProposalFormValue => ({
@@ -76,7 +78,10 @@ export function ProjectForm({
   defaults,
   defaultCurrency,
   cancelHref,
+  newClientGst = null,
 }: {
+  /** GST for a client added inline (no address yet, so in India). */
+  newClientGst?: number | null;
   mode: "create" | "edit";
   projectId?: string;
   clients: ClientOption[];
@@ -180,13 +185,10 @@ export function ProjectForm({
       <input type="hidden" name="milestones" value={milestonesJson} />
       <input type="hidden" name="proposal" value={proposalJson} />
 
-      {state.status === "error" && state.message && (
-        <FormAlert>{state.message}</FormAlert>
-      )}
-
       <ClientProjectFields
         clients={clients}
         setClients={setClients}
+        newClientGst={newClientGst}
         clientId={clientId}
         setClientId={setClientId}
         followClient={followClient}
@@ -205,6 +207,7 @@ export function ProjectForm({
         setItems={setItems}
         total={total}
         currency={currency}
+        gstPercent={clients.find((c) => c.id === clientId)?.gstPercent ?? null}
         form={form}
       />
 
@@ -244,6 +247,10 @@ export function ProjectForm({
         />
       </FormSection>
 
+      {/* Next to the button that was just tapped: the form is long. */}
+      {state.status === "error" && state.message && (
+        <FormAlert>{state.message}</FormAlert>
+      )}
       <div className="flex flex-wrap items-center gap-3 border-t pt-6">
         <Button
           type="submit"

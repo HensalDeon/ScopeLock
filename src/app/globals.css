@@ -10,6 +10,7 @@
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-warning-ink: var(--warning-ink);
+  --color-success-ink: var(--success-ink);
   --color-success-soft: var(--success-soft);
   --color-brand-ink: var(--brand-ink);
   --color-brand-bright: var(--brand-bright);
@@ -84,6 +85,8 @@
   /* Text on warning-soft backgrounds (AA contrast). */
   --warning-ink: #7a3d06;
   --success-soft: #e6f5ee;
+  /* Emerald for text (AA on white and success-soft); brand is for marks. */
+  --success-ink: #047857;
   --border: #e3e6eb;
   --input: #d6dae1;
   --ring: #0e9f6e;
@@ -283,6 +286,8 @@
 .legal-prose {
   display: grid;
   gap: 0.9rem;
+  /* About 70 characters a line. */
+  max-width: 68ch;
   font-size: 15.5px;
   line-height: 1.7;
   color: var(--foreground);

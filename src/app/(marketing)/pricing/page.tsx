@@ -57,7 +57,10 @@ const COMPARISON: { group: string; rows: Row[] }[] = [
         values: [true, true, true],
       },
       { label: "Change order PDFs", values: [true, true, true] },
-      { label: "Full project statement PDFs", values: [false, true, true] },
+      {
+        label: "Full project statement PDFs (soon)",
+        values: [false, true, true],
+      },
       { label: "Payment reminders", values: [false, true, true] },
       { label: "Revenue recovered reports", values: [false, false, true] },
     ],
@@ -83,7 +86,7 @@ const BILLING_FAQ: FaqItem[] = [
   },
   {
     q: "How do I pay for ScopeLock?",
-    a: "Monthly, by UPI, card or net banking through Razorpay. You get a GST invoice for every payment.",
+    a: "There's nothing to pay yet: paid plans aren't open. When they open, you'll pay monthly by UPI, card or net banking, with a GST invoice for every payment.",
   },
   {
     q: "What happens if I go over my plan's limit?",
@@ -91,7 +94,7 @@ const BILLING_FAQ: FaqItem[] = [
   },
   {
     q: "Can I switch plans later?",
-    a: "Yes. Upgrades apply straight away. Downgrades apply from your next billing date.",
+    a: "Yes, once paid plans open. Upgrades will apply straight away, downgrades from your next billing date.",
   },
 ];
 
@@ -122,9 +125,10 @@ export default function PricingPage() {
       <section className="border-b">
         <Container className="py-16 sm:py-20">
           <SectionHeading
+            as="h1"
             eyebrow="Pricing"
             title="Pays for itself with one approved change."
-            intro="Start free on your next project. Upgrade when you're running more of them. Prices in Indian rupees; GST extra where applicable."
+            intro="Start free on your next project. Pro and Agency are planned prices; paid plans aren't open yet, so everyone starts on Free. Prices in Indian rupees; GST extra where applicable."
           />
           <PricingCards className="mt-12" />
         </Container>
@@ -136,12 +140,12 @@ export default function PricingPage() {
             Compare plans
           </h2>
           <div className="relative mt-8 overflow-x-auto rounded-xl border bg-background">
-            <table className="w-full min-w-[40rem] text-[14.5px]">
+            <table className="w-full text-[13px] sm:min-w-[40rem] sm:text-[14.5px]">
               <thead>
                 <tr className="border-b">
                   <th
                     scope="col"
-                    className="w-[40%] px-5 py-4 text-left font-normal text-muted-foreground"
+                    className="w-[40%] px-3 py-4 text-left font-normal text-muted-foreground sm:px-5"
                   >
                     <span className="sr-only">Feature</span>
                   </th>
@@ -149,7 +153,7 @@ export default function PricingPage() {
                     <th
                       key={p.id}
                       scope="col"
-                      className="px-4 py-4 text-center font-semibold"
+                      className="px-1.5 py-4 text-center font-semibold sm:px-4"
                     >
                       {p.name}
                     </th>
@@ -162,7 +166,7 @@ export default function PricingPage() {
                     <th
                       scope="colgroup"
                       colSpan={4}
-                      className="px-5 py-2.5 text-left font-mono text-[11.5px] font-normal tracking-[0.12em] text-muted-foreground uppercase"
+                      className="px-3 py-2.5 text-left font-mono text-[11px] font-normal tracking-[0.12em] text-muted-foreground uppercase sm:px-5"
                     >
                       {group.group}
                     </th>
@@ -171,12 +175,15 @@ export default function PricingPage() {
                     <tr key={row.label} className="border-b last:border-b-0">
                       <th
                         scope="row"
-                        className="px-5 py-3.5 text-left font-normal"
+                        className="px-3 py-3.5 text-left font-normal sm:px-5"
                       >
                         {row.label}
                       </th>
                       {row.values.map((v, i) => (
-                        <td key={i} className="px-4 py-3.5 text-center">
+                        <td
+                          key={i}
+                          className="px-1.5 py-3.5 text-center sm:px-4"
+                        >
                           <Cell value={v} />
                         </td>
                       ))}

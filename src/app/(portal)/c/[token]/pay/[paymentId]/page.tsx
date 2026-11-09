@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PortalPaymentPage } from "@/modules/portal/server";
+
+export const metadata: Metadata = { title: "Payment" };
 
 export default function ClientPaymentPage({
   params,

@@ -23,6 +23,8 @@ export const COLLECTIONS = {
   activity: "activity",
   paymentSettings: "paymentSettings",
   payments: "payments",
+  invoicingSettings: "invoicingSettings",
+  invoices: "invoices",
   requestLimits: "requestLimits",
 } as const;
 

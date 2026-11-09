@@ -2,8 +2,10 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ActivityTimeline } from "@/modules/activity";
 import { changeLabel } from "@/modules/changes";
-import { ClassicDocument } from "@/modules/documents";
-import { ChangeRow, PaymentRow, Row } from "./portal-rows";
+import { ClassicDocument, approvalAmount } from "@/modules/documents";
+import { PortalNextStep } from "./portal-next-step";
+import { ChangeRow, PaymentRow } from "./portal-rows";
+import { PortalTotals } from "./portal-totals";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, minor, sum } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
@@ -42,22 +44,28 @@ export async function PortalPage({ token }: { token: string }) {
     minor(view.totals.approvedChanges),
   ]);
   const waiting = view.changes.filter((c) => c.status === "sent");
+  // One headline total: with GST once approved (the figure the client pays).
+  const gstTax = view.payments?.totals.gst?.tax ?? 0;
+  const headline =
+    state === "approved"
+      ? sum([projectTotal, minor(gstTax)])
+      : minor(data.total);
 
   return (
     <>
       <PortalHeader
         title={`Proposal from ${business}`}
-        detail={`${data.reference} · ${money(state === "approved" ? projectTotal : data.total)}`}
+        detail={`${data.reference} · ${money(headline)}`}
       >
         {state === "awaiting" && (
           <a
             href="#answer"
-            className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80"
+            className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 max-sm:h-11 max-sm:px-4"
           >
             Approve or ask for changes
           </a>
         )}
-        <PrintButton label="Save PDF" />
+        <PrintButton variant="outline" />
       </PortalHeader>
 
       {state === "approved" && decision && (
@@ -74,7 +82,7 @@ export async function PortalPage({ token }: { token: string }) {
 
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         {state === "approved" && (
-          <div className="mx-auto mb-0 grid max-w-[210mm] gap-6 border-b bg-white px-5 py-7 sm:mb-6 sm:rounded-sm sm:border sm:px-10 print:hidden">
+          <div className="mx-auto mb-0 grid max-w-[210mm] grid-cols-[minmax(0,1fr)] gap-6 border-b bg-white px-5 py-7 sm:mb-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden">
             {waiting.length > 0 && (
               <section aria-labelledby="waiting-heading" className="grid gap-3">
                 <h2 id="waiting-heading" className="text-base font-semibold">
@@ -82,20 +90,20 @@ export async function PortalPage({ token }: { token: string }) {
                 </h2>
                 <ul className="grid gap-2">
                   {waiting.map((c) => (
-                    <li key={c.id}>
+                    <li key={c.id} className="min-w-0">
                       <Link
                         href={`/c/${token}/changes/${c.number}`}
-                        className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning-soft px-4 py-3 hover:border-warning"
+                        className="flex min-w-0 items-center gap-3 rounded-lg border border-warning/40 bg-warning-soft px-4 py-3 hover:border-warning"
                       >
                         <span className="min-w-0 flex-1">
                           <span className="block font-mono text-[11px] tracking-[0.12em] text-warning-ink uppercase">
                             {changeLabel(c.number)}
                           </span>
-                          <span className="block truncate text-[15px] font-medium">
+                          <span className="line-clamp-2 block text-[15px] font-medium break-words">
                             {c.title}
                           </span>
                         </span>
-                        <span className="text-[15px] font-semibold tabular-nums">
+                        <span className="shrink-0 text-[15px] font-semibold tabular-nums">
                           {money(c.total)}
                         </span>
                         <span className="hidden text-sm font-medium sm:inline">
@@ -109,25 +117,21 @@ export async function PortalPage({ token }: { token: string }) {
               </section>
             )}
 
-            <section aria-labelledby="totals-heading" className="grid gap-2">
-              <h2 id="totals-heading" className="text-base font-semibold">
-                Project total
-              </h2>
-              <dl className="grid gap-1.5 text-sm">
-                <Row label="Approved proposal">{money(data.total)}</Row>
-                <Row label="Approved changes">
-                  {money(view.totals.approvedChanges)}
-                </Row>
-                <Row label="Total so far" strong>
-                  {money(projectTotal)}
-                </Row>
-                {view.payments && view.payments.totals.received > 0 && (
-                  <Row label="Paid so far">
-                    {money(view.payments.totals.received)}
-                  </Row>
-                )}
-              </dl>
-            </section>
+            {view.payments && view.payments.items.length > 0 && (
+              <PortalNextStep
+                items={view.payments.items}
+                token={token}
+                business={business}
+                money={money}
+              />
+            )}
+
+            <PortalTotals
+              proposalTotal={minor(data.total)}
+              approvedChanges={minor(view.totals.approvedChanges)}
+              payments={view.payments?.totals ?? null}
+              money={money}
+            />
 
             {view.payments && view.payments.items.length > 0 && (
               <section
@@ -182,16 +186,27 @@ export async function PortalPage({ token }: { token: string }) {
 
         <ClassicDocument
           data={data}
+          acceptance={
+            state === "approved" && decision
+              ? {
+                  verdict: "Approved",
+                  name: decision.name,
+                  email: null,
+                  at: decision.at,
+                }
+              : null
+          }
           style={view.style}
           images={view.images}
-          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"
+          className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
 
         {state === "awaiting" && (
           <section
             id="answer"
+            tabIndex={-1}
             aria-labelledby="answer-heading"
-            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 sm:mt-6 sm:rounded-sm sm:border sm:px-10 print:hidden"
+            className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 outline-none sm:mt-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden"
           >
             <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
               Your answer
@@ -211,7 +226,11 @@ export async function PortalPage({ token }: { token: string }) {
               kind="proposal"
               action={decideProposal.bind(null, token)}
               businessName={business}
-              total={money(data.total)}
+              total={approvalAmount(
+                minor(data.total),
+                data.gstPercent,
+                data.currency,
+              )}
               defaults={{
                 name: data.client?.name ?? "",
                 email: data.client?.email ?? "",

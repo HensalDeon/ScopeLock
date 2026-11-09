@@ -9,7 +9,10 @@ import {
   changeShareMessage,
   SOURCE_LABELS,
 } from "@/modules/changes";
-import { changeOrderData, getChangeOrNotFound } from "@/modules/changes/server";
+import {
+  draftChangeOrder,
+  getChangeOrNotFound,
+} from "@/modules/changes/server";
 import { ChangeOrderDocument } from "@/modules/documents";
 import {
   getDocumentImages,
@@ -54,7 +57,7 @@ async function ChangeDetail({
   const data =
     change.status !== "draft" && sent
       ? sent
-      : changeOrderData(project, change, context);
+      : await draftChangeOrder(project, change, context);
   const total = formatMoney(change.total, change.currency);
   const firstName = project.client
     ? clientFirstName(project.client)
@@ -97,16 +100,23 @@ async function ChangeDetail({
           </p>
           <ChangeOrderDocument
             data={data}
+            approved={change.status === "approved"}
+            titleAs="h2"
             style={settings.style}
             images={images}
             className="rounded-lg border"
           />
         </div>
-        <aside className="grid gap-4 lg:sticky lg:top-6">
+        <aside className="grid gap-4 max-lg:order-first lg:sticky lg:top-6">
           <ChangeActions
             change={change}
             projectId={project.id}
             editHref={`${base}/changes/${change.number}/edit` as Route}
+            reviseHref={
+              change.status === "rejected" || change.status === "withdrawn"
+                ? (`${base}/changes/new?from=${change.number}` as Route)
+                : null
+            }
             emailVerified={context.user.emailVerified}
             clientFirstName={firstName}
             link={
@@ -119,6 +129,7 @@ async function ChangeDetail({
                       projectName: project.name,
                       title: change.title,
                       total,
+                      status: change.status,
                     }),
                   }
                 : null
@@ -130,14 +141,6 @@ async function ChangeDetail({
               className="px-1 text-sm font-medium underline-offset-4 hover:underline"
             >
               View the signed record
-            </Link>
-          )}
-          {(change.status === "rejected" || change.status === "withdrawn") && (
-            <Link
-              href={`${base}/changes/new?from=${change.number}` as Route}
-              className="px-1 text-sm font-medium underline-offset-4 hover:underline"
-            >
-              Send a revised change request
             </Link>
           )}
         </aside>

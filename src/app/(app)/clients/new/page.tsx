@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ClientForm } from "@/modules/clients";
+import { getInvoicing } from "@/modules/invoices/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { safeNextPath } from "@/shared/auth/redirect";
 import { BackLink } from "@/shared/ui/back-link";
@@ -32,9 +33,10 @@ async function Form({
 }: {
   searchParams: PageProps<"/clients/new">["searchParams"];
 }) {
-  const [{ next }, { workspace }] = await Promise.all([
+  const [{ next }, { workspace }, invoicing] = await Promise.all([
     searchParams,
     requireWorkspace(),
+    getInvoicing(),
   ]);
   const back = typeof next === "string" ? safeNextPath(next, "") : "";
   return (
@@ -43,6 +45,7 @@ async function Form({
       next={back}
       cancelHref={back === "/projects/new" ? "/projects/new" : "/clients"}
       defaultCurrency={workspace.currency}
+      seller={invoicing.settings}
     />
   );
 }

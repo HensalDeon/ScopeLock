@@ -1,5 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import type { CurrencyCode } from "@/shared/lib/currency";
+import { formatMoney, type Minor } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import type { Client } from "../domain/client";
 
@@ -7,10 +9,13 @@ import type { Client } from "../domain/client";
 export function ClientList({
   clients,
   projectCounts,
+  due,
 }: {
   clients: Client[];
   /** Projects per client id, when the page has them. */
   projectCounts?: ReadonlyMap<string, number>;
+  /** What each client owes now (asked for, not received), per currency. */
+  due?: ReadonlyMap<string, { currency: CurrencyCode; amount: Minor }[]>;
 }) {
   return (
     <ul className="divide-y rounded-xl border bg-background">
@@ -34,6 +39,15 @@ export function ClientList({
                 </p>
               )}
             </div>
+            {due?.get(client.id)?.length ? (
+              <span className="shrink-0 rounded-md bg-warning-soft px-2 py-0.5 text-sm font-medium text-warning-ink tabular-nums">
+                {due
+                  .get(client.id)
+                  ?.map((d) => formatMoney(d.amount, d.currency))
+                  .join(" + ")}{" "}
+                due
+              </span>
+            ) : null}
             <div className="hidden min-w-0 text-right text-sm text-muted-foreground sm:block">
               {client.phone && (
                 <p className="tabular-nums">{formatPhone(client.phone)}</p>

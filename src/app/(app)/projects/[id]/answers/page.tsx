@@ -9,7 +9,7 @@ import { EmptyState, ListSkeleton } from "@/shared/ui/list-states";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 import { Pagination } from "@/shared/ui/pagination";
 
-export const metadata: Metadata = { title: "Signed records" };
+export const metadata: Metadata = { title: "Client answers" };
 
 export default function ProjectAnswersPage({
   params,

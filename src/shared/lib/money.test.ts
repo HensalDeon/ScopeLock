@@ -6,6 +6,7 @@ import {
   minor,
   paise,
   parseAmount,
+  percentOf,
   rupeesToPaise,
   sum,
 } from "./money";
@@ -88,5 +89,13 @@ describe("parseAmount", () => {
     // rather than silently read as 2.40.
     expect(() => parseAmount("€2.400")).toThrow(RangeError);
     expect(() => parseAmount("20000x")).toThrow(RangeError);
+  });
+});
+
+describe("percentOf", () => {
+  it("rounds to the paisa, half up", () => {
+    expect(percentOf(minor(2_880_000), 18)).toBe(518_400); // ₹28,800 → ₹5,184
+    expect(percentOf(minor(5_005), 9)).toBe(450); // 450.45 paise → 450
+    expect(percentOf(minor(50), 9)).toBe(5); // 4.5 paise → 5
   });
 });

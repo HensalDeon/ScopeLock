@@ -7,6 +7,7 @@ import { signedUrls } from "@/shared/storage/r2";
 import type { PaymentMethods } from "../domain/methods";
 import type { Payment } from "../domain/payment";
 import * as repo from "./repository";
+import * as settingsRepo from "./settings-repository";
 import {
   scheduleFor,
   type PaymentSchedule,
@@ -29,7 +30,7 @@ export async function getPaymentMethods(): Promise<{
 export async function methodsWithQr(
   workspaceId: string,
 ): Promise<{ methods: PaymentMethods; qrUrl: string | null }> {
-  const { methods, qrKey } = await repo.findMethods(workspaceId);
+  const { methods, qrKey } = await settingsRepo.findMethods(workspaceId);
   const { qr } = await signedUrls({ qr: qrKey });
   return { methods, qrUrl: qr };
 }
@@ -44,7 +45,12 @@ export async function getProjectPayments(
     return {
       items: [],
       payments: [],
-      totals: { received: minor(0), due: minor(0), total: minor(0) },
+      totals: {
+        received: minor(0),
+        due: minor(0),
+        total: minor(0),
+        gst: null,
+      },
     };
   }
   const { workspace } = await requireWorkspace();
@@ -57,10 +63,4 @@ export async function listOwedPayments(): Promise<Payment[]> {
   return (await repo.findOwedPaymentDocs(workspace.workspaceId)).map(
     repo.toPayment,
   );
-}
-
-/** Received so far, per currency (overview). */
-export async function receivedByCurrency() {
-  const { workspace } = await requireWorkspace();
-  return repo.sumReceived(workspace.workspaceId);
 }

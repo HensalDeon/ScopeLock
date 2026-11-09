@@ -49,9 +49,9 @@ async function DocumentSettings() {
             Document style
           </h2>
           <p className="max-w-prose text-sm text-pretty text-muted-foreground">
-            How your proposals look to clients. The same style is used for
-            change orders and invoices. The preview is a sample with every
-            section filled in.
+            How your proposals look to clients. Change requests use the same
+            style; invoices use the accent colour only. The preview is a sample
+            with every section filled in.
           </p>
         </div>
         <DocumentStyleEditor

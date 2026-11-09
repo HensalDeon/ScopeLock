@@ -1,5 +1,5 @@
 import type { CurrencyCode } from "@/shared/lib/currency";
-import type { Minor } from "@/shared/lib/money";
+import { formatMoney, percentOf, sum, type Minor } from "@/shared/lib/money";
 
 /**
  * Everything a proposal document shows, as plain data. Pages build it from
@@ -40,6 +40,8 @@ export type ProposalDocumentData = {
     amount: Minor;
   }[];
   total: Minor;
+  /** GST added on invoices (18), or null when no GST applies. Missing on older proposals. */
+  gstPercent?: number | null;
   billingModel: "upfront" | "milestones";
   milestones: {
     id: string;
@@ -93,9 +95,24 @@ export type ChangeOrderData = {
     amount: Minor;
   }[];
   total: Minor;
+  /** GST added on invoices (18), or null. Missing on older change orders. */
+  gstPercent?: number | null;
   /** Where the money goes, in words: "Added to the “Before launch” payment." */
   billing: string;
   /** The approved proposal's total, for context. */
   originalTotal: Minor;
   issuedOn: Date;
 };
+
+/**
+ * The amount a client approves, as they'll pay it: "₹94,400 with GST" when
+ * the document adds GST, else just "₹80,000". Same figure as the sheet.
+ */
+export function approvalAmount(
+  total: Minor,
+  gstPercent: number | null | undefined,
+  currency: CurrencyCode,
+): string {
+  if (!gstPercent) return formatMoney(total, currency);
+  return `${formatMoney(sum([total, percentOf(total, gstPercent)]), currency)} with GST`;
+}

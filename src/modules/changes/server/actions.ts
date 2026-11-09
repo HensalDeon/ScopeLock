@@ -16,6 +16,7 @@ import {
   workspaceAction,
   type WorkspaceContext,
 } from "@/modules/workspace/server";
+import { gstOnDocuments } from "@/modules/invoices/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { UserError, type FormState } from "@/shared/lib/form-state";
 import {
@@ -166,13 +167,21 @@ const byNumber = {
 
 export const deleteChange = workspaceAction(
   { ...byNumber, failureMessage: "It wasn't deleted. Please try again." },
-  async ({ projectId, number }, { workspace }) => {
-    const doc = await findOwned(workspace.workspaceId, projectId, number);
-    if (!(await repo.deleteUnsentDraft(workspace.workspaceId, doc._id))) {
+  async ({ projectId, number }, context) => {
+    const ws = context.workspace.workspaceId;
+    const doc = await findOwned(ws, projectId, number);
+    if (!(await repo.deleteUnsentDraft(ws, doc._id))) {
       throw new UserError(
         "Your client has seen this change request, so it can't be deleted. Cancel it instead.",
       );
     }
+    // So "drafted CR-004" in the history isn't left pointing at nothing.
+    await logActivity(ws, {
+      projectId,
+      type: "change.deleted",
+      actor: actor(context),
+      data: { label: changeLabel(doc.number), title: doc.title },
+    });
     redirect(`/projects/${projectId.toHexString()}`);
   },
 );
@@ -202,7 +211,10 @@ export const sendChange = workspaceAction(
     }
     const now = new Date();
     const sent = await repo.markChangeSent(ws, doc._id, {
-      data: changeOrderData(project, doc, context, now),
+      data: changeOrderData(project, doc, context, {
+        issuedOn: now,
+        gstPercent: await gstOnDocuments(ws, project.client),
+      }),
       sentAt: now,
       sentBy: { userId: context.user.id, email: context.user.email },
     });

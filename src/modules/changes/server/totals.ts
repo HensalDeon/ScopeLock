@@ -2,7 +2,7 @@ import "server-only";
 import type { ClientSession, ObjectId } from "mongodb";
 import { setChangeTotals } from "@/modules/projects/server";
 import { minor } from "@/shared/lib/money";
-import { changeTotals } from "../domain/change-request";
+import { changeTotals } from "../domain/billing";
 import { findChangeStatuses } from "./repository";
 
 /**

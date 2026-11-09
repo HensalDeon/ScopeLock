@@ -125,6 +125,10 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - **Save buttons use the primary style** (an outlined button looks invisible when disabled). **Edit forms disable Save until `isDirty`.** It compares cleaned values, so "98765 43210" vs "+91 98765 43210" isn't a change. Show "No changes yet" or the saved message next to the button.
 - **Keep inputs controlled and submit by hand** (`onSubmit` → `startTransition(() => action(data))`). React's post-action form reset otherwise clears controlled fields such as a `<select>`.
 - **Repeated rows:** errors use dotted paths (`items.0.amount`), and "touched" uses the row's stable key.
+- **Phone tap targets:** buttons and small links in rows, strips and side cards add `TOUCH` / `TOUCH_LINK` from `shared/ui/touch` so they are at least 44px tall below the `sm` breakpoint; desktop keeps the compact sizes.
+- **One filled button per view**, chosen by the project's state (Send for approval, Ask for ₹X, Confirm received, Remind on WhatsApp); everything else is outline or ghost.
+- **Actions whose button disappears on success** (the row moves on) wrap their form action in `announcing(action, focusId)` from `shared/ui/announce`: the result is read out by screen readers and focus moves to the part of the page that now shows it (e.g. the money strip).
+- **Inline confirmations and small panels** (a button that turns into "Ask Rahul for ₹34,220?", "Delete draft?", a short form) use `useInlinePanel()` from `shared/ui/use-inline-panel`: spread `trigger(key)` on the button and `panel(label)` on the panel. Opening moves focus into the panel (announced by its label), Escape closes it, and closing returns focus to the button. Never hand-roll the open/closed state.
 
 ## 5. Pages and rendering (Next.js 16, Cache Components)
 
@@ -136,7 +140,7 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - **Every list page paginates.** Use `paginate()` / `parsePage()` from `shared/lib/pagination` (20 per page, `?page=N`, too-high pages clamp to the last) and `<Pagination>` from `shared/ui/pagination`. Repository list functions take `{ skip, limit }` with a matching `count…()`. Pickers and workspace figures use their own capped or projected queries, never an unbounded `find()`.
 - **Detail pages summarise; logs get their own page.** A list that grows with use (activity, signed records) shows the latest few on the detail page with "See all N", which opens a paged full page (for example `/projects/[id]/activity`). Never let a detail page grow without bound.
 - **Reuse before you write.** Check `shared/ui` first: `MoneyInput`, `FormSection`, `TitledSection`, `SideCard`, `ShareLink`, `Pagination`, `EmptyState`, `BackLink`. If a piece of UI appears twice, move it there.
-- **Keep files small.** Aim for under ~300 lines; split big forms into section components.
+- **Keep files small.** Aim for under ~300 lines; split big forms into section components. Split before a file passes 300, by responsibility: one component per file for list rows, totals and badges; server actions grouped by area (e.g. `settings-actions.ts`, `actions.ts`, `confirm-actions.ts`) with shared lookups and fields in a plain `action-helpers.ts`; form schemas apart from domain types (`payment-forms.ts`).
 - Anything that reads the session, headers or cookies renders inside `<Suspense>` with a skeleton that has the same shape.
 - No `"use cache"` on workspace data in Phase 2. If it's added later, key and tag it by `workspaceId` and call `updateTag` in actions. Never pass a raw portal token into a cached function, because it becomes a stored cache key.
 - Lists have a real empty state: what will appear here and how to add the first item.
@@ -191,6 +195,14 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - [ ] An approved CR's placement is fixed at approval, computed with the slots already requested (`closedKeys`), inside the decision transaction.
 - [ ] Client uploads (payment screenshots) go through `readImageUpload` (bytes checked, ≤ 4 MB), live under `ws/{id}/payment-proof/`, and are only ever served with `signedDownloadUrl` (attachment, 10 minutes), never rendered on our pages.
 - [ ] Public "I've paid" works out the project from the token and checks the payment belongs to it; rate-limited per IP and per link.
+
+**Invoices (Phase 5B)**
+
+- [ ] An invoice is issued inside the same transaction as its payment request: the per-financial-year counter (`$inc` on `seq.<fy>`), the invoice insert and the payment insert commit together, so a failed or duplicate request never uses up a number.
+- [ ] Unique indexes on `{ workspaceId, number }` and `{ workspaceId, paymentId }`. The starting number only moves the counter forward (`$max`).
+- [ ] The invoice is a frozen snapshot built from the database (settings, client, schedule), stored with `hashSnapshot()`. Only `status` ever changes, and only alongside its payment (cancel → cancelled, confirm → paid), in one transaction.
+- [ ] Tax rules live in `invoices/domain` as pure, tested functions. Amounts stay integers; GST is worked out on the invoice's taxable value and rounded half up to the paisa.
+- [ ] The portal invoice page works out the workspace and project from the token and only shows an invoice of that project.
 
 **Webhooks (Razorpay, Phase 8)**
 

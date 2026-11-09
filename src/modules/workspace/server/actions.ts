@@ -2,6 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 import { refresh } from "next/cache";
+import { z } from "zod";
 import { headers } from "next/headers";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { auth } from "@/shared/auth/server";
@@ -18,7 +19,7 @@ import {
 } from "../domain/workspace";
 import { workspaceAction } from "./action";
 import { getOnboardingState } from "./context";
-import { saveWorkspaceProfile } from "./repository";
+import { saveWorkspaceProfile, setSetupHidden } from "./repository";
 
 export type WorkspaceFormState = FormState<WorkspaceField>;
 
@@ -117,5 +118,17 @@ export const updateWorkspace = workspaceAction(
     // The sidebar shows the business name; re-render it.
     refresh();
     return { message: "Business details saved." };
+  },
+);
+
+/** Overview: hide the setup checklist, or bring it back. Any member. */
+export const setSetupVisibility = workspaceAction(
+  {
+    fields: ["hidden"] as const,
+    schema: z.object({ hidden: z.enum(["true", "false"]) }),
+  },
+  async ({ hidden }, { workspace }) => {
+    await setSetupHidden(workspace.workspaceId, hidden === "true");
+    refresh();
   },
 );

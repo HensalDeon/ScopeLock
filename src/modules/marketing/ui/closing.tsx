@@ -47,7 +47,7 @@ export function FinalCta() {
               it.
             </h2>
             <p className="text-[17px] text-muted-foreground">
-              Free for 2 projects. Set up in about two minutes.
+              Free for 2 projects. No card needed.
             </p>
           </div>
           <Button

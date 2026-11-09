@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PortalChangePage } from "@/modules/portal/server";
+
+export const metadata: Metadata = { title: "Change request" };
 
 export default function ClientChangePage({
   params,

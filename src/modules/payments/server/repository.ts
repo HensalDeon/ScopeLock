@@ -4,66 +4,8 @@ import { COLLECTIONS } from "@/shared/db/names";
 import { scopedCollection, type WorkspaceOwned } from "@/shared/db/scoped";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { minor } from "@/shared/lib/money";
-import {
-  NO_METHODS,
-  type MethodKind,
-  type PaymentMethods,
-} from "../domain/methods";
+import { type MethodKind } from "../domain/methods";
 import type { Payment, PaymentLine, PaymentStatus } from "../domain/payment";
-
-// ── Payment methods (one document per workspace) ───────────────────────────
-
-type SettingsDoc = WorkspaceOwned & {
-  methods?: Omit<PaymentMethods, "qr"> & { qr: { label: string } | null };
-  /** R2 key of the uploaded QR image (private bucket). */
-  qrKey?: string | null;
-};
-
-const settings = (workspaceId: string) =>
-  scopedCollection<SettingsDoc>(COLLECTIONS.paymentSettings, workspaceId);
-
-export async function findMethods(
-  workspaceId: string,
-): Promise<{ methods: PaymentMethods; qrKey: string | null }> {
-  const doc = await settings(workspaceId).findOne();
-  const qrKey = doc?.qrKey ?? null;
-  const m = doc?.methods;
-  return {
-    qrKey,
-    methods: m
-      ? {
-          ...m,
-          qr: qrKey
-            ? { label: m.qr?.label ?? "Scan to pay", hasImage: true }
-            : null,
-        }
-      : NO_METHODS,
-  };
-}
-
-export async function saveMethods(
-  workspaceId: string,
-  methods: NonNullable<SettingsDoc["methods"]>,
-): Promise<void> {
-  await settings(workspaceId).updateOne(
-    {},
-    { $set: { methods } },
-    { upsert: true },
-  );
-}
-
-/** Points the QR image at a new object (or none); returns the key it replaced. */
-export async function setQrKey(
-  workspaceId: string,
-  key: string | null,
-): Promise<string | null> {
-  const before = await settings(workspaceId).findOneAndUpdate(
-    {},
-    { $set: { qrKey: key } },
-    { upsert: true, returnDocument: "before" },
-  );
-  return before?.qrKey ?? null;
-}
 
 // ── Payment requests ───────────────────────────────────────────────────────
 
@@ -82,6 +24,9 @@ export type PaymentDoc = WorkspaceOwned & {
   label: string;
   lines: PaymentLine[];
   amount: number;
+  /** GST on its invoice (absent on requests from before invoices). */
+  tax?: number;
+  invoice?: { id: ObjectId; number: string };
   currency: CurrencyCode;
   status: PaymentStatus;
   /** Present (true) while the request is open; removed on cancel. */
@@ -120,6 +65,11 @@ export function toPayment(doc: PaymentDoc): Payment {
     label: doc.label,
     lines: doc.lines.map((l) => ({ ...l, amount: minor(l.amount) })),
     amount: minor(doc.amount),
+    tax: minor(doc.tax ?? 0),
+    payable: minor(doc.amount + (doc.tax ?? 0)),
+    invoice: doc.invoice
+      ? { id: doc.invoice.id.toHexString(), number: doc.invoice.number }
+      : null,
     currency: doc.currency,
     status: doc.status,
     requestedAt: doc.requestedAt,
@@ -153,37 +103,45 @@ export function toPayment(doc: PaymentDoc): Payment {
 /** Asks for a payment. Null if this slot already has an open request. */
 export async function insertPayment(
   workspaceId: string,
-  doc: Pick<
-    PaymentDoc,
-    "projectId" | "key" | "label" | "lines" | "amount" | "currency"
-  > & {
-    by: { userId: string; name: string };
-  },
+  doc: Partial<Pick<PaymentDoc, "_id" | "tax" | "invoice">> &
+    Pick<
+      PaymentDoc,
+      "projectId" | "key" | "label" | "lines" | "amount" | "currency"
+    > & {
+      by: { userId: string; name: string };
+    },
+  session?: ClientSession,
 ): Promise<string | null> {
   const now = new Date();
   try {
-    const { insertedId } = await payments(workspaceId).insertOne({
-      projectId: doc.projectId,
-      key: doc.key,
-      label: doc.label,
-      lines: doc.lines,
-      amount: doc.amount,
-      currency: doc.currency,
-      status: "due",
-      open: true,
-      requestedAt: now,
-      requestedBy: doc.by,
-      report: null,
-      confirmation: null,
-      history: [
-        {
-          status: "due",
-          at: now,
-          by: { kind: "member", name: doc.by.name },
-          note: null,
-        },
-      ],
-    });
+    const { insertedId } = await payments(workspaceId).insertOne(
+      {
+        ...(doc._id !== undefined ? { _id: doc._id } : {}),
+        projectId: doc.projectId,
+        key: doc.key,
+        label: doc.label,
+        lines: doc.lines,
+        amount: doc.amount,
+        ...(doc.tax !== undefined ? { tax: doc.tax } : {}),
+        ...(doc.invoice !== undefined ? { invoice: doc.invoice } : {}),
+        currency: doc.currency,
+        status: "due",
+        open: true,
+        requestedAt: now,
+        requestedBy: doc.by,
+        report: null,
+        confirmation: null,
+        history: [
+          {
+            status: "due",
+            at: now,
+            by: { kind: "member", name: doc.by.name },
+            note: null,
+          },
+        ],
+      },
+      { session },
+    );
     return insertedId.toHexString();
   } catch (error) {
     if (error instanceof MongoServerError && error.code === 11000) return null;
@@ -221,19 +179,6 @@ export async function findOwedPaymentDocs(
     .toArray();
 }
 
-/** Received, for the overview's money figures. */
-export async function sumReceived(
-  workspaceId: string,
-): Promise<{ currency: CurrencyCode; total: number }[]> {
-  const rows = (await payments(workspaceId)
-    .aggregate([
-      { $match: { status: "confirmed" } },
-      { $group: { _id: "$currency", total: { $sum: "$amount" } } },
-    ])
-    .toArray()) as { _id: CurrencyCode; total: number }[];
-  return rows.map((r) => ({ currency: r._id, total: r.total }));
-}
-
 const entry = (
   status: PaymentStatus,
   by: Who,
@@ -253,6 +198,7 @@ async function transition(
   set: Partial<PaymentDoc>,
   history: HistoryEntry,
   unsetOpen = false,
+  session?: ClientSession,
 ): Promise<boolean> {
   const { matchedCount } = await payments(workspaceId).updateOne(
     { _id: id, status: { $in: from } },
@@ -261,11 +207,17 @@ async function transition(
       $push: { history },
       ...(unsetOpen ? { $unset: { open: "" } } : {}),
     },
+    { session },
   );
   return matchedCount === 1;
 }
 
-export const cancelPayment = (ws: string, id: ObjectId, by: Who) =>
+export const cancelPayment = (
+  ws: string,
+  id: ObjectId,
+  by: Who,
+  session?: ClientSession,
+) =>
   transition(
     ws,
     id,
@@ -273,6 +225,7 @@ export const cancelPayment = (ws: string, id: ObjectId, by: Who) =>
     { status: "cancelled" },
     entry("cancelled", by),
     true,
+    session,
   );
 
 export const reportPayment = (
@@ -293,6 +246,7 @@ export const confirmPayment = (
   ws: string,
   id: ObjectId,
   confirmation: NonNullable<PaymentDoc["confirmation"]>,
+  session?: ClientSession,
 ) =>
   transition(
     ws,
@@ -300,6 +254,8 @@ export const confirmPayment = (
     ["due", "client_reported"],
     { status: "confirmed", confirmation },
     entry("confirmed", { kind: "member", name: confirmation.by.name }),
+    false,
+    session,
   );
 
 /** "Not received": back to due, with a note the client sees. */

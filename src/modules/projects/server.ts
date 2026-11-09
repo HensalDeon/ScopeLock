@@ -21,11 +21,13 @@ export {
   nextChangeNumber,
   setChangeTotals,
   setPaymentTotals,
+} from "./server/repository";
+export {
   applyDecision,
   findByPortalTokenHash,
   type PortalProject,
-  type SentProposal,
-} from "./server/repository";
+} from "./server/portal-repository";
+export { type SentProposal } from "./server/project-docs";
 export { PORTAL_TOKEN_PATTERN } from "./server/portal";
 export {
   documentBusiness,

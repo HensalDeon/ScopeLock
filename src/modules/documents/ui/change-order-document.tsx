@@ -5,9 +5,11 @@ import { formatMoney, type Minor } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import type { ChangeOrderData } from "../domain/document-data";
+import { gstOver } from "../domain/gst";
 import { NO_IMAGES, type DocumentImages } from "../domain/images";
 import { documentPalette, type DocumentStyle } from "../domain/style";
 import { documentSerif } from "./fonts";
+import { AcceptanceBlock, type DocumentAcceptance } from "./acceptance-block";
 
 /**
  * A change request as a short document in the same style as the proposal:
@@ -19,8 +21,17 @@ export function ChangeOrderDocument({
   style,
   images = NO_IMAGES,
   className,
+  approved = false,
+  titleAs: Title = "h1",
+  acceptance = null,
 }: {
+  /** The client's answer, printed before the footer. */
+  acceptance?: DocumentAcceptance | null;
+  /** "h2" when the page around it already has an h1 (the app's CR page). */
+  titleAs?: "h1" | "h2";
   data: ChangeOrderData;
+  /** Already approved: the closing line says so instead of asking. */
+  approved?: boolean;
   style: DocumentStyle;
   images?: DocumentImages;
   className?: string;
@@ -42,6 +53,7 @@ export function ChangeOrderDocument({
       ? "font-(family-name:--font-doc-serif) font-semibold tracking-[-0.01em]"
       : "font-sans font-semibold tracking-[-0.02em]";
   const money = (amount: Minor) => formatMoney(amount, data.currency);
+  const gst = gstOver([data.total], data.gstPercent);
   const photo =
     style.cover === "image" && images.coverUrl
       ? {
@@ -97,7 +109,7 @@ export function ChangeOrderDocument({
             </p>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+            <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
               Change request
             </p>
             <p className="mt-0.5 text-sm font-semibold tabular-nums">
@@ -106,17 +118,17 @@ export function ChangeOrderDocument({
           </div>
         </div>
 
-        <h1
+        <Title
           className={cn(
             "mt-9 max-w-[90%] text-[1.9rem] leading-[1.08] text-balance @xl:text-[2.4rem]",
             headingFont,
           )}
         >
           {data.title}
-        </h1>
+        </Title>
 
         <dl className="mt-7 grid gap-4 border-t border-(--doc-cover-rule) pt-5 text-sm @md:grid-cols-3">
-          <Meta label="For">
+          <Meta label="Prepared for">
             {data.client
               ? (data.client.company ?? data.client.name)
               : "Your client"}
@@ -149,7 +161,7 @@ export function ChangeOrderDocument({
 
         <table className="w-full border-collapse text-[0.9rem]">
           <thead>
-            <tr className="border-b border-[#1d1f24] text-left text-[10px] tracking-[0.14em] text-[#6b6f78] uppercase">
+            <tr className="border-b border-[#1d1f24] text-left text-[11px] tracking-[0.14em] text-[#6b6f78] uppercase">
               <th className="py-2 font-medium">What changes</th>
               <th className="py-2 text-right font-medium">Amount</th>
             </tr>
@@ -174,32 +186,45 @@ export function ChangeOrderDocument({
         </table>
 
         <div className="grid break-inside-avoid items-stretch gap-4 @xl:grid-cols-[1fr_1.2fr]">
-          <div className="grid content-center gap-1 rounded-xl bg-(--doc-cover-bg) px-6 py-5 text-(--doc-cover-text)">
-            <p className="text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+          <div className="grid content-center gap-1 rounded-[2px] bg-(--doc-cover-bg) px-6 py-5 text-(--doc-cover-text)">
+            <p className="text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
               This change
             </p>
             <p
               className={cn(
-                "text-[2.2rem] leading-none tabular-nums",
+                "text-[2.2rem] leading-none [font-variant-numeric:lining-nums_proportional-nums]",
                 headingFont,
               )}
             >
               {money(data.total)}
             </p>
+            {gst && (
+              <p className="text-sm tabular-nums">
+                <span className="font-medium">
+                  plus {data.gstPercent}% GST ({money(gst.tax)})
+                </span>{" "}
+                · {money(gst.total)} with GST
+              </p>
+            )}
           </div>
-          <div className="grid content-center gap-2 rounded-xl border border-[#e7e4dd] px-5 py-4 text-[0.88rem] leading-relaxed text-pretty">
+          <div className="grid content-center gap-2 rounded-[2px] border border-[#e7e4dd] px-5 py-4 text-[0.88rem] leading-relaxed text-pretty">
             <p>
-              <span className="mb-0.5 block text-[10px] tracking-[0.14em] text-(--doc-soft-text) uppercase">
+              <span className="mb-0.5 block text-[11px] tracking-[0.14em] text-(--doc-soft-text) uppercase">
                 How it&apos;s paid
               </span>
               {data.billing}
             </p>
             <p className="text-[#565a63]">
               The original proposal ({money(data.originalTotal)}) stays as
-              agreed. This is added on top only if you approve it.
+              agreed.{" "}
+              {approved
+                ? "This was approved and is added on top."
+                : "This is added on top only if you approve it."}
             </p>
           </div>
         </div>
+
+        {acceptance && <AcceptanceBlock acceptance={acceptance} />}
 
         <footer className="flex flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
           <p>
@@ -227,7 +252,7 @@ function Meta({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="mb-1 text-[10px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
+      <dt className="mb-1 text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
         {label}
       </dt>
       <dd className="font-semibold break-words">{children}</dd>

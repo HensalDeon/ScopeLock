@@ -24,12 +24,21 @@ export function MobileNav({
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
-      <Link href="/dashboard" aria-label="Overview">
+      <Link
+        href="/dashboard"
+        aria-label="Overview"
+        className="inline-flex min-h-11 items-center"
+      >
         <Logo className="text-base" />
       </Link>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Open menu">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-11"
+            aria-label="Open menu"
+          >
             <Menu className="size-5" aria-hidden />
           </Button>
         </SheetTrigger>

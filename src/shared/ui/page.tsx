@@ -39,23 +39,32 @@ export function PageHeader({
           </p>
         )}
       </div>
-      {actions && <div className="flex gap-2">{actions}</div>}
+      {actions && (
+        // Page actions are 44px tall on phones (TOUCH).
+        <div className="flex gap-2 max-sm:*:h-11 max-sm:*:px-4">{actions}</div>
+      )}
     </div>
   );
 }
 
 /** A titled settings-style section: label column on the left, content on the right. */
 export function Section({
+  id,
   title,
   description,
   children,
 }: {
+  /** An anchor to link straight to it ("#billing"). */
+  id?: string;
   title: string;
   description?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-6 border-t py-8 first:border-t-0 first:pt-0 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:gap-10">
+    <section
+      id={id}
+      className="grid scroll-mt-20 gap-6 border-t py-8 first:border-t-0 first:pt-0 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:gap-10"
+    >
       <div className="grid content-start gap-1">
         <h2 className="text-[15px] font-semibold">{title}</h2>
         {description && (

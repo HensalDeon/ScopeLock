@@ -4,11 +4,17 @@ import Link from "next/link";
 import { Suspense } from "react";
 import {
   ArchiveClientButton,
+  ClientDetails,
   ClientForm,
+  ClientSummary,
   clientContactLine,
+  clientFirstName,
   clientFormValues,
 } from "@/modules/clients";
 import { getClientOrNotFound } from "@/modules/clients/server";
+import { getInvoicing } from "@/modules/invoices/server";
+import { MoneyStrip } from "@/modules/overview";
+import { getClientMoney } from "@/modules/overview/server";
 import { ProjectList } from "@/modules/projects";
 import { listProjectsForClient } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
@@ -17,6 +23,7 @@ import { parsePage } from "@/shared/lib/pagination";
 import { whatsappLink } from "@/shared/lib/phone";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { EmptyState } from "@/shared/ui/list-states";
 import { PageContainer, Section } from "@/shared/ui/page";
 import { Pagination } from "@/shared/ui/pagination";
@@ -41,11 +48,15 @@ async function ClientDetail({
   searchParams,
 }: Pick<PageProps<"/clients/[id]">, "params" | "searchParams">) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const [client, projects, { workspace }] = await Promise.all([
-    getClientOrNotFound(id),
-    listProjectsForClient(id, parsePage(query.page)),
-    requireWorkspace(),
-  ]);
+  const [client, projects, { workspace }, invoicing, money] = await Promise.all(
+    [
+      getClientOrNotFound(id),
+      listProjectsForClient(id, parsePage(query.page)),
+      requireWorkspace(),
+      getInvoicing(),
+      getClientMoney(id),
+    ],
+  );
   const archived = client.archivedAt !== null;
 
   return (
@@ -63,7 +74,7 @@ async function ClientDetail({
           </div>
           <div className="flex flex-wrap gap-2">
             {client.phone && (
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className={TOUCH}>
                 <a
                   href={whatsappLink(client.phone)}
                   target="_blank"
@@ -74,7 +85,7 @@ async function ClientDetail({
               </Button>
             )}
             {!archived && (
-              <Button asChild>
+              <Button asChild className={TOUCH}>
                 <Link href={`/projects/new?client=${client.id}`}>
                   <Plus aria-hidden />
                   New project
@@ -86,10 +97,18 @@ async function ClientDetail({
         {archived && client.archivedAt && (
           <p className="w-fit rounded-md border bg-canvas px-3 py-1.5 text-sm text-muted-foreground">
             Archived on {formatDate(client.archivedAt)}. Hidden from your client
-            list and the project picker.
+            list and the project picker.{" "}
+            <a
+              href="#archive"
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              Restore
+            </a>
           </p>
         )}
       </div>
+
+      {money.some((r) => r.approvedProjects > 0) && <MoneyStrip rows={money} />}
 
       <section aria-labelledby={`projects-${client.id}`} className="grid gap-3">
         <h2 id={`projects-${client.id}`} className="text-[15px] font-semibold">
@@ -109,26 +128,41 @@ async function ClientDetail({
             />
           </>
         ) : (
-          <EmptyState title={`No projects for ${client.name} yet`}>
-            Projects you create for {client.name} will appear here, with their
-            scope, status and totals.
+          <EmptyState title="No projects yet">
+            {archived
+              ? `Restore ${clientFirstName(client)} to start a project for them.`
+              : `Use New project above to send ${clientFirstName(client)} a scope to approve.`}
           </EmptyState>
         )}
       </section>
 
       <div>
         <Section
-          title="Contact details"
-          description="Used to send approval links and receipts."
+          id="billing"
+          title="Contact and billing details"
+          description="Used to send approval links, and for the “Billed to” on invoices."
         >
-          <ClientForm
-            mode="edit"
-            clientId={client.id}
-            defaultCurrency={workspace.currency}
-            defaults={clientFormValues(client)}
+          <ClientDetails
+            view={
+              <ClientSummary
+                client={client}
+                seller={invoicing.settings}
+                defaultCurrency={workspace.currency}
+              />
+            }
+            form={
+              <ClientForm
+                mode="edit"
+                clientId={client.id}
+                defaultCurrency={workspace.currency}
+                defaults={clientFormValues(client)}
+                seller={invoicing.settings}
+              />
+            }
           />
         </Section>
         <Section
+          id="archive"
           title={archived ? "Restore" : "Archive"}
           description={
             archived

@@ -1,7 +1,6 @@
-import { z } from "zod";
 import type { CurrencyCode } from "@/shared/lib/currency";
-import { formatMoney, sum, type Minor } from "@/shared/lib/money";
-import { METHOD_KINDS, type MethodKind } from "./methods";
+import { formatMoney, minor, sum, type Minor } from "@/shared/lib/money";
+import type { MethodKind } from "./methods";
 
 /**
  * A payment request: an amount the freelancer has asked for (a milestone,
@@ -31,7 +30,14 @@ export type Payment = {
   key: string;
   label: string;
   lines: PaymentLine[];
+  /** The work being paid for (taxable value). */
   amount: Minor;
+  /** GST on the invoice (zero without a GSTIN, and on older requests). */
+  tax: Minor;
+  /** What the client pays: amount + GST. */
+  payable: Minor;
+  /** The invoice issued with the request (older requests have none). */
+  invoice: { id: string; number: string } | null;
   currency: CurrencyCode;
   status: PaymentStatus;
   requestedAt: Date;
@@ -57,18 +63,21 @@ export type Payment = {
 /** Requested and not cancelled: the slot is taken. */
 export const isActive = (status: PaymentStatus) => status !== "cancelled";
 
-/** Received and still owed, across a project's payments. */
+/**
+ * Received and still owed across a project's payments: what the client
+ * pays, GST included (money that actually moves).
+ */
 export function paymentTotals(
-  payments: readonly Pick<Payment, "status" | "amount">[],
+  payments: readonly Pick<Payment, "status" | "payable">[],
 ): { received: Minor; due: Minor } {
   return {
     received: sum(
-      payments.filter((p) => p.status === "confirmed").map((p) => p.amount),
+      payments.filter((p) => p.status === "confirmed").map((p) => p.payable),
     ),
     due: sum(
       payments
         .filter((p) => p.status === "due" || p.status === "client_reported")
-        .map((p) => p.amount),
+        .map((p) => p.payable),
     ),
   };
 }
@@ -100,7 +109,14 @@ export type ScheduleItem = {
   milestoneId: string | null;
   percent: number | null;
   lines: PaymentLine[];
+  /** The work being paid for (before GST). */
   total: Minor;
+  /** GST: from the invoice once asked for, else what it will add (see gst.ts). */
+  tax: Minor;
+  /** What the client pays: total + tax. */
+  payable: Minor;
+  /** "CGST 9% + SGST 9%" before it's asked for (the invoice has it after). */
+  taxSplit: string | null;
   /** The active request for this slot, if any. */
   payment: Payment | null;
   state: ScheduleState;
@@ -114,6 +130,17 @@ const stateOf = (payment: Payment | null): ScheduleState =>
       : payment.status === "client_reported"
         ? "client_reported"
         : "due";
+
+/** A requested slot shows what was asked for, GST included. */
+const priced = (payment: Payment | null, computed: Minor) =>
+  payment
+    ? {
+        total: payment.amount,
+        tax: payment.tax,
+        payable: payment.payable,
+        taxSplit: null,
+      }
+    : { total: computed, tax: minor(0), payable: computed, taxSplit: null };
 
 /**
  * Every payment on a project, in order: each milestone (its share of the
@@ -165,7 +192,7 @@ export function buildSchedule(input: {
       milestoneId: m.id,
       percent: m.percent,
       lines,
-      total: payment ? payment.amount : sum(lines.map((l) => l.amount)),
+      ...priced(payment, sum(lines.map((l) => l.amount))),
       payment,
       state: stateOf(payment),
     });
@@ -194,7 +221,7 @@ export function buildSchedule(input: {
       milestoneId: null,
       percent: null,
       lines,
-      total: payment ? payment.amount : separate,
+      ...priced(payment, separate),
       payment,
       state: stateOf(payment),
     });
@@ -208,86 +235,3 @@ export function closedKeys(
 ): string[] {
   return payments.filter((p) => isActive(p.status)).map((p) => p.key);
 }
-
-// ── What people type ───────────────────────────────────────────────────────
-
-const isoDate = z
-  .string()
-  .trim()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a date.");
-
-const notInFuture = (today: string) => (value: string) => value <= today;
-
-/** The client's "I've paid" (the screenshot travels separately). */
-export const REPORT_FIELDS = ["method", "reference", "paidOn", "note"] as const;
-export type ReportField = (typeof REPORT_FIELDS)[number];
-
-export function reportInputSchema(today: string) {
-  return z.object({
-    method: z.enum(METHOD_KINDS, { message: "Choose how you paid." }),
-    reference: z
-      .string()
-      .trim()
-      .min(4, "Add the UTR or transaction ID from your payment app or bank.")
-      .max(
-        40,
-        "That reference is too long. Copy just the UTR or transaction ID.",
-      )
-      .regex(/^[A-Za-z0-9 _/-]+$/, "Use letters and numbers only."),
-    paidOn: isoDate.refine(
-      notInFuture(today),
-      "The payment date can't be in the future.",
-    ),
-    note: z
-      .string()
-      .trim()
-      .max(300, "Keep the note under 300 characters.")
-      .transform((v) => v || null),
-  });
-}
-
-/** The freelancer marking a payment received themselves. */
-export const RECEIVE_FIELDS = [
-  "paymentId",
-  "method",
-  "reference",
-  "receivedOn",
-] as const;
-export function receiveInputSchema(today: string) {
-  return z.object({
-    method: z.enum(METHOD_KINDS, { message: "Choose how it was paid." }),
-    reference: z
-      .string()
-      .trim()
-      .max(40, "Keep the reference under 40 characters.")
-      .transform((v) => v || null),
-    receivedOn: isoDate.refine(
-      notInFuture(today),
-      "The date can't be in the future.",
-    ),
-  });
-}
-
-/** "Not received": the client sees this note. */
-export const notReceivedSchema = z.object({
-  note: z
-    .string()
-    .trim()
-    .min(4, "Tell your client what's missing, so they can check.")
-    .max(300, "Keep the note under 300 characters."),
-});
-
-export const PAYMENT_STATE_LABELS: Record<ScheduleState, string> = {
-  upcoming: "Not requested",
-  due: "Due",
-  client_reported: "Client says paid",
-  received: "Received",
-};
-
-/** The same states in the client's words (their portal). */
-export const CLIENT_PAYMENT_LABELS: Record<ScheduleState, string> = {
-  upcoming: "Not due yet",
-  due: "Due",
-  client_reported: "Sent for confirmation",
-  received: "Paid",
-};

@@ -1,11 +1,8 @@
 import { ObjectId } from "mongodb";
 import { beforeAll, describe, expect, it } from "vitest";
 import { collection } from "@/shared/db/collections";
-import {
-  buildProjectPlan,
-  emptyTotals,
-  projectInputSchema,
-} from "../domain/project";
+import { buildProjectPlan, projectInputSchema } from "../domain/project-input";
+import { emptyTotals } from "../domain/project";
 import { recordDecision } from "@/modules/approvals/server";
 import { db } from "@/shared/db/client";
 import { ensureIndexes } from "@/shared/db/indexes";
@@ -13,6 +10,7 @@ import { withTransaction } from "@/shared/db/transaction";
 import { hashToken } from "@/shared/lib/token";
 import { newPortalLink, portalUrl } from "./portal";
 import * as repo from "./repository";
+import * as portalRepo from "./portal-repository";
 
 let n = 0;
 const newId = () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`;
@@ -67,7 +65,7 @@ async function sentProject(ws: string) {
   const id = new ObjectId(await repo.insertProject(ws, rahulsProject()));
   const portal = newPortalLink();
   const sentAt = new Date();
-  const ok = await repo.markSent(
+  const ok = await portalRepo.markSent(
     ws,
     id,
     {
@@ -106,7 +104,7 @@ function decide(
       },
       session,
     );
-    const applied = await repo.applyDecision(
+    const applied = await portalRepo.applyDecision(
       {
         workspaceId: ws,
         projectId: p.id,
@@ -138,7 +136,7 @@ describe("client portal lifecycle", () => {
 
     // Sending again is refused: it's no longer a draft.
     expect(
-      await repo.markSent(
+      await portalRepo.markSent(
         ws,
         id,
         {
@@ -154,7 +152,7 @@ describe("client portal lifecycle", () => {
     const url = portalUrl(portal);
     const token = url?.split("/c/")[1] ?? "";
     expect(token).toMatch(/^[A-Za-z0-9_-]{43}$/);
-    const found = await repo.findByPortalTokenHash(hashToken(token));
+    const found = await portalRepo.findByPortalTokenHash(hashToken(token));
     expect(found).toMatchObject({
       workspaceId: ws,
       project: { id: id.toHexString() },
@@ -209,7 +207,7 @@ describe("client portal lifecycle", () => {
     // Re-send keeps the link (no new portal given).
     const sentAt = new Date(Date.now() + 1000);
     expect(
-      await repo.markSent(
+      await portalRepo.markSent(
         ws,
         p.id,
         {
@@ -220,9 +218,9 @@ describe("client portal lifecycle", () => {
         null,
       ),
     ).toBe(true);
-    expect((await repo.findPortalState(ws, p.id))?.portal?.tokenHash).toBe(
-      p.portal.tokenHash,
-    );
+    expect(
+      (await portalRepo.findPortalState(ws, p.id))?.portal?.tokenHash,
+    ).toBe(p.portal.tokenHash);
 
     // An answer to the old version (old sentAt) is refused and rolled back.
     const before = await collection("approvals").countDocuments({
@@ -234,14 +232,16 @@ describe("client portal lifecycle", () => {
     ).toBe(before);
 
     // A replaced link can't decide either.
-    await repo.replacePortal(ws, p.id, newPortalLink());
+    await portalRepo.replacePortal(ws, p.id, newPortalLink());
     await expect(decide(ws, { ...p, sentAt }, "approved")).rejects.toThrow(
       "stale",
     );
-    expect(await repo.findByPortalTokenHash(p.portal.tokenHash)).toBeNull();
+    expect(
+      await portalRepo.findByPortalTokenHash(p.portal.tokenHash),
+    ).toBeNull();
 
     // Withdrawn: back to draft, can't be decided.
-    expect(await repo.markWithdrawn(ws, p.id)).toBe(true);
-    expect(await repo.markWithdrawn(ws, p.id)).toBe(false);
+    expect(await portalRepo.markWithdrawn(ws, p.id)).toBe(true);
+    expect(await portalRepo.markWithdrawn(ws, p.id)).toBe(false);
   });
 });

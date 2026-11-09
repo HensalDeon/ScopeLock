@@ -6,7 +6,14 @@ import { cn } from "@/shared/lib/utils";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { FormSection } from "@/shared/ui/page";
-import { billingChoices, type BillingOption } from "../domain/change-request";
+import type { CurrencyCode } from "@/shared/lib/currency";
+import { formatMoney, type Minor } from "@/shared/lib/money";
+import {
+  billingChoices,
+  billingPreview,
+  type BillingContext,
+} from "../domain/billing";
+import { type BillingOption } from "../domain/change-request";
 
 /** Which payment the change joins (or a separate one), plus the payment picker. */
 export function BillingChoice({
@@ -15,7 +22,15 @@ export function BillingChoice({
   setMilestoneId,
   milestones,
   form,
+  total,
+  currency,
+  context = null,
 }: {
+  /** The change's total so far, before GST. */
+  total: Minor;
+  currency: CurrencyCode;
+  /** The schedule as it stands, so each choice can show real amounts. */
+  context?: BillingContext | null;
   values: { billingOption: BillingOption; milestoneId: string };
   setBillingOption: (option: BillingOption) => void;
   setMilestoneId: (id: string) => void;
@@ -24,6 +39,19 @@ export function BillingChoice({
 }) {
   const uid = useId();
   const options = billingChoices(milestones);
+  const preview = (option: BillingOption) =>
+    context
+      ? billingPreview(
+          total,
+          {
+            option,
+            milestoneId:
+              option === "milestone" ? values.milestoneId || null : null,
+          },
+          context,
+          (amount) => formatMoney(amount, currency),
+        )
+      : null;
   return (
     <FormSection
       title="When it's paid"
@@ -51,9 +79,9 @@ export function BillingChoice({
             />
             <span className="grid gap-0.5">
               <span className="text-[15px] font-medium">{option.label}</span>
-              {option.detail && (
-                <span className="text-sm text-muted-foreground">
-                  {option.detail}
+              {(preview(option.value) ?? option.detail) && (
+                <span className="text-sm text-muted-foreground tabular-nums">
+                  {preview(option.value) ?? option.detail}
                 </span>
               )}
             </span>
@@ -75,11 +103,20 @@ export function BillingChoice({
               className="w-full sm:w-72"
             >
               <option value="">Choose a payment</option>
-              {milestones.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
+              {milestones.map((m) => {
+                // Asked for or paid: approval would move it elsewhere.
+                const closed = context?.closed[m.id];
+                return (
+                  <option key={m.id} value={m.id} disabled={Boolean(closed)}>
+                    {m.name}
+                    {closed === "received"
+                      ? " · received"
+                      : closed === "asked"
+                        ? " · already asked for"
+                        : ""}
+                  </option>
+                );
+              })}
             </NativeSelect>
             <FieldError>{form.errorFor("milestoneId")}</FieldError>
           </Field>

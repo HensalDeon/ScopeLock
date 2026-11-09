@@ -3,6 +3,8 @@ import Link from "next/link";
 import { HowToPay } from "@/modules/payments";
 import { formatDateTime, formatIsoDate } from "@/shared/lib/dates";
 import { isStorageConfigured } from "@/shared/lib/env";
+import { cn } from "@/shared/lib/utils";
+import { TOUCH_LINK } from "@/shared/ui/touch";
 import { formatMoney } from "@/shared/lib/money";
 import { reportPayment } from "../server/payment-actions";
 import { getPortalPayment } from "../server/queries";
@@ -26,12 +28,12 @@ export async function PortalPaymentPage({
     );
   }
   const { payment, businessName } = view;
-  const total = formatMoney(payment.amount, payment.currency);
+  const total = formatMoney(payment.payable, payment.currency);
   const back = (
     <Link
       href={`/c/${token}`}
       aria-label={`Back to ${view.projectTitle}`}
-      className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted"
+      className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted max-sm:size-11"
     >
       <ArrowLeft aria-hidden className="size-4" />
     </Link>
@@ -65,11 +67,18 @@ export async function PortalPaymentPage({
 
       <main className="mx-auto grid max-w-[210mm] gap-6 px-4 py-6 sm:py-8">
         <section className="grid gap-3 rounded-lg border bg-white p-5 sm:p-6">
-          <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-            {payment.status === "confirmed" ? "Paid" : "Amount due"}
-          </p>
-          <p className="text-3xl font-semibold tracking-[-0.02em] tabular-nums">
-            {total}
+          <h1 className="grid gap-1">
+            <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+              {payment.status === "confirmed"
+                ? `${payment.label}, paid`
+                : `${payment.label}, amount due`}
+            </span>
+            <span className="text-3xl font-semibold tracking-[-0.02em] tabular-nums">
+              {total}
+            </span>
+          </h1>
+          <p className="text-sm text-pretty">
+            You pay {businessName} directly. ScopeLock never holds your money.
           </p>
           <ul className="grid gap-1 border-t pt-3 text-sm">
             {payment.lines.map((line) => (
@@ -85,10 +94,34 @@ export async function PortalPaymentPage({
                 </span>
               </li>
             ))}
+            {payment.tax > 0 && (
+              <li className="flex justify-between gap-4">
+                <span className="text-muted-foreground">GST</span>
+                <span className="tabular-nums">
+                  {formatMoney(payment.tax, payment.currency)}
+                </span>
+              </li>
+            )}
           </ul>
+          {payment.invoice && (
+            <p className="text-sm">
+              <Link
+                href={`/c/${token}/invoice/${payment.invoice.id}`}
+                className={cn(
+                  "font-medium underline underline-offset-4",
+                  TOUCH_LINK,
+                )}
+              >
+                Invoice {payment.invoice.number}
+              </Link>
+              <span className="text-muted-foreground">
+                {" "}
+                · view, print or save as PDF
+              </span>
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
-            Asked for on {formatDateTime(payment.requestedAt)}. You pay{" "}
-            {businessName} directly; ScopeLock never holds your money.
+            Asked for on {formatDateTime(payment.requestedAt)}.
           </p>
         </section>
 
@@ -101,7 +134,7 @@ export async function PortalPaymentPage({
               <HowToPay
                 available={view.available}
                 methods={view.methods}
-                amount={payment.amount}
+                amount={payment.payable}
                 currency={payment.currency}
                 qrUrl={view.qrUrl}
                 upi={view.upi}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
-import { portfolioTotals } from "./portfolio";
+import { dueByClient, portfolioTotals } from "./portfolio";
 
 const p = (
   status: "draft" | "awaiting_approval" | "active" | "completed" | "archived",
@@ -42,7 +42,8 @@ describe("portfolioTotals", () => {
     ]);
     expect(rows.map((r) => r.currency)).toEqual(["INR", "USD"]);
     expect(rows[0]).toMatchObject({
-      approved: 9_800_000,
+      total: 9_800_000,
+      toAsk: 2_490_000,
       approvedProjects: 1,
       waiting: 2_600_000,
       draft: 5_800_000,
@@ -50,10 +51,75 @@ describe("portfolioTotals", () => {
       received: 2_490_000,
       due: 4_820_000,
     });
-    expect(rows[1]).toMatchObject({ approved: 120_000, waiting: 0, draft: 0 });
+    expect(rows[1]).toMatchObject({ total: 120_000, waiting: 0, draft: 0 });
+  });
+
+  it("counts approved projects as their own strip does, GST included", () => {
+    const [row] = portfolioTotals([
+      {
+        ...p("active", 8_000_000),
+        money: {
+          received: minor(2_832_000),
+          due: minor(3_200_000),
+          toAsk: minor(2_832_000),
+          total: minor(8_864_000),
+          tax: minor(864_000),
+          nextAsk: null,
+        },
+      },
+    ]);
+    expect(row).toMatchObject({
+      received: 2_832_000,
+      due: 3_200_000,
+      toAsk: 2_832_000,
+      total: 8_864_000,
+      tax: 864_000,
+    });
   });
 
   it("is empty with no projects", () => {
     expect(portfolioTotals([])).toEqual([]);
+  });
+});
+
+describe("dueByClient", () => {
+  it("adds up what each client owes, per currency, never across", () => {
+    const due = dueByClient(
+      [
+        {
+          projectId: "p1",
+          amount: minor(2_832_000),
+          currency: "INR",
+          status: "due",
+        },
+        {
+          projectId: "p2",
+          amount: minor(1_000_000),
+          currency: "INR",
+          status: "client_reported",
+        },
+        {
+          projectId: "p3",
+          amount: minor(50_000),
+          currency: "USD",
+          status: "due",
+        },
+        {
+          projectId: "p1",
+          amount: minor(999),
+          currency: "INR",
+          status: "confirmed",
+        },
+      ],
+      new Map([
+        ["p1", "c1"],
+        ["p2", "c1"],
+        ["p3", "c1"],
+      ]),
+    );
+    expect(due.get("c1")).toEqual([
+      { currency: "INR", amount: 3_832_000 },
+      { currency: "USD", amount: 50_000 },
+    ]);
   });
 });

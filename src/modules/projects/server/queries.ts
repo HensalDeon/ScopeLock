@@ -1,13 +1,14 @@
 import "server-only";
 import { notFound } from "next/navigation";
 import type { Client } from "@/modules/clients";
-import { getClientsById } from "@/modules/clients/server";
+import { getClientsById, searchClientIds } from "@/modules/clients/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { paginate, toPage, type Page } from "@/shared/lib/pagination";
 import type { Project } from "../domain/project";
 import { portalUrl } from "./portal";
 import * as repo from "./repository";
+import * as portalRepo from "./portal-repository";
 
 export type ProjectWithClient = Project & { client: Client | null };
 
@@ -24,13 +25,18 @@ async function withClients(projects: Project[]): Promise<ProjectWithClient[]> {
 /** One page of the workspace's projects, newest activity first, with clients. */
 export async function listProjects(
   page: number,
+  /** From parseSearch: the project's name or its client's. */
+  search: string | null = null,
 ): Promise<Page<ProjectWithClient>> {
   const { workspace } = await requireWorkspace();
   const ws = workspace.workspaceId;
+  const filter = search
+    ? { search: { text: search, clientIds: await searchClientIds(search) } }
+    : {};
   const result = await paginate(
     page,
-    () => repo.countProjects(ws),
-    (window) => repo.findProjects(ws, {}, window),
+    () => repo.countProjects(ws, filter),
+    (window) => repo.findProjects(ws, filter, window),
   );
   return { ...result, items: await withClients(result.items) };
 }
@@ -123,7 +129,7 @@ export async function getShareState(projectId: string): Promise<ShareState> {
   const id = parseObjectId(projectId);
   if (!id) notFound();
   const { workspace } = await requireWorkspace();
-  const state = await repo.findPortalState(workspace.workspaceId, id);
+  const state = await portalRepo.findPortalState(workspace.workspaceId, id);
   if (!state) notFound();
   return {
     url: state.portal ? portalUrl(state.portal) : null,

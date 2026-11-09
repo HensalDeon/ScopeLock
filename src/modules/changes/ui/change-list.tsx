@@ -5,6 +5,7 @@ import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { changeLabel, type ChangeRequest } from "../domain/change-request";
 import { ChangeStatusBadge } from "./change-status-badge";
 
@@ -41,7 +42,7 @@ export function ChangeList({
           Change requests
         </h2>
         {canCreate && (
-          <Button asChild size="sm">
+          <Button asChild size="sm" variant="outline" className={TOUCH}>
             <Link href={`${base}/new` as Route}>
               <Plus aria-hidden />
               New change request

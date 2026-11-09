@@ -11,21 +11,21 @@ type Change = {
 
 const changes: Change[] = [
   {
-    ref: "CR-001",
+    ref: "CR-004",
     title: "Blog section",
     note: "Approved by Rahul · 18 Nov, 3:42 pm",
     amount: 1_200_000,
     state: "approved",
   },
   {
-    ref: "CR-002",
+    ref: "CR-005",
     title: "WhatsApp chat button",
     note: "Approved by Rahul · 18 Nov, 3:42 pm",
     amount: 300_000,
     state: "approved",
   },
   {
-    ref: "CR-003",
+    ref: "CR-006",
     title: "Razorpay checkout",
     note: "Sent 21 Nov · waiting for Rahul",
     amount: 1_800_000,
@@ -74,7 +74,7 @@ export function LedgerShowcase() {
             </p>
           </div>
 
-          <p className="border-t border-white/[0.07] px-5 pt-3 pb-1 font-mono text-[10.5px] tracking-[0.12em] text-[#8b95a7] uppercase">
+          <p className="border-t border-white/[0.07] px-5 pt-3 pb-1 font-mono text-[11px] tracking-[0.12em] text-[#8b95a7] uppercase">
             Changes
           </p>
           <ul className="px-5 pb-2">

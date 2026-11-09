@@ -24,6 +24,22 @@ export type ProjectFigures = {
     paid: Minor;
     due: Minor;
   };
+  /**
+   * Approved projects: the money as the project's own strip shows it, GST
+   * included where the payments carry it. Null when not approved/loaded.
+   */
+  money?: ProjectMoneyFigures | null;
+};
+
+export type ProjectMoneyFigures = {
+  received: Minor;
+  due: Minor;
+  /** In the schedule, not asked for yet. */
+  toAsk: Minor;
+  total: Minor;
+  tax: Minor;
+  /** The payment to ask for next, when nothing is out or reported. */
+  nextAsk: { label: string; amount: Minor } | null;
 };
 
 export type OverviewProject = ProjectFigures & {
@@ -82,56 +98,7 @@ export type AttentionItem = {
   remind: string | null;
 };
 
-export type SetupStep = {
-  title: string;
-  detail: string;
-  done: boolean;
-  href?: "/clients/new" | "/projects/new";
-};
-
-const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
-
-export function setupSteps(input: {
-  businessName: string;
-  businessTypeTitle: string;
-  clientCount: number;
-  projects: readonly Pick<OverviewProject, "status" | "changeCount">[];
-}): SetupStep[] {
-  const { projects } = input;
-  return [
-    {
-      title: "Set up your workspace",
-      detail: `${input.businessName} · ${input.businessTypeTitle}`,
-      done: true,
-    },
-    {
-      title: "Add your first client",
-      detail: "Their name, company and WhatsApp number.",
-      done: input.clientCount > 0,
-      href: "/clients/new",
-    },
-    {
-      title: "Write down a project's scope",
-      detail: "List what's included, the price, and how the client pays.",
-      done: projects.length > 0,
-      href: "/projects/new",
-    },
-    {
-      title: "Get the scope approved",
-      detail:
-        "Send it to your client. Once they approve, it's locked as the baseline.",
-      done: projects.some(
-        (p) => p.status === "active" || p.status === "completed",
-      ),
-    },
-    {
-      title: "Log extra requests as they come in",
-      detail:
-        "Each one becomes a priced change request your client approves before you start.",
-      done: projects.some((p) => p.changeCount > 0),
-    },
-  ];
-}
+export const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 
 /** A WhatsApp link with the message and the client's link, or null without a link. */
 export function reminderLink(
@@ -236,83 +203,4 @@ export function waitingOnClients(
     });
   }
   return rows.sort((a, b) => a.since - b.since).map((r) => r.item);
-}
-
-/** Changes the client asked for (first), then drafts not sent (latest first). */
-export function needsYou(
-  projects: readonly OverviewProject[],
-  changes: readonly OverviewChange[],
-  now: Date = new Date(),
-  payments: readonly OverviewPayment[] = [],
-): AttentionItem[] {
-  const byId = new Map(projects.map((p) => [p.id, p]));
-  const rows: { item: AttentionItem; rank: number; at: number }[] = [];
-
-  // A client says they've paid: check and confirm first.
-  for (const pay of payments.filter((p) => p.status === "client_reported")) {
-    const p = byId.get(pay.projectId);
-    if (!p) continue;
-    rows.push({
-      item: {
-        key: `pay-${pay.id}`,
-        tag: "Client says paid",
-        tone: "waiting",
-        title: pay.label,
-        detail: `${p.name} · ${p.client?.name ?? "Your client"} paid ${formatAgo(pay.reportedAt ?? pay.requestedAt, { now })} · check and confirm`,
-        amount: formatMoney(pay.amount, p.currency),
-        href: `/projects/${p.id}`,
-        quote: null,
-        remind: null,
-      },
-      rank: -1,
-      at: (pay.reportedAt ?? pay.requestedAt).getTime(),
-    });
-  }
-
-  for (const p of projects.filter((p) => p.status === "draft")) {
-    const asked =
-      p.lastDecision?.decision === "rejected" &&
-      p.sentAt &&
-      p.lastDecision.at >= p.sentAt
-        ? p.lastDecision
-        : null;
-    const client = p.client?.name ?? "No client";
-    rows.push({
-      item: {
-        key: `p-${p.id}`,
-        tag: asked ? "Changes asked" : p.sentAt ? "Taken back" : "Draft",
-        tone: asked ? "waiting" : "neutral",
-        title: p.name,
-        detail: asked
-          ? `${asked.name} asked ${formatAgo(asked.at, { now })} · edit and send again`
-          : `${client} · not sent ${p.sentAt ? "again " : ""}yet`,
-        amount: formatMoney(p.baselineTotal, p.currency),
-        href: `/projects/${p.id}`,
-        quote: asked?.comment ?? null,
-        remind: null,
-      },
-      rank: asked ? 0 : 1,
-      at: p.updatedAt.getTime(),
-    });
-  }
-  for (const c of changes.filter((c) => c.status === "draft")) {
-    const p = byId.get(c.projectId);
-    if (!p) continue;
-    rows.push({
-      item: {
-        key: `c-${c.id}`,
-        tag: `${c.label} · ${c.everSent ? "Taken back" : "Draft"}`,
-        tone: "neutral",
-        title: c.title,
-        detail: `${p.name} · not sent ${c.everSent ? "again " : ""}yet`,
-        amount: formatMoney(c.total, p.currency),
-        href: `/projects/${p.id}/changes/${c.number}`,
-        quote: null,
-        remind: null,
-      },
-      rank: 1,
-      at: c.updatedAt.getTime(),
-    });
-  }
-  return rows.sort((a, b) => a.rank - b.rank || b.at - a.at).map((r) => r.item);
 }

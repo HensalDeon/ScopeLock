@@ -21,10 +21,19 @@ const MESSAGES: Record<string, string> = {
 const TOO_MANY_REQUESTS =
   "Too many attempts in a short time. Wait a minute, then try again.";
 
+/** The request never reached ScopeLock (offline, flaky network). */
+export const NETWORK_ERROR =
+  "Couldn't reach ScopeLock. Check your connection and try again.";
+
 export function authErrorMessage(
   error: { code?: string; status?: number } | null | undefined,
 ): string {
   if (error?.status === 429) return TOO_MANY_REQUESTS;
   const known = error?.code ? MESSAGES[error.code] : undefined;
-  return known ?? "Something went wrong on our side. Please try again.";
+  if (known) return known;
+  if (error?.status === 0) return NETWORK_ERROR;
+  // An unknown 4xx is about what was entered, not a fault on our side.
+  if (error?.status && error.status >= 400 && error.status < 500)
+    return "That didn't go through. Check what you entered and try again.";
+  return "Something went wrong on our side. Please try again.";
 }

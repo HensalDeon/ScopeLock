@@ -75,7 +75,7 @@ export function Notice({
 
 export function Footer() {
   return (
-    <footer className="flex items-center justify-center gap-2 px-4 py-8 text-xs text-[#6b6f76] print:hidden">
+    <footer className="flex items-center justify-center gap-2 px-4 py-8 text-xs text-[#4f535b] print:hidden">
       <LogoMark className="size-3.5" />
       Sent with ScopeLock
     </footer>

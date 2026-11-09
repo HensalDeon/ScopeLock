@@ -18,7 +18,7 @@ export default function SignInPage() {
         New to ScopeLock?{" "}
         <Link
           href="/sign-up"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
+          className="font-medium text-foreground underline-offset-4 hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
         >
           Create an account
         </Link>

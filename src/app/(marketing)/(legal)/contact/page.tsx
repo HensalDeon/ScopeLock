@@ -16,6 +16,7 @@ export default function ContactPage() {
   return (
     <Container className="py-14 sm:py-20">
       <SectionHeading
+        as="h1"
         eyebrow="Contact"
         title="Talk to a person."
         intro="Questions about your account, billing or a client link? Email us and a real person replies, usually within one business day."
@@ -25,15 +26,21 @@ export default function ContactPage() {
         <div className="grid content-start gap-6">
           <div className="grid gap-1.5">
             <p className="text-sm text-muted-foreground">Support and billing</p>
-            <p className="text-xl font-semibold tracking-tight">
+            <a
+              href={`mailto:${legal.email}`}
+              className="w-fit text-xl font-semibold tracking-tight underline-offset-4 hover:underline"
+            >
               {legal.email}
-            </p>
+            </a>
           </div>
           <div className="grid gap-1.5">
             <p className="text-sm text-muted-foreground">Phone</p>
-            <p className="text-xl font-semibold tracking-tight tabular-nums">
+            <a
+              href={`tel:${legal.phone.replace(/[^\d+]/g, "")}`}
+              className="w-fit text-xl font-semibold tracking-tight tabular-nums underline-offset-4 hover:underline"
+            >
               {legal.phone}
-            </p>
+            </a>
             <p className="text-sm text-muted-foreground">
               {legal.supportHours}
             </p>

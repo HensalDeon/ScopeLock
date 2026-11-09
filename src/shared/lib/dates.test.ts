@@ -26,7 +26,9 @@ describe("dates (India time)", () => {
 
   it("says how long ago, by India calendar days", () => {
     const now = new Date("2026-11-06T18:00:00Z"); // 6 Nov, 11:30 pm IST
-    expect(formatAgo(new Date("2026-11-06T00:00:00Z"), { now })).toBe("today");
+    expect(formatAgo(new Date("2026-11-06T00:00:00Z"), { now })).toBe(
+      "today, 5:30 am",
+    );
     // 5 Nov, 11:00 pm IST is yesterday even though it's < 24h ago.
     expect(formatAgo(new Date("2026-11-05T17:30:00Z"), { now })).toBe(
       "yesterday",

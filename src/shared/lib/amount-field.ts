@@ -17,7 +17,9 @@ export const amountField = z.string().transform((raw, ctx) => {
   } catch {
     ctx.addIssue({
       code: "custom",
-      message: "Use numbers only, like 12000 or 12,000.50.",
+      message: /^[\d,]*\.\d{3,}$/.test(value)
+        ? "Use at most 2 decimals, like 12,000.50."
+        : "Use numbers only, like 12000 or 12,000.50.",
     });
     return z.NEVER;
   }
