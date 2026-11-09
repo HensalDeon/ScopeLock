@@ -70,6 +70,7 @@ export function PaymentActions({
   unlockedBy,
   stateFallback,
   breakdown,
+  primary = false,
 }: {
   item: ScheduleItem;
   projectId: string;
@@ -80,6 +81,8 @@ export function PaymentActions({
   share: { url: string; phone: string | null; message: string } | null;
   /** The timeline step that unlocks this payment ("Design"), if linked. */
   unlockedBy?: string;
+  /** The page's next step: the ask button is the one filled button. */
+  primary?: boolean;
   /** "₹28,800 + ₹5,184 GST: CGST 9% + SGST 9%", before it's asked for. */
   breakdown?: string;
   /** GST with no client state on record: the invoice uses yours. */
@@ -138,7 +141,7 @@ export function PaymentActions({
       <Button
         type="button"
         size="sm"
-        variant="outline"
+        variant={primary ? "default" : "outline"}
         onClick={() => setOpen("ask")}
       >
         {unlockedBy

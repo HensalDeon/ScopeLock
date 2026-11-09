@@ -10,6 +10,7 @@ export {
   listOwedPayments,
 } from "./server/queries";
 export type { PaymentSchedule, ProjectForSchedule } from "./server/schedule";
+export { getProjectMoney, type ProjectMoney } from "./server/project-money";
 // For the portal module (public; workspace comes from the link).
 export {
   portalPayment,

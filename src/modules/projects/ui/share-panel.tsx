@@ -102,9 +102,10 @@ export function SharePanel({
     <SideCard>
       {approved && lastDecision?.decision === "approved" ? (
         <>
-          <SideCardTitle>Approved by {lastDecision.name}</SideCardTitle>
+          <SideCardTitle>{name}&apos;s link</SideCardTitle>
           <p className="text-sm text-muted-foreground tabular-nums">
-            {formatDateTime(lastDecision.at)}
+            Approved by {lastDecision.name}, {formatDateTime(lastDecision.at)}.
+            The link now opens the project page: payments, changes and invoices.
           </p>
           {lastDecision.comment && (
             <blockquote className="border-l-2 border-brand pl-3 text-[15px] leading-relaxed whitespace-pre-line">
@@ -124,7 +125,12 @@ export function SharePanel({
       )}
 
       {url ? (
-        <ShareLink url={url} phone={client.phone} message={message} />
+        <ShareLink
+          url={url}
+          phone={client.phone}
+          message={message}
+          primary={!approved}
+        />
       ) : (
         <SideCardText>
           This link can&apos;t be shown again because the app&apos;s security

@@ -1,8 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
-import type { ScheduleTotals } from "../domain/gst";
 import type { ScheduleItem } from "../domain/payment";
-import { PaymentTotals } from "./payment-totals";
 import { ScheduleRow, type ScheduleRowContext } from "./schedule-row";
 
 export { PaymentStateBadge } from "./payment-state-badge";
@@ -10,19 +8,18 @@ export { PaymentStateBadge } from "./payment-state-badge";
 /**
  * The project's payments once the scope is approved: each milestone (with
  * approved changes added) and separately billed changes, in order, with
- * what the client pays and what to do next. Server component; the actions
+ * what the client pays and what to do next. Totals live in the money strip
+ * at the top of the page. Server component; the actions
  * are client pieces.
  */
 export function PaymentsPanel({
   items,
-  totals,
   methodsReady,
   unlockedBy = {},
   stateFallback = null,
   ...ctx
 }: Omit<ScheduleRowContext, "unlockedBy" | "stateFallback"> & {
   items: ScheduleItem[];
-  totals: ScheduleTotals;
   /** False until at least one payment method is set up. */
   methodsReady: boolean;
   unlockedBy?: ScheduleRowContext["unlockedBy"];
@@ -54,7 +51,6 @@ export function PaymentsPanel({
           />
         ))}
       </ol>
-      <PaymentTotals totals={totals} currency={ctx.currency} />
     </div>
   );
 }

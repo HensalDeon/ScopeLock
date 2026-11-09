@@ -271,7 +271,7 @@ The signature container: a white panel with a hairline border and 11px corners, 
 
 ### Money strip
 
-The overview's four figure cells (Approved work, Received, Due now, Awaiting approval): a mono label, a large tabular figure, and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting.
+Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Approved work, Received, Due now, Awaiting approval. At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in").
 
 ### Client document
 

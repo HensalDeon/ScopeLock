@@ -36,6 +36,22 @@ export function proposalShareMessage(input: {
   return `Hi ${input.clientFirstName}, here's the proposal for ${input.projectName} (${input.total}). You can read it and approve it here:`;
 }
 
+/**
+ * What the WhatsApp message says with the client's link: the proposal while
+ * it waits for an answer, the project page once it's approved.
+ */
+export function shareMessage(input: {
+  status: ProjectStatus;
+  clientFirstName: string;
+  projectName: string;
+  /** Formatted proposal total, e.g. "₹80,000". */
+  total: string;
+}): string {
+  return isScopeApproved(input.status)
+    ? `Hi ${input.clientFirstName}, here's the page for ${input.projectName}: what we agreed, the changes and the payments.`
+    : proposalShareMessage(input);
+}
+
 /** Only drafts can be edited or deleted; after sending, scope is locked. */
 export function isEditable(status: ProjectStatus): boolean {
   return status === "draft";

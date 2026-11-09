@@ -6,6 +6,7 @@ export {
   isEditable,
   isScopeApproved,
   proposalShareMessage,
+  shareMessage,
   PROJECT_STATUS_LABELS,
   type Project,
   type ProjectDecision,
@@ -33,5 +34,6 @@ export {
 export { ProjectHeader } from "./ui/project-header";
 export { ProjectList } from "./ui/project-list";
 export { ProjectSidebar } from "./ui/project-sidebar";
+export { ProjectSkeleton } from "./ui/project-skeleton";
 export { ProjectStatusBadge } from "./ui/project-status-badge";
 export { SharePanel } from "./ui/share-panel";

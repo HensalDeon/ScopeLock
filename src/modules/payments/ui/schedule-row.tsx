@@ -1,4 +1,5 @@
 import type { Route } from "next";
+import type { ComponentProps } from "react";
 import Link from "next/link";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
@@ -77,31 +78,40 @@ export function ScheduleRow({
         </p>
       </div>
       <div className="sm:pl-[2.5rem]">
-        <PaymentActions
-          item={item}
-          projectId={ctx.projectId}
-          amount={money(item.payable)}
-          breakdown={
-            item.taxSplit
-              ? `${money(item.total)} + ${money(item.tax)} GST: ${item.taxSplit}`
-              : undefined
-          }
-          clientFirstName={ctx.client.firstName}
-          stateFallback={ctx.stateFallback}
-          unlockedBy={
-            item.milestoneId ? ctx.unlockedBy[item.milestoneId] : undefined
-          }
-          share={
-            ctx.portalUrl && item.payment
-              ? {
-                  url: `${ctx.portalUrl}/pay/${item.payment.id}`,
-                  phone: ctx.client.phone,
-                  message: `Hi ${ctx.client.firstName}, the ${item.label} payment for ${ctx.projectName} is due (${money(item.payable)}). You can pay by UPI or bank transfer here:`,
-                }
-              : null
-          }
-        />
+        <PaymentActions {...paymentActionProps(item, ctx)} />
       </div>
     </li>
   );
+}
+
+/** The actions for one payment, shared by its row and the next-step strip. */
+export function paymentActionProps(
+  item: ScheduleItem,
+  ctx: ScheduleRowContext,
+): ComponentProps<typeof PaymentActions> {
+  const money = (amount: Minor) => formatMoney(amount, ctx.currency);
+  return {
+    item,
+    projectId: ctx.projectId,
+    amount: money(item.payable),
+    breakdown: item.taxSplit
+      ? `${money(item.total)} + ${money(item.tax)} GST: ${item.taxSplit}`
+      : undefined,
+    clientFirstName: ctx.client.firstName,
+    stateFallback: ctx.stateFallback,
+    unlockedBy: item.milestoneId ? ctx.unlockedBy[item.milestoneId] : undefined,
+    share:
+      ctx.portalUrl && item.payment
+        ? {
+            url: `${ctx.portalUrl}/pay/${item.payment.id}`,
+            phone: ctx.client.phone,
+            message: payReminder(item, ctx),
+          }
+        : null,
+  };
+}
+
+/** WhatsApp text for a payment that's due (the link goes after it). */
+export function payReminder(item: ScheduleItem, ctx: ScheduleRowContext) {
+  return `Hi ${ctx.client.firstName}, the ${item.label} payment for ${ctx.projectName} is due (${formatMoney(item.payable, ctx.currency)}). You can pay by UPI or bank transfer here:`;
 }

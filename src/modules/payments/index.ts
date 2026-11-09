@@ -26,4 +26,6 @@ export {
 export type { ScheduleTotals } from "./domain/gst";
 export { PaymentMethodsForm } from "./ui/methods-form";
 export { PaymentStateBadge, PaymentsPanel } from "./ui/payments-panel";
+export { ProjectMoneyStrip } from "./ui/project-money-strip";
+export type { ScheduleRowContext } from "./ui/schedule-row";
 export { HowToPay } from "./ui/how-to-pay";

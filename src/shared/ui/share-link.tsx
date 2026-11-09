@@ -15,10 +15,13 @@ export function ShareLink({
   url,
   phone,
   message,
+  primary = true,
 }: {
   url: string;
   phone: string | null;
   message: string;
+  /** False when sending the link isn't the page's main action. */
+  primary?: boolean;
 }) {
   const uid = useId();
   const [copied, setCopied] = useState(false);
@@ -61,7 +64,7 @@ export function ShareLink({
           {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
           {copied ? "Copied" : "Copy link"}
         </Button>
-        <Button asChild>
+        <Button asChild variant={primary ? "default" : "outline"}>
           <a href={whatsapp} target="_blank" rel="noopener noreferrer">
             <MessageCircle aria-hidden />
             WhatsApp
