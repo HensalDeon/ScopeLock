@@ -2,6 +2,7 @@ import "server-only";
 import type { ClientSession, ObjectId } from "mongodb";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 import { minor } from "@/shared/lib/money";
+import { containsPattern } from "@/shared/lib/search";
 import type { Project } from "../domain/project";
 
 import {
@@ -13,14 +14,34 @@ import {
 
 export type { PortalLink, ProjectData, SentProposal } from "./project-docs";
 
+type ProjectFilter = {
+  clientId?: ObjectId;
+  /** Project name contains it, or the project is for one of `clientIds`. */
+  search?: { text: string; clientIds: ObjectId[] } | null;
+};
+
+function projectQuery({ clientId, search }: ProjectFilter) {
+  const base = clientId ? { clientId } : {};
+  if (!search) return base;
+  return {
+    ...base,
+    $or: [
+      { name: containsPattern(search.text) },
+      ...(search.clientIds.length
+        ? [{ clientId: { $in: search.clientIds } }]
+        : []),
+    ],
+  };
+}
+
 /** Newest activity first, one page at a time. */
 export async function findProjects(
   workspaceId: string,
-  filter: { clientId?: ObjectId } = {},
+  filter: ProjectFilter = {},
   window: { skip: number; limit: number } = { skip: 0, limit: 100 },
 ): Promise<Project[]> {
   const docs = await projects(workspaceId)
-    .find(filter.clientId ? { clientId: filter.clientId } : {}, {
+    .find(projectQuery(filter), {
       sort: { updatedAt: -1, _id: -1 },
       skip: window.skip,
       limit: window.limit,
@@ -107,11 +128,9 @@ export async function findProject(
 
 export async function countProjects(
   workspaceId: string,
-  filter: { clientId?: ObjectId } = {},
+  filter: ProjectFilter = {},
 ): Promise<number> {
-  return projects(workspaceId).countDocuments(
-    filter.clientId ? { clientId: filter.clientId } : {},
-  );
+  return projects(workspaceId).countDocuments(projectQuery(filter));
 }
 
 /** How many projects each client has (for the clients list). */

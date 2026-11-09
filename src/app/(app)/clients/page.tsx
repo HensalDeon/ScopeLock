@@ -9,10 +9,12 @@ import {
 } from "@/modules/clients/server";
 import { countProjectsByClient } from "@/modules/projects/server";
 import { parsePage } from "@/shared/lib/pagination";
+import { listHref, parseSearch } from "@/shared/lib/search";
 import { Button } from "@/shared/ui/button";
 import { EmptyState, ListSkeleton } from "@/shared/ui/list-states";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 import { Pagination } from "@/shared/ui/pagination";
+import { SearchBox } from "@/shared/ui/search-box";
 
 export const metadata: Metadata = { title: "Clients" };
 
@@ -45,14 +47,29 @@ async function Clients({
 }) {
   const query = await searchParams;
   const archived = query.view === "archived";
+  const search = parseSearch(query.q);
   const [page, archivedCount, projectCounts] = await Promise.all([
-    listClientsPage({ archived, page: parsePage(query.page) }),
+    listClientsPage({ archived, page: parsePage(query.page), search }),
     archived ? Promise.resolve(0) : countArchivedClients(),
     countProjectsByClient(),
   ]);
-  const base = archived ? "/clients?view=archived" : "/clients";
+  const view = archived ? "archived" : null;
   const href = (n: number) =>
-    (n === 1 ? base : `${base}${archived ? "&" : "?"}page=${n}`) as Route;
+    listHref("/clients", { view, q: search, page: n }) as Route;
+  const searchBox = (search || page.total > 0) && (
+    <SearchBox
+      action="/clients"
+      value={search}
+      label={archived ? "Search archived clients" : "Search clients"}
+      placeholder="Name, company, email or phone"
+      hidden={archived ? { view: "archived" } : {}}
+    />
+  );
+  const noMatch = search && page.total === 0 && (
+    <EmptyState title={`No clients match “${search}”`}>
+      Try part of their name, company, email or phone number.
+    </EmptyState>
+  );
 
   if (archived) {
     return (
@@ -66,13 +83,16 @@ async function Clients({
             Back to active clients
           </Link>
         </div>
+        {searchBox}
         {page.total > 0 ? (
           <ClientList clients={page.items} projectCounts={projectCounts} />
         ) : (
-          <EmptyState title="No archived clients">
-            Clients you archive are kept here with their history, and can be
-            restored from their page.
-          </EmptyState>
+          noMatch || (
+            <EmptyState title="No archived clients">
+              Clients you archive are kept here with their history, and can be
+              restored from their page.
+            </EmptyState>
+          )
         )}
         <Pagination page={page} noun="archived clients" href={href} />
       </div>
@@ -81,21 +101,25 @@ async function Clients({
 
   return (
     <div className="grid gap-4">
+      {searchBox}
       {page.total > 0 ? (
         <ClientList clients={page.items} projectCounts={projectCounts} />
       ) : (
-        <EmptyState
-          title="No clients yet"
-          action={
-            <Button asChild>
-              <Link href="/clients/new">Add your first client</Link>
-            </Button>
-          }
-        >
-          Add the person who approves your work, like Rahul Mehta from Mehta
-          Interiors. Their projects, change requests and payments will appear
-          under their name.
-        </EmptyState>
+        noMatch || (
+          <EmptyState
+            title="No clients yet"
+            action={
+              // The header's Add client is the one filled button.
+              <Button asChild variant="outline">
+                <Link href="/clients/new">Add your first client</Link>
+              </Button>
+            }
+          >
+            Add the person who approves your work, like Rahul Mehta from Mehta
+            Interiors. Their projects, change requests and payments will appear
+            under their name.
+          </EmptyState>
+        )
       )}
       <Pagination page={page} noun="clients" href={href} />
       {archivedCount > 0 && (

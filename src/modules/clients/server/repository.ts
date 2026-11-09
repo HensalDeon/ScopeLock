@@ -7,6 +7,7 @@ import {
   type Client,
   type ClientInput,
 } from "../domain/client";
+import { containsPattern, phoneDigits } from "@/shared/lib/search";
 
 type ClientDoc = WorkspaceOwned &
   ClientInput & {
@@ -37,32 +38,64 @@ function toClient(doc: ClientDoc): Client {
   };
 }
 
+type ClientFilter = { archived?: boolean; search?: string | null };
+
+/** Active or archived; with a search, a name, company, email or phone match. */
+function clientQuery({ archived = false, search = null }: ClientFilter) {
+  const base = { archivedAt: archived ? { $ne: null } : null };
+  if (!search) return base;
+  const text = containsPattern(search);
+  const digits = phoneDigits(search);
+  return {
+    ...base,
+    $or: [
+      { name: text },
+      { company: text },
+      { email: text },
+      ...(digits ? [{ phone: { $regex: digits } }] : []),
+    ],
+  };
+}
+
 /** A–Z by name, one window at a time. */
 export async function findClients(
   workspaceId: string,
-  { archived = false }: { archived?: boolean } = {},
+  filter: ClientFilter = {},
   window: { skip: number; limit: number } = { skip: 0, limit: 500 },
 ): Promise<Client[]> {
   const docs = await clients(workspaceId)
-    .find(
-      { archivedAt: archived ? { $ne: null } : null },
-      {
-        sort: { nameLower: 1, _id: 1 },
-        skip: window.skip,
-        limit: window.limit,
-      },
-    )
+    .find(clientQuery(filter), {
+      sort: { nameLower: 1, _id: 1 },
+      skip: window.skip,
+      limit: window.limit,
+    })
     .toArray();
   return docs.map(toClient);
 }
 
 export async function countClients(
   workspaceId: string,
-  { archived = false }: { archived?: boolean } = {},
+  filter: ClientFilter = {},
 ): Promise<number> {
-  return clients(workspaceId).countDocuments({
-    archivedAt: archived ? { $ne: null } : null,
-  });
+  return clients(workspaceId).countDocuments(clientQuery(filter));
+}
+
+/** Ids of clients (archived too) whose name or company matches. */
+export async function findClientIdsMatching(
+  workspaceId: string,
+  search: string,
+): Promise<ObjectId[]> {
+  const text = containsPattern(search);
+  const docs = await clients(workspaceId)
+    .find(
+      { $or: [{ name: text }, { company: text }] },
+      {
+        projection: { _id: 1 },
+        limit: 200,
+      },
+    )
+    .toArray();
+  return docs.map((d) => d._id);
 }
 
 export async function findClient(

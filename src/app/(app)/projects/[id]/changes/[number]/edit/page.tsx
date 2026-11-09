@@ -1,9 +1,15 @@
 import type { Metadata, Route } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { ChangeForm, changeLabel, changeValuesFrom } from "@/modules/changes";
-import { getChangeOrNotFound } from "@/modules/changes/server";
+import {
+  billingContext,
+  ChangeForm,
+  changeLabel,
+  changeValuesFrom,
+} from "@/modules/changes";
+import { getChangeOrNotFound, listChanges } from "@/modules/changes/server";
 import { getGstRule } from "@/modules/invoices/server";
+import { getProjectPayments } from "@/modules/payments/server";
 import { getProjectOrNotFound } from "@/modules/projects/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
@@ -26,13 +32,15 @@ async function EditChange({
   params,
 }: Pick<PageProps<"/projects/[id]/changes/[number]/edit">, "params">) {
   const { id, number } = await params;
-  const [project, { change }, gstFor] = await Promise.all([
+  const [project, { change }, gstFor, changes] = await Promise.all([
     getProjectOrNotFound(id),
     getChangeOrNotFound(id, number),
     getGstRule(),
+    listChanges(id),
   ]);
   const page = `/projects/${project.id}/changes/${change.number}` as Route;
   if (change.status !== "draft") redirect(page);
+  const { payments } = await getProjectPayments(project, changes);
 
   return (
     <div className="grid gap-2">
@@ -42,6 +50,7 @@ async function EditChange({
       <PageHeader title={`Edit ${changeLabel(change.number)}`} />
       <ChangeForm
         gstPercent={gstFor(project.client)}
+        billing={billingContext(project.milestones, changes, payments)}
         mode="edit"
         projectId={project.id}
         number={change.number}

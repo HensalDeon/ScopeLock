@@ -30,6 +30,7 @@ import {
 } from "../domain/change-request";
 import { type ChangeFormValues } from "../domain/form-values";
 import { BillingChoice } from "./billing-choice";
+import type { BillingContext } from "../domain/billing";
 import { ChangeLinesEditor, toChangeRows } from "./change-lines-editor";
 import {
   createChange,
@@ -50,7 +51,10 @@ export function ChangeForm({
   defaults,
   cancelHref,
   gstPercent = null,
+  billing = null,
 }: {
+  /** The schedule as it stands, for amounts in "When it's paid". */
+  billing?: BillingContext | null;
   /** GST this client's invoices add (18), or null. */
   gstPercent?: number | null;
   mode: "create" | "edit";
@@ -192,6 +196,9 @@ export function ChangeForm({
         setMilestoneId={(id) => set("milestoneId", id)}
         milestones={milestones}
         form={form}
+        total={total}
+        currency={currency}
+        context={billing}
       />
 
       <FormSection

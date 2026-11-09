@@ -230,3 +230,83 @@ export function placementOf(
     change.placement ?? placeChange(change.total, change.billing, milestones)
   );
 }
+
+/** What the "When it's paid" choices need to show real amounts. */
+export type BillingContext = {
+  milestones: MilestoneRef[];
+  /** Each payment as it stands now (base + approved changes), before GST. */
+  current: Record<string, Minor>;
+  /** Payments already asked for or received: nothing more is added to them. */
+  closed: Record<string, "asked" | "received">;
+};
+
+/**
+ * The schedule as it stands, from the project's payments and approved
+ * changes. `payments` are the requests made so far (key = milestone id).
+ */
+export function billingContext(
+  milestones: readonly MilestoneRef[],
+  changes: readonly Pick<
+    ChangeRequest,
+    "number" | "total" | "billing" | "status" | "placement"
+  >[],
+  payments: readonly { key: string; status: string }[],
+): BillingContext {
+  const closed: BillingContext["closed"] = {};
+  for (const p of payments) {
+    if (p.status === "confirmed") closed[p.key] = "received";
+    else if (p.status === "due" || p.status === "client_reported")
+      closed[p.key] = "asked";
+  }
+  const current: Record<string, Minor> = Object.fromEntries(
+    milestones.map((m) => [m.id, m.baseAmount]),
+  );
+  for (const change of changes.filter((c) => c.status === "approved")) {
+    for (const part of placementOf(change, milestones)) {
+      if (part.milestoneId && part.milestoneId in current)
+        current[part.milestoneId] = sum([
+          current[part.milestoneId] ?? minor(0),
+          part.amount,
+        ]);
+    }
+  }
+  return { milestones: [...milestones], current, closed };
+}
+
+/**
+ * One choice in words with this change's amount, using the same rule as
+ * approval (placeChange): "Goes on “Advance”: ₹9,600 becomes ₹21,600."
+ * Null when there's no amount yet (the generic wording shows instead).
+ */
+export function billingPreview(
+  total: Minor,
+  billing: ChangeBilling,
+  ctx: BillingContext,
+  money: (amount: Minor) => string,
+): string | null {
+  if (total <= 0) return null;
+  if (billing.option === "milestone" && !billing.milestoneId) return null;
+  const parts = placeChange(
+    total,
+    billing,
+    ctx.milestones,
+    Object.keys(ctx.closed),
+  );
+  const name = (id: string) =>
+    ctx.milestones.find((m) => m.id === id)?.name ?? "";
+  const [only] = parts;
+  if (parts.length === 1 && only) {
+    if (only.milestoneId === null)
+      return billing.option === "pay_now"
+        ? `${money(total)}, due once your client approves it.`
+        : `Every payment here has been asked for, so it becomes a separate payment of ${money(total)}.`;
+    const now = ctx.current[only.milestoneId] ?? minor(0);
+    return `Goes on “${name(only.milestoneId)}”: ${money(now)} becomes ${money(sum([now, only.amount]))}.`;
+  }
+  return parts
+    .map(
+      (p) =>
+        `“${p.milestoneId ? name(p.milestoneId) : "Separate"}” +${money(p.amount)}`,
+    )
+    .join(" · ");
+}

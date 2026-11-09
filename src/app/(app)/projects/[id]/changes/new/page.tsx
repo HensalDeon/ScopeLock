@@ -2,6 +2,7 @@ import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import {
+  billingContext,
   blankChangeValues,
   ChangeForm,
   changeLabel,
@@ -10,6 +11,7 @@ import {
 } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
 import { getGstRule } from "@/modules/invoices/server";
+import { getProjectPayments } from "@/modules/payments/server";
 import { getProjectOrNotFound } from "@/modules/projects/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
@@ -57,13 +59,13 @@ async function NewChange({
     );
   }
 
+  const changes = await listChanges(project.id);
+  const { payments } = await getProjectPayments(project, changes);
   // "Turn into a change request" (?addon=) or "Send a revised one" (?from=).
   const addon = project.proposal.addons.find((a) => a.id === query.addon);
   const from =
     typeof query.from === "string"
-      ? (await listChanges(project.id)).find(
-          (c) => String(c.number) === query.from,
-        )
+      ? changes.find((c) => String(c.number) === query.from)
       : undefined;
   const defaults = from
     ? changeValuesFrom(from, { revise: true })
@@ -104,6 +106,7 @@ async function NewChange({
           defaults={defaults}
           cancelHref={back}
           gstPercent={gstFor(project.client)}
+          billing={billingContext(project.milestones, changes, payments)}
         />
       </FreshOnEachVisit>
     </div>

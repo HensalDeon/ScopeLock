@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
   billingChoices,
+  billingContext,
+  billingPreview,
   billingSummary,
   changeTotals,
   placeChange,
@@ -18,6 +20,7 @@ import {
   changeInputSchema,
   changeLabel,
   parseChangeNumber,
+  type BillingOption,
 } from "./change-request";
 
 const milestones: MilestoneRef[] = [
@@ -290,5 +293,48 @@ describe("billingChoices", () => {
       "pay_now",
     ]);
     expect(many[0]?.detail).toBe("Goes on “Before launch”.");
+  });
+});
+
+describe("billingPreview", () => {
+  const ms = [
+    { id: "a", name: "Advance", baseAmount: minor(960_000), order: 0 },
+    { id: "b", name: "Design approved", baseAmount: minor(960_000), order: 1 },
+    { id: "c", name: "Before launch", baseAmount: minor(1_280_000), order: 2 },
+  ];
+  const rupees = (n: number) => `₹${(n / 100).toLocaleString("en-IN")}`;
+  const ctx = billingContext(ms, [], [{ key: "a", status: "confirmed" }]);
+  const preview = (option: BillingOption, milestoneId: string | null = null) =>
+    billingPreview(minor(1_200_000), { option, milestoneId }, ctx, rupees);
+
+  it("says where the money lands, skipping payments already asked for", () => {
+    expect(ctx.closed).toEqual({ a: "received" });
+    expect(preview("next_milestone")).toBe(
+      "Goes on “Design approved”: ₹9,600 becomes ₹21,600.",
+    );
+    expect(preview("final")).toBe(
+      "Goes on “Before launch”: ₹12,800 becomes ₹24,800.",
+    );
+    expect(preview("split")).toMatch(
+      /^“Design approved” \+₹.* · “Before launch” \+₹/,
+    );
+    expect(preview("pay_now")).toBe(
+      "₹12,000, due once your client approves it.",
+    );
+  });
+
+  it("falls back to a separate payment when the chosen one is closed", () => {
+    expect(preview("milestone", "a")).toMatch(
+      /becomes a separate payment of ₹12,000/,
+    );
+    expect(preview("milestone", null)).toBeNull();
+    expect(
+      billingPreview(
+        minor(0),
+        { option: "final", milestoneId: null },
+        ctx,
+        rupees,
+      ),
+    ).toBeNull();
   });
 });

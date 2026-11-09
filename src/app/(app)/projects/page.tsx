@@ -6,9 +6,11 @@ import { ProjectList } from "@/modules/projects";
 import { listProjects } from "@/modules/projects/server";
 import { Button } from "@/shared/ui/button";
 import { parsePage } from "@/shared/lib/pagination";
+import { listHref, parseSearch } from "@/shared/lib/search";
 import { EmptyState, ListSkeleton } from "@/shared/ui/list-states";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 import { Pagination } from "@/shared/ui/pagination";
+import { SearchBox } from "@/shared/ui/search-box";
 
 export const metadata: Metadata = { title: "Projects" };
 
@@ -39,7 +41,27 @@ async function Projects({
 }: {
   searchParams: PageProps<"/projects">["searchParams"];
 }) {
-  const page = await listProjects(parsePage((await searchParams).page));
+  const query = await searchParams;
+  const search = parseSearch(query.q);
+  const page = await listProjects(parsePage(query.page), search);
+  const searchBox = (
+    <SearchBox
+      action="/projects"
+      value={search}
+      label="Search projects"
+      placeholder="Project or client name"
+    />
+  );
+  if (search && page.total === 0) {
+    return (
+      <div className="grid gap-4">
+        {searchBox}
+        <EmptyState title={`No projects match “${search}”`}>
+          Try part of the project&apos;s name or your client&apos;s name.
+        </EmptyState>
+      </div>
+    );
+  }
   if (page.total === 0) {
     return (
       <EmptyState
@@ -59,11 +81,12 @@ async function Projects({
   }
   return (
     <div className="grid gap-4">
+      {searchBox}
       <ProjectList projects={page.items} />
       <Pagination
         page={page}
         noun="projects"
-        href={(n) => (n === 1 ? "/projects" : (`/projects?page=${n}` as Route))}
+        href={(n) => listHref("/projects", { q: search, page: n }) as Route}
       />
     </div>
   );

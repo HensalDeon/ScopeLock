@@ -1,4 +1,5 @@
 import "server-only";
+import type { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
@@ -22,10 +23,15 @@ export async function listClients(): Promise<Client[]> {
 export async function listClientsPage(options: {
   archived?: boolean;
   page: number;
+  /** From parseSearch: name, company, email or phone. */
+  search?: string | null;
 }): Promise<Page<Client>> {
   const { workspace } = await requireWorkspace();
   const ws = workspace.workspaceId;
-  const filter = { archived: options.archived ?? false };
+  const filter = {
+    archived: options.archived ?? false,
+    search: options.search ?? null,
+  };
   return paginate(
     options.page,
     () => repo.countClients(ws, filter),
@@ -66,4 +72,10 @@ export async function getClientsById(
 /** For pages: the client, or the 404 page. */
 export async function getClientOrNotFound(id: string): Promise<Client> {
   return (await findClient(id)) ?? notFound();
+}
+
+/** Ids of clients whose name or company matches (for project search). */
+export async function searchClientIds(search: string): Promise<ObjectId[]> {
+  const { workspace } = await requireWorkspace();
+  return repo.findClientIdsMatching(workspace.workspaceId, search);
 }

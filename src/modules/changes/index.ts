@@ -18,7 +18,9 @@ export {
   type Placement,
 } from "./domain/change-request";
 export {
+  billingContext,
   billingSummary,
+  type BillingContext,
   changeSummary,
   placeChange,
   placementOf,
