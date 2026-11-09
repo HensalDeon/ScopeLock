@@ -9,8 +9,8 @@ import type {
 import {
   getDocumentImages,
   getDocumentSettings,
+  termsForTax,
 } from "@/modules/documents/server";
-import { termsForTax } from "@/modules/documents";
 import type { TaxCase } from "@/modules/invoices";
 import { documentTax } from "@/modules/invoices/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
