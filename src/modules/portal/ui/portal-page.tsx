@@ -56,7 +56,13 @@ export async function PortalPage({ token }: { token: string }) {
     <>
       <PortalHeader
         title={`Proposal from ${business}`}
-        detail={`${data.reference} · ${money(headline)}`}
+        detail={`${data.title} · ${money(headline)} ${
+          state !== "approved"
+            ? "proposal"
+            : gstTax > 0
+              ? "project total with GST"
+              : "project total"
+        }`}
       >
         {state === "awaiting" && (
           <a
@@ -66,7 +72,7 @@ export async function PortalPage({ token }: { token: string }) {
             Approve or ask for changes
           </a>
         )}
-        <PrintButton variant="outline" />
+        <PrintButton label="Save proposal PDF" variant="outline" />
       </PortalHeader>
 
       {state === "approved" && decision && (
@@ -193,6 +199,7 @@ export async function PortalPage({ token }: { token: string }) {
         )}
 
         <ClassicDocument
+          note={view.gstNote}
           data={data}
           acceptance={
             state === "approved" && decision
@@ -201,6 +208,7 @@ export async function PortalPage({ token }: { token: string }) {
                   name: decision.name,
                   email: null,
                   at: decision.at,
+                  comment: decision.comment,
                 }
               : null
           }
@@ -208,11 +216,6 @@ export async function PortalPage({ token }: { token: string }) {
           images={view.images}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
-        {view.gstNote && (
-          <p className="mx-auto mt-4 max-w-[210mm] rounded-md bg-white/80 px-4 py-3 text-sm text-pretty text-[#3a3d44]">
-            {view.gstNote}
-          </p>
-        )}
 
         {state === "awaiting" && (
           <section

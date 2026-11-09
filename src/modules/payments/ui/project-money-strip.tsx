@@ -2,7 +2,10 @@ import { Check } from "lucide-react";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
+import Link from "next/link";
+import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
+import { TOUCH, TOUCH_LINK } from "@/shared/ui/touch";
 import type { ScheduleTotals } from "../domain/gst";
 import {
   isReminder,
@@ -28,12 +31,15 @@ export function ProjectMoneyStrip({
   totals,
   ctx,
   now,
+  setup,
 }: {
   items: ScheduleItem[];
   totals: ScheduleTotals;
   ctx: ScheduleRowContext;
   /** When the data was read (from the server query). */
   now: Date;
+  /** Asking issues an invoice that can't change: what's set up first. */
+  setup: { methodsReady: boolean; invoicingReady: boolean };
 }) {
   const money = (amount: Minor) => formatMoney(amount, ctx.currency);
   const shown = totals.gst ?? totals;
@@ -47,10 +53,14 @@ export function ProjectMoneyStrip({
       note:
         shown.due > 0
           ? `Asked, waiting for ${ctx.client.firstName}`
-          : "Nothing asked yet",
+          : "Nothing waiting to be paid",
       waiting: shown.due > 0,
     },
-    { label: "Still to ask for", value: ask, note: "Not asked yet" },
+    {
+      label: "Still to ask for",
+      value: ask,
+      note: ask > 0 ? "Not asked yet" : "Every payment has been asked for",
+    },
     {
       label: totals.gst ? "Total with GST" : "Total",
       value: shown.total,
@@ -92,7 +102,17 @@ export function ProjectMoneyStrip({
           </div>
         ))}
       </dl>
-      {step && <NextStepRow step={step} ctx={ctx} money={money} now={now} />}
+      {step && (
+        <NextStepRow
+          step={step}
+          ctx={ctx}
+          money={money}
+          now={now}
+          setup={setup}
+          dueCount={items.filter((i) => i.state === "due").length}
+          dueTotal={shown.due}
+        />
+      )}
     </section>
   );
 }
@@ -102,11 +122,17 @@ function NextStepRow({
   ctx,
   money,
   now,
+  setup,
+  dueCount,
+  dueTotal,
 }: {
   step: NextStep;
   ctx: ScheduleRowContext;
   money: (amount: Minor) => string;
   now: Date;
+  setup: { methodsReady: boolean; invoicingReady: boolean };
+  dueCount: number;
+  dueTotal: Minor;
 }) {
   const name = ctx.client.firstName;
   const row = "grid gap-3 border-t bg-canvas px-4 py-4 sm:px-5";
@@ -148,13 +174,31 @@ function NextStepRow({
       >
         <div className="grid gap-0.5">
           <p className="text-sm font-medium text-pretty">
-            Waiting for {name} to pay: {item.label},{" "}
-            <span className="tabular-nums">{money(item.payable)}</span>.
+            {dueCount > 1 ? (
+              <>
+                Waiting for {name} to pay {dueCount} payments,{" "}
+                <span className="tabular-nums">{money(dueTotal)}</span>. Oldest:{" "}
+                {item.label},{" "}
+                <span className="tabular-nums">{money(item.payable)}</span>.
+              </>
+            ) : (
+              <>
+                Waiting for {name} to pay: {item.label},{" "}
+                <span className="tabular-nums">{money(item.payable)}</span>.
+              </>
+            )}
           </p>
           {payment && (
             <p className="text-sm text-pretty text-muted-foreground tabular-nums">
               Asked {formatDateTime(payment.requestedAt)}
-              {payment.invoice ? ` with invoice ${payment.invoice.number}` : ""}
+              {payment.invoice && (
+                <>
+                  {" with invoice "}
+                  <span className="whitespace-nowrap">
+                    {payment.invoice.number}
+                  </span>
+                </>
+              )}
               {ctx.client.email ? ` · emailed to ${ctx.client.email}` : ""}
             </p>
           )}
@@ -188,13 +232,46 @@ function NextStepRow({
         "sm:flex sm:flex-wrap sm:items-center sm:justify-between",
       )}
     >
-      <p className="text-sm font-medium text-pretty">
-        Next payment: {item.label},{" "}
-        <span className="tabular-nums">{money(item.payable)}</span>.
-        {unlockedBy ? ` Ask once ${unlockedBy} is done.` : ""}
-      </p>
+      <div className="grid gap-0.5">
+        <p className="text-sm font-medium text-pretty">
+          Next payment: {item.label},{" "}
+          <span className="tabular-nums">{money(item.payable)}</span>.
+          {setup.methodsReady && unlockedBy
+            ? ` Ask once ${unlockedBy} is done.`
+            : ""}
+        </p>
+        {/* Asking issues an invoice that can't change: set up first. */}
+        {!setup.methodsReady ? (
+          <p className="text-sm text-pretty text-muted-foreground">
+            Before you ask {name}, add how you get paid (UPI, bank or a payment
+            link) so the pay page and invoice can show it.
+          </p>
+        ) : (
+          !setup.invoicingReady && (
+            <p className="text-sm text-pretty text-muted-foreground">
+              Invoices will show just your business name.{" "}
+              <Link
+                href="/settings/invoicing"
+                className={cn(
+                  "font-medium text-foreground underline underline-offset-4",
+                  TOUCH_LINK,
+                )}
+              >
+                Add your address or GSTIN
+              </Link>{" "}
+              first if you need them: issued invoices can&apos;t be changed.
+            </p>
+          )
+        )}
+      </div>
       <div className="justify-self-start">
-        <PaymentActions {...paymentActionProps(item, ctx)} primary />
+        {setup.methodsReady ? (
+          <PaymentActions {...paymentActionProps(item, ctx)} primary />
+        ) : (
+          <Button asChild className={TOUCH}>
+            <Link href="/settings/payments">Add payment details</Link>
+          </Button>
+        )}
       </div>
     </div>
   );

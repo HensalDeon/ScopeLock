@@ -107,6 +107,7 @@ export async function PortalChangePage({
         <ChangeOrderDocument
           data={data}
           approved={change.status === "approved"}
+          withdrawnBy={change.status === "withdrawn" ? businessName : null}
           acceptance={
             decision
               ? {
@@ -115,6 +116,7 @@ export async function PortalChangePage({
                   name: decision.name,
                   email: null,
                   at: decision.at,
+                  comment: decision.comment,
                 }
               : null
           }

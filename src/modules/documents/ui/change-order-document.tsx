@@ -24,7 +24,10 @@ export function ChangeOrderDocument({
   approved = false,
   titleAs: Title = "h1",
   acceptance = null,
+  withdrawnBy = null,
 }: {
+  /** Cancelled by the freelancer: who, for the band on the document. */
+  withdrawnBy?: string | null;
   /** The client's answer, printed before the footer. */
   acceptance?: DocumentAcceptance | null;
   /** "h2" when the page around it already has an h1 (the app's CR page). */
@@ -146,6 +149,20 @@ export function ChangeOrderDocument({
       </header>
 
       <div className="grid gap-8 px-6 py-8 @xl:px-12 @xl:py-10">
+        {withdrawnBy && (
+          <div
+            role="note"
+            className="grid gap-1 border-2 border-[#c8372d] px-4 py-3 text-[#9f2a22]"
+          >
+            <p className="text-lg font-semibold tracking-[0.2em] uppercase">
+              Cancelled
+            </p>
+            <p className="text-[0.85rem]">
+              {withdrawnBy} withdrew this change request. Nothing was added to
+              the project.
+            </p>
+          </div>
+        )}
         {data.description && (
           <div className="grid max-w-[68ch] gap-3 text-[0.95rem] leading-relaxed text-pretty text-[#3a3d44]">
             {data.description

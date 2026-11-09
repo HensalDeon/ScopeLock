@@ -38,7 +38,7 @@ describe("gstChangeNote", () => {
         now: { gstPercent: null, taxCase: "export" },
       }),
     ).toBe(
-      "GST on this proposal was worked out from Rahul Mehta's details when it was sent. Invoices follow the current details, so no GST is charged, as an export of services. The agreed price, ₹80,000, hasn't changed.",
+      "Rahul Mehta's details changed after this proposal was sent. Invoices issued from now on follow the new details: no GST, as an export of services. Invoices already issued keep their GST. The agreed price, ₹80,000, hasn't changed.",
     );
   });
   it("says nothing when nothing changed, or for older proposals", () => {

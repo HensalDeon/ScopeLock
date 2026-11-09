@@ -209,6 +209,8 @@ export type PortalPaymentView =
       businessName: string;
       projectTitle: string;
       reference: string;
+      /** Its invoice is an export: no GST, zero-rated under LUT. */
+      isExport: boolean;
     } & PortalPayment);
 
 /** One payment request on the portal: /c/[token]/pay/[id]. */
@@ -227,8 +229,15 @@ async function loadPortalPayment(
     opened.sent.data.reference,
   );
   if (!found) notFound();
+  const invoiceId = found.payment.invoice
+    ? parseObjectId(found.payment.invoice.id)
+    : null;
+  const invoice = invoiceId
+    ? await findInvoice(opened.workspaceId, invoiceId, opened.projectId)
+    : null;
   return {
     state: "ok",
+    isExport: invoice?.tax.kind === "export",
     businessName: opened.sent.data.business.name,
     projectTitle: opened.sent.data.title,
     reference: opened.sent.data.reference,
@@ -291,8 +300,18 @@ export async function portalTitle(
     | { kind: "proposal" }
     | { kind: "change"; number: string }
     | { kind: "invoice"; invoiceId: string }
-    | { kind: "statement" },
+    | { kind: "statement" }
+    | { kind: "payment"; paymentId: string },
 ): Promise<string | null> {
+  if (page.kind === "payment") {
+    const view = await getPortalPayment(token, page.paymentId);
+    return view.state === "limited"
+      ? null
+      : documentTitle(
+          `${view.payment.label} payment ${formatMoney(view.payment.payable, view.payment.currency)}`,
+          view.businessName,
+        );
+  }
   if (page.kind === "statement") {
     const view = await getPortalStatement(token);
     return view.state === "limited"
@@ -327,7 +346,7 @@ export async function portalTitle(
     ? null
     : documentTitle(
         `${view.invoice.title} ${view.invoice.number}`,
-        view.invoice.seller.name,
+        view.invoice.seller.company ?? view.invoice.seller.name,
       );
 }
 

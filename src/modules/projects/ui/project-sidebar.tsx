@@ -62,9 +62,18 @@ export function ProjectSidebar({
         </SideCard>
       )}
       <p className="px-1 text-xs text-muted-foreground">
-        Created {formatDateTime(project.createdAt)}
-        {project.updatedAt.getTime() !== project.createdAt.getTime() &&
-          ` · Updated ${formatDateTime(project.updatedAt)}`}
+        {/* Each date stays on one line ("2:04 am" never splits). */}
+        <span className="whitespace-nowrap">
+          Created {formatDateTime(project.createdAt)}
+        </span>
+        {project.updatedAt.getTime() !== project.createdAt.getTime() && (
+          <>
+            {" · "}
+            <span className="whitespace-nowrap">
+              Updated {formatDateTime(project.updatedAt)}
+            </span>
+          </>
+        )}
       </p>
       {isEditable(project.status) && (
         <div className="px-1">

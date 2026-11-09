@@ -25,7 +25,11 @@ export function SetupChecklist({
             <span className="font-medium">Getting set up</span>
             <span className="text-muted-foreground tabular-nums">
               {" "}
-              · {doneCount} of {steps.length} done
+              · {steps.length - doneCount} left:{" "}
+              {steps
+                .filter((s) => !s.done)
+                .map((s) => s.short)
+                .join(", ")}
             </span>
           </span>
           <span className="inline-flex items-center gap-1 text-muted-foreground">

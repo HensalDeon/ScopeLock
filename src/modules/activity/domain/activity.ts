@@ -183,9 +183,12 @@ export function describeActivity(
  */
 export function changeLinkOf(
   event: Pick<ActivityEvent, "type" | "projectId" | "data">,
+  /** "projectId:CR-004" for drafts deleted since: nothing to open. */
+  deleted: ReadonlySet<string> = new Set(),
 ): { label: string; href: string } | null {
   if (!event.type.startsWith("change.") || event.type === "change.deleted")
     return null;
+  if (deleted.has(`${event.projectId}:${event.data.label ?? ""}`)) return null;
   const number = /^CR-0*(\d+)$/.exec(event.data.label ?? "")?.[1];
   return number
     ? {

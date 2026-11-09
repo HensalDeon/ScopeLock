@@ -71,7 +71,7 @@ export function InvoiceDocument({
             // eslint-disable-next-line @next/next/no-img-element -- signed R2 URL, already resized at upload
             <img
               src={logoUrl}
-              alt={`${invoice.seller.name} logo`}
+              alt={`${invoice.seller.company ?? invoice.seller.name} logo`}
               className="h-10 w-auto max-w-[8rem] object-contain"
             />
           ) : (
@@ -79,11 +79,11 @@ export function InvoiceDocument({
               aria-hidden
               className="flex size-9 shrink-0 items-center justify-center rounded-md border text-[12px] font-semibold"
             >
-              {initialsOf(invoice.seller.name)}
+              {initialsOf(invoice.seller.company ?? invoice.seller.name)}
             </span>
           )}
           <p className="truncate text-lg font-semibold tracking-[-0.01em]">
-            {invoice.seller.name}
+            {invoice.seller.company ?? invoice.seller.name}
           </p>
         </div>
         <div className="text-right">
@@ -207,35 +207,38 @@ export function InvoiceDocument({
         <InvoiceStatement statement={invoice.statement} money={money} />
       )}
 
-      {invoice.payTo && status !== "cancelled" && (
-        <InvoicePayToBlock payTo={invoice.payTo} />
-      )}
+      {/* Pay-to and the signature print together, never a lone page. */}
+      <div className="[break-inside:avoid]">
+        {invoice.payTo && status !== "cancelled" && (
+          <InvoicePayToBlock payTo={invoice.payTo} />
+        )}
 
-      <footer className="mt-10 grid gap-3 border-t pt-4 text-[13px] text-[#3a3d44] @md:grid-cols-[1fr_auto]">
-        <div className="grid gap-1">
-          {invoice.reverseCharge === false && (
-            <p>Tax payable on reverse charge: No</p>
-          )}
-          {invoice.tax.kind === "none" && invoice.title === "Invoice" && (
+        <footer className="mt-10 grid gap-3 border-t pt-4 text-[13px] text-[#3a3d44] @md:grid-cols-[1fr_auto]">
+          <div className="grid gap-1">
+            {invoice.reverseCharge === false && (
+              <p>Tax payable on reverse charge: No</p>
+            )}
+            {invoice.tax.kind === "none" && invoice.title === "Invoice" && (
+              <p>
+                The supplier isn&apos;t registered under GST, so no GST is
+                charged.
+              </p>
+            )}
             <p>
-              The supplier isn&apos;t registered under GST, so no GST is
-              charged.
+              {invoice.paymentLabel} payment for {invoice.projectName}.
             </p>
-          )}
-          <p>
-            {invoice.paymentLabel} payment for {invoice.projectName}.
-          </p>
-        </div>
-        <div className="@md:text-right">
-          <Label>Authorised signatory</Label>
-          {/* Room to sign a printed copy (Rule 46(q)). */}
-          <div
-            aria-hidden
-            className="mt-2 h-12 w-48 border-b border-[#c9ccd2] @md:ml-auto"
-          />
-          <p className="mt-1 font-medium">{invoice.seller.name}</p>
-        </div>
-      </footer>
+          </div>
+          <div className="@md:text-right">
+            <Label>Authorised signatory</Label>
+            {/* Room to sign a printed copy (Rule 46(q)). */}
+            <div
+              aria-hidden
+              className="mt-2 h-12 w-48 border-b border-[#c9ccd2] @md:ml-auto"
+            />
+            <p className="mt-1 font-medium">{invoice.seller.name}</p>
+          </div>
+        </footer>
+      </div>
     </article>
   );
 }

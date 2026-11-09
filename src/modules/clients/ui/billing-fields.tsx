@@ -179,7 +179,8 @@ export function BillingFields({
         <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
           This changes how future invoices to {who} are taxed. Invoices already
           issued stay as they are; to correct an unpaid one, cancel that payment
-          request and ask again.
+          request and ask again. If they moved, update their billing address
+          too.
         </p>
       )}
       {billsInRupees &&

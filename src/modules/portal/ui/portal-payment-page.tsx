@@ -94,13 +94,24 @@ export async function PortalPaymentPage({
                 </span>
               </li>
             ))}
-            {payment.tax > 0 && (
+            {payment.tax > 0 ? (
               <li className="flex justify-between gap-4">
                 <span className="text-muted-foreground">GST</span>
                 <span className="tabular-nums">
                   {formatMoney(payment.tax, payment.currency)}
                 </span>
               </li>
+            ) : (
+              view.isExport && (
+                <li className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
+                    No GST: export of services under LUT
+                  </span>
+                  <span className="tabular-nums">
+                    {formatMoney(0 as typeof payment.tax, payment.currency)}
+                  </span>
+                </li>
+              )
             )}
           </ul>
           {payment.invoice && (

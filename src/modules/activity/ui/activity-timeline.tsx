@@ -109,7 +109,7 @@ function Lines({
                   {" · "}
                   <Link
                     href={item.link.href as Route}
-                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                    className="font-medium text-foreground underline-offset-4 hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
                   >
                     {item.link.label}
                   </Link>
@@ -120,7 +120,7 @@ function Lines({
                   {" · "}
                   <Link
                     href={item.context.href as Route}
-                    className="font-medium text-foreground underline-offset-4 hover:underline"
+                    className="font-medium text-foreground underline-offset-4 hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
                   >
                     {item.context.label}
                   </Link>

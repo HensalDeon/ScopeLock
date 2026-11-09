@@ -147,7 +147,11 @@ export function buildInvoice(input: {
     issuedOn: input.issuedOn,
     seller: {
       name: settings.legalName ?? input.business.name,
-      company: null,
+      // The trade name clients know ("Asha Designs") above the legal name.
+      company:
+        settings.legalName && settings.legalName !== input.business.name
+          ? input.business.name
+          : null,
       address: settings.address,
       state: stateLabel(settings.state),
       country: null,

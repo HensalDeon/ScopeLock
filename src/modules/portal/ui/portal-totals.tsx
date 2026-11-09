@@ -45,7 +45,7 @@ export function PortalTotals({
             {money(total)}
           </Row>
         )}
-        {paid > 0 && <Row label="Paid so far">{money(paid)}</Row>}
+        {paid > 0 && <Row label="Received">{money(paid)}</Row>}
         {due > 0 && (
           <Row label="Due now" tone="waiting">
             {money(due)}

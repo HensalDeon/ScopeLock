@@ -101,31 +101,40 @@ export function StatementDocument({
         )}
       </Section>
 
-      <dl className="mt-8 ml-auto grid max-w-sm gap-1.5 text-[0.9rem] tabular-nums">
-        <Row label="Agreed scope">{money(s.totals.agreed)}</Row>
-        <Row label="Approved changes">{money(s.totals.approvedChanges)}</Row>
-        <Row label="Project total (before GST)" strong>
-          {money(s.totals.projectTotal)}
-        </Row>
-        {s.totals.tax > 0 && (
-          <>
-            <Row label="GST on invoices">{money(s.totals.tax)}</Row>
-            <Row label="Total with GST" strong>
-              {money(s.totals.withGst)}
-            </Row>
-          </>
-        )}
-        <div className="mt-2 grid gap-1.5 border-t pt-2">
-          <Row label="Received">{money(s.totals.received)}</Row>
-          <Row label="Asked for, not received">{money(s.totals.due)}</Row>
-          <Row label="Not asked for yet">{money(s.totals.toAsk)}</Row>
-        </div>
-      </dl>
+      {/* Totals and the closing line print together, never a lone line. */}
+      <div className="[break-inside:avoid]">
+        <dl className="mt-8 ml-auto grid max-w-sm gap-1.5 text-[0.9rem] tabular-nums">
+          <Row label="Agreed scope">{money(s.totals.agreed)}</Row>
+          <Row label="Approved changes">{money(s.totals.approvedChanges)}</Row>
+          <Row
+            label={
+              s.totals.tax > 0 ? "Project total (before GST)" : "Project total"
+            }
+            strong
+          >
+            {money(s.totals.projectTotal)}
+          </Row>
+          {s.totals.tax > 0 && (
+            <>
+              <Row label="GST on invoices">{money(s.totals.tax)}</Row>
+              <Row label="Total with GST" strong>
+                {money(s.totals.withGst)}
+              </Row>
+            </>
+          )}
+          <div className="mt-2 grid gap-1.5 border-t pt-2">
+            <Row label="Received">{money(s.totals.received)}</Row>
+            <Row label="Asked for, not received">{money(s.totals.due)}</Row>
+            <Row label="Not asked for yet">{money(s.totals.toAsk)}</Row>
+          </div>
+        </dl>
 
-      <footer className="mt-10 border-t pt-4 text-[13px] text-pretty text-[#3a3d44]">
-        Every approval above is kept as a signed record of exactly what was
-        approved, by whom and when. Amounts with GST follow the invoices.
-      </footer>
+        <footer className="mt-10 border-t pt-4 text-[13px] text-pretty text-[#3a3d44]">
+          Every approval above is kept as a signed record of exactly what was
+          approved, by whom and when.
+          {s.totals.tax > 0 ? " Amounts with GST follow the invoices." : ""}
+        </footer>
+      </div>
     </article>
   );
 }

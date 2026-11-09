@@ -28,12 +28,5 @@ export function stillToAsk(items: readonly ScheduleItem[]): Minor {
   return sum(items.filter((i) => i.state === "upcoming").map((i) => i.payable));
 }
 
-/** A request older than this gets "Remind" instead of a first "Send". */
-export const REMIND_AFTER_DAYS = 3;
-
-export function isReminder(requestedAt: Date, now: Date): boolean {
-  return (
-    now.getTime() - requestedAt.getTime() >
-    REMIND_AFTER_DAYS * 24 * 60 * 60 * 1000
-  );
-}
+// One rule for "Send" vs "Remind", shared with the overview.
+export { isReminder, REMIND_AFTER_DAYS } from "@/shared/lib/reminder";

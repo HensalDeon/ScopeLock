@@ -103,3 +103,24 @@ export async function findRecentActivity(
     data: doc.data,
   }));
 }
+
+/**
+ * Change requests whose draft was deleted ("projectId:CR-004"), so their
+ * earlier history lines don't link to a page that no longer exists.
+ */
+export async function findDeletedChanges(
+  workspaceId: string,
+  projectId?: ObjectId,
+): Promise<Set<string>> {
+  const docs = await activity(workspaceId)
+    .find(
+      projectId
+        ? { projectId, type: "change.deleted" }
+        : { type: "change.deleted" },
+      { projection: { projectId: 1, data: 1 } },
+    )
+    .toArray();
+  return new Set(
+    docs.map((d) => `${d.projectId.toHexString()}:${d.data.label ?? ""}`),
+  );
+}

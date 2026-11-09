@@ -1,5 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { cn } from "@/shared/lib/utils";
+import { TOUCH_LINK } from "@/shared/ui/touch";
 import { nextStep } from "../domain/next-step";
 import type { ScheduleItem } from "../domain/payment";
 import { ScheduleRow, type ScheduleRowContext } from "./schedule-row";
@@ -38,7 +40,10 @@ export function PaymentsPanel({
           Add how you get paid (UPI, bank or a payment link) in{" "}
           <Link
             href={"/settings/payments" as Route}
-            className="font-medium underline underline-offset-4"
+            className={cn(
+              "font-medium underline underline-offset-4",
+              TOUCH_LINK,
+            )}
           >
             Settings → Payments
           </Link>{" "}

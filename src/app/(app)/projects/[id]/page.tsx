@@ -81,6 +81,7 @@ async function ProjectDetail({
     unlockedBy: unlockingSteps(project),
     stateFallback: money.stateFallback,
     exportCheck: money.exportCheck,
+    exportClient: money.exportClient,
   };
 
   const scope = (
@@ -117,6 +118,10 @@ async function ProjectDetail({
           totals={money.totals}
           ctx={ctx}
           now={money.now}
+          setup={{
+            methodsReady: money.methodsReady,
+            invoicingReady: money.invoicingReady,
+          }}
         />
       )}
 

@@ -127,6 +127,9 @@ async function ChangeDetail({
           <ChangeOrderDocument
             data={data}
             approved={change.status === "approved"}
+            withdrawnBy={
+              change.status === "withdrawn" ? data.business.name : null
+            }
             titleAs="h2"
             style={settings.style}
             images={images}

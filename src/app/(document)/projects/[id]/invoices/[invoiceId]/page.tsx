@@ -26,7 +26,7 @@ export async function generateMetadata({
       ? {
           absolute: documentTitle(
             `${invoice.title} ${invoice.number}`,
-            invoice.seller.name,
+            invoice.seller.company ?? invoice.seller.name,
           ),
         }
       : "Invoice",
@@ -97,7 +97,7 @@ async function InvoiceView({
         request and ask again: that issues a new invoice with a new number.
       </div>
       <PrintSetup
-        footer={`${invoice.seller.name} · ${invoice.title} ${invoice.number}`}
+        footer={`${invoice.seller.company ?? invoice.seller.name} · ${invoice.title} ${invoice.number}`}
       />
       <main className="px-0 py-0 sm:px-4 sm:py-4 print:p-0">
         <InvoiceDocument

@@ -41,18 +41,18 @@ export function OverviewView({ data }: { data: OverviewData }) {
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid gap-8">
           <AttentionList
-            id="waiting-title"
-            title="Waiting on clients"
-            description={`Proposals, change requests and payments your clients haven't answered or paid${awaiting ? ` (${awaiting} awaiting approval)` : ""}. The longest wait is at the top.`}
-            items={data.waiting}
-            empty="Nothing is waiting on a client. Proposals, change requests and payment requests you send show here until they answer or pay."
-          />
-          <AttentionList
             id="needs-title"
             title="Needs you"
             description="Payments to confirm, changes your clients asked for, the next payment to ask for, and drafts you haven't sent."
             items={data.needs}
             empty="All caught up. Payments to confirm or ask for, drafts, and anything a client asks you to change will show here."
+          />
+          <AttentionList
+            id="waiting-title"
+            title="Waiting on clients"
+            description={`Proposals, change requests and payments your clients haven't answered or paid${awaiting ? ` (${awaiting} awaiting approval)` : ""}. The longest wait is at the top.`}
+            items={data.waiting}
+            empty="Nothing is waiting on a client. Proposals, change requests and payment requests you send show here until they answer or pay."
           />
           {approved && checklist}
           {showAgain}

@@ -136,9 +136,9 @@ export function gstChangeNote(input: {
   if ((input.shown ?? null) === input.now.gstPercent) return null;
   const now =
     input.now.taxCase === "gst"
-      ? `${input.now.gstPercent ?? 18}% GST is added`
+      ? `${input.now.gstPercent ?? 18}% GST`
       : input.now.taxCase === "export"
-        ? "no GST is charged, as an export of services"
-        : "no GST is charged";
-  return `GST on this proposal was worked out from ${input.clientName}'s details when it was sent. Invoices follow the current details, so ${now}. The agreed price, ${input.agreed}, hasn't changed.`;
+        ? "no GST, as an export of services"
+        : "no GST";
+  return `${input.clientName}'s details changed after this proposal was sent. Invoices issued from now on follow the new details: ${now}. Invoices already issued keep their GST. The agreed price, ${input.agreed}, hasn't changed.`;
 }

@@ -27,7 +27,10 @@ export function ClassicDocument({
   className,
   titleAs = "h1",
   acceptance = null,
+  note = null,
 }: {
+  /** A line added after sending (the GST-change note), inside the sheet. */
+  note?: string | null;
   /** The client's answer, printed before the footer. */
   acceptance?: DocumentAcceptance | null;
   /** "h2" when the page around it has its own h1 (settings preview). */
@@ -122,6 +125,17 @@ export function ClassicDocument({
         ))}
 
         {acceptance && <AcceptanceBlock acceptance={acceptance} />}
+        {note && (
+          <section
+            aria-label="Note"
+            className="grid [break-inside:avoid] gap-1 border-l-2 border-(--doc-accent) pl-4 text-[0.88rem] leading-relaxed text-pretty text-[#3a3d44]"
+          >
+            <p className="text-[11px] font-semibold tracking-[0.14em] text-(--doc-soft-text) uppercase">
+              Note
+            </p>
+            <p>{note}</p>
+          </section>
+        )}
 
         <footer className="mt-2 flex flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
           <p>

@@ -11,6 +11,8 @@ import * as settingsRepo from "./settings-repository";
 export type ProjectMoney = PaymentSchedule & {
   /** False until at least one payment method is set up. */
   methodsReady: boolean;
+  /** Invoice details saved (legal name, address or GSTIN). */
+  invoicingReady: boolean;
   /** GST applies but the client has no state or GSTIN on record. */
   stateFallback: { yourState: string; clientHref: string } | null;
   /**
@@ -19,6 +21,8 @@ export type ProjectMoney = PaymentSchedule & {
    * through an RBI-permitted route), IGST Act s.2(6).
    */
   exportCheck: { clientHref: string } | null;
+  /** The client is outside India: their invoices are exports, no GST. */
+  exportClient: boolean;
   /** When this was read (for "asked 3 days ago" style decisions). */
   now: Date;
 };
@@ -45,6 +49,12 @@ export async function getProjectMoney(
   return {
     ...schedule,
     methodsReady: hasAnyMethod(methods),
+    exportClient:
+      taxCaseOf(settings, client as Parameters<typeof taxCaseOf>[1]) ===
+      "export",
+    invoicingReady: Boolean(
+      settings.legalName || settings.address || settings.gstin,
+    ),
     now: new Date(),
     stateFallback:
       gst.fallbackState && client

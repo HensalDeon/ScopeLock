@@ -259,6 +259,9 @@ export function PaymentActions({
           phone={share.phone}
           message={share.message}
           primary={primary}
+          compact
+          copyLabel="Copy pay link"
+          whatsappLabel={`Send ${clientFirstName} the pay link on WhatsApp`}
         />
       )}
       {open === "cancel" ? (

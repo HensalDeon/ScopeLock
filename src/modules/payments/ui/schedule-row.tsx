@@ -22,6 +22,8 @@ export type ScheduleRowContext = {
   stateFallback: { yourState: string; clientHref: string } | null;
   /** Abroad but billed in rupees: may not count as an export. */
   exportCheck?: { clientHref: string } | null;
+  /** The client is outside India: a zero-GST row is an export. */
+  exportClient?: boolean;
 };
 
 /**
@@ -54,7 +56,7 @@ export function ScheduleRow({
             <p className="text-sm font-medium">{item.label}</p>
             <PaymentStateBadge state={item.state} />
           </div>
-          {(item.lines.length > 1 || item.percent === null) && (
+          {item.lines.length > 0 && (
             <ul className="grid gap-0.5 text-xs text-pretty text-muted-foreground tabular-nums">
               {item.lines.map((line) => (
                 <li key={`${line.kind}-${line.refId}`}>
@@ -63,10 +65,16 @@ export function ScheduleRow({
               ))}
             </ul>
           )}
-          {item.tax > 0 && (
+          {item.tax > 0 ? (
             <p className="text-xs text-muted-foreground tabular-nums">
               {money(item.total)} + {money(item.tax)} GST
             </p>
+          ) : (
+            ctx.exportClient && (
+              <p className="text-xs text-muted-foreground">
+                No GST: export under LUT
+              </p>
+            )
           )}
           {invoice && (
             <p className="text-xs tabular-nums">
