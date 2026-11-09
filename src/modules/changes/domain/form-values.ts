@@ -93,6 +93,13 @@ export function changeShareMessage(input: {
   title: string;
   /** Formatted, e.g. "₹15,000". */
   total: string;
+  /** Once answered, the message is a copy for their records, not a request. */
+  status?: "draft" | "sent" | "approved" | "rejected" | "withdrawn";
 }): string {
-  return `Hi ${input.clientFirstName}, here's a change request for ${input.projectName}: ${input.title} (${input.total}). You can approve or decline it here:`;
+  const what = `${input.projectName}: ${input.title} (${input.total})`;
+  if (input.status === "approved")
+    return `Hi ${input.clientFirstName}, here's the approved change request for ${what}, for your records:`;
+  if (input.status === "rejected")
+    return `Hi ${input.clientFirstName}, here's the change request you declined for ${what}, for your records:`;
+  return `Hi ${input.clientFirstName}, here's a change request for ${what}. You can approve or decline it here:`;
 }

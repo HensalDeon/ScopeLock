@@ -5,6 +5,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import type { FormValidation } from "@/shared/lib/use-form-validation";
+import { GstTotalNote } from "@/modules/invoices";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { MoneyInput } from "@/shared/ui/money-input";
@@ -54,12 +55,15 @@ export function ScopeLinesEditor({
   setItems,
   total,
   currency,
+  gstPercent,
   form,
 }: {
   items: ItemRow[];
   setItems: Dispatch<SetStateAction<ItemRow[]>>;
   total: Minor;
   currency: CurrencyCode;
+  /** GST the chosen client's invoices add, or null. */
+  gstPercent: number | null;
   form: FormValidation;
 }) {
   const err = (path: string, touchKey?: string) =>
@@ -141,7 +145,7 @@ export function ScopeLinesEditor({
                 </div>
                 {(titleError || amountError) && (
                   <p role="alert" className="mt-2 text-sm text-destructive">
-                    {titleError ?? amountError}
+                    {[titleError, amountError].filter(Boolean).join(" ")}
                   </p>
                 )}
                 {item.showNote && (
@@ -193,12 +197,12 @@ export function ScopeLinesEditor({
                   </p>
                 )}
                 {(!item.showNote || !item.showIncludes) && (
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                  <div className="mt-1 flex flex-wrap gap-x-4">
                     {!item.showNote && (
                       <button
                         type="button"
                         onClick={() => updateItem(item.key, { showNote: true })}
-                        className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        className="py-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                       >
                         Add a note
                       </button>
@@ -209,7 +213,7 @@ export function ScopeLinesEditor({
                         onClick={() =>
                           updateItem(item.key, { showIncludes: true })
                         }
-                        className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        className="py-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                       >
                         Add bullet points
                       </button>
@@ -261,6 +265,13 @@ export function ScopeLinesEditor({
               {money(total)}
             </span>
           </p>
+        </div>
+        <div className="flex justify-end">
+          <GstTotalNote
+            amount={total}
+            percent={gstPercent}
+            currency={currency}
+          />
         </div>
       </div>
     </FormSection>

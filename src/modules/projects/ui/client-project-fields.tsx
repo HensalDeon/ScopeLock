@@ -29,6 +29,7 @@ import { QuickAddClient } from "./quick-add-client";
 export function ClientProjectFields({
   clients,
   setClients,
+  newClientGst,
   clientId,
   setClientId,
   followClient,
@@ -43,6 +44,7 @@ export function ClientProjectFields({
 }: {
   clients: ClientOption[];
   setClients: (clients: ClientOption[]) => void;
+  newClientGst: number | null;
   clientId: string;
   setClientId: (id: string) => void;
   /** Moves the currency to the client's own, until one is chosen by hand. */
@@ -97,7 +99,8 @@ export function ClientProjectFields({
           {err("clientId") && <FieldError>{err("clientId")}</FieldError>}
           {addingClient ? (
             <QuickAddClient
-              onAdded={(client) => {
+              onAdded={(added) => {
+                const client = { ...added, gstPercent: newClientGst };
                 const next = [...clients, client].sort((a, b) =>
                   a.label.localeCompare(b.label),
                 );

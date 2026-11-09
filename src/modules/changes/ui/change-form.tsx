@@ -49,7 +49,10 @@ export function ChangeForm({
   milestones,
   defaults,
   cancelHref,
+  gstPercent = null,
 }: {
+  /** GST this client's invoices add (18), or null. */
+  gstPercent?: number | null;
   mode: "create" | "edit";
   projectId: string;
   number?: number;
@@ -132,10 +135,6 @@ export function ChangeForm({
       <input type="hidden" name="items" value={itemsJson} />
       <input type="hidden" name="billingOption" value={values.billingOption} />
 
-      {state.status === "error" && state.message && (
-        <FormAlert>{state.message}</FormAlert>
-      )}
-
       <FormSection
         title="The change"
         description="Your client sees the name and description on the change request."
@@ -183,6 +182,7 @@ export function ChangeForm({
         setRows={setRows}
         total={total}
         currency={currency}
+        gstPercent={gstPercent}
         form={form}
       />
 
@@ -225,7 +225,7 @@ export function ChangeForm({
               name="sourceNote"
               value={values.sourceNote}
               maxLength={CHANGE_LIMITS.sourceNote}
-              placeholder="Rahul asked on WhatsApp, 3 Nov"
+              placeholder="Wants it before the Diwali sale"
               onChange={(e) => set("sourceNote", e.target.value)}
               onBlur={() => form.touch("sourceNote")}
               aria-invalid={Boolean(form.errorFor("sourceNote")) || undefined}
@@ -235,6 +235,10 @@ export function ChangeForm({
         </div>
       </FormSection>
 
+      {/* Next to the button that was just tapped: the form is long. */}
+      {state.status === "error" && state.message && (
+        <FormAlert>{state.message}</FormAlert>
+      )}
       <div className="flex flex-wrap items-center gap-3 border-t pt-6">
         <Button
           type="submit"

@@ -4,10 +4,12 @@ import { Suspense } from "react";
 import {
   blankChangeValues,
   ChangeForm,
+  changeLabel,
   changeValuesFrom,
   changeValuesFromAddon,
 } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
+import { getGstRule } from "@/modules/invoices/server";
 import { getProjectOrNotFound } from "@/modules/projects/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
@@ -34,7 +36,10 @@ async function NewChange({
   searchParams,
 }: Pick<PageProps<"/projects/[id]/changes/new">, "params" | "searchParams">) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const project = await getProjectOrNotFound(id);
+  const [project, gstFor] = await Promise.all([
+    getProjectOrNotFound(id),
+    getGstRule(),
+  ]);
   const back = `/projects/${project.id}` as Route;
 
   if (project.status !== "active") {
@@ -72,10 +77,20 @@ async function NewChange({
         Back to project
       </BackLink>
       <PageHeader
-        title="New change request"
-        description={`Extra work on ${project.name}, with its own price. ${
-          project.client?.name ?? "Your client"
-        } approves it on the same link as the proposal.`}
+        title={
+          from
+            ? `Revise ${changeLabel(from.number)} ${from.title}`
+            : "New change request"
+        }
+        description={
+          from?.decision?.decision === "rejected"
+            ? `${from.decision.name} declined it${
+                from.decision.comment ? `: “${from.decision.comment}”` : "."
+              } Change what they asked about and send it again as a new request.`
+            : `Extra work on ${project.name}, with its own price. ${
+                project.client?.name ?? "Your client"
+              } approves it on the same link as the proposal.`
+        }
       />
       <FreshOnEachVisit>
         <ChangeForm
@@ -88,6 +103,7 @@ async function NewChange({
           }))}
           defaults={defaults}
           cancelHref={back}
+          gstPercent={gstFor(project.client)}
         />
       </FreshOnEachVisit>
     </div>

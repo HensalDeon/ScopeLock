@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ChangeForm, changeLabel, changeValuesFrom } from "@/modules/changes";
 import { getChangeOrNotFound } from "@/modules/changes/server";
+import { getGstRule } from "@/modules/invoices/server";
 import { getProjectOrNotFound } from "@/modules/projects/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
@@ -25,9 +26,10 @@ async function EditChange({
   params,
 }: Pick<PageProps<"/projects/[id]/changes/[number]/edit">, "params">) {
   const { id, number } = await params;
-  const [project, { change }] = await Promise.all([
+  const [project, { change }, gstFor] = await Promise.all([
     getProjectOrNotFound(id),
     getChangeOrNotFound(id, number),
+    getGstRule(),
   ]);
   const page = `/projects/${project.id}/changes/${change.number}` as Route;
   if (change.status !== "draft") redirect(page);
@@ -39,6 +41,7 @@ async function EditChange({
       </BackLink>
       <PageHeader title={`Edit ${changeLabel(change.number)}`} />
       <ChangeForm
+        gstPercent={gstFor(project.client)}
         mode="edit"
         projectId={project.id}
         number={change.number}

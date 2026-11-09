@@ -5,6 +5,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import type { FormValidation } from "@/shared/lib/use-form-validation";
+import { GstTotalNote } from "@/modules/invoices";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { MoneyInput } from "@/shared/ui/money-input";
@@ -36,12 +37,14 @@ export function ChangeLinesEditor({
   setRows,
   total,
   currency,
+  gstPercent,
   form,
 }: {
   rows: ChangeRow[];
   setRows: Dispatch<SetStateAction<ChangeRow[]>>;
   total: Minor;
   currency: CurrencyCode;
+  gstPercent: number | null;
   form: FormValidation;
 }) {
   const updateRow = (key: string, patch: Partial<ChangeRow>) =>
@@ -52,7 +55,11 @@ export function ChangeLinesEditor({
   return (
     <FormSection
       title="Price"
-      description="One line per piece of work. The total is what your client approves."
+      description={
+        gstPercent
+          ? "One line per piece of work. Your client approves this total, plus GST."
+          : "One line per piece of work. The total is what your client approves."
+      }
     >
       <div className="grid gap-3">
         <ol className="grid gap-3">
@@ -114,7 +121,7 @@ export function ChangeLinesEditor({
                 </div>
                 {(titleError || amountError) && (
                   <p role="alert" className="mt-2 text-sm text-destructive">
-                    {titleError ?? amountError}
+                    {[titleError, amountError].filter(Boolean).join(" ")}
                   </p>
                 )}
                 {row.showNote ? (
@@ -184,6 +191,13 @@ export function ChangeLinesEditor({
               {formatMoney(total, currency)}
             </span>
           </p>
+        </div>
+        <div className="flex justify-end">
+          <GstTotalNote
+            amount={total}
+            percent={gstPercent}
+            currency={currency}
+          />
         </div>
       </div>
     </FormSection>

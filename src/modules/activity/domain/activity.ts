@@ -14,6 +14,7 @@ export const ACTIVITY_TYPES = [
   "proposal.changes_requested",
   "link.replaced",
   "change.created",
+  "change.deleted",
   "change.sent",
   "change.withdrawn",
   "change.cancelled",
@@ -130,6 +131,8 @@ export function describeActivity(
       return line(`${who} replaced the client link`);
     case "change.created":
       return line(`${who} drafted ${change}${amount}`);
+    case "change.deleted":
+      return line(`${who} deleted the draft ${change}`);
     case "change.sent":
       return line(`${who} sent ${change}${toYou}${amount}`, "waiting");
     case "change.withdrawn":

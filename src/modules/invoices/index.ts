@@ -21,4 +21,5 @@ export {
   type InvoiceStatus,
 } from "./domain/snapshot";
 export { InvoiceDocument } from "./ui/invoice-document";
+export { GstTotalNote } from "./ui/gst-total-note";
 export { InvoicingForm } from "./ui/invoicing-form";

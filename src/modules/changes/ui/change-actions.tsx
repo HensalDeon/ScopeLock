@@ -9,6 +9,7 @@ import { IDLE } from "@/shared/lib/form-state";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
+import { TOUCH } from "@/shared/ui/touch";
 import { SideCard, SideCardText, SideCardTitle } from "@/shared/ui/side-card";
 import {
   INLINE_PANEL_FOCUS,
@@ -33,10 +34,13 @@ export function ChangeActions({
   change,
   projectId,
   editHref,
+  reviseHref = null,
   link,
   emailVerified,
   clientFirstName,
 }: {
+  /** Declined or cancelled: start a revised request from this one. */
+  reviseHref?: Route | null;
   change: Pick<
     ChangeRequest,
     "number" | "status" | "everSent" | "sentAt" | "decision"
@@ -155,8 +159,20 @@ export function ChangeActions({
           <SideCardText>Nothing was added to the project.</SideCardText>
         </>
       )}
+      {reviseHref && (
+        <Button asChild className={TOUCH}>
+          <Link href={reviseHref}>Send a revised change request</Link>
+        </Button>
+      )}
+      {/* While it's out, sharing is the job; once answered it's a copy. */}
       {link && change.status !== "withdrawn" && (
-        <ShareLink url={link.url} phone={link.phone} message={link.message} />
+        <ShareLink
+          url={link.url}
+          phone={link.phone}
+          message={link.message}
+          primary={change.status === "sent"}
+          compact={change.status !== "sent"}
+        />
       )}
       {change.status === "sent" && (
         <Run

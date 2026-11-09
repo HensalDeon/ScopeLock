@@ -21,7 +21,10 @@ export function ChangeOrderDocument({
   images = NO_IMAGES,
   className,
   approved = false,
+  titleAs: Title = "h1",
 }: {
+  /** "h2" when the page around it already has an h1 (the app's CR page). */
+  titleAs?: "h1" | "h2";
   data: ChangeOrderData;
   /** Already approved: the closing line says so instead of asking. */
   approved?: boolean;
@@ -111,14 +114,14 @@ export function ChangeOrderDocument({
           </div>
         </div>
 
-        <h1
+        <Title
           className={cn(
             "mt-9 max-w-[90%] text-[1.9rem] leading-[1.08] text-balance @xl:text-[2.4rem]",
             headingFont,
           )}
         >
           {data.title}
-        </h1>
+        </Title>
 
         <dl className="mt-7 grid gap-4 border-t border-(--doc-cover-rule) pt-5 text-sm @md:grid-cols-3">
           <Meta label="For">

@@ -2,6 +2,7 @@ import type { Metadata, Route } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { listClients } from "@/modules/clients/server";
+import { getGstRule } from "@/modules/invoices/server";
 import { getDocumentSettings } from "@/modules/documents/server";
 import {
   clientOptions,
@@ -53,12 +54,15 @@ async function Form({
   params: PageProps<"/projects/[id]/edit">["params"];
 }) {
   const { id } = await params;
-  const [project, clients, settings, { workspace }] = await Promise.all([
-    getProjectOrNotFound(id),
-    listClients(),
-    getDocumentSettings(),
-    requireWorkspace(),
-  ]);
+  const [project, clients, settings, { workspace }, gstFor] = await Promise.all(
+    [
+      getProjectOrNotFound(id),
+      listClients(),
+      getDocumentSettings(),
+      requireWorkspace(),
+      getGstRule(),
+    ],
+  );
   if (!isEditable(project.status)) redirect(`/projects/${project.id}`);
 
   return (
@@ -68,8 +72,9 @@ async function Form({
       key={project.updatedAt.getTime()}
       mode="edit"
       projectId={project.id}
-      clients={clientOptions(clients, project)}
+      clients={clientOptions(clients, project, gstFor)}
       defaultCurrency={workspace.currency}
+      newClientGst={gstFor({ state: null, country: null, gstin: null })}
       cancelHref={`/projects/${project.id}` as Route}
       defaults={projectFormValues(project, settings.defaults)}
     />

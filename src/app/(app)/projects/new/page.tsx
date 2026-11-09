@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { listClients } from "@/modules/clients/server";
+import { getGstRule } from "@/modules/invoices/server";
 import { getDocumentSettings } from "@/modules/documents/server";
 import {
   clientOptions,
@@ -38,18 +39,21 @@ async function Form({
 }: {
   searchParams: PageProps<"/projects/new">["searchParams"];
 }) {
-  const [{ client }, clients, settings, { workspace }] = await Promise.all([
-    searchParams,
-    listClients(),
-    getDocumentSettings(),
-    requireWorkspace(),
-  ]);
+  const [{ client }, clients, settings, { workspace }, gstFor] =
+    await Promise.all([
+      searchParams,
+      listClients(),
+      getDocumentSettings(),
+      requireWorkspace(),
+      getGstRule(),
+    ]);
   return (
     <FreshOnEachVisit>
       <ProjectForm
         mode="create"
-        clients={clientOptions(clients)}
+        clients={clientOptions(clients, null, gstFor)}
         defaultCurrency={workspace.currency}
+        newClientGst={gstFor({ state: null, country: null, gstin: null })}
         cancelHref="/projects"
         defaults={newProjectValues({
           clients,

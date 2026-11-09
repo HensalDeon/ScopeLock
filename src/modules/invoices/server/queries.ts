@@ -58,3 +58,18 @@ export async function gstOnDocuments(
   const settings = await repo.findInvoicing(workspaceId);
   return gstHints(settings, client).addsGst ? GST_RATE_PERCENT : null;
 }
+
+type GstClient = Pick<Buyer, "state" | "country" | "gstin">;
+
+/**
+ * For forms: the GST rate each client's invoices will add (18 or null), so
+ * a total can say "plus GST" before anything is sent.
+ */
+export async function getGstRule(): Promise<
+  (client: GstClient | null) => number | null
+> {
+  const { workspace } = await requireWorkspace();
+  const settings = await repo.findInvoicing(workspace.workspaceId);
+  return (client) =>
+    gstHints(settings, client).addsGst ? GST_RATE_PERCENT : null;
+}

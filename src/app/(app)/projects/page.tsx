@@ -45,7 +45,8 @@ async function Projects({
       <EmptyState
         title="No projects yet"
         action={
-          <Button asChild>
+          // The header's New project is the one filled button.
+          <Button asChild variant="outline">
             <Link href="/projects/new">Create your first project</Link>
           </Button>
         }

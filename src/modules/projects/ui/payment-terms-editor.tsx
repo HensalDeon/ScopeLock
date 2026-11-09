@@ -113,7 +113,7 @@ export function PaymentTermsEditor({
             <FieldLabel
               key={option.value}
               htmlFor={`${uid}-billing-${option.value}`}
-              className="has-data-checked:border-brand/45 has-data-checked:bg-success-soft/70"
+              className="has-data-checked:border-primary has-data-checked:ring-1 has-data-checked:ring-primary"
             >
               <Field orientation="horizontal">
                 <div className="grid flex-1 gap-0.5">
@@ -152,14 +152,12 @@ export function PaymentTermsEditor({
                   key={preset.id}
                   type="button"
                   size="sm"
-                  variant={
-                    activePreset?.id === preset.id ? "default" : "outline"
-                  }
+                  variant="outline"
                   aria-pressed={activePreset?.id === preset.id}
                   onClick={() =>
                     setMilestones(toMilestoneRows(preset.milestones))
                   }
-                  className="tabular-nums"
+                  className="tabular-nums aria-pressed:border-foreground/40 aria-pressed:bg-muted"
                 >
                   {preset.label}
                 </Button>
@@ -213,7 +211,7 @@ export function PaymentTermsEditor({
                     ? "text-success-ink"
                     : form.submitted
                       ? "text-destructive"
-                      : "text-warning",
+                      : "text-muted-foreground",
                 )}
               >
                 {percentSum === 100

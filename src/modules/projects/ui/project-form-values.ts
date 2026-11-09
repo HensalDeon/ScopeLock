@@ -11,7 +11,10 @@ import {
   proposalFormDefaults,
 } from "./proposal-form-defaults";
 
-type ClientRow = Pick<Client, "id" | "name" | "company" | "currency">;
+type ClientRow = Pick<
+  Client,
+  "id" | "name" | "company" | "currency" | "state" | "country" | "gstin"
+>;
 
 /** How long a new proposal's prices hold by default. */
 const VALID_FOR_DAYS = 14;
@@ -22,18 +25,22 @@ const VALID_FOR_DAYS = 14;
  */
 export function clientOptions(
   clients: readonly ClientRow[],
-  current?: { clientId: string; client: ClientRow | null },
+  current?: { clientId: string; client: ClientRow | null } | null,
+  /** The GST rate each client's invoices add (see invoices getGstRule). */
+  gstFor: (client: ClientRow) => number | null = () => null,
 ): ClientOption[] {
   const options = clients.map((c) => ({
     id: c.id,
     label: clientLabel(c),
     currency: c.currency,
+    gstPercent: gstFor(c),
   }));
   if (current?.client && !options.some((o) => o.id === current.clientId)) {
     options.push({
       id: current.clientId,
       label: `${clientLabel(current.client)} (archived)`,
       currency: current.client.currency,
+      gstPercent: gstFor(current.client),
     });
   }
   return options;

@@ -19,7 +19,7 @@ export function QuickAddClient({
   onAdded,
   onCancel,
 }: {
-  onAdded: (client: ClientOption) => void;
+  onAdded: (client: Omit<ClientOption, "gstPercent">) => void;
   onCancel?: () => void;
 }) {
   const [values, setValues] = useState<Record<Field, string>>({

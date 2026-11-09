@@ -75,7 +75,7 @@ export function MilestoneRowInput({
           </span>
         </div>
         <p className="hidden text-right text-sm tabular-nums sm:block">
-          {amount !== undefined ? money(amount) : "–"}
+          {amount !== undefined && amount > 0 ? money(amount) : null}
         </p>
         <Button
           type="button"
@@ -96,7 +96,7 @@ export function MilestoneRowInput({
       )}
       {(nameError || percentError) && (
         <p role="alert" className="mt-1 text-sm text-destructive">
-          {nameError ?? percentError}
+          {[nameError, percentError].filter(Boolean).join(" ")}
         </p>
       )}
     </li>

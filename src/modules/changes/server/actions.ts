@@ -167,13 +167,21 @@ const byNumber = {
 
 export const deleteChange = workspaceAction(
   { ...byNumber, failureMessage: "It wasn't deleted. Please try again." },
-  async ({ projectId, number }, { workspace }) => {
-    const doc = await findOwned(workspace.workspaceId, projectId, number);
-    if (!(await repo.deleteUnsentDraft(workspace.workspaceId, doc._id))) {
+  async ({ projectId, number }, context) => {
+    const ws = context.workspace.workspaceId;
+    const doc = await findOwned(ws, projectId, number);
+    if (!(await repo.deleteUnsentDraft(ws, doc._id))) {
       throw new UserError(
         "Your client has seen this change request, so it can't be deleted. Cancel it instead.",
       );
     }
+    // So "drafted CR-004" in the history isn't left pointing at nothing.
+    await logActivity(ws, {
+      projectId,
+      type: "change.deleted",
+      actor: actor(context),
+      data: { label: changeLabel(doc.number), title: doc.title },
+    });
     redirect(`/projects/${projectId.toHexString()}`);
   },
 );

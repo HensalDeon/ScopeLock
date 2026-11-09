@@ -106,7 +106,7 @@ export function ApprovalCards({
           {a.comment && (
             <p className="leading-relaxed whitespace-pre-line">“{a.comment}”</p>
           )}
-          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 font-mono text-[11.5px] text-muted-foreground">
+          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 font-mono text-xs text-muted-foreground">
             <dt>Email</dt>
             <dd className="truncate">{a.decidedBy.email}</dd>
             <dt>IP address</dt>

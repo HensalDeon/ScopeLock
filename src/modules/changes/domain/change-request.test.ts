@@ -256,6 +256,21 @@ describe("form values", () => {
       "Hi Rahul, here's a change request for Website redesign: Blog (₹15,000). You can approve or decline it here:",
     );
   });
+
+  it("sends a copy for their records once answered", () => {
+    const base = {
+      clientFirstName: "Rahul",
+      projectName: "Website redesign",
+      title: "Blog",
+      total: "₹15,000",
+    };
+    expect(changeShareMessage({ ...base, status: "approved" })).toBe(
+      "Hi Rahul, here's the approved change request for Website redesign: Blog (₹15,000), for your records:",
+    );
+    expect(changeShareMessage({ ...base, status: "rejected" })).toMatch(
+      /you declined .*for your records:$/,
+    );
+  });
 });
 
 describe("billingChoices", () => {
