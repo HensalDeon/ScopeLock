@@ -100,6 +100,7 @@ async function ChangeDetail({
           </p>
           <ChangeOrderDocument
             data={data}
+            approved={change.status === "approved"}
             style={settings.style}
             images={images}
             className="rounded-lg border"

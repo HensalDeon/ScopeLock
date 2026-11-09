@@ -35,13 +35,13 @@ export async function PortalInvoicePage({
                 : `/c/${token}/pay/${invoice.paymentId}`
             }
             aria-label="Back to the payment"
-            className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted"
+            className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted max-sm:size-11"
           >
             <ArrowLeft aria-hidden className="size-4" />
           </Link>
         }
       >
-        <PrintButton label="Print or save PDF" />
+        <PrintButton label="Print or save PDF" variant="outline" />
       </PortalHeader>
       <main className="px-0 py-0 sm:px-4 sm:py-6 print:p-0">
         <InvoiceDocument

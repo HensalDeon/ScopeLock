@@ -20,8 +20,11 @@ export function ChangeOrderDocument({
   style,
   images = NO_IMAGES,
   className,
+  approved = false,
 }: {
   data: ChangeOrderData;
+  /** Already approved: the closing line says so instead of asking. */
+  approved?: boolean;
   style: DocumentStyle;
   images?: DocumentImages;
   className?: string;
@@ -206,7 +209,10 @@ export function ChangeOrderDocument({
             </p>
             <p className="text-[#565a63]">
               The original proposal ({money(data.originalTotal)}) stays as
-              agreed. This is added on top only if you approve it.
+              agreed.{" "}
+              {approved
+                ? "This was approved and is added on top."
+                : "This is added on top only if you approve it."}
             </p>
           </div>
         </div>

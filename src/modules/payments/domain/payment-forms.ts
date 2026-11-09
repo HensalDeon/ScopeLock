@@ -81,6 +81,6 @@ export const PAYMENT_STATE_LABELS: Record<ScheduleState, string> = {
 export const CLIENT_PAYMENT_LABELS: Record<ScheduleState, string> = {
   upcoming: "Not due yet",
   due: "Due",
-  client_reported: "Sent for confirmation",
+  client_reported: "You said you've paid",
   received: "Paid",
 };

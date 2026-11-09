@@ -32,7 +32,7 @@ export async function PortalChangePage({
     <Link
       href={`/c/${token}`}
       aria-label={`Back to ${view.projectTitle}`}
-      className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted"
+      className="-ml-2 flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted max-sm:size-11"
     >
       <ArrowLeft aria-hidden className="size-4" />
     </Link>
@@ -75,7 +75,7 @@ export async function PortalChangePage({
             Approve or decline
           </a>
         )}
-        <PrintButton label="Save PDF" />
+        <PrintButton label="Save PDF" variant="outline" />
       </PortalHeader>
 
       {change.status === "approved" && decision && (
@@ -99,6 +99,7 @@ export async function PortalChangePage({
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         <ChangeOrderDocument
           data={data}
+          approved={change.status === "approved"}
           style={view.style}
           images={view.images}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-sm print:max-w-none print:shadow-none"

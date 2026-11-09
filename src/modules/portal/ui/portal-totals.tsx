@@ -21,6 +21,7 @@ export function PortalTotals({
   const total = sum([proposalTotal, approvedChanges]);
   const gst = payments?.gst ?? null;
   const paid = gst ? gst.received : (payments?.received ?? minor(0));
+  const due = gst ? gst.due : (payments?.due ?? minor(0));
   return (
     <section aria-labelledby="totals-heading" className="grid gap-2">
       <h2 id="totals-heading" className="text-base font-semibold">
@@ -28,7 +29,9 @@ export function PortalTotals({
       </h2>
       <dl className="grid gap-1.5 text-sm">
         <Row label="Approved proposal">{money(proposalTotal)}</Row>
-        <Row label="Approved changes">{money(approvedChanges)}</Row>
+        {approvedChanges > 0 && (
+          <Row label="Approved changes">{money(approvedChanges)}</Row>
+        )}
         {gst ? (
           <>
             <Row label="Total before GST">{money(total)}</Row>
@@ -38,11 +41,16 @@ export function PortalTotals({
             </Row>
           </>
         ) : (
-          <Row label="Total so far" strong>
+          <Row label="Project total" strong>
             {money(total)}
           </Row>
         )}
         {paid > 0 && <Row label="Paid so far">{money(paid)}</Row>}
+        {due > 0 && (
+          <Row label="Due now" tone="waiting">
+            {money(due)}
+          </Row>
+        )}
       </dl>
     </section>
   );

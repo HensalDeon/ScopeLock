@@ -13,10 +13,13 @@ import { cn } from "@/shared/lib/utils";
 export function Row({
   label,
   strong,
+  tone,
   children,
 }: {
   label: string;
   strong?: boolean;
+  /** "waiting": money the client owes now (waiting ink on the wash). */
+  tone?: "waiting";
   children: React.ReactNode;
 }) {
   return (
@@ -24,9 +27,13 @@ export function Row({
       className={cn(
         "flex items-baseline justify-between gap-4",
         strong && "border-t pt-2 text-[15px] font-semibold",
+        tone === "waiting" &&
+          "-mx-2 rounded-md bg-warning-soft px-2 py-1 font-medium text-warning-ink",
       )}
     >
-      <dt className={strong ? undefined : "text-muted-foreground"}>{label}</dt>
+      <dt className={strong || tone ? undefined : "text-muted-foreground"}>
+        {label}
+      </dt>
       <dd className="tabular-nums">{children}</dd>
     </div>
   );
@@ -47,16 +54,18 @@ export function ChangeRow({
       ? "Being updated"
       : CHANGE_STATUS_LABELS[change.status];
   return (
-    <li>
+    <li className="min-w-0">
       <Link
         href={`/c/${token}/changes/${change.number}`}
-        className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50"
+        className="flex min-w-0 items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50"
       >
         <span className="w-14 shrink-0 font-mono text-[11px] tracking-[0.08em] text-muted-foreground">
           {changeLabel(change.number)}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium">{change.title}</span>
+          <span className="line-clamp-2 block font-medium break-words">
+            {change.title}
+          </span>
           <span
             className={cn(
               "text-xs",
@@ -71,7 +80,7 @@ export function ChangeRow({
         </span>
         <span
           className={cn(
-            "tabular-nums",
+            "shrink-0 tabular-nums",
             ["rejected", "withdrawn"].includes(change.status) &&
               "text-muted-foreground line-through",
           )}
@@ -99,7 +108,9 @@ export function PaymentRow({
   const body = (
     <>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium">{item.label}</span>
+        <span className="line-clamp-2 block font-medium break-words">
+          {item.label}
+        </span>
         <span
           className={cn(
             "text-xs",
@@ -112,7 +123,7 @@ export function PaymentRow({
           {CLIENT_PAYMENT_LABELS[item.state]}
         </span>
       </span>
-      <span className="grid text-right tabular-nums">
+      <span className="grid shrink-0 text-right tabular-nums">
         {money(item.payable)}
         {item.tax > 0 && (
           <span className="text-xs text-muted-foreground">incl. GST</span>
@@ -129,16 +140,18 @@ export function PaymentRow({
     </>
   );
   return (
-    <li>
+    <li className="min-w-0">
       {item.payment ? (
         <Link
           href={`/c/${token}/pay/${item.payment.id}`}
-          className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50"
+          className="flex min-w-0 items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50"
         >
           {body}
         </Link>
       ) : (
-        <div className="flex items-center gap-3 px-4 py-3 text-sm">{body}</div>
+        <div className="flex min-w-0 items-center gap-3 px-4 py-3 text-sm">
+          {body}
+        </div>
       )}
     </li>
   );
