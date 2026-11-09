@@ -20,6 +20,11 @@ colors:
   hairline: "#e3e6eb"
   field-edge: "#d6dae1"
   document-desk: "#ebe8e2"
+  # Dark surfaces: the default document cover, its photo overlay base, and
+  # the landing page's record panel / social card.
+  document-cover: "#111318"
+  cover-overlay: "#0f1014"
+  night-panel: "#111a2c"
 typography:
   display:
     fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
@@ -56,12 +61,153 @@ typography:
     fontWeight: 600
     lineHeight: 1.08
     letterSpacing: "-0.01em"
+  # App, small steps
+  caption:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.4
+  small:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.4
+  # App, larger moments (sign-in code, auth showcase, onboarding)
+  code-digits:
+    fontFamily: "Geist Mono, ui-monospace, monospace"
+    fontSize: "22px"
+    fontWeight: 500
+    lineHeight: 1.2
+  showcase-figure:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "26px"
+    fontWeight: 600
+    lineHeight: 1
+  onboarding-title:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 600
+    lineHeight: 1.2
+  # Marketing site (Persuade): lead text and display steps
+  marketing-lead:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 400
+    lineHeight: 1.6
+  hero-lead:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
+    lineHeight: 1.6
+  wordmark:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "19px"
+    fontWeight: 600
+    lineHeight: 1.2
+  marketing-h2:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "32px"
+    fontWeight: 600
+    lineHeight: 1.08
+  legal-title:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "34px"
+    fontWeight: 600
+    lineHeight: 1.08
+  marketing-h2-wide:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "42px"
+    fontWeight: 600
+    lineHeight: 1.08
+  legal-title-wide:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "44px"
+    fontWeight: 600
+    lineHeight: 1.08
+  hero:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "40px"
+    fontWeight: 600
+    lineHeight: 1.02
+  hero-wide:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "56px"
+    fontWeight: 600
+    lineHeight: 1.02
+  hero-xl:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "62px"
+    fontWeight: 600
+    lineHeight: 1.02
+  # Client documents (Cormorant Garamond), sized to the sheet
+  document-h3:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.2rem"
+    fontWeight: 600
+    lineHeight: 1.2
+  document-cover-line:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.35rem"
+    fontWeight: 600
+    lineHeight: 1.2
+  document-h2:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.55rem"
+    fontWeight: 600
+    lineHeight: 1.15
+  document-h2-wide:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.85rem"
+    fontWeight: 600
+    lineHeight: 1.15
+  document-title-compact:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.9rem"
+    fontWeight: 600
+    lineHeight: 1.08
+  document-title:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "2.1rem"
+    fontWeight: 600
+    lineHeight: 1.06
+  document-figure:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "2.2rem"
+    fontWeight: 600
+    lineHeight: 1
+  document-title-wide:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "2.85rem"
+    fontWeight: 600
+    lineHeight: 1.06
+  # Email (inline styles; email apps ignore the site CSS)
+  email-body:
+    fontFamily: "Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.5
+  email-title:
+    fontFamily: "Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "20px"
+    fontWeight: 600
+    lineHeight: 1.3
+  email-mono:
+    fontFamily: "SFMono-Regular, Menlo, Consolas, monospace"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.5
+  email-figure:
+    fontFamily: "Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: 1.1
 rounded:
   sm: "0.3rem"
   md: "0.4rem"
   lg: "0.5rem"
   xl: "0.7rem"
   pill: "9999px"
+  email: "12px"
 spacing:
   xs: "4px"
   sm: "8px"
@@ -195,6 +341,10 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 - **Body** (400, 0.875rem, 1.5): rows, descriptions, form text; prose capped near 65ch (`max-w-prose`).
 - **Label** (400, 0.6875rem, uppercase, 0.12–0.14em tracking): mono column heads, card captions ("APPROVED WORK", "DRAFT", "LIVE PREVIEW").
 - **Document display** (Cormorant Garamond 600, about 2.4rem, 1.08): titles and the total investment figure inside client documents.
+- **Small steps:** caption 12px (badges, meta under a row) and small 13px (compact UI text, document fine print, footers).
+- **Marketing (Persuade only):** lead text 17px (hero lead 18px), section headings 32px → 42px wide, the hero 40px → 56px → 62px, legal titles 34px → 44px. These never appear inside the app.
+- **Documents:** the serif steps scale with the sheet: h3 1.2rem, h2 1.55rem → 1.85rem wide, titles 2.1rem → 2.85rem wide (1.9rem on a change order's compact cover), figures 2.2–2.4rem. Accounts documents (invoice, statement) stay in Geist at body and small sizes.
+- **Email:** inline sizes 16px / 20px / 30px with Roboto and a system mono, because email apps ignore the site's CSS; the only place those fonts appear.
 
 ### Named Rules
 

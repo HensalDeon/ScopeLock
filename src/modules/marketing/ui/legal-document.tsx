@@ -30,7 +30,7 @@ export function LegalDocument({
         <h1 className="text-[34px] leading-[1.08] font-semibold tracking-[-0.035em] sm:text-[44px]">
           {title}
         </h1>
-        <div className="max-w-[68ch] text-[16.5px] leading-relaxed text-pretty text-muted-foreground">
+        <div className="max-w-[68ch] text-[17px] leading-relaxed text-pretty text-muted-foreground">
           {intro}
         </div>
       </header>

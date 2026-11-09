@@ -47,7 +47,7 @@ export function SmallRequests() {
                 <li key={item.ask} className="flex items-end text-[14.5px]">
                   <span className="min-w-0">
                     <span className="block">&ldquo;{item.ask}&rdquo;</span>
-                    <span className="block text-[12.5px] text-muted-foreground">
+                    <span className="block text-[12px] text-muted-foreground">
                       {item.note}
                     </span>
                   </span>

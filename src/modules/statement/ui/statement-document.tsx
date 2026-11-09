@@ -60,7 +60,7 @@ export function StatementDocument({
         <Meta label="Agreed scope">
           {money(s.agreed.total)}
           {s.agreed.approvedBy && (
-            <span className="block text-[0.8rem] text-[#6b6f78]">
+            <span className="block text-[13px] text-[#6b6f78]">
               Approved by {s.agreed.approvedBy.name} on{" "}
               {formatDate(s.agreed.approvedBy.at, { withYear: true })}
             </span>
@@ -122,7 +122,7 @@ export function StatementDocument({
         </div>
       </dl>
 
-      <footer className="mt-10 border-t pt-4 text-[0.8rem] text-pretty text-[#3a3d44]">
+      <footer className="mt-10 border-t pt-4 text-[13px] text-pretty text-[#3a3d44]">
         Every approval above is kept as a signed record of exactly what was
         approved, by whom and when. Amounts with GST follow the invoices.
       </footer>
@@ -179,12 +179,12 @@ function Line({
 }) {
   return (
     <li className="grid [break-inside:avoid] grid-cols-[3.5rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5 text-[0.9rem]">
-      <span className="font-mono text-[0.8rem] text-[#6b6f78] tabular-nums">
+      <span className="font-mono text-[13px] text-[#6b6f78] tabular-nums">
         {lead}
       </span>
       <span className="min-w-0">
         <span className="block text-pretty">{title}</span>
-        <span className="block text-[0.8rem] text-[#6b6f78]">{status}</span>
+        <span className="block text-[13px] text-[#6b6f78]">{status}</span>
       </span>
       <span
         className={cn(

@@ -149,7 +149,7 @@ function Step({
         />
       </div>
       <div className="grid min-w-0 gap-2">
-        <p className="text-[12.5px] text-muted-foreground">{label}</p>
+        <p className="text-[12px] text-muted-foreground">{label}</p>
         {children}
       </div>
     </li>

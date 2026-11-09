@@ -172,7 +172,7 @@ export function ChangeOrderDocument({
                 <td className="py-2.5 pr-3">
                   <span className="font-medium">{item.title}</span>
                   {item.description && (
-                    <span className="mt-0.5 block text-[0.82rem] leading-relaxed text-pretty text-[#565a63]">
+                    <span className="mt-0.5 block text-[13px] leading-relaxed text-pretty text-[#565a63]">
                       {item.description}
                     </span>
                   )}

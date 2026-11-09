@@ -189,12 +189,12 @@ export function InvoiceDocument({
           <dd>{money(invoice.total)}</dd>
         </div>
       </dl>
-      <p className="mt-2 ml-auto max-w-xs text-right text-[0.8rem] text-pretty text-[#3a3d44]">
+      <p className="mt-2 ml-auto max-w-xs text-right text-[13px] text-pretty text-[#3a3d44]">
         {amountInWords(invoice.total, invoice.currency)}
       </p>
 
       {invoice.export && (
-        <div className="mt-8 grid gap-1 rounded border px-4 py-3 text-[0.8rem] leading-relaxed">
+        <div className="mt-8 grid gap-1 rounded border px-4 py-3 text-[13px] leading-relaxed">
           <p className="font-semibold">{invoice.export.endorsement}</p>
           <p className="text-[#3a3d44]">
             LUT ARN {invoice.export.lutArn} · Country of destination{" "}
@@ -211,7 +211,7 @@ export function InvoiceDocument({
         <InvoicePayToBlock payTo={invoice.payTo} />
       )}
 
-      <footer className="mt-10 grid gap-3 border-t pt-4 text-[0.8rem] text-[#3a3d44] @md:grid-cols-[1fr_auto]">
+      <footer className="mt-10 grid gap-3 border-t pt-4 text-[13px] text-[#3a3d44] @md:grid-cols-[1fr_auto]">
         <div className="grid gap-1">
           {invoice.reverseCharge === false && (
             <p>Tax payable on reverse charge: No</p>

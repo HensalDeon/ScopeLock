@@ -86,7 +86,7 @@ export function ClassicDocument({
             >
               <p
                 className={cn(
-                  "text-[1.6rem] leading-none text-[#1d1f24]",
+                  "text-[1.55rem] leading-none text-[#1d1f24]",
                   headingFont,
                 )}
               >
