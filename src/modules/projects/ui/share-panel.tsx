@@ -5,6 +5,7 @@ import { formatDateTime } from "@/shared/lib/dates";
 import { IDLE } from "@/shared/lib/form-state";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { ShareLink } from "@/shared/ui/share-link";
 import { SideCard, SideCardText, SideCardTitle } from "@/shared/ui/side-card";
 import {
@@ -162,7 +163,12 @@ function ReplaceLink({ projectId }: { projectId: string }) {
   const panel = useInlinePanel();
   if (!panel.open) {
     return (
-      <Button type="button" variant="ghost" {...panel.trigger("open")}>
+      <Button
+        type="button"
+        variant="ghost"
+        className={TOUCH}
+        {...panel.trigger("open")}
+      >
         Replace link
       </Button>
     );
@@ -188,7 +194,12 @@ function ReplaceLink({ projectId }: { projectId: string }) {
           variant="destructive"
           onSuccess={panel.close}
         />
-        <Button type="button" variant="ghost" onClick={panel.close}>
+        <Button
+          type="button"
+          variant="ghost"
+          className={TOUCH}
+          onClick={panel.close}
+        >
           Keep current link
         </Button>
       </div>
@@ -229,7 +240,7 @@ function ActionButton({
         type="submit"
         variant={variant}
         disabled={pending}
-        className={cn(variant === "default" && "w-full")}
+        className={cn(variant === "default" && "w-full", TOUCH)}
       >
         {pending ? pendingLabel : label}
       </Button>

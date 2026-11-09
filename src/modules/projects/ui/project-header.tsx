@@ -4,6 +4,7 @@ import Link from "next/link";
 import { clientFirstName, type Client } from "@/modules/clients";
 import { BackLink } from "@/shared/ui/back-link";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { isEditable, type Project } from "../domain/project";
 import { ProjectStatusBadge } from "./project-status-badge";
 
@@ -46,14 +47,14 @@ export function ProjectHeader({
         </div>
         <div className="flex flex-wrap gap-2">
           {editable && (
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className={TOUCH}>
               <Link href={`/projects/${project.id}/edit` as Route}>
                 <Pencil aria-hidden />
                 Edit scope
               </Link>
             </Button>
           )}
-          <Button asChild>
+          <Button asChild variant="outline" className={TOUCH}>
             <Link href={`/projects/${project.id}/preview` as Route}>
               <Eye aria-hidden />
               {project.sentAt && !editable

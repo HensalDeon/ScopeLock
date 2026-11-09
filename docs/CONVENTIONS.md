@@ -125,6 +125,8 @@ After a change that other parts of the page show, call `refresh()` from `next/ca
 - **Save buttons use the primary style** (an outlined button looks invisible when disabled). **Edit forms disable Save until `isDirty`.** It compares cleaned values, so "98765 43210" vs "+91 98765 43210" isn't a change. Show "No changes yet" or the saved message next to the button.
 - **Keep inputs controlled and submit by hand** (`onSubmit` → `startTransition(() => action(data))`). React's post-action form reset otherwise clears controlled fields such as a `<select>`.
 - **Repeated rows:** errors use dotted paths (`items.0.amount`), and "touched" uses the row's stable key.
+- **Phone tap targets:** buttons and small links in rows, strips and side cards add `TOUCH` / `TOUCH_LINK` from `shared/ui/touch` so they are at least 44px tall below the `sm` breakpoint; desktop keeps the compact sizes.
+- **One filled button per view**, chosen by the project's state (Send for approval, Ask for ₹X, Confirm received, Remind on WhatsApp); everything else is outline or ghost.
 - **Inline confirmations and small panels** (a button that turns into "Ask Rahul for ₹34,220?", "Delete draft?", a short form) use `useInlinePanel()` from `shared/ui/use-inline-panel`: spread `trigger(key)` on the button and `panel(label)` on the panel. Opening moves focus into the panel (announced by its label), Escape closes it, and closing returns focus to the button. Never hand-roll the open/closed state.
 
 ## 5. Pages and rendering (Next.js 16, Cache Components)

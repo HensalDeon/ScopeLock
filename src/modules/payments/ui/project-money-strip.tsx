@@ -4,6 +4,7 @@ import { formatMoney, type Minor } from "@/shared/lib/money";
 import { whatsappLink } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import type { ScheduleTotals } from "../domain/gst";
 import { nextStep, stillToAsk, type NextStep } from "../domain/next-step";
 import type { ScheduleItem } from "../domain/payment";
@@ -113,7 +114,7 @@ function NextStepRow({
           ). Check it reached your account, then confirm.
         </p>
         <div className="justify-self-start">
-          <PaymentActions {...paymentActionProps(item, ctx)} />
+          <PaymentActions {...paymentActionProps(item, ctx)} primary />
         </div>
       </div>
     );
@@ -135,9 +136,9 @@ function NextStepRow({
         {text && (
           <Button
             asChild
-            variant="outline"
+
             size="sm"
-            className="justify-self-start"
+            className={cn("justify-self-start", TOUCH)}
           >
             <a
               href={

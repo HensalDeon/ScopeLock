@@ -5,6 +5,7 @@ import { useEffect, useId, useState } from "react";
 import { whatsappLink } from "@/shared/lib/phone";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
+import { TOUCH } from "@/shared/ui/touch";
 
 /**
  * A client link with Copy and WhatsApp buttons. `message` is the text that
@@ -52,6 +53,7 @@ export function ShareLink({
         <Button
           type="button"
           variant="outline"
+          className={TOUCH}
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(url);
@@ -64,7 +66,11 @@ export function ShareLink({
           {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
           {copied ? "Copied" : "Copy link"}
         </Button>
-        <Button asChild variant={primary ? "default" : "outline"}>
+        <Button
+          asChild
+          variant={primary ? "default" : "outline"}
+          className={TOUCH}
+        >
           <a href={whatsapp} target="_blank" rel="noopener noreferrer">
             <MessageCircle aria-hidden />
             WhatsApp

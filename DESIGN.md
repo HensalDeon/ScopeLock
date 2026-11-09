@@ -235,7 +235,7 @@ Gently rounded and consistent. Controls (buttons, inputs, selects) use an 8px ra
 
 Precise and restrained: compact, crisp, one clear next step.
 
-- **Shape:** gently rounded (8px), 32px tall (28px small, 24px extra-small), 14px medium text.
+- **Shape:** gently rounded (8px), 32px tall (28px small, 24px extra-small), 14px medium text. On phones, actions in rows and side cards grow to 44px tall to tap (`TOUCH`, `TOUCH_LINK`).
 - **Primary:** ink navy fill, white text; at most one per view, for the next step ("Send for approval", "Ask for ₹33,984").
 - **Hover / Focus:** primary lightens to 80% ink; focus shows a 3px emerald ring at 50% plus an emerald border; pressing nudges the button down 1px.
 - **Outline:** white with a hairline border, quiet fill on hover; the default for secondary actions ("Ask for payment", "+ Add a line").

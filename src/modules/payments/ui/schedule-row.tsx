@@ -3,6 +3,8 @@ import type { ComponentProps } from "react";
 import Link from "next/link";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
+import { cn } from "@/shared/lib/utils";
+import { TOUCH_LINK } from "@/shared/ui/touch";
 import type { ScheduleItem } from "../domain/payment";
 import { PaymentActions } from "./payment-actions";
 import { PaymentStateBadge } from "./payment-state-badge";
@@ -40,7 +42,7 @@ export function ScheduleRow({
     <li className="grid gap-3 px-4 py-4 sm:px-5">
       <div className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
         <span className="pt-0.5 font-mono text-xs text-muted-foreground tabular-nums">
-          {number ?? "+"}
+          {number === null ? "+" : String(number).padStart(2, "0")}
         </span>
         <div className="grid min-w-0 gap-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -56,20 +58,24 @@ export function ScheduleRow({
               ))}
             </ul>
           )}
-          {(item.tax > 0 || invoice) && (
+          {item.tax > 0 && (
             <p className="text-xs text-muted-foreground tabular-nums">
-              {item.tax > 0 &&
-                `${money(item.total)} + ${money(item.tax)} GST${invoice ? " · " : ""}`}
-              {invoice && (
-                <Link
-                  href={
-                    `/projects/${ctx.projectId}/invoices/${invoice.id}` as Route
-                  }
-                  className="font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  Invoice {invoice.number}
-                </Link>
-              )}
+              {money(item.total)} + {money(item.tax)} GST
+            </p>
+          )}
+          {invoice && (
+            <p className="text-xs tabular-nums">
+              <Link
+                href={
+                  `/projects/${ctx.projectId}/invoices/${invoice.id}` as Route
+                }
+                className={cn(
+                  "font-medium text-foreground underline-offset-4 hover:underline",
+                  TOUCH_LINK,
+                )}
+              >
+                Invoice {invoice.number}
+              </Link>
             </p>
           )}
         </div>
@@ -77,7 +83,7 @@ export function ScheduleRow({
           {money(item.payable)}
         </p>
       </div>
-      <div className="sm:pl-[2.5rem]">
+      <div className="pl-[2.5rem]">
         <PaymentActions {...paymentActionProps(item, ctx)} />
       </div>
     </li>

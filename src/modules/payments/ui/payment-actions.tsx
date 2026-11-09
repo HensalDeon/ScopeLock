@@ -7,6 +7,7 @@ import { formatIsoDate } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { ShareLink } from "@/shared/ui/share-link";
 import {
   INLINE_PANEL_FOCUS,
@@ -47,7 +48,13 @@ function Run({
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <Button type="submit" size="sm" variant={variant} disabled={pending}>
+      <Button
+        type="submit"
+        size="sm"
+        className={TOUCH}
+        variant={variant}
+        disabled={pending}
+      >
         {pending ? pendingLabel : label}
       </Button>
       {state.status === "error" && (state.message || state.fieldErrors) && (
@@ -86,7 +93,7 @@ export function PaymentActions({
   /** GST with no client state on record: the invoice uses yours. */
   stateFallback?: { yourState: string; clientHref: string } | null;
 }) {
-  const panels = useInlinePanel<"ask" | "reject" | "received">();
+  const panels = useInlinePanel<"ask" | "reject" | "received" | "cancel">();
   const { open, close } = panels;
   const ids = { projectId, paymentId: item.payment?.id ?? "" };
 
@@ -132,7 +139,13 @@ export function PaymentActions({
             label={`Ask for ${amount}`}
             pendingLabel="Asking…"
           />
-          <Button type="button" size="sm" variant="ghost" onClick={close}>
+          <Button
+            type="button"
+            size="sm"
+            className={TOUCH}
+            variant="ghost"
+            onClick={close}
+          >
             Not yet
           </Button>
         </div>
@@ -141,6 +154,7 @@ export function PaymentActions({
       <Button
         type="button"
         size="sm"
+        className={TOUCH}
         variant={primary ? "default" : "outline"}
         {...panels.trigger("ask")}
       >
@@ -196,10 +210,12 @@ export function PaymentActions({
               fields={ids}
               label="Confirm received"
               pendingLabel="Confirming…"
+              variant={primary ? "default" : "outline"}
             />
             <Button
               type="button"
               size="sm"
+              className={TOUCH}
               variant="outline"
               {...panels.trigger("reject")}
             >
@@ -224,9 +240,46 @@ export function PaymentActions({
           url={share.url}
           phone={share.phone}
           message={share.message}
+          primary={primary}
         />
       )}
-      {open === "received" ? (
+      {open === "cancel" ? (
+        <div
+          {...panels.panel(`Cancel the ${amount} request`)}
+          className={cn(
+            "grid gap-2 rounded-lg border bg-background p-3",
+            INLINE_PANEL_FOCUS,
+          )}
+        >
+          <p className="text-sm text-pretty">
+            Cancel the{" "}
+            <span className="font-medium tabular-nums">{amount}</span> request?{" "}
+            {item.payment?.invoice
+              ? `Invoice ${item.payment.invoice.number} is marked cancelled and `
+              : ""}
+            {clientFirstName}&apos;s pay page stops asking. You can ask again
+            later; that issues a new invoice.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Run
+              action={cancelPaymentRequest}
+              fields={ids}
+              label="Cancel request"
+              pendingLabel="Cancelling…"
+              variant="destructive"
+            />
+            <Button
+              type="button"
+              size="sm"
+              className={TOUCH}
+              variant="ghost"
+              onClick={close}
+            >
+              Keep it
+            </Button>
+          </div>
+        </div>
+      ) : open === "received" ? (
         <div
           {...panels.panel("Mark the payment as received")}
           className={cn("rounded-lg", INLINE_PANEL_FOCUS)}
@@ -238,18 +291,21 @@ export function PaymentActions({
           <Button
             type="button"
             size="sm"
+            className={TOUCH}
             variant="outline"
             {...panels.trigger("received")}
           >
             Mark as received
           </Button>
-          <Run
-            action={cancelPaymentRequest}
-            fields={ids}
-            label="Cancel request"
-            pendingLabel="Cancelling…"
+          <Button
+            type="button"
+            size="sm"
+            className={TOUCH}
             variant="ghost"
-          />
+            {...panels.trigger("cancel")}
+          >
+            Cancel request
+          </Button>
         </div>
       )}
     </div>

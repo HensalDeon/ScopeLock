@@ -5,6 +5,7 @@ import { useActionState, useId, useState, useTransition } from "react";
 import { todayInIndia } from "@/shared/lib/dates";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import { Input } from "@/shared/ui/input";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { Textarea } from "@/shared/ui/textarea";
@@ -113,10 +114,16 @@ export function ReceivedForm({
           </p>
         )}
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
+        <Button type="submit" size="sm" className={TOUCH} disabled={pending}>
           {pending ? "Saving…" : "Mark as received"}
         </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+        <Button
+          type="button"
+          size="sm"
+          className={TOUCH}
+          variant="ghost"
+          onClick={onCancel}
+        >
           Cancel
         </Button>
       </div>
@@ -162,10 +169,16 @@ export function RejectForm({
           </p>
         )}
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
+        <Button type="submit" size="sm" className={TOUCH} disabled={pending}>
           {pending ? "Sending…" : "Send to client"}
         </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+        <Button
+          type="button"
+          size="sm"
+          className={TOUCH}
+          variant="ghost"
+          onClick={onCancel}
+        >
           Cancel
         </Button>
       </div>

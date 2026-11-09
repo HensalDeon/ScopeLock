@@ -1,5 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { cn } from "@/shared/lib/utils";
+import { TOUCH_LINK } from "@/shared/ui/touch";
 
 /** "See all 18" beside a section that shows only the latest few. */
 export function SeeAll({
@@ -15,7 +17,10 @@ export function SeeAll({
   return (
     <Link
       href={href as Route}
-      className="text-sm font-medium underline-offset-4 hover:underline"
+      className={cn(
+        "text-sm font-medium underline-offset-4 hover:underline",
+        TOUCH_LINK,
+      )}
     >
       See all {total}
     </Link>
