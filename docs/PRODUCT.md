@@ -1,5 +1,7 @@
 # ScopeLock: product brief
 
+<!-- impeccable:product-schema 1 -->
+
 > The source for pitch decks, demo videos, the website and investor or partner conversations. Every claim here is true of the product as built. Planned work is marked **Coming**. Update this file whenever a user-visible feature ships (see `docs/CONVENTIONS.md`, Definition of done).
 >
 > **Status as of 8 Nov 2026:** proposal, client approval, change requests, payments and invoices (with GST) are built and tested. PDFs are next (Phase 6). Not yet launched or charging.
@@ -286,3 +288,48 @@ Not live yet; prices may change before launch.
 - **Signed record:** the saved, fingerprinted, signed copy of exactly what the client saw when they answered.
 - **Milestone payment:** a share of the price due at a stage (e.g. 30% advance, 30% at design approval, 40% before launch).
 - **UTR:** the bank reference number of a UPI or bank payment, which the client reports when they pay.
+
+---
+
+## 16. Product record (for design work)
+
+The sections below are the durable product facts design work starts from (they are read by the Impeccable design skill). Visual decisions live in code and, later, `DESIGN.md`, not here.
+
+### Platform
+
+web
+
+A responsive web app, installable as a PWA. The freelancer's app and the client's portal are both web.
+
+### Positioning
+
+Three things together that a neighbouring product can't truthfully claim:
+
+- **Proof of what was agreed.** Every proposal and change request is frozen when sent, and every answer is saved as a fingerprinted, signed record that is re-checked each time it's shown (§7).
+- **India-native money.** UPI QR codes with the amount filled in, the client's "I've paid" with the UTR, and GST tax invoices (CGST + SGST or IGST, exports under LUT). ScopeLock never holds the money.
+- **No friction for the client.** One link, usually sent on WhatsApp; no account, no app, one tap to approve.
+
+### Operating Context
+
+- **Where conversations happen:** WhatsApp first, then calls and email. Requests arrive as small messages ("can you just add…"), not formal briefs.
+- **The freelancer:** writes proposals and change requests on a laptop; uses the phone for quick tasks between calls: sending a link on WhatsApp, checking whether a client answered or paid, confirming a payment.
+- **The client:** opens the link on a phone, from WhatsApp, often on mobile data. Pays with a UPI app or a bank transfer (NEFT / IMPS / RTGS), then reports the UTR.
+- **Money and paperwork:** amounts in rupees (other currencies supported), milestone splits like 30/30/40, GST invoices numbered per financial year (April to March), documents printed or saved as PDF to share or file.
+
+### Evidence on Hand
+
+- **No real users, testimonials, interview results or customer numbers exist yet** (as of 9 Nov 2026). Every proof slot on the site, in decks or in the app stays empty or uses clearly illustrative content until real data exists. Never invent statistics, quotes, logos or counts.
+- **The demo story is illustrative:** Asha (freelancer, Kochi), Rahul Mehta of Mehta Interiors, a ₹80,000 website, CR-001 ₹15,000. Use it as an example, never as a customer story.
+- **Real assets:** the Focus Lock mark and wordmark (`src/shared/ui/brand`), and the working product itself, which can be screenshotted for any surface.
+
+### Product Principles
+
+1. **Proof over persuasion.** Anything a client agrees to leaves a frozen, verifiable record; nothing changes after it's sent.
+2. **No friction for the client.** One link, no login, works on a phone over mobile data; every client screen must be understood in seconds.
+3. **Money is exact and stays the freelancer's.** Whole paise, figures that match the invoice to the paisa, and clients paying the freelancer directly.
+4. **Written like an Indian freelancer would say it.** Plain, specific, real rupee amounts and names; no hype.
+5. **Only true claims.** Built is built, planned is marked Coming, and no number is shown that wasn't measured.
+
+### Accessibility & Inclusion
+
+No formal standard (such as WCAG 2.2 AA) has been chosen yet. Established needs: every screen works at 390px wide with no sideways scrolling; client pages load fast on mobile data; copy is plain English that a non-technical client follows; amounts use Indian formatting (₹1,13,280).
