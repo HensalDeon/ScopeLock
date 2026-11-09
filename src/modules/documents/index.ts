@@ -4,6 +4,7 @@
  */
 export {
   approvalAmount,
+  gstChangeNote,
   type ChangeOrderData,
   type ProposalDocumentData,
 } from "./domain/document-data";

@@ -1,5 +1,8 @@
 import "server-only";
 import { cache } from "react";
+import { formatMoney } from "@/shared/lib/money";
+import { findClientInWorkspace } from "@/modules/clients/server";
+
 import { documentTitle } from "@/shared/lib/document-title";
 import type { ObjectId } from "mongodb";
 import { notFound } from "next/navigation";
@@ -26,9 +29,14 @@ import type {
 import {
   getDocumentImages,
   getPortalDocumentSettings,
+  gstChangeNote,
 } from "@/modules/documents/server";
 import type { Invoice } from "@/modules/invoices";
-import { findInvoice, findReplacementNumber } from "@/modules/invoices/server";
+import {
+  findInvoice,
+  findReplacementNumber,
+  documentTax,
+} from "@/modules/invoices/server";
 import type { Project } from "@/modules/projects";
 import {
   findByPortalTokenHash,
@@ -101,6 +109,8 @@ export type PortalView =
       history: ActivityItem[];
       /** The payment schedule once the proposal is approved. */
       payments: PaymentSchedule | null;
+      /** Approved, but GST now differs from what the proposal showed. */
+      gstNote: string | null;
     };
 
 async function loadPortalView(token: string): Promise<PortalView> {
@@ -108,10 +118,14 @@ async function loadPortalView(token: string): Promise<PortalView> {
   if (opened === "limited") return { state: "limited" };
   const { workspaceId, project, sent, projectId } = opened;
   const state = portalState(project, sent.sentAt);
-  const [{ style, images }, changeDocs, history] = await Promise.all([
+  const clientId = parseObjectId(project.clientId);
+  const [{ style, images }, changeDocs, history, client] = await Promise.all([
     look(workspaceId),
     state === "approved" ? findChangeDocs(workspaceId, projectId) : [],
     listClientHistory(workspaceId, projectId, sent.data.business.name),
+    state === "approved" && clientId
+      ? findClientInWorkspace(workspaceId, clientId)
+      : null,
   ]);
   const changes = changeDocs.map(toChange);
   const payments =
@@ -129,6 +143,14 @@ async function loadPortalView(token: string): Promise<PortalView> {
     totals: project.totals,
     history,
     payments,
+    gstNote: client
+      ? gstChangeNote({
+          shown: sent.data.gstPercent,
+          now: await documentTax(workspaceId, client),
+          clientName: sent.data.client?.name ?? client.name,
+          agreed: formatMoney(sent.data.total, sent.data.currency),
+        })
+      : null,
   };
 }
 

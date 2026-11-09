@@ -1,6 +1,10 @@
 "use client";
 
-import { gstOutcome, type InvoicingSettings } from "@/modules/invoices";
+import {
+  gstOutcome,
+  taxCaseOf,
+  type InvoicingSettings,
+} from "@/modules/invoices";
 import {
   gstinState,
   INDIAN_STATES,
@@ -37,7 +41,13 @@ export function BillingFields({
   errorFor,
   seller,
   who,
+  saved = null,
+  billsInRupees,
 }: {
+  /** Editing: the details as saved, to flag a change in how GST applies. */
+  saved?: Record<BillingField, string> | null;
+  /** New projects for this client would be in INR. */
+  billsInRupees: boolean;
   /** Your GSTIN and state (Settings → Invoices & GST), for the outcome line. */
   seller: Pick<InvoicingSettings, "gstin" | "state">;
   /** The client's first name, or "this client". */
@@ -50,17 +60,9 @@ export function BillingFields({
 }) {
   const inIndia = isIndia(values.country);
   // A valid GSTIN decides the state (as it will on the invoice): show it.
-  const gstin = values.gstin.trim();
-  const fromGstin = isGstinFormat(gstin) ? gstinState(gstin) : null;
-  const outcome = gstOutcome(
-    seller,
-    {
-      state: fromGstin ?? ((values.state || null) as StateCode | null),
-      country: values.country.trim() || null,
-      gstin: fromGstin ? gstin : null,
-    },
-    who,
-  );
+  const fromGstin = stateFromGstin(values.gstin);
+  const outcome = outcomeFor(seller, values, who);
+  const savedOutcome = saved ? outcomeFor(seller, saved, who) : null;
   return (
     <fieldset className="grid gap-5 rounded-lg border p-4">
       <legend className="px-1 text-sm font-medium">
@@ -173,6 +175,47 @@ export function BillingFields({
       >
         {outcome}
       </p>
+      {savedOutcome && savedOutcome !== outcome && (
+        <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
+          This changes how future invoices to {who} are taxed. Invoices already
+          issued stay as they are; to correct an unpaid one, cancel that payment
+          request and ask again.
+        </p>
+      )}
+      {billsInRupees &&
+        taxCaseOf(seller, { country: values.country.trim() || null }) ===
+          "export" && (
+          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
+            GST law counts this as an export only if you&apos;re paid in foreign
+            currency, or in rupees through a bank route the RBI allows. If {who}{" "}
+            will pay in rupees by UPI, it may not qualify: consider billing them
+            in their own currency.
+          </p>
+        )}
     </fieldset>
+  );
+}
+
+/** A valid GSTIN's state (it decides the invoice's place of supply). */
+function stateFromGstin(raw: string): StateCode | null {
+  const gstin = raw.trim();
+  return isGstinFormat(gstin) ? gstinState(gstin) : null;
+}
+
+/** What GST invoices to the client carry, for these details. */
+function outcomeFor(
+  seller: Pick<InvoicingSettings, "gstin" | "state">,
+  v: Record<BillingField, string>,
+  who: string,
+): string {
+  const fromGstin = stateFromGstin(v.gstin);
+  return gstOutcome(
+    seller,
+    {
+      state: fromGstin ?? ((v.state || null) as StateCode | null),
+      country: v.country.trim() || null,
+      gstin: fromGstin ? v.gstin.trim() : null,
+    },
+    who,
   );
 }

@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import type { ObjectId } from "mongodb";
 import { parseObjectId } from "@/shared/db/ids";
+import { formatMoney } from "@/shared/lib/money";
 import type {
   ProposalDefaults,
   ProposalDocumentData,
@@ -9,6 +10,7 @@ import type {
 import {
   getDocumentImages,
   getDocumentSettings,
+  gstChangeNote,
   termsForTax,
 } from "@/modules/documents/server";
 import type { TaxCase } from "@/modules/invoices";
@@ -67,6 +69,19 @@ async function loadGetProposalDocument(projectId: string) {
     data:
       sent?.data ??
       currentProposalData(project, context, settings.defaults, tax),
+    // Sent, and GST for this client has changed since: say so under it.
+    gstNote:
+      sent && project.client
+        ? gstChangeNote({
+            shown: sent.data.gstPercent,
+            now: await documentTax(
+              context.workspace.workspaceId,
+              project.client,
+            ),
+            clientName: project.client.name,
+            agreed: formatMoney(sent.data.total, sent.data.currency),
+          })
+        : null,
   };
 }
 

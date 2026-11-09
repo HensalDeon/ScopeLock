@@ -1,6 +1,6 @@
 import "server-only";
 import type { ChangeRequest } from "@/modules/changes";
-import { gstHints } from "@/modules/invoices";
+import { gstHints, taxCaseOf } from "@/modules/invoices";
 import { findInvoicing } from "@/modules/invoices/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { hasAnyMethod } from "../domain/methods";
@@ -13,6 +13,12 @@ export type ProjectMoney = PaymentSchedule & {
   methodsReady: boolean;
   /** GST applies but the client has no state or GSTIN on record. */
   stateFallback: { yourState: string; clientHref: string } | null;
+  /**
+   * The client is abroad (zero-rated export) but the project is in rupees:
+   * GST law counts it as an export only if paid in foreign exchange (or INR
+   * through an RBI-permitted route), IGST Act s.2(6).
+   */
+  exportCheck: { clientHref: string } | null;
   /** When this was read (for "asked 3 days ago" style decisions). */
   now: Date;
 };
@@ -46,6 +52,13 @@ export async function getProjectMoney(
             yourState: gst.fallbackState,
             clientHref: `/clients/${client.id}#billing`,
           }
+        : null,
+    exportCheck:
+      client &&
+      project.currency === "INR" &&
+      taxCaseOf(settings, client as Parameters<typeof taxCaseOf>[1]) ===
+        "export"
+        ? { clientHref: `/clients/${client.id}#billing` }
         : null,
   };
 }

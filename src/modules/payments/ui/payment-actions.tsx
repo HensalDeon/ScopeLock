@@ -77,9 +77,12 @@ export function PaymentActions({
   clientEmail = null,
   share,
   stateFallback,
+  exportCheck = null,
   breakdown,
   primary = false,
 }: {
+  /** Abroad but billed in rupees: may not count as an export (s.2(6)). */
+  exportCheck?: { clientHref: string } | null;
   item: ScheduleItem;
   projectId: string;
   /** Formatted total, e.g. "₹47,000". */
@@ -138,6 +141,15 @@ export function PaymentActions({
               add their state or GSTIN
             </Link>{" "}
             first.
+          </p>
+        )}
+        {exportCheck && (
+          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
+            {clientFirstName} is outside India, so this invoice has no GST
+            (export under your LUT). GST law counts it as an export only if
+            you&apos;re paid in foreign currency, or in rupees through a bank
+            route the RBI allows. A rupee UPI payment from them may not qualify,
+            so check how they&apos;ll pay before relying on it.
           </p>
         )}
         <div className="flex flex-wrap gap-2">

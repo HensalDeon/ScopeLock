@@ -202,6 +202,11 @@ export async function PortalPage({ token }: { token: string }) {
           images={view.images}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
+        {view.gstNote && (
+          <p className="mx-auto mt-4 max-w-[210mm] rounded-md bg-white/80 px-4 py-3 text-sm text-pretty text-[#3a3d44]">
+            {view.gstNote}
+          </p>
+        )}
 
         {state === "awaiting" && (
           <section

@@ -80,6 +80,7 @@ async function ProjectDetail({
     portalUrl: share.url,
     unlockedBy: unlockingSteps(project),
     stateFallback: money.stateFallback,
+    exportCheck: money.exportCheck,
   };
 
   const scope = (

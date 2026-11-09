@@ -20,6 +20,8 @@ export type ScheduleRowContext = {
   unlockedBy: Record<string, string>;
   /** GST applies but the client has no state or GSTIN on record. */
   stateFallback: { yourState: string; clientHref: string } | null;
+  /** Abroad but billed in rupees: may not count as an export. */
+  exportCheck?: { clientHref: string } | null;
 };
 
 /**
@@ -126,6 +128,7 @@ export function paymentActionProps(
     clientFirstName: ctx.client.firstName,
     clientEmail: ctx.client.email,
     stateFallback: ctx.stateFallback,
+    exportCheck: ctx.exportCheck ?? null,
     share:
       ctx.portalUrl && item.payment
         ? {

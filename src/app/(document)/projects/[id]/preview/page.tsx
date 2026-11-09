@@ -43,7 +43,8 @@ async function Preview({
   params: PageProps<"/projects/[id]/preview">["params"];
 }) {
   const { id } = await params;
-  const { project, data, style, images } = await getProposalDocument(id);
+  const { project, data, style, images, gstNote } =
+    await getProposalDocument(id);
   const footer = `${data.business.name}  ·  Proposal ${data.reference}`;
 
   return (
@@ -93,6 +94,11 @@ async function Preview({
           images={images}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
+        {gstNote && (
+          <p className="mx-auto mt-4 max-w-[210mm] rounded-md bg-white/80 px-4 py-3 text-sm text-pretty text-[#3a3d44]">
+            {gstNote}
+          </p>
+        )}
       </main>
     </>
   );
