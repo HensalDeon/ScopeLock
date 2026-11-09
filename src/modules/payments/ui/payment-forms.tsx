@@ -4,9 +4,10 @@ import { Download } from "lucide-react";
 import { useActionState, useId, useState, useTransition } from "react";
 import { todayInIndia } from "@/shared/lib/dates";
 import { IDLE } from "@/shared/lib/form-state";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { announcing } from "@/shared/ui/announce";
-import { TOUCH } from "@/shared/ui/touch";
+import { TOUCH, TOUCH_LINK } from "@/shared/ui/touch";
 import { Input } from "@/shared/ui/input";
 import { NativeSelect } from "@/shared/ui/native-select";
 import { Textarea } from "@/shared/ui/textarea";
@@ -28,7 +29,10 @@ export function ProofLink({ paymentId }: { paymentId: string }) {
       <button
         type="button"
         disabled={pending}
-        className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
+        className={cn(
+          "inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline",
+          TOUCH_LINK,
+        )}
         onClick={() =>
           start(async () => {
             const result = await paymentProofUrl(paymentId);

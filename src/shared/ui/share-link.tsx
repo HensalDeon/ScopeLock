@@ -18,6 +18,8 @@ export function ShareLink({
   message,
   primary = true,
   compact = false,
+  copyLabel = "Copy link",
+  whatsappLabel = "Send on WhatsApp",
 }: {
   url: string;
   phone: string | null;
@@ -26,6 +28,9 @@ export function ShareLink({
   primary?: boolean;
   /** Buttons only; the link text shows only if copying fails. */
   compact?: boolean;
+  copyLabel?: string;
+  /** Says what happens, e.g. "Send Rahul the pay link on WhatsApp". */
+  whatsappLabel?: string;
 }) {
   const uid = useId();
   const [copied, setCopied] = useState(false);
@@ -57,7 +62,9 @@ export function ShareLink({
           />
         </>
       )}
-      <div className="grid grid-cols-2 gap-2">
+      <div
+        className={compact ? "flex flex-wrap gap-2" : "grid grid-cols-2 gap-2"}
+      >
         <Button
           type="button"
           variant="outline"
@@ -76,7 +83,7 @@ export function ShareLink({
           }}
         >
           {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
-          {copied ? "Copied" : "Copy link"}
+          {copied ? "Copied" : copyLabel}
         </Button>
         <Button
           asChild
@@ -85,7 +92,7 @@ export function ShareLink({
         >
           <a href={whatsapp} target="_blank" rel="noopener noreferrer">
             <MessageCircle aria-hidden />
-            WhatsApp
+            {whatsappLabel}
           </a>
         </Button>
       </div>

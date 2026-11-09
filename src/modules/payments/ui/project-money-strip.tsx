@@ -1,17 +1,20 @@
-import { Check, MessageCircle } from "lucide-react";
-import { formatDate } from "@/shared/lib/dates";
+import { Check } from "lucide-react";
+import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, type Minor } from "@/shared/lib/money";
-import { whatsappLink } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
-import { TOUCH } from "@/shared/ui/touch";
+import { ShareLink } from "@/shared/ui/share-link";
 import type { ScheduleTotals } from "../domain/gst";
-import { nextStep, stillToAsk, type NextStep } from "../domain/next-step";
+import {
+  isReminder,
+  nextStep,
+  stillToAsk,
+  type NextStep,
+} from "../domain/next-step";
 import type { ScheduleItem } from "../domain/payment";
 import { PaymentActions } from "./payment-actions";
 import {
   paymentActionProps,
-  payReminder,
+  payMessage,
   type ScheduleRowContext,
 } from "./schedule-row";
 
@@ -24,10 +27,13 @@ export function ProjectMoneyStrip({
   items,
   totals,
   ctx,
+  now,
 }: {
   items: ScheduleItem[];
   totals: ScheduleTotals;
   ctx: ScheduleRowContext;
+  /** When the data was read (from the server query). */
+  now: Date;
 }) {
   const money = (amount: Minor) => formatMoney(amount, ctx.currency);
   const shown = totals.gst ?? totals;
@@ -41,10 +47,10 @@ export function ProjectMoneyStrip({
       note:
         shown.due > 0
           ? `Asked, waiting for ${ctx.client.firstName}`
-          : "Nothing asked for",
+          : "Nothing asked yet",
       waiting: shown.due > 0,
     },
-    { label: "Still to ask for", value: ask, note: "Not asked for yet" },
+    { label: "Still to ask for", value: ask, note: "Not asked yet" },
     {
       label: totals.gst ? "Total with GST" : "Total",
       value: shown.total,
@@ -58,7 +64,8 @@ export function ProjectMoneyStrip({
       id={`money-${ctx.projectId}`}
       tabIndex={-1}
       aria-label="Where the money stands"
-      className="overflow-hidden rounded-xl border bg-background outline-none"
+      // Takes focus after a money action: visible for keyboard users.
+      className="overflow-hidden rounded-xl border bg-background outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <dl className="grid grid-cols-2 lg:grid-cols-4 lg:[&>*]:border-b-0 lg:[&>*:not(:last-child)]:border-r [&>*:nth-child(-n+2)]:border-b [&>*:nth-child(odd)]:border-r">
         {cells.map((cell) => (
@@ -85,7 +92,7 @@ export function ProjectMoneyStrip({
           </div>
         ))}
       </dl>
-      {step && <NextStepRow step={step} ctx={ctx} money={money} />}
+      {step && <NextStepRow step={step} ctx={ctx} money={money} now={now} />}
     </section>
   );
 }
@@ -94,10 +101,12 @@ function NextStepRow({
   step,
   ctx,
   money,
+  now,
 }: {
   step: NextStep;
   ctx: ScheduleRowContext;
   money: (amount: Minor) => string;
+  now: Date;
 }) {
   const name = ctx.client.firstName;
   const row = "grid gap-3 border-t bg-canvas px-4 py-4 sm:px-5";
@@ -114,8 +123,9 @@ function NextStepRow({
     return (
       <div className={row}>
         <p className="text-sm font-medium text-pretty">
-          {name} says they paid the {item.label} payment ({money(item.payable)}
-          ). Check it reached your account, then confirm.
+          {item.label},{" "}
+          <span className="tabular-nums">{money(item.payable)}</span>: check it
+          reached your account, then confirm.
         </p>
         <div className="justify-self-start">
           <PaymentActions {...paymentActionProps(item, ctx)} primary />
@@ -124,39 +134,46 @@ function NextStepRow({
     );
   }
   if (step.kind === "waiting") {
-    const asked = item.payment?.requestedAt;
+    const payment = item.payment;
     const url =
-      ctx.portalUrl && item.payment
-        ? `${ctx.portalUrl}/pay/${item.payment.id}`
-        : null;
-    const text = url ? `${payReminder(item, ctx)} ${url}` : null;
+      ctx.portalUrl && payment ? `${ctx.portalUrl}/pay/${payment.id}` : null;
+    // The first message isn't a reminder: it becomes one after a few days.
+    const reminder = !!payment && isReminder(payment.requestedAt, now);
     return (
-      <div className={cn(row, "sm:flex sm:items-center sm:justify-between")}>
-        <p className="text-sm text-pretty">
-          Waiting for {name} to pay the {item.label} payment (
-          <span className="tabular-nums">{money(item.payable)}</span>)
-          {asked ? `, asked ${formatDate(asked)}` : ""}.
-        </p>
-        {text && (
-          <Button
-            asChild
-
-            size="sm"
-            className={cn("justify-self-start", TOUCH)}
-          >
-            <a
-              href={
-                ctx.client.phone
-                  ? whatsappLink(ctx.client.phone, text)
-                  : `https://wa.me/?text=${encodeURIComponent(text)}`
+      <div
+        className={cn(
+          row,
+          "sm:flex sm:flex-wrap sm:items-center sm:justify-between",
+        )}
+      >
+        <div className="grid gap-0.5">
+          <p className="text-sm font-medium text-pretty">
+            Waiting for {name} to pay: {item.label},{" "}
+            <span className="tabular-nums">{money(item.payable)}</span>.
+          </p>
+          {payment && (
+            <p className="text-sm text-pretty text-muted-foreground tabular-nums">
+              Asked {formatDateTime(payment.requestedAt)}
+              {payment.invoice ? ` with invoice ${payment.invoice.number}` : ""}
+              {ctx.client.email ? ` · emailed to ${ctx.client.email}` : ""}
+            </p>
+          )}
+        </div>
+        {url && (
+          <div className="justify-self-start">
+            <ShareLink
+              url={url}
+              phone={ctx.client.phone}
+              message={payMessage(item, ctx, { reminder })}
+              compact
+              copyLabel="Copy pay link"
+              whatsappLabel={
+                reminder
+                  ? `Remind ${name} on WhatsApp`
+                  : `Send ${name} the pay link on WhatsApp`
               }
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <MessageCircle aria-hidden />
-              Remind {name} on WhatsApp
-            </a>
-          </Button>
+            />
+          </div>
         )}
       </div>
     );
@@ -172,7 +189,7 @@ function NextStepRow({
       )}
     >
       <p className="text-sm font-medium text-pretty">
-        Next: the {item.label} payment,{" "}
+        Next payment: {item.label},{" "}
         <span className="tabular-nums">{money(item.payable)}</span>.
         {unlockedBy ? ` Ask once ${unlockedBy} is done.` : ""}
       </p>

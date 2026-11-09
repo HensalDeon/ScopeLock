@@ -13,6 +13,8 @@ export type ProjectMoney = PaymentSchedule & {
   methodsReady: boolean;
   /** GST applies but the client has no state or GSTIN on record. */
   stateFallback: { yourState: string; clientHref: string } | null;
+  /** When this was read (for "asked 3 days ago" style decisions). */
+  now: Date;
 };
 
 /** Everything the project page shows about money, for an approved project. */
@@ -37,6 +39,7 @@ export async function getProjectMoney(
   return {
     ...schedule,
     methodsReady: hasAnyMethod(methods),
+    now: new Date(),
     stateFallback:
       gst.fallbackState && client
         ? { yourState: gst.fallbackState, clientHref: `/clients/${client.id}` }

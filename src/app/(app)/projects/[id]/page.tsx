@@ -115,6 +115,7 @@ async function ProjectDetail({
           items={money.items}
           totals={money.totals}
           ctx={ctx}
+          now={money.now}
         />
       )}
 

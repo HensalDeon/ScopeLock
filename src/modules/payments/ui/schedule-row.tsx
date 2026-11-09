@@ -2,11 +2,9 @@ import type { Route } from "next";
 import type { ComponentProps } from "react";
 import Link from "next/link";
 import type { CurrencyCode } from "@/shared/lib/currency";
-import { formatIsoDate } from "@/shared/lib/dates";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { TOUCH_LINK } from "@/shared/ui/touch";
-import { METHOD_LABELS } from "../domain/methods";
 import type { ScheduleItem } from "../domain/payment";
 import { PaymentActions } from "./payment-actions";
 import { PaymentStateBadge } from "./payment-state-badge";
@@ -94,16 +92,6 @@ export function ScheduleRow({
           <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
         ) : actedAbove ? (
           <div className="grid gap-1">
-            {item.payment?.report && (
-              <p className="text-sm text-pretty text-warning-ink">
-                {ctx.client.firstName} says they paid by{" "}
-                {METHOD_LABELS[item.payment.report.method]} on{" "}
-                {formatIsoDate(item.payment.report.paidOn)} · UTR{" "}
-                <span className="font-mono text-xs">
-                  {item.payment.report.reference}
-                </span>
-              </p>
-            )}
             <a
               href={`#money-${ctx.projectId}`}
               className={cn(
@@ -143,13 +131,20 @@ export function paymentActionProps(
         ? {
             url: `${ctx.portalUrl}/pay/${item.payment.id}`,
             phone: ctx.client.phone,
-            message: payReminder(item, ctx),
+            message: payMessage(item, ctx),
           }
         : null,
   };
 }
 
 /** WhatsApp text for a payment that's due (the link goes after it). */
-export function payReminder(item: ScheduleItem, ctx: ScheduleRowContext) {
-  return `Hi ${ctx.client.firstName}, the ${item.label} payment for ${ctx.projectName} is due (${formatMoney(item.payable, ctx.currency)}). You can pay by UPI or bank transfer here:`;
+export function payMessage(
+  item: ScheduleItem,
+  ctx: ScheduleRowContext,
+  { reminder = true }: { reminder?: boolean } = {},
+) {
+  const amount = formatMoney(item.payable, ctx.currency);
+  return reminder
+    ? `Hi ${ctx.client.firstName}, a reminder: the payment for ${ctx.projectName} is due (${item.label}, ${amount}). You can pay by UPI or bank transfer here:`
+    : `Hi ${ctx.client.firstName}, here's the invoice for ${ctx.projectName} (${item.label}, ${amount}). You can pay by UPI or bank transfer here:`;
 }

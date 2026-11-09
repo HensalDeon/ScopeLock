@@ -189,7 +189,7 @@ export function PaymentActions({
           <div className="grid gap-0.5 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 text-sm text-warning-ink">
             <p>
               {clientFirstName} says they paid by {METHOD_LABELS[r.method]} on{" "}
-              {r.paidOn}.
+              {formatIsoDate(r.paidOn)}.
             </p>
             <p className="font-mono text-xs">UTR {r.reference}</p>
             {r.note && <p className="text-pretty">“{r.note}”</p>}

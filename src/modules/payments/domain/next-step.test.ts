@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
-import { nextStep, stillToAsk } from "./next-step";
+import { isReminder, nextStep, stillToAsk } from "./next-step";
 import type { ScheduleItem } from "./payment";
 
 const item = (key: string, state: ScheduleItem["state"], payable = 1000) =>
@@ -50,5 +50,15 @@ describe("stillToAsk", () => {
         item("launch", "upcoming", 6_301_200),
       ]),
     ).toBe(9_699_600);
+  });
+});
+
+describe("isReminder", () => {
+  it("the first few days are a first send, after that a reminder", () => {
+    const asked = new Date("2026-11-09T10:00:00+05:30");
+    expect(isReminder(asked, new Date("2026-11-11T10:00:00+05:30"))).toBe(
+      false,
+    );
+    expect(isReminder(asked, new Date("2026-11-13T10:00:00+05:30"))).toBe(true);
   });
 });

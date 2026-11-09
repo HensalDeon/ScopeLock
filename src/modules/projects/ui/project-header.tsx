@@ -48,18 +48,18 @@ export function ProjectHeader({
               </Link>
               {client.company ? ` · ${client.company}` : ""}
               {sent && (
-                <>
+                <span className="sm:hidden">
                   {" · "}
                   <Link
                     href={`/projects/${project.id}/preview` as Route}
                     className={cn(
-                      "font-medium text-foreground underline-offset-4 hover:underline sm:hidden",
+                      "font-medium text-foreground underline-offset-4 hover:underline",
                       TOUCH_LINK,
                     )}
                   >
                     View sent proposal
                   </Link>
-                </>
+                </span>
               )}
             </p>
           )}
