@@ -1,8 +1,13 @@
 "use client";
 
-import { useActionState, useLayoutEffect, useState } from "react";
+import { useActionState } from "react";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
+import {
+  INLINE_PANEL_FOCUS,
+  useInlinePanel,
+} from "@/shared/ui/use-inline-panel";
+import { cn } from "@/shared/lib/utils";
 import { deleteProject, type ProjectFormState } from "../server/actions";
 
 /** Deletes a draft, after a confirm step. Sent projects can't be deleted. */
@@ -17,16 +22,15 @@ export function DeleteProjectButton({
     deleteProject,
     IDLE,
   );
-  const [confirming, setConfirming] = useState(false);
-  useLayoutEffect(() => () => setConfirming(false), []);
+  const panel = useInlinePanel();
 
-  if (!confirming) {
+  if (!panel.open) {
     return (
       <Button
         type="button"
         variant="ghost"
         className="text-destructive hover:text-destructive"
-        onClick={() => setConfirming(true)}
+        {...panel.trigger("open")}
       >
         Delete draft
       </Button>
@@ -34,7 +38,11 @@ export function DeleteProjectButton({
   }
 
   return (
-    <form action={action} className="grid gap-3 rounded-lg border p-4">
+    <form
+      action={action}
+      {...panel.panel(`Delete ${projectName}`)}
+      className={cn("grid gap-3 rounded-lg border p-4", INLINE_PANEL_FOCUS)}
+    >
       <input type="hidden" name="id" value={projectId} />
       <p className="text-sm">
         Delete <span className="font-medium">{projectName}</span>? The draft and
@@ -44,11 +52,7 @@ export function DeleteProjectButton({
         <Button type="submit" variant="destructive" disabled={pending}>
           {pending ? "Deleting…" : "Delete draft"}
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => setConfirming(false)}
-        >
+        <Button type="button" variant="ghost" onClick={panel.close}>
           Keep it
         </Button>
       </div>

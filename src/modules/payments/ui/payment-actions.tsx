@@ -2,11 +2,16 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useActionState, useLayoutEffect, useState } from "react";
+import { useActionState } from "react";
 import { formatIsoDate } from "@/shared/lib/dates";
+import { cn } from "@/shared/lib/utils";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
+import {
+  INLINE_PANEL_FOCUS,
+  useInlinePanel,
+} from "@/shared/ui/use-inline-panel";
 import { ProofLink, ReceivedForm, RejectForm } from "./payment-forms";
 import { METHOD_LABELS } from "../domain/methods";
 import type { ScheduleItem } from "../domain/payment";
@@ -54,13 +59,6 @@ function Run({
   );
 }
 
-/** Opens a small panel under the row; closes when the page is hidden. */
-function useOpen() {
-  const [open, setOpen] = useState<string | null>(null);
-  useLayoutEffect(() => () => setOpen(null), []);
-  return [open, setOpen] as const;
-}
-
 export function PaymentActions({
   item,
   projectId,
@@ -88,12 +86,19 @@ export function PaymentActions({
   /** GST with no client state on record: the invoice uses yours. */
   stateFallback?: { yourState: string; clientHref: string } | null;
 }) {
-  const [open, setOpen] = useOpen();
+  const panels = useInlinePanel<"ask" | "reject" | "received">();
+  const { open, close } = panels;
   const ids = { projectId, paymentId: item.payment?.id ?? "" };
 
   if (item.state === "upcoming") {
     return open === "ask" ? (
-      <div className="grid gap-2 rounded-lg border bg-background p-3">
+      <div
+        {...panels.panel(`Ask ${clientFirstName} for ${amount}`)}
+        className={cn(
+          "grid gap-2 rounded-lg border bg-background p-3",
+          INLINE_PANEL_FOCUS,
+        )}
+      >
         <p className="text-sm">
           Ask {clientFirstName} for{" "}
           <span className="font-medium tabular-nums">{amount}</span>
@@ -127,12 +132,7 @@ export function PaymentActions({
             label={`Ask for ${amount}`}
             pendingLabel="Asking…"
           />
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => setOpen(null)}
-          >
+          <Button type="button" size="sm" variant="ghost" onClick={close}>
             Not yet
           </Button>
         </div>
@@ -142,7 +142,7 @@ export function PaymentActions({
         type="button"
         size="sm"
         variant={primary ? "default" : "outline"}
-        onClick={() => setOpen("ask")}
+        {...panels.trigger("ask")}
       >
         {unlockedBy
           ? `“${unlockedBy}” done: ask for ${amount}`
@@ -177,11 +177,18 @@ export function PaymentActions({
           </div>
         )}
         {open === "reject" ? (
-          <RejectForm
-            ids={ids}
-            onCancel={() => setOpen(null)}
-            clientFirstName={clientFirstName}
-          />
+          <div
+            {...panels.panel(
+              `Tell ${clientFirstName} the payment hasn't arrived`,
+            )}
+            className={cn("rounded-lg", INLINE_PANEL_FOCUS)}
+          >
+            <RejectForm
+              ids={ids}
+              onCancel={close}
+              clientFirstName={clientFirstName}
+            />
+          </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             <Run
@@ -194,7 +201,7 @@ export function PaymentActions({
               type="button"
               size="sm"
               variant="outline"
-              onClick={() => setOpen("reject")}
+              {...panels.trigger("reject")}
             >
               Not received
             </Button>
@@ -220,14 +227,19 @@ export function PaymentActions({
         />
       )}
       {open === "received" ? (
-        <ReceivedForm ids={ids} onCancel={() => setOpen(null)} />
+        <div
+          {...panels.panel("Mark the payment as received")}
+          className={cn("rounded-lg", INLINE_PANEL_FOCUS)}
+        >
+          <ReceivedForm ids={ids} onCancel={close} />
+        </div>
       ) : (
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             size="sm"
             variant="outline"
-            onClick={() => setOpen("received")}
+            {...panels.trigger("received")}
           >
             Mark as received
           </Button>

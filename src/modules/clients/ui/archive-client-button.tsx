@@ -1,8 +1,13 @@
 "use client";
 
-import { useActionState, useLayoutEffect, useState } from "react";
+import { useActionState } from "react";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
+import {
+  INLINE_PANEL_FOCUS,
+  useInlinePanel,
+} from "@/shared/ui/use-inline-panel";
+import { cn } from "@/shared/lib/utils";
 import { setClientArchived, type ClientFormState } from "../server/actions";
 
 /**
@@ -22,25 +27,22 @@ export function ArchiveClientButton({
     setClientArchived,
     IDLE,
   );
-  const [confirming, setConfirming] = useState(false);
+  const panel = useInlinePanel();
 
-  // Visited pages stay alive (CONVENTIONS §5): don't come back mid-confirm.
-  useLayoutEffect(() => () => setConfirming(false), []);
-
-  if (!archived && !confirming) {
+  if (!archived && !panel.open) {
     return (
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => setConfirming(true)}
-      >
+      <Button type="button" variant="outline" {...panel.trigger("open")}>
         Archive client
       </Button>
     );
   }
 
   return (
-    <form action={action} className="grid gap-3">
+    <form
+      action={action}
+      {...(archived ? {} : panel.panel(`Archive ${clientName}`))}
+      className={cn("grid gap-3 rounded-lg", INLINE_PANEL_FOCUS)}
+    >
       <input type="hidden" name="id" value={clientId} />
       <input
         type="hidden"
@@ -65,11 +67,7 @@ export function ArchiveClientButton({
               : `Archive ${clientName}`}
         </Button>
         {!archived && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setConfirming(false)}
-          >
+          <Button type="button" variant="ghost" onClick={panel.close}>
             Keep
           </Button>
         )}

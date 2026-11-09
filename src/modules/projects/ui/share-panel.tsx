@@ -1,12 +1,16 @@
 "use client";
 
-import { useActionState, useLayoutEffect, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { formatDateTime } from "@/shared/lib/dates";
 import { IDLE } from "@/shared/lib/form-state";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
 import { SideCard, SideCardText, SideCardTitle } from "@/shared/ui/side-card";
+import {
+  INLINE_PANEL_FOCUS,
+  useInlinePanel,
+} from "@/shared/ui/use-inline-panel";
 import type { ProjectDecision, ProjectStatus } from "../domain/project";
 import {
   regeneratePortalLink,
@@ -155,17 +159,22 @@ export function SharePanel({
 }
 
 function ReplaceLink({ projectId }: { projectId: string }) {
-  const [confirming, setConfirming] = useState(false);
-  useLayoutEffect(() => () => setConfirming(false), []);
-  if (!confirming) {
+  const panel = useInlinePanel();
+  if (!panel.open) {
     return (
-      <Button type="button" variant="ghost" onClick={() => setConfirming(true)}>
+      <Button type="button" variant="ghost" {...panel.trigger("open")}>
         Replace link
       </Button>
     );
   }
   return (
-    <div className="grid w-full gap-2 rounded-lg border p-3">
+    <div
+      {...panel.panel("Replace the client link")}
+      className={cn(
+        "grid w-full gap-2 rounded-lg border p-3",
+        INLINE_PANEL_FOCUS,
+      )}
+    >
       <p className="text-sm">
         The current link stops working at once. Use this if it went to the wrong
         person.
@@ -177,12 +186,9 @@ function ReplaceLink({ projectId }: { projectId: string }) {
           label="Make a new link"
           pendingLabel="Making link…"
           variant="destructive"
+          onSuccess={panel.close}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => setConfirming(false)}
-        >
+        <Button type="button" variant="ghost" onClick={panel.close}>
           Keep current link
         </Button>
       </div>
@@ -196,17 +202,26 @@ function ActionButton({
   label,
   pendingLabel,
   variant = "default",
+  onSuccess,
 }: {
   action: Action;
   projectId: string;
   label: string;
   pendingLabel: string;
   variant?: "default" | "outline" | "destructive";
+  /** Runs once per successful submit (e.g. close the panel it sits in). */
+  onSuccess?: () => void;
 }) {
   const [state, action, pending] = useActionState<ProjectFormState, FormData>(
     run,
     IDLE,
   );
+  const handled = useRef(state);
+  useEffect(() => {
+    if (state.status !== "success" || handled.current === state) return;
+    handled.current = state;
+    onSuccess?.();
+  }, [state, onSuccess]);
   return (
     <form action={action} className="grid gap-2">
       <input type="hidden" name="id" value={projectId} />
