@@ -91,6 +91,17 @@ describe("describeActivity", () => {
     ).toBe(
       "You asked for the Before launch payment (₹47,000), invoice INV/26-27/007",
     );
+    expect(
+      describeActivity(
+        ev({
+          type: "payment.cancelled",
+          data: { title: "Design approved", label: "INV/26-27/008" },
+        }),
+        { kind: "member", userId: "u1" },
+      ).text,
+    ).toBe(
+      "You cancelled the Design approved payment request, and invoice INV/26-27/008 with it",
+    );
     const paid = ev({
       type: "payment.reported",
       actor: rahul,

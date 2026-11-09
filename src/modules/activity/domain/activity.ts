@@ -150,7 +150,9 @@ export function describeActivity(
         "waiting",
       );
     case "payment.cancelled":
-      return line(`${who} cancelled the ${data.title} payment request`);
+      return line(
+        `${who} cancelled the ${data.title} payment request${data.label ? `, and invoice ${data.label} with it` : ""}`,
+      );
     case "payment.reported":
       return line(
         `${who} said the ${data.title} payment was made${amount}`,

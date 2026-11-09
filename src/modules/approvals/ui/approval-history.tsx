@@ -43,9 +43,7 @@ export function ApprovalRows({
             className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-canvas sm:px-5"
           >
             <span className="grid min-w-0 gap-0.5">
-              <span className="truncate font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
-                {a.label}
-              </span>
+              <ApprovalLabel label={a.label} />
               <span className="flex min-w-0 items-center gap-2 text-sm">
                 <Dot decision={a.decision} />
                 <span className="truncate">
@@ -93,8 +91,8 @@ export function ApprovalCards({
           key={a.id}
           className="grid gap-2 rounded-xl border p-4 text-sm sm:p-5"
         >
-          <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
-            {a.label}
+          <p className="min-w-0">
+            <ApprovalLabel label={a.label} />
           </p>
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <p className="flex items-center gap-2 font-medium">
@@ -133,5 +131,25 @@ export function ApprovalCards({
         </li>
       ))}
     </ol>
+  );
+}
+
+/**
+ * "CR-002 Logo refresh": the reference in mono capitals (it's an id), the
+ * client-facing title in normal case beside it, never shouted.
+ */
+function ApprovalLabel({ label }: { label: string }) {
+  const match = /^(CR-\d+)\s+(.*)$/.exec(label);
+  const ref = match ? match[1] : label;
+  const title = match ? match[2] : null;
+  return (
+    <span className="flex min-w-0 items-baseline gap-2">
+      <span className="shrink-0 font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
+        {ref}
+      </span>
+      {title && (
+        <span className="truncate text-xs text-muted-foreground">{title}</span>
+      )}
+    </span>
   );
 }

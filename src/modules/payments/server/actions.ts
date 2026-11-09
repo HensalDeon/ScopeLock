@@ -139,7 +139,7 @@ export const cancelPaymentRequest = workspaceAction(
       projectId,
       type: "payment.cancelled",
       actor: member(context),
-      data: { title: doc.label },
+      data: { title: doc.label, label: doc.invoice?.number },
     });
     refresh();
     return {
