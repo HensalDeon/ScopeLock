@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-09T06:47:30+00:00",
+  "title": "Design System: ScopeLock",
+  "extensions": {
+    "colorMeta": {
+      "ink-navy": {
+        "role": "primary",
+        "displayName": "Ink Navy",
+        "canonical": "#0b1220",
+        "tonalRamp": [
+          "#05080e",
+          "#070c15",
+          "#090f1b",
+          "#0b1220",
+          "#545963",
+          "#91949b",
+          "#c9cbce",
+          "#ebeced"
+        ]
+      },
+      "ledger-emerald": {
+        "role": "secondary",
+        "displayName": "Ledger Emerald",
+        "canonical": "#0e9f6e",
+        "tonalRamp": [
+          "#064831",
+          "#096748",
+          "#0c875e",
+          "#0e9f6e",
+          "#56bc9a",
+          "#93d4be",
+          "#caeadf",
+          "#ecf7f3"
+        ]
+      },
+      "bright-emerald": {
+        "role": "secondary",
+        "displayName": "Bright Emerald",
+        "canonical": "#34d399",
+        "tonalRamp": [
+          "#175f45",
+          "#228963",
+          "#2cb382",
+          "#34d399",
+          "#71e0b8",
+          "#a4ebd1",
+          "#d2f5e9",
+          "#effbf7"
+        ]
+      },
+      "settled-wash": {
+        "role": "secondary",
+        "displayName": "Settled Wash",
+        "canonical": "#e6f5ee",
+        "tonalRamp": [
+          "#676e6b",
+          "#969f9b",
+          "#c4d0ca",
+          "#e6f5ee",
+          "#eef8f3",
+          "#f4faf7",
+          "#fafdfb",
+          "#fdfefe"
+        ]
+      },
+      "waiting-amber": {
+        "role": "tertiary",
+        "displayName": "Waiting Amber",
+        "canonical": "#b45309",
+        "tonalRamp": [
+          "#512504",
+          "#753606",
+          "#994708",
+          "#b45309",
+          "#ca8753",
+          "#ddb290",
+          "#eed9c9",
+          "#f9f1eb"
+        ]
+      },
+      "waiting-wash": {
+        "role": "tertiary",
+        "displayName": "Waiting Wash",
+        "canonical": "#fdf3e3",
+        "tonalRamp": [
+          "#726d66",
+          "#a49e94",
+          "#d7cfc1",
+          "#fdf3e3",
+          "#fef7eb",
+          "#fefaf2",
+          "#fffcf9",
+          "#fffefd"
+        ]
+      },
+      "waiting-ink": {
+        "role": "tertiary",
+        "displayName": "Waiting Ink",
+        "canonical": "#7a3d06",
+        "tonalRamp": [
+          "#371b03",
+          "#4f2804",
+          "#683405",
+          "#7a3d06",
+          "#a27751",
+          "#c3a88f",
+          "#e2d4c8",
+          "#f4efeb"
+        ]
+      },
+      "correction-red": {
+        "role": "tertiary",
+        "displayName": "Correction Red",
+        "canonical": "#c8372d",
+        "tonalRamp": [
+          "#5a1914",
+          "#82241d",
+          "#aa2f26",
+          "#c8372d",
+          "#d8736c",
+          "#e6a5a0",
+          "#f3d3d1",
+          "#fbefee"
+        ]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#737373",
+          "#a6a6a6",
+          "#d9d9d9",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff"
+        ]
+      },
+      "canvas-grey": {
+        "role": "neutral",
+        "displayName": "Canvas Grey",
+        "canonical": "#f7f8fa",
+        "tonalRamp": [
+          "#6f7070",
+          "#a1a1a2",
+          "#d2d3d4",
+          "#f7f8fa",
+          "#f9fafc",
+          "#fbfcfd",
+          "#fdfdfe",
+          "#fefeff"
+        ]
+      },
+      "quiet-fill": {
+        "role": "neutral",
+        "displayName": "Quiet Fill",
+        "canonical": "#f4f5f8",
+        "tonalRamp": [
+          "#6e6e70",
+          "#9f9fa1",
+          "#cfd0d3",
+          "#f4f5f8",
+          "#f7f8fa",
+          "#fafafc",
+          "#fdfdfd",
+          "#fefefe"
+        ]
+      },
+      "hover-fill": {
+        "role": "neutral",
+        "displayName": "Hover Fill",
+        "canonical": "#eef0f4",
+        "tonalRamp": [
+          "#6b6c6e",
+          "#9b9c9f",
+          "#cacccf",
+          "#eef0f4",
+          "#f3f4f7",
+          "#f7f8fa",
+          "#fbfcfd",
+          "#fefefe"
+        ]
+      },
+      "selected-fill": {
+        "role": "neutral",
+        "displayName": "Selected Fill",
+        "canonical": "#eceef2",
+        "tonalRamp": [
+          "#6a6b6d",
+          "#999b9d",
+          "#c9cace",
+          "#eceef2",
+          "#f2f3f6",
+          "#f6f7f9",
+          "#fbfbfc",
+          "#fdfefe"
+        ]
+      },
+      "muted-slate": {
+        "role": "neutral",
+        "displayName": "Muted Slate",
+        "canonical": "#5a6475",
+        "tonalRamp": [
+          "#282d35",
+          "#3a414c",
+          "#4c5563",
+          "#5a6475",
+          "#8c929e",
+          "#b5b9c1",
+          "#dbdde1",
+          "#f2f3f4"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e3e6eb",
+        "tonalRamp": [
+          "#66676a",
+          "#949699",
+          "#c1c4c8",
+          "#e3e6eb",
+          "#ebeef1",
+          "#f2f4f6",
+          "#f9fafb",
+          "#fdfdfd"
+        ]
+      },
+      "field-edge": {
+        "role": "neutral",
+        "displayName": "Field Edge",
+        "canonical": "#d6dae1",
+        "tonalRamp": [
+          "#606265",
+          "#8b8e92",
+          "#b6b9bf",
+          "#d6dae1",
+          "#e2e5ea",
+          "#edeef2",
+          "#f6f7f8",
+          "#fcfcfd"
+        ]
+      },
+      "document-desk": {
+        "role": "neutral",
+        "displayName": "Document Desk",
+        "canonical": "#ebe8e2",
+        "tonalRamp": [
+          "#6a6866",
+          "#999793",
+          "#c8c5c0",
+          "#ebe8e2",
+          "#f1efeb",
+          "#f6f5f2",
+          "#fbfaf9",
+          "#fdfdfd"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Headline money figures, tabular."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section and panel headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Rows, descriptions, forms."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Mono uppercase column heads and captions."
+      },
+      "document-display": {
+        "displayName": "Document display",
+        "purpose": "Serif titles and totals in client documents only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "paper-sheet",
+        "value": "0 10px 40px -20px rgba(0,0,0,0.35)",
+        "purpose": "Client documents only (proposal, change request, invoice); removed for print."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-lock",
+        "value": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "The Focus Lock loader: brackets snap in, core lands with a small overshoot."
+      },
+      {
+        "name": "duration-state",
+        "value": "150ms",
+        "purpose": "Colour and background transitions on buttons, nav and fields."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "390px"
+      },
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "document",
+        "value": "210mm"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one next step on a view.",
+      "html": "<button class=\"ds-btn-primary\">Ask for ₹33,984</button>",
+      "css": ".ds-btn-primary{font:500 14px/1 Geist,system-ui,sans-serif;height:32px;padding:0 10px;border-radius:8px;border:1px solid transparent;background:#0b1220;color:#fff;cursor:pointer;transition:background .15s,transform .1s}.ds-btn-primary:hover{background:rgba(11,18,32,.8)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:none;border-color:#0e9f6e;box-shadow:0 0 0 3px rgba(14,159,110,.5)}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary actions.",
+      "html": "<button class=\"ds-btn-outline\">Ask for payment</button>",
+      "css": ".ds-btn-outline{font:500 14px/1 Geist,system-ui,sans-serif;height:32px;padding:0 10px;border-radius:8px;border:1px solid #e3e6eb;background:#fff;color:#0b1220;cursor:pointer;transition:background .15s}.ds-btn-outline:hover{background:#f4f5f8}.ds-btn-outline:focus-visible{outline:none;border-color:#0e9f6e;box-shadow:0 0 0 3px rgba(14,159,110,.5)}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Not yet, Cancel, icon buttons.",
+      "html": "<button class=\"ds-btn-ghost\">Not yet</button>",
+      "css": ".ds-btn-ghost{font:500 14px/1 Geist,system-ui,sans-serif;height:32px;padding:0 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#0b1220;cursor:pointer}.ds-btn-ghost:hover{background:#f4f5f8}.ds-btn-ghost:focus-visible{outline:none;border-color:#0e9f6e;box-shadow:0 0 0 3px rgba(14,159,110,.5)}"
+    },
+    {
+      "name": "Money Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Amount field with a currency prefix and tabular digits.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-prefix\">₹</span><input class=\"ds-input\" value=\"15000\" aria-label=\"Amount, in INR\"></label>",
+      "css": ".ds-field{position:relative;display:inline-block;width:160px}.ds-field-prefix{position:absolute;left:10px;top:50%;transform:translateY(-50%);font:14px Geist,system-ui,sans-serif;color:#5a6475}.ds-input{box-sizing:border-box;width:100%;height:32px;padding:4px 10px 4px 24px;border-radius:8px;border:1px solid #d6dae1;background:transparent;color:#0b1220;font:14px Geist,system-ui,sans-serif;font-variant-numeric:tabular-nums;text-align:right}.ds-input:focus-visible{outline:none;border-color:#0e9f6e;box-shadow:0 0 0 3px rgba(14,159,110,.5)}"
+    },
+    {
+      "name": "Status Badges",
+      "kind": "chip",
+      "refersTo": "badge-settled",
+      "description": "Settled, waiting and idle states.",
+      "html": "<span class=\"ds-badge ds-badge-settled\"><i></i>Received</span> <span class=\"ds-badge ds-badge-waiting\"><i></i>Due</span> <span class=\"ds-badge ds-badge-idle\">Not requested</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:9999px;border:1px solid;font:500 12px Geist,system-ui,sans-serif;white-space:nowrap}.ds-badge i{width:6px;height:6px;border-radius:9999px}.ds-badge-settled{background:#e6f5ee;color:#0b1220;border-color:rgba(14,159,110,.25)}.ds-badge-settled i{background:#0e9f6e}.ds-badge-waiting{background:#fdf3e3;color:#7a3d06;border-color:rgba(180,83,9,.25)}.ds-badge-waiting i{background:#b45309}.ds-badge-idle{background:#f4f5f8;color:#5a6475;border-color:#e3e6eb}"
+    },
+    {
+      "name": "Ledger Panel",
+      "kind": "card",
+      "refersTo": "ledger-panel",
+      "description": "Rows divided by hairlines, figures right-aligned, totals in a grey footer.",
+      "html": "<div class=\"ds-ledger\"><div class=\"ds-row\"><span class=\"ds-idx\">01</span><span>Home page</span><span class=\"ds-amt\">₹20,000</span></div><div class=\"ds-row\"><span class=\"ds-idx\">02</span><span>About page</span><span class=\"ds-amt\">₹15,000</span></div><div class=\"ds-foot\"><span>Project total</span><span class=\"ds-total\">₹1,11,000</span></div></div>",
+      "css": ".ds-ledger{width:360px;border:1px solid #e3e6eb;border-radius:11px;overflow:hidden;background:#fff;font:14px/1.5 Geist,system-ui,sans-serif;color:#0b1220}.ds-row{display:grid;grid-template-columns:28px 1fr auto;gap:12px;padding:12px 20px;border-bottom:1px solid #e3e6eb}.ds-idx{font:12px Geist Mono,ui-monospace,monospace;color:#5a6475}.ds-amt,.ds-total{font-variant-numeric:tabular-nums}.ds-foot{display:flex;justify-content:space-between;align-items:baseline;padding:14px 20px;background:#f7f8fa;font-weight:500}.ds-total{font-size:18px;font-weight:600;letter-spacing:-.02em}"
+    },
+    {
+      "name": "Money Strip Cell",
+      "kind": "custom",
+      "refersTo": "ledger-panel",
+      "description": "Overview figure: mono label, tabular figure, plain caption.",
+      "html": "<div class=\"ds-cell\"><p class=\"ds-label\">Received</p><p class=\"ds-fig\">₹33,984</p><p class=\"ds-cap\">Confirmed, GST included</p></div>",
+      "css": ".ds-cell{width:220px;padding:16px 20px;border:1px solid #e3e6eb;border-radius:11px;background:#fff;color:#0b1220}.ds-cell p{margin:0}.ds-label{font:11px Geist Mono,ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5a6475}.ds-fig{margin-top:6px!important;font:600 24px/1.2 Geist,system-ui,sans-serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.ds-cap{margin-top:4px!important;font:14px Geist,system-ui,sans-serif;color:#5a6475}"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "Canvas sidebar, active item with emerald icon.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item is-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/></svg>Overview</a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 7h18v13H3zM3 7l3-3h6l2 3\"/></svg>Projects</a></nav>",
+      "css": ".ds-nav{display:grid;gap:2px;width:220px;padding:12px;background:#f7f8fa}.ds-nav-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:6px;font:14px Geist,system-ui,sans-serif;color:#5a6475;text-decoration:none;transition:background .15s,color .15s}.ds-nav-item:hover{background:rgba(236,238,242,.7);color:#0b1220}.ds-nav-item.is-active{background:#eceef2;color:#0b1220;font-weight:500}.ds-nav-item.is-active svg{color:#0e9f6e}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Signed Ledger",
+    "overview": "ScopeLock looks like an accounts book that is also a contract. Every screen is a ledger of what was agreed, what was added, what was asked for and what was paid, and every figure on it has to be trustworthy at a glance. The interface is ink on white paper: hairline rules separate rows, numbers sit in tabular columns, and small monospaced labels name each column the way a printed ledger would.\n\nRestraint is the personality. The app is a precise working tool for a freelancer at a laptop (and a quick check on the phone), so nothing decorates: no gradients, no glowing shapes, no icon grids, no cards stacked on shadows. Colour carries meaning, not mood: ink navy is the only action colour, emerald appears only when something is settled (approved, done, money received), and amber only when something is waiting. When the client sees a proposal, change request or invoice, the screen changes register: the document becomes a sheet of paper on a warm desk, set in a serif, because that is the artefact they are signing.",
+    "keyCharacteristics": [
+      "Ink on paper: navy text and actions on white, cool slate-tinted greys.",
+      "Meaning-only colour: emerald means settled, amber means waiting, red means fix this.",
+      "Ledger structure: rows divided by hairlines, figures right-aligned in tabular numerals.",
+      "Mono uppercase labels for column heads and figure captions.",
+      "Flat app surfaces; only client documents lift off the page.",
+      "Compact and crisp: 32px controls, 8px corners, no ornament."
+    ],
+    "rules": [
+      {
+        "name": "The Settled Green Rule",
+        "body": "Emerald appears only when something is settled: approved, done, received or recovered. Never as a button, a heading accent or decoration. Three fixed exceptions echo the mark: the Focus Lock core, the focus ring, and the active sidebar item's icon.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink Action Rule",
+        "body": "Every action is ink navy. A screen has at most one filled ink button for the next step; everything else is outline or ghost.",
+        "section": "colors"
+      },
+      {
+        "name": "The Waiting Amber Rule",
+        "body": "Amber marks only things waiting on a person (the client or you), and always pairs a wash background with waiting ink text, never amber text on white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "Every amount, count, date and reference number uses tabular numerals, so columns of money line up digit for digit.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif Is For Signing Rule",
+        "body": "Cormorant Garamond appears only inside client-facing documents (proposal, change request, invoice cover). The app chrome never uses it.",
+        "section": "typography"
+      },
+      {
+        "name": "The Summary Then Log Rule",
+        "body": "Detail pages summarise the latest few items; full histories live on their own paged pages (\"See all 12\").",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Tool Rule",
+        "body": "App panels, cards and rows never carry shadows. If something needs to stand apart, give it a hairline border or a tone, not a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep every action ink navy (#0b1220), with one filled button per view for the next step.",
+      "**Do** reserve emerald (#0e9f6e) for approved, done, received and money recovered, and amber (#b45309 with #fdf3e3 / #7a3d06) for waiting.",
+      "**Do** set every amount, date and reference in tabular numerals and right-align figures in columns.",
+      "**Do** use mono uppercase labels (11px, 0.12em tracking) for column heads and figure captions.",
+      "**Do** separate rows with hairlines (#e3e6eb) inside 11px-cornered panels, with totals in a canvas-grey footer.",
+      "**Do** show real product content as the design: rupee amounts, CR numbers, client names, dates like \"18 Nov, 3:42 pm\".",
+      "**Do** check every screen at 390px wide."
+    ],
+    "donts": [
+      "**Don't** use gradients, glowing blobs or decorative illustrations.",
+      "**Don't** add shadows to app panels or cards; only client documents and overlays lift.",
+      "**Don't** put `rounded-2xl` plus a shadow on every block, or build icon-in-a-circle feature grids.",
+      "**Don't** use emerald for buttons, links, headings or decoration.",
+      "**Don't** centre everything in app screens; content is left-aligned, figures right-aligned.",
+      "**Don't** use the serif in the app chrome; it belongs to client documents.",
+      "**Don't** redraw the Focus Lock mark; use `<Logo />`, `<LogoMark />` and `<BrandLoader />`."
+    ]
+  }
+}
