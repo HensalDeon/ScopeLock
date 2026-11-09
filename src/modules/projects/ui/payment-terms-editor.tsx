@@ -210,7 +210,7 @@ export function PaymentTermsEditor({
                 className={cn(
                   "text-sm tabular-nums",
                   percentSum === 100
-                    ? "text-brand"
+                    ? "text-success-ink"
                     : form.submitted
                       ? "text-destructive"
                       : "text-warning",

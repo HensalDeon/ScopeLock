@@ -34,9 +34,6 @@ import {
 } from "@/shared/ui/use-inline-panel";
 import type { ReportState } from "../server/payment-actions";
 
-/** Form controls a thumb can hit on phones. */
-const FIELD = "max-sm:h-11";
-
 /**
  * "I've paid": how, the UTR, when, and an optional screenshot (shrunk in
  * the browser, checked again on the server). The freelancer confirms it.
@@ -172,7 +169,7 @@ export function ReportPaymentForm({
             id={`${uid}-method`}
             value={values.method}
             onChange={set("method")}
-            className={cn("w-full", FIELD)}
+            className="w-full"
           >
             {options.map((k) => (
               <option key={k} value={k}>
@@ -191,7 +188,6 @@ export function ReportPaymentForm({
             onChange={set("paidOn")}
             onBlur={() => form.touch("paidOn")}
             aria-invalid={Boolean(form.errorFor("paidOn")) || undefined}
-            className={FIELD}
           />
           <FieldError>{form.errorFor("paidOn")}</FieldError>
         </Field>
@@ -208,7 +204,7 @@ export function ReportPaymentForm({
           maxLength={40}
           autoComplete="off"
           aria-invalid={Boolean(form.errorFor("reference")) || undefined}
-          className={cn("font-mono", FIELD)}
+          className="font-mono"
         />
         <FieldDescription>
           For UPI, the 12-digit number in your UPI app&apos;s payment details.

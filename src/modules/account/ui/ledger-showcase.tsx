@@ -11,21 +11,21 @@ type Change = {
 
 const changes: Change[] = [
   {
-    ref: "CR-001",
+    ref: "CR-004",
     title: "Blog section",
     note: "Approved by Rahul · 18 Nov, 3:42 pm",
     amount: 1_200_000,
     state: "approved",
   },
   {
-    ref: "CR-002",
+    ref: "CR-005",
     title: "WhatsApp chat button",
     note: "Approved by Rahul · 18 Nov, 3:42 pm",
     amount: 300_000,
     state: "approved",
   },
   {
-    ref: "CR-003",
+    ref: "CR-006",
     title: "Razorpay checkout",
     note: "Sent 21 Nov · waiting for Rahul",
     amount: 1_800_000,

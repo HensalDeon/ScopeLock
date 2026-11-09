@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { legal, site } from "@/shared/config/site";
 import { Logo } from "@/shared/ui/brand";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH, TOUCH_LINK } from "@/shared/ui/touch";
 import { Container } from "./primitives";
 
 const NAV = [
@@ -14,7 +16,11 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
       <Container className="flex h-16 items-center justify-between gap-6">
-        <Link href="/" aria-label={`${site.name} home`} className="rounded-md">
+        <Link
+          href="/"
+          aria-label={`${site.name} home`}
+          className={cn("rounded-md", TOUCH_LINK)}
+        >
           <Logo className="text-[19px]" />
         </Link>
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -31,11 +37,14 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <Link
             href="/sign-in"
-            className="hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+            className={cn(
+              "rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+              TOUCH_LINK,
+            )}
           >
             Sign in
           </Link>
-          <Button asChild>
+          <Button asChild className={TOUCH}>
             <Link href="/sign-up">Start free</Link>
           </Button>
         </div>
@@ -79,12 +88,15 @@ export function SiteFooter() {
         {FOOTER_LINKS.map((group) => (
           <div key={group.title} className="grid content-start gap-3">
             <p className="text-sm font-medium">{group.title}</p>
-            <ul className="grid gap-2">
+            <ul className="grid gap-2 max-sm:gap-0">
               {group.links.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    className={cn(
+                      "text-sm text-muted-foreground transition-colors hover:text-foreground",
+                      TOUCH_LINK,
+                    )}
                   >
                     {link.label}
                   </Link>

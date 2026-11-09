@@ -109,7 +109,7 @@ function CodeStep({
     const otp = String(form.get("code"));
     const password = String(form.get("password"));
     if (!isCompleteCode(otp)) {
-      setError("Enter the 6-digit code from the email.");
+      setError("Enter the 6‑digit code from the email.");
       return;
     }
     if (password.length < PASSWORD_MIN_LENGTH) {
@@ -162,7 +162,7 @@ function CodeStep({
       <FieldGroup className="gap-5">
         <p className="text-[15px] leading-relaxed text-muted-foreground">
           If <strong className="font-medium text-foreground">{email}</strong>{" "}
-          has a ScopeLock account, we&apos;ve sent it a 6-digit code. It works
+          has a ScopeLock account, we&apos;ve sent it a 6‑digit code. It works
           for {CODE_TTL_MINUTES} minutes. Check spam if it isn&apos;t there in a
           minute.
         </p>

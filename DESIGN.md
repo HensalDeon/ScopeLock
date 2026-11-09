@@ -6,6 +6,7 @@ colors:
   ledger-emerald: "#0e9f6e"
   bright-emerald: "#34d399"
   settled-wash: "#e6f5ee"
+  settled-ink: "#047857"
   waiting-amber: "#b45309"
   waiting-wash: "#fdf3e3"
   waiting-ink: "#7a3d06"
@@ -149,6 +150,7 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 - **Ledger Emerald** (#0e9f6e): approved, done, received, money recovered, the "Adds up to 100%" confirmation, and the focus ring. Also the core square of the Focus Lock mark.
 - **Bright Emerald** (#34d399): the mark's core on dark backgrounds only.
 - **Settled Wash** (#e6f5ee): background of "approved / received" badges and done strips, always with ink text.
+- **Settled Ink** (#047857, `text-success-ink`): emerald _text_ (a "+₹12,000" extra, "Adds up to 100%"). Ledger Emerald is for marks, ticks and dots; as text on white it fails AA.
 
 ### Tertiary
 

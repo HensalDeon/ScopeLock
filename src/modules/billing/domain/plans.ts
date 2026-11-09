@@ -54,7 +54,7 @@ export const PLANS: readonly Plan[] = [
       { label: "Payment reminders" },
       { label: "Full project statements" },
     ],
-    cta: "Start with Pro",
+    cta: "Start on Free",
     highlighted: true,
   },
   {
@@ -71,7 +71,7 @@ export const PLANS: readonly Plan[] = [
       { label: "Up to 5 team members", soon: true },
       { label: "Priority support" },
     ],
-    cta: "Start with Agency",
+    cta: "Start on Free",
   },
 ];
 

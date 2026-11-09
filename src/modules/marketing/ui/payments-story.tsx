@@ -30,7 +30,7 @@ export function Payments() {
             ].map((line) => (
               <li key={line} className="flex gap-3">
                 <Check
-                  className="mt-1 size-4 shrink-0 text-brand"
+                  className="mt-1 size-4 shrink-0 text-muted-foreground"
                   aria-hidden
                 />
                 <span className="text-pretty">{line}</span>
@@ -40,23 +40,32 @@ export function Payments() {
         </div>
 
         <div className="relative overflow-x-auto rounded-xl border bg-background">
-          <table className="w-full min-w-[30rem] text-left text-[14px]">
-            <caption className="border-b px-5 py-4 text-left">
+          <table className="w-full text-left text-[13px] sm:min-w-[30rem] sm:text-[14px]">
+            <caption className="border-b px-3 py-4 text-left sm:px-5">
               <span className="font-medium">Website redesign</span>
               <span className="text-muted-foreground"> · Mehta Interiors</span>
             </caption>
             <thead>
               <tr className="border-b text-[12px] text-muted-foreground">
-                <th scope="col" className="px-5 py-2.5 font-normal">
+                <th scope="col" className="px-3 py-2.5 font-normal sm:px-5">
                   Milestone
                 </th>
-                <th scope="col" className="px-3 py-2.5 text-right font-normal">
+                <th
+                  scope="col"
+                  className="px-1.5 py-2.5 text-right font-normal sm:px-3"
+                >
                   Agreed
                 </th>
-                <th scope="col" className="px-3 py-2.5 text-right font-normal">
+                <th
+                  scope="col"
+                  className="px-1.5 py-2.5 text-right font-normal sm:px-3"
+                >
                   Changes
                 </th>
-                <th scope="col" className="px-5 py-2.5 text-right font-normal">
+                <th
+                  scope="col"
+                  className="px-3 py-2.5 text-right font-normal sm:px-5"
+                >
                   Status
                 </th>
               </tr>
@@ -64,25 +73,25 @@ export function Payments() {
             <tbody>
               {MILESTONES.map((m) => (
                 <tr key={m.name} className="border-b last:border-b-0">
-                  <td className="px-5 py-3.5 whitespace-nowrap">
+                  <td className="px-3 py-3.5 sm:px-5 sm:whitespace-nowrap">
                     {m.name}
                     <span className="ml-1.5 text-muted-foreground tabular-nums">
                       {m.pct}%
                     </span>
                   </td>
-                  <td className="px-3 py-3.5 text-right whitespace-nowrap tabular-nums">
+                  <td className="px-1.5 py-3.5 text-right whitespace-nowrap tabular-nums sm:px-3">
                     {rupees(m.base)}
                   </td>
-                  <td className="px-3 py-3.5 text-right whitespace-nowrap tabular-nums">
+                  <td className="px-1.5 py-3.5 text-right whitespace-nowrap tabular-nums sm:px-3">
                     {m.extra ? (
-                      <span className="font-medium text-brand">
+                      <span className="font-medium text-success-ink">
                         +{rupees(m.extra)}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">–</span>
                     )}
                   </td>
-                  <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                  <td className="px-3 py-3.5 text-right sm:px-5 sm:whitespace-nowrap">
                     {m.state === "paid" ? (
                       <span className="text-muted-foreground">Paid</span>
                     ) : (
@@ -96,10 +105,16 @@ export function Payments() {
             </tbody>
             <tfoot>
               <tr className="border-t bg-canvas text-[13px]">
-                <td className="px-5 py-3 text-muted-foreground" colSpan={2}>
+                <td
+                  className="px-3 py-3 text-muted-foreground sm:px-5"
+                  colSpan={2}
+                >
                   Extras: blog section + WhatsApp button, both approved
                 </td>
-                <td className="px-5 py-3 text-right font-medium" colSpan={2}>
+                <td
+                  className="px-3 py-3 text-right font-medium sm:px-5"
+                  colSpan={2}
+                >
                   Project total{" "}
                   <span className="tabular-nums">{rupees(95_000)}</span>
                 </td>

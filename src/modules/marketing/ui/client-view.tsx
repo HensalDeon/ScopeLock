@@ -94,18 +94,13 @@ function PhoneApproval() {
               <Leader />
               <dd>Final payment</dd>
             </div>
-            <div className="flex items-baseline">
-              <dt className="text-muted-foreground">Ready by</dt>
-              <Leader />
-              <dd>+4 working days</dd>
-            </div>
           </dl>
           <div className="grid gap-2">
             <span className="flex h-11 items-center justify-center rounded-lg bg-primary text-[14px] font-medium text-primary-foreground">
               Approve {rupees(12_000)}
             </span>
             <span className="flex h-11 items-center justify-center rounded-lg border text-[14px] font-medium">
-              Not now
+              Decline
             </span>
           </div>
         </div>

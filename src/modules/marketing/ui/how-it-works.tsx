@@ -24,7 +24,10 @@ export function HowItWorks() {
             <ul className="grid gap-1.5 text-[13.5px]">
               {["Home", "About", "Services", "Gallery", "Contact"].map((p) => (
                 <li key={p} className="flex items-center gap-2">
-                  <Check className="size-3.5 text-brand" aria-hidden />
+                  <Check
+                    className="size-3.5 text-muted-foreground"
+                    aria-hidden
+                  />
                   {p} page
                 </li>
               ))}

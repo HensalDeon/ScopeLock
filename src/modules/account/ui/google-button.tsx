@@ -35,25 +35,40 @@ export function GoogleButton({
   label?: string;
 }) {
   const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="lg"
-      className="w-full"
-      disabled={pending}
-      onClick={async () => {
-        setPending(true);
-        const { error } = await authClient.signIn.social({
-          provider: "google",
-          callbackURL,
-          newUserCallbackURL: "/onboarding",
-        });
-        if (error) setPending(false);
-      }}
-    >
-      <GoogleMark />
-      {label}
-    </Button>
+    <div className="grid gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        className="w-full"
+        disabled={pending}
+        onClick={async () => {
+          setPending(true);
+          setFailed(false);
+          const { error } = await authClient.signIn
+            .social({
+              provider: "google",
+              callbackURL,
+              newUserCallbackURL: "/onboarding",
+            })
+            .catch(() => ({ error: { status: 0 } }));
+          if (error) {
+            setPending(false);
+            setFailed(true);
+          }
+        }}
+      >
+        <GoogleMark />
+        {pending ? "Opening Google…" : label}
+      </Button>
+      {failed && (
+        <p role="alert" className="text-sm text-destructive">
+          Google sign-in didn&apos;t start. Try again, or use your email and
+          password.
+        </p>
+      )}
+    </div>
   );
 }

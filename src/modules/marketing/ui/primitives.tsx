@@ -40,7 +40,10 @@ export function SectionHeading({
   intro,
   className,
   invert = false,
+  as: Heading = "h2",
 }: {
+  /** "h1" when it opens its own page (pricing, contact). */
+  as?: "h1" | "h2";
   eyebrow?: string;
   title: React.ReactNode;
   intro?: React.ReactNode;
@@ -54,14 +57,14 @@ export function SectionHeading({
           {eyebrow}
         </Eyebrow>
       )}
-      <h2
+      <Heading
         className={cn(
           "text-[32px] leading-[1.08] font-semibold tracking-[-0.035em] text-balance sm:text-[42px]",
           invert && "text-white",
         )}
       >
         {title}
-      </h2>
+      </Heading>
       {intro && (
         <p
           className={cn(

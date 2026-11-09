@@ -63,7 +63,12 @@ export function ShareLink({
         </>
       )}
       <div
-        className={compact ? "flex flex-wrap gap-2" : "grid grid-cols-2 gap-2"}
+        className={
+          compact
+            ? "flex flex-wrap gap-2"
+            : // Side by side when both labels fit, stacked when they don't.
+              "grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-2"
+        }
       >
         <Button
           type="button"

@@ -23,5 +23,13 @@ describe("authErrorMessage", () => {
       /Something went wrong/,
     );
     expect(authErrorMessage(null)).toMatch(/Something went wrong/);
+    expect(authErrorMessage({ status: 500 })).toMatch(/on our side/);
+  });
+
+  it("doesn't blame ScopeLock for input or network problems", () => {
+    expect(authErrorMessage({ code: "VALIDATION_ERROR", status: 400 })).toMatch(
+      /Check what you entered/,
+    );
+    expect(authErrorMessage({ status: 0 })).toMatch(/Couldn't reach ScopeLock/);
   });
 });
