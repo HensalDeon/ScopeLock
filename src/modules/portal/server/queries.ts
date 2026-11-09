@@ -28,7 +28,7 @@ import {
   getPortalDocumentSettings,
 } from "@/modules/documents/server";
 import type { Invoice } from "@/modules/invoices";
-import { findInvoice } from "@/modules/invoices/server";
+import { findInvoice, findReplacementNumber } from "@/modules/invoices/server";
 import type { Project } from "@/modules/projects";
 import {
   findByPortalTokenHash,
@@ -217,6 +217,8 @@ export type PortalInvoiceView =
   | {
       state: "ok";
       invoice: Invoice;
+      /** A cancelled invoice: the one issued in its place. */
+      replacedBy: string | null;
       projectTitle: string;
       logoUrl: string | null;
       accent: string;
@@ -239,6 +241,7 @@ async function loadPortalInvoice(
   return {
     state: "ok",
     invoice,
+    replacedBy: await findReplacementNumber(opened.workspaceId, invoice),
     projectTitle: opened.sent.data.title,
     logoUrl: style.showLogo ? images.logoUrl : null,
     accent: style.accent,

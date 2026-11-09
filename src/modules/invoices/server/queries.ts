@@ -80,3 +80,11 @@ export async function getGstRule(): Promise<
 
 /** Cached per request: the page and its title share one lookup. */
 export const getInvoice = cache(loadGetInvoice);
+
+/** A cancelled invoice's replacement number, for the signed-in workspace. */
+export async function getReplacementNumber(
+  invoice: Parameters<typeof repo.findReplacementNumber>[1],
+): Promise<string | null> {
+  const { workspace } = await requireWorkspace();
+  return repo.findReplacementNumber(workspace.workspaceId, invoice);
+}

@@ -13,6 +13,8 @@ import { UserError } from "@/shared/lib/form-state";
 import { minor, type Minor } from "@/shared/lib/money";
 import type { ScheduleItem } from "../domain/payment";
 import * as repo from "./repository";
+import * as settingsRepo from "./settings-repository";
+import { payToFrom } from "../domain/methods";
 import type { PaymentSchedule } from "./schedule";
 
 class AlreadyRequested extends Error {}
@@ -39,7 +41,10 @@ export async function createRequest(input: {
       "This project has no client any more, so there's no one to invoice.",
     );
   }
-  const settings = await findInvoicing(ws);
+  const [settings, { methods }] = await Promise.all([
+    findInvoicing(ws),
+    settingsRepo.findMethods(ws),
+  ]);
   const buyer = {
     name: client.name,
     company: client.company,
@@ -93,6 +98,7 @@ export async function createRequest(input: {
           })),
           currency: project.currency,
           statement,
+          payTo: payToFrom(methods, project.currency),
         },
         session,
       );

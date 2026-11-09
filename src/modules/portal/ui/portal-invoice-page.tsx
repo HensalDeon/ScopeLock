@@ -50,6 +50,7 @@ export async function PortalInvoicePage({
       <main className="px-0 py-0 sm:px-4 sm:py-6 print:p-0">
         <InvoiceDocument
           invoice={invoice}
+          replacedBy={view.replacedBy}
           status={invoice.status}
           logoUrl={view.logoUrl}
           accent={view.accent}

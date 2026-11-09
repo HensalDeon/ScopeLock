@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
   clientSeesLine,
+  payToFrom,
   methodsFor,
   methodsFormValues,
   methodsInputSchema,
@@ -125,5 +126,20 @@ describe("clientSeesLine", () => {
   });
   it("says plainly when nothing is set up", () => {
     expect(clientSeesLine({ ...base, filled: [] })).toMatch(/^Nothing yet/);
+  });
+});
+
+describe("payToFrom", () => {
+  const methods = {
+    upi: { vpa: "asha@okhdfc", payeeName: "Asha Menon" },
+    bank: null,
+    link: null,
+    qr: null,
+    other: null,
+    defaultMethod: null,
+  } as unknown as Parameters<typeof payToFrom>[0];
+  it("freezes UPI on rupee invoices only", () => {
+    expect(payToFrom(methods, "INR")?.upi?.vpa).toBe("asha@okhdfc");
+    expect(payToFrom(methods, "USD")).toBeNull();
   });
 });

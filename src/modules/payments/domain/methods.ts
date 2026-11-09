@@ -316,3 +316,37 @@ export function clientSeesLine(input: {
       : "";
   return `Your client sees: ${ordered.map((k) => words[k]).join(" · ")}.${tip}`;
 }
+
+/**
+ * The "Pay to" details frozen into an invoice when it's issued: UPI (rupees
+ * only), bank and payment link. Null when none is set up.
+ */
+export function payToFrom(
+  methods: PaymentMethods,
+  currency: CurrencyCode,
+): {
+  upi: { vpa: string; payeeName: string } | null;
+  bank: {
+    accountName: string;
+    accountNumber: string;
+    ifsc: string | null;
+    bankName: string;
+    swift: string | null;
+    iban: string | null;
+  } | null;
+  link: { label: string; url: string } | null;
+} | null {
+  const upi = currency === "INR" ? methods.upi : null;
+  const bank = methods.bank && {
+    accountName: methods.bank.accountName,
+    accountNumber: methods.bank.accountNumber,
+    ifsc: methods.bank.ifsc,
+    bankName: methods.bank.bankName,
+    swift: methods.bank.swift,
+    iban: methods.bank.iban,
+  };
+  const link = methods.link;
+  return upi || bank || link
+    ? { upi: upi ?? null, bank: bank ?? null, link: link ?? null }
+    : null;
+}

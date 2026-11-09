@@ -8,7 +8,9 @@ import {
   type InvoiceSnapshot,
   type InvoiceStatus,
 } from "../domain/snapshot";
+import { amountInWords } from "../domain/words";
 import { Label, Party } from "./invoice-parties";
+import { InvoicePayToBlock } from "./invoice-pay-to";
 import { InvoiceStatement } from "./invoice-statement";
 
 const day = (iso: string) =>
@@ -25,9 +27,12 @@ export function InvoiceDocument({
   logoUrl,
   accent,
   className,
+  replacedBy = null,
 }: {
   invoice: InvoiceSnapshot;
   status: InvoiceStatus;
+  /** A cancelled invoice: the number of the one issued in its place. */
+  replacedBy?: string | null;
   logoUrl: string | null;
   /** The workspace's document accent, for the top rule. */
   accent: string;
@@ -45,6 +50,21 @@ export function InvoiceDocument({
       )}
       style={{ borderTopColor: accent }}
     >
+      {status === "cancelled" && (
+        <div
+          role="note"
+          className="mb-8 grid gap-1 border-2 border-[#c8372d] px-4 py-3 text-[#9f2a22]"
+        >
+          <p className="text-lg font-semibold tracking-[0.2em] uppercase">
+            Cancelled
+          </p>
+          <p className="text-[0.85rem]">
+            {replacedBy
+              ? `Replaced by invoice ${replacedBy}. Nothing is owed on this one.`
+              : "This invoice was cancelled. Nothing is owed on it."}
+          </p>
+        </div>
+      )}
       <header className="flex flex-wrap items-start justify-between gap-6">
         <div className="flex min-w-0 items-center gap-3">
           {logoUrl ? (
@@ -169,6 +189,9 @@ export function InvoiceDocument({
           <dd>{money(invoice.total)}</dd>
         </div>
       </dl>
+      <p className="mt-2 ml-auto max-w-xs text-right text-[0.8rem] text-pretty text-[#3a3d44]">
+        {amountInWords(invoice.total, invoice.currency)}
+      </p>
 
       {invoice.export && (
         <div className="mt-8 grid gap-1 rounded border px-4 py-3 text-[0.8rem] leading-relaxed">
@@ -182,6 +205,10 @@ export function InvoiceDocument({
 
       {invoice.statement && (
         <InvoiceStatement statement={invoice.statement} money={money} />
+      )}
+
+      {invoice.payTo && status !== "cancelled" && (
+        <InvoicePayToBlock payTo={invoice.payTo} />
       )}
 
       <footer className="mt-10 grid gap-3 border-t pt-4 text-[0.8rem] text-[#3a3d44] @md:grid-cols-[1fr_auto]">
@@ -201,6 +228,11 @@ export function InvoiceDocument({
         </div>
         <div className="@md:text-right">
           <Label>Authorised signatory</Label>
+          {/* Room to sign a printed copy (Rule 46(q)). */}
+          <div
+            aria-hidden
+            className="mt-2 h-12 w-48 border-b border-[#c9ccd2] @md:ml-auto"
+          />
           <p className="mt-1 font-medium">{invoice.seller.name}</p>
         </div>
       </footer>

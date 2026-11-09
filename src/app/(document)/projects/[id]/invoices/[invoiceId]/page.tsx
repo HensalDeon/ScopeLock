@@ -8,7 +8,7 @@ import {
   getDocumentSettings,
 } from "@/modules/documents/server";
 import { INVOICE_STATUS_LABELS, InvoiceDocument } from "@/modules/invoices";
-import { getInvoice } from "@/modules/invoices/server";
+import { getInvoice, getReplacementNumber } from "@/modules/invoices/server";
 import { formatMoney } from "@/shared/lib/money";
 import { Button } from "@/shared/ui/button";
 import { PrintButton } from "@/shared/ui/print-button";
@@ -59,7 +59,10 @@ async function InvoiceView({
     getDocumentSettings(),
   ]);
   if (!invoice) notFound();
-  const images = await getDocumentImages(settings);
+  const [images, replacedBy] = await Promise.all([
+    getDocumentImages(settings),
+    getReplacementNumber(invoice),
+  ]);
 
   return (
     <>
@@ -99,6 +102,7 @@ async function InvoiceView({
       <main className="px-0 py-0 sm:px-4 sm:py-4 print:p-0">
         <InvoiceDocument
           invoice={invoice}
+          replacedBy={replacedBy}
           status={invoice.status}
           logoUrl={settings.style.showLogo ? images.logoUrl : null}
           accent={settings.style.accent}

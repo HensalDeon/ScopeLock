@@ -1,5 +1,5 @@
 import "server-only";
-import type { ClientSession, ObjectId } from "mongodb";
+import { ObjectId, type ClientSession } from "mongodb";
 import { COLLECTIONS } from "@/shared/db/names";
 import { scopedCollection, type WorkspaceOwned } from "@/shared/db/scoped";
 import { minor } from "@/shared/lib/money";
@@ -148,4 +148,24 @@ export async function findInvoice(
     projectId ? { _id: id, projectId } : { _id: id },
   );
   return doc ? toInvoice(doc) : null;
+}
+
+/**
+ * For a cancelled invoice: the number of the next one issued for the same
+ * payment on the same project (asked again), or null.
+ */
+export async function findReplacementNumber(
+  workspaceId: string,
+  invoice: Pick<Invoice, "projectId" | "paymentLabel" | "issuedAt" | "status">,
+): Promise<string | null> {
+  if (invoice.status !== "cancelled") return null;
+  const doc = await invoices(workspaceId).findOne(
+    {
+      projectId: new ObjectId(invoice.projectId),
+      paymentLabel: invoice.paymentLabel,
+      issuedAt: { $gt: invoice.issuedAt },
+    },
+    { sort: { issuedAt: 1 }, projection: { number: 1 } },
+  );
+  return doc?.number ?? null;
 }
