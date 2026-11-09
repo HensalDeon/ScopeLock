@@ -4,20 +4,30 @@ import {
   type ActivityItem,
 } from "@/modules/activity/server";
 import { changeLabel } from "@/modules/changes";
-import { listOpenChanges } from "@/modules/changes/server";
+import { listChanges, listOpenChanges } from "@/modules/changes/server";
 import { countClients } from "@/modules/clients/server";
-import { getInvoicing } from "@/modules/invoices/server";
-import { listOwedPayments } from "@/modules/payments/server";
-import { getShareState, listProjectSummaries } from "@/modules/projects/server";
+import { hasAnyMethod, nextStep, stillToAsk } from "@/modules/payments";
+import {
+  getPaymentMethods,
+  getProjectPayments,
+  listOwedPayments,
+} from "@/modules/payments/server";
+import {
+  findProjectWithClient,
+  getShareState,
+  listProjectSummaries,
+} from "@/modules/projects/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
+import { minor } from "@/shared/lib/money";
 import { requireWorkspace } from "@/modules/workspace/server";
 import {
-  needsYou,
   waitingOnClients,
   type AttentionItem,
   type OverviewChange,
   type OverviewPayment,
+  type ProjectMoneyFigures,
 } from "../domain/overview";
+import { needsYou } from "../domain/needs-you";
 import { setupSteps, type SetupStep } from "../domain/setup";
 import { portfolioTotals, type CurrencyTotals } from "../domain/portfolio";
 
@@ -26,8 +36,6 @@ export type OverviewData = {
   setup: SetupStep[] | null;
   hasProjects: boolean;
   money: CurrencyTotals[];
-  /** GST-registered: received and due include GST, approved work doesn't. */
-  gst: boolean;
   waiting: AttentionItem[];
   needs: AttentionItem[];
   activity: (ActivityItem & {
@@ -40,19 +48,19 @@ export async function getOverview(): Promise<OverviewData> {
   const [
     { workspace },
     clientCount,
-    projects,
     changes,
     activity,
     owed,
-    invoicing,
+    { methods },
+    projects,
   ] = await Promise.all([
     requireWorkspace(),
     countClients(),
-    listProjectSummaries(),
     listOpenChanges(),
     listRecentActivity(6),
     listOwedPayments(),
-    getInvoicing(),
+    getPaymentMethods(),
+    listProjectSummaries().then(withMoney),
   ]);
   const payments: OverviewPayment[] = owed.flatMap((p) =>
     p.status === "due" || p.status === "client_reported"
@@ -73,6 +81,7 @@ export async function getOverview(): Promise<OverviewData> {
     businessName: workspace.businessName,
     businessTypeTitle: BUSINESS_TYPE_LABELS[workspace.businessType].title,
     clientCount,
+    paymentsReady: hasAnyMethod(methods),
     projects,
   });
 
@@ -101,7 +110,6 @@ export async function getOverview(): Promise<OverviewData> {
     setup: steps.every((s) => s.done) ? null : steps,
     hasProjects: projects.length > 0,
     money: portfolioTotals(projects),
-    gst: Boolean(invoicing.settings.gstin && invoicing.settings.state),
     waiting: waitingOnClients(projects, open, links, new Date(), payments),
     needs: needsYou(projects, open, new Date(), payments),
     activity: activity.map((a) => ({
@@ -114,4 +122,44 @@ export async function getOverview(): Promise<OverviewData> {
         : null,
     })),
   };
+}
+
+type Summary = Awaited<ReturnType<typeof listProjectSummaries>>[number];
+
+/**
+ * Approved projects get their money worked out exactly as the project page
+ * does (schedule, GST, next step), so the overview can't disagree with it.
+ * One schedule per approved project; plans cap these at a handful.
+ */
+async function withMoney(
+  summaries: Summary[],
+): Promise<(Summary & { money: ProjectMoneyFigures | null })[]> {
+  return Promise.all(
+    summaries.map(async (s) => {
+      if (s.status !== "active" && s.status !== "completed")
+        return { ...s, money: null };
+      const [project, changes] = await Promise.all([
+        findProjectWithClient(s.id),
+        listChanges(s.id),
+      ]);
+      if (!project) return { ...s, money: null };
+      const { items, totals } = await getProjectPayments(project, changes);
+      const shown = totals.gst ?? totals;
+      const step = nextStep(items);
+      return {
+        ...s,
+        money: {
+          received: shown.received,
+          due: shown.due,
+          toAsk: stillToAsk(items),
+          total: shown.total,
+          tax: totals.gst?.tax ?? minor(0),
+          nextAsk:
+            step?.kind === "ask"
+              ? { label: step.item.label, amount: step.item.payable }
+              : null,
+        },
+      };
+    }),
+  );
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
+import { needsYou } from "./needs-you";
 import {
-  needsYou,
   reminderLink,
   waitingOnClients,
   type OverviewChange,
@@ -157,9 +157,20 @@ describe("setupSteps", () => {
       businessName: "Deon Digital",
       businessTypeTitle: "Freelancer",
       clientCount: 1,
-      projects: [{ status: "active", changeCount: 0 }],
+      paymentsReady: false,
+      projects: [{ id: "p1", status: "active", changeCount: 0 }],
     });
-    expect(steps.map((s) => s.done)).toEqual([true, true, true, true, false]);
+    expect(steps.map((s) => s.done)).toEqual([
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+    ]);
+    expect(steps[2]?.href).toBe("/settings/payments");
+    // Logging an extra request goes to the approved project's new CR page.
+    expect(steps[5]?.href).toBe("/projects/p1/changes/new");
   });
 });
 
@@ -201,7 +212,34 @@ describe("payments on the overview", () => {
     );
     expect(items.map((i) => i.tag)).toEqual(["Client says paid", "Draft"]);
     expect(items[0]?.detail).toBe(
-      "Website redesign · Rahul Mehta paid today · check and confirm",
+      "Website redesign · Rahul Mehta paid today, 5:30 pm · check and confirm",
     );
+  });
+
+  it("raises the next payment nobody has asked for", () => {
+    const money = (nextAsk: { label: string; amount: number } | null) => ({
+      received: minor(0),
+      due: minor(0),
+      toAsk: minor(0),
+      total: minor(0),
+      tax: minor(0),
+      nextAsk: nextAsk && { ...nextAsk, amount: minor(nextAsk.amount) },
+    });
+    expect(
+      needsYou(
+        [project({ money: money({ label: "Design", amount: 960_000 }) })],
+        [],
+        now,
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        tag: "Next payment",
+        title: "Design",
+        amount: "₹9,600",
+        detail: "Website redesign · not asked yet · ask Rahul when it's due",
+      }),
+    ]);
+    // Something already out: it's waiting on the client, not on you.
+    expect(needsYou([project({ money: money(null) })], [], now)).toEqual([]);
   });
 });

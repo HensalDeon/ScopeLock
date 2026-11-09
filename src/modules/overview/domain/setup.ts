@@ -6,16 +6,21 @@ export type SetupStep = {
   title: string;
   detail: string;
   done: boolean;
-  href?: "/clients/new" | "/projects/new";
+  href?: string;
 };
 
 export function setupSteps(input: {
   businessName: string;
   businessTypeTitle: string;
   clientCount: number;
-  projects: readonly Pick<OverviewProject, "status" | "changeCount">[];
+  /** A UPI ID, bank account, payment link or QR is saved. */
+  paymentsReady: boolean;
+  projects: readonly Pick<OverviewProject, "id" | "status" | "changeCount">[];
 }): SetupStep[] {
   const { projects } = input;
+  const approved = projects.find(
+    (p) => p.status === "active" || p.status === "completed",
+  );
   return [
     {
       title: "Set up your workspace",
@@ -29,6 +34,13 @@ export function setupSteps(input: {
       href: "/clients/new",
     },
     {
+      title: "Add how you get paid",
+      detail:
+        "UPI ID, bank account or a payment link, so clients know where to pay.",
+      done: input.paymentsReady,
+      href: "/settings/payments",
+    },
+    {
       title: "Write down a project's scope",
       detail: "List what's included, the price, and how the client pays.",
       done: projects.length > 0,
@@ -38,15 +50,14 @@ export function setupSteps(input: {
       title: "Get the scope approved",
       detail:
         "Send it to your client. Once they approve, it's locked as the baseline.",
-      done: projects.some(
-        (p) => p.status === "active" || p.status === "completed",
-      ),
+      done: Boolean(approved),
     },
     {
       title: "Log extra requests as they come in",
       detail:
         "Each one becomes a priced change request your client approves before you start.",
       done: projects.some((p) => p.changeCount > 0),
+      href: approved ? `/projects/${approved.id}/changes/new` : undefined,
     },
   ];
 }

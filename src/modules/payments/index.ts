@@ -24,7 +24,7 @@ export {
   type ReportField,
 } from "./domain/payment-forms";
 export type { ScheduleTotals } from "./domain/gst";
-export { nextStep, type NextStep } from "./domain/next-step";
+export { nextStep, stillToAsk, type NextStep } from "./domain/next-step";
 export { PaymentMethodsForm } from "./ui/methods-form";
 export { PaymentStateBadge, PaymentsPanel } from "./ui/payments-panel";
 export { ProjectMoneyStrip } from "./ui/project-money-strip";

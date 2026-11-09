@@ -39,7 +39,10 @@ export function PageHeader({
           </p>
         )}
       </div>
-      {actions && <div className="flex gap-2">{actions}</div>}
+      {actions && (
+        // Page actions are 44px tall on phones (TOUCH).
+        <div className="flex gap-2 max-sm:*:h-11 max-sm:*:px-4">{actions}</div>
+      )}
     </div>
   );
 }

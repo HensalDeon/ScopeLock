@@ -1,55 +1,54 @@
 import type { CurrencyTotals } from "../domain/portfolio";
-import { formatMoney } from "@/shared/lib/money";
+import { formatMoney, minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 
 /**
- * Where the money stands, one line per currency: approved work, what's been
- * received, what's due now, and what's still waiting for the client's yes.
+ * Where the money stands across approved projects, one line per currency,
+ * in the same order and with the same counting as a project's own strip:
+ * received, due now, still to ask for, and the approved total (with GST
+ * where the payments carry it).
  */
-export function MoneyStrip({
-  rows,
-  gst,
-}: {
-  rows: CurrencyTotals[];
-  /** Say which figures include GST (approved work is the price before it). */
-  gst: boolean;
-}) {
+export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
   const plural = (n: number, word: string) =>
     `${n} ${word}${n === 1 ? "" : "s"}`;
   const approvedCount = rows.reduce((s, r) => s + r.approvedProjects, 0);
-  const waitingAny = rows.some((r) => r.waiting > 0);
+  const taxed = rows.find((r) => r.tax > 0);
+  const any = (pick: (r: CurrencyTotals) => number) =>
+    rows.some((r) => pick(r) > 0);
   const cells = [
-    {
-      label: "Approved work",
-      amounts: rows.map((r) => ({ c: r.currency, v: r.approved })),
-      note: approvedCount
-        ? `${plural(approvedCount, "project")}${gst ? " · before GST" : ""}`
-        : "None approved yet",
-      tone: "neutral" as const,
-    },
     {
       label: "Received",
       amounts: rows.map((r) => ({ c: r.currency, v: r.received })),
-      note: gst ? "Confirmed, GST included" : "Payments you've confirmed",
-      tone: "neutral" as const,
+      note: taxed ? "Confirmed, GST included" : "Payments you've confirmed",
+      waiting: false,
     },
     {
       label: "Due now",
       amounts: rows.map((r) => ({ c: r.currency, v: r.due })),
-      note: rows.some((r) => r.due > 0)
-        ? gst
-          ? "Asked for, GST included"
-          : "Asked for, not received yet"
-        : "Nothing due",
-      tone: rows.some((r) => r.due > 0)
-        ? ("waiting" as const)
-        : ("neutral" as const),
+      note: any((r) => r.due)
+        ? "Asked for, not received yet"
+        : "Nothing asked for is unpaid",
+      waiting: true,
     },
     {
-      label: "Awaiting approval",
-      amounts: rows.map((r) => ({ c: r.currency, v: r.waiting })),
-      note: waitingAny ? "Sent, not answered yet" : "Nothing waiting",
-      tone: waitingAny ? ("waiting" as const) : ("neutral" as const),
+      label: "Still to ask for",
+      amounts: rows.map((r) => ({ c: r.currency, v: r.toAsk })),
+      note: any((r) => r.toAsk)
+        ? "In your payment terms, not asked yet"
+        : approvedCount
+          ? "Every payment has been asked for"
+          : "Nothing approved yet",
+      waiting: false,
+    },
+    {
+      label: taxed ? "Approved, with GST" : "Approved work",
+      amounts: rows.map((r) => ({ c: r.currency, v: r.total })),
+      note: taxed
+        ? `${formatMoney(minor(taxed.total - taxed.tax), taxed.currency)} + ${formatMoney(taxed.tax, taxed.currency)} GST · ${plural(approvedCount, "project")}`
+        : approvedCount
+          ? plural(approvedCount, "project")
+          : "None approved yet",
+      waiting: false,
     },
   ];
   return (
@@ -68,14 +67,17 @@ export function MoneyStrip({
                 key={a.c}
                 className={cn(
                   "text-2xl font-semibold tracking-[-0.02em] tabular-nums",
-                  cell.tone === "waiting" && a.v > 0 && "text-warning-ink",
+                  a.v === 0 && "text-muted-foreground",
+                  cell.waiting && a.v > 0 && "text-warning-ink",
                 )}
               >
                 {formatMoney(a.v, a.c)}
               </p>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground">{cell.note}</p>
+          <p className="text-sm text-pretty text-muted-foreground">
+            {cell.note}
+          </p>
         </div>
       ))}
     </section>

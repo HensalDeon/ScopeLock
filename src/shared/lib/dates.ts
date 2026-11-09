@@ -60,12 +60,13 @@ function daysBetween(earlier: Date, later: Date): number {
 }
 
 /**
- * "today", "yesterday", "3 days ago"; after a week the date ("18 Nov").
- * For "sent …" and "waiting since …" lines.
+ * "today, 4:17 pm", "yesterday", "3 days ago"; after a week the date
+ * ("18 Nov"). For "sent …" and "waiting since …" lines; the time keeps
+ * several things from today apart.
  */
 export function formatAgo(date: Date, { now = new Date() } = {}): string {
   const days = daysBetween(date, now);
-  if (days <= 0) return "today";
+  if (days <= 0) return `today, ${time.format(date).toLowerCase()}`;
   if (days === 1) return "yesterday";
   if (days < 7) return `${days} days ago`;
   return `on ${formatDate(date, { now })}`;

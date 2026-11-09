@@ -37,7 +37,7 @@ export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors",
+              "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors max-lg:h-11",
               active
                 ? "bg-sidebar-accent font-medium text-foreground"
                 : "text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground",

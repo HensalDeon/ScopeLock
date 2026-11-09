@@ -1,8 +1,8 @@
 import { ChevronRight, MessageCircle } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import type { AttentionItem } from "../domain/overview";
 
 /** A titled list of things to act on, with a real empty state. */
@@ -47,14 +47,14 @@ export function AttentionList({
                 href={item.href as Route}
                 className="group grid min-w-0 gap-0.5"
               >
-                <span
-                  className={cn(
-                    "font-mono text-[11px] tracking-[0.1em] uppercase",
-                    item.tone === "waiting"
-                      ? "text-warning-ink"
-                      : "text-muted-foreground",
+                {/* Tags stay neutral; a waiting item gets the amber dot. */}
+                <span className="inline-flex items-center gap-1.5 font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
+                  {item.tone === "waiting" && (
+                    <span
+                      aria-hidden
+                      className="size-1.5 shrink-0 rounded-full bg-warning"
+                    />
                   )}
-                >
                   {item.tag}
                 </span>
                 <span className="flex items-center gap-1 text-sm font-medium">
@@ -66,7 +66,7 @@ export function AttentionList({
                     className="size-3.5 shrink-0 text-muted-foreground"
                   />
                 </span>
-                <span className="truncate text-sm text-muted-foreground">
+                <span className="line-clamp-2 text-sm text-pretty text-muted-foreground">
                   {item.detail}
                 </span>
               </Link>
@@ -75,7 +75,7 @@ export function AttentionList({
                   {item.amount}
                 </span>
                 {item.remind && (
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="outline" size="sm" className={TOUCH}>
                     <a
                       href={item.remind}
                       target="_blank"
