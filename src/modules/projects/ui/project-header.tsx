@@ -3,8 +3,9 @@ import type { Route } from "next";
 import Link from "next/link";
 import { clientFirstName, type Client } from "@/modules/clients";
 import { BackLink } from "@/shared/ui/back-link";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { TOUCH } from "@/shared/ui/touch";
+import { TOUCH, TOUCH_LINK } from "@/shared/ui/touch";
 import { isEditable, type Project } from "../domain/project";
 import { ProjectStatusBadge } from "./project-status-badge";
 
@@ -37,7 +38,10 @@ export function ProjectHeader({
               For{" "}
               <Link
                 href={`/clients/${client.id}` as Route}
-                className="font-medium text-foreground underline-offset-4 hover:underline"
+                className={cn(
+                  "font-medium text-foreground underline-offset-4 hover:underline",
+                  TOUCH_LINK,
+                )}
               >
                 {client.name}
               </Link>

@@ -163,17 +163,17 @@ function NextStepRow({
     ? ctx.unlockedBy[item.milestoneId]
     : undefined;
   return (
-    <div className={row}>
-      <div className="grid gap-0.5">
-        <p className="text-sm font-medium text-pretty">
-          {unlockedBy ? `${unlockedBy} done? ` : ""}The next payment is{" "}
-          <span className="tabular-nums">{money(item.payable)}</span>, for{" "}
-          {item.label}.
-        </p>
-        <p className="text-sm text-pretty text-muted-foreground">
-          Asking issues its invoice and gives {name} a page to pay it.
-        </p>
-      </div>
+    <div
+      className={cn(
+        row,
+        "sm:flex sm:flex-wrap sm:items-center sm:justify-between",
+      )}
+    >
+      <p className="text-sm font-medium text-pretty">
+        {unlockedBy ? `${unlockedBy} done? ` : ""}Next payment:{" "}
+        <span className="tabular-nums">{money(item.payable)}</span> (
+        {item.label}).
+      </p>
       <div className="justify-self-start">
         <PaymentActions {...paymentActionProps(item, ctx)} primary />
       </div>

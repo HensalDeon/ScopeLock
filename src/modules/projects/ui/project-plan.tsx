@@ -92,7 +92,9 @@ export function ScopeTable({
               <dd className="tabular-nums">+ {money(approved.total)}</dd>
             </div>
             <div className="flex items-baseline justify-between gap-4 border-t pt-2.5">
-              <dt className="text-sm font-medium">Project total</dt>
+              <dt className="text-sm font-medium">
+                Project total{gst ? " (before GST)" : ""}
+              </dt>
               <dd className="text-lg font-semibold tabular-nums">
                 {money(sum([project.baseline.total, approved.total]))}
               </dd>
@@ -100,7 +102,9 @@ export function ScopeTable({
           </>
         ) : (
           <div className="flex items-baseline justify-between gap-4">
-            <dt className="text-sm font-medium">Agreed total</dt>
+            <dt className="text-sm font-medium">
+              Agreed total{gst ? " (before GST)" : ""}
+            </dt>
             <dd className="text-lg font-semibold tabular-nums">
               {money(project.baseline.total)}
             </dd>

@@ -117,13 +117,14 @@ async function ProjectDetail({
         />
       )}
 
-      {/* Phones: the share card comes first (after the money strip once
-          approved). Desktop: it sits top-right, the client card below it. */}
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr] lg:gap-y-4">
+      {/* Desktop: the share card top-right, the client card below it, the
+          history under the main column. Phones: the share card first while
+          the proposal is out; once approved it follows payments and changes,
+          before the history. */}
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr_auto] lg:gap-y-4">
         <div
           className={cn(
             "lg:col-start-2 lg:row-start-1",
-            // Phones, once approved: money first, the link after payments.
             approved && "max-lg:order-1",
           )}
         >
@@ -168,6 +169,14 @@ async function ProjectDetail({
               {payments}
             </>
           )}
+        </div>
+
+        <div
+          className={cn(
+            "grid gap-8 lg:col-start-1 lg:row-start-3 lg:mt-4",
+            approved && "max-lg:order-2",
+          )}
+        >
           <ProjectHistory
             projectId={project.id}
             activity={activity}
@@ -179,7 +188,7 @@ async function ProjectDetail({
         <aside
           className={cn(
             "grid gap-4 lg:col-start-2 lg:row-start-2",
-            approved && "max-lg:order-2",
+            approved && "max-lg:order-3",
           )}
         >
           <ProjectSidebar project={project} />

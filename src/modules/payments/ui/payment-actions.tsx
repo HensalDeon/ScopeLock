@@ -103,18 +103,22 @@ export function PaymentActions({
           INLINE_PANEL_FOCUS,
         )}
       >
-        <p className="text-sm">
-          Ask {clientFirstName} for{" "}
-          <span className="font-medium tabular-nums">{amount}</span>
+        <div className="grid gap-1">
+          <p className="text-sm font-medium">
+            Ask {clientFirstName} for{" "}
+            <span className="tabular-nums">{amount}</span>?
+          </p>
           {breakdown && (
-            <span className="text-muted-foreground tabular-nums">
-              {" "}
-              ({breakdown})
-            </span>
+            <p className="text-sm text-muted-foreground tabular-nums">
+              {breakdown}
+            </p>
           )}
-          ? This issues a numbered invoice. They see both on their link, and by
-          email if you&apos;ve added theirs.
-        </p>
+          <p className="text-sm text-pretty text-muted-foreground">
+            This issues a numbered invoice and a pay page on {clientFirstName}
+            &apos;s link. {clientFirstName} also gets it by email if you&apos;ve
+            added theirs.
+          </p>
+        </div>
         {stateFallback && (
           <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
             {clientFirstName}&apos;s state isn&apos;t set, so this invoice uses
@@ -150,7 +154,7 @@ export function PaymentActions({
     ) : (
       <Button
         type="button"
-        size="sm"
+        size={primary ? "default" : "sm"}
         className={TOUCH}
         variant={primary ? "default" : "outline"}
         {...panels.trigger("ask")}

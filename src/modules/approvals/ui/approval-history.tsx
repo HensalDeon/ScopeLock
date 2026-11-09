@@ -16,7 +16,7 @@ function Dot({ decision }: { decision: Approval["decision"] }) {
       aria-hidden
       className={cn(
         "inline-block size-1.5 shrink-0 rounded-full",
-        decision === "approved" ? "bg-brand" : "bg-warning",
+        decision === "approved" ? "bg-brand" : "bg-muted-foreground/40",
       )}
     />
   );
