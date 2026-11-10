@@ -70,7 +70,7 @@ export function Hero() {
               time={c.sentAt}
               who="You"
               strong
-              billed={`+ ${rupees(c.amount)}`}
+              billed={<span className="sl-pending">+ {rupees(c.amount)}</span>}
             >
               <ChangeLine />
             </LogRow>

@@ -14,8 +14,16 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
     const el = ref.current;
     const row = el?.querySelector("[data-approval-row]");
     if (!el || !row) return;
-    const play = () => el.setAttribute("data-play", "");
-    if (!("IntersectionObserver" in window)) return play();
+    // A beat after the row is in view, so on wide screens (where it's in
+    // the first screen) the eye has reached it before the yes lands.
+    let timer = 0;
+    const play = () => {
+      timer = window.setTimeout(() => el.setAttribute("data-play", ""), 700);
+    };
+    if (!("IntersectionObserver" in window)) {
+      play();
+      return () => window.clearTimeout(timer);
+    }
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
@@ -26,7 +34,10 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
       { threshold: 0.6 },
     );
     io.observe(row);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      window.clearTimeout(timer);
+    };
   }, []);
   return (
     <div ref={ref} data-approval-play>
@@ -40,4 +51,4 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
 
 /** Without JavaScript nothing would play: show the approved state. */
 const NO_SCRIPT =
-  "[data-approval-play] .sl-wait{opacity:0!important}[data-approval-play] .sl-stamp,[data-approval-play] .sl-settle{opacity:1!important}[data-approval-play] .sl-strike{text-decoration-color:currentColor!important}";
+  "[data-approval-play] .sl-wait{opacity:0!important}[data-approval-play] .sl-stamp,[data-approval-play] .sl-settle,[data-approval-play] .sl-pending{opacity:1!important}[data-approval-play] .sl-settle{display:inline!important}[data-approval-play] .sl-strike{text-decoration-color:currentColor!important}";

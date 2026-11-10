@@ -333,9 +333,19 @@
   [data-approval-play]:not([data-play]) .sl-wait {
     opacity: 1;
   }
-  [data-approval-play]:not([data-play]) .sl-stamp,
-  [data-approval-play]:not([data-play]) .sl-settle {
+  [data-approval-play]:not([data-play]) .sl-stamp {
     opacity: 0;
+  }
+  /* The new total takes no room until it lands, so ₹80,000 sits flush. */
+  [data-approval-play]:not([data-play]) .sl-settle {
+    display: none;
+  }
+  /* Priced, not yet agreed: the amount waits too. */
+  [data-approval-play]:not([data-play]) .sl-pending {
+    opacity: 0.45;
+  }
+  [data-play] .sl-pending {
+    animation: sl-pending-in 300ms ease-out 400ms both;
   }
   [data-approval-play]:not([data-play]) .sl-strike {
     text-decoration-color: transparent;
@@ -351,6 +361,14 @@
   }
   [data-play] .sl-settle {
     animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 1000ms both;
+  }
+}
+@keyframes sl-pending-in {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
   }
 }
 @keyframes sl-wait-out {

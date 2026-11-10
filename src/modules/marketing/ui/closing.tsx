@@ -15,6 +15,12 @@ export function PricingSection() {
           intro={`Rahul's ${rupees(STORY.change.amount)} change alone would cover over two years of Pro. Paid plans open at launch; until then everyone starts on Free. Prices in rupees, GST extra where applicable.`}
         />
         <RateCard className="mt-12" />
+        <Link
+          href="/pricing"
+          className="mt-6 inline-flex min-h-11 items-center text-[15px] font-medium underline underline-offset-4"
+        >
+          Compare plans in detail
+        </Link>
       </Container>
     </section>
   );
@@ -52,7 +58,10 @@ export function FinalCta({ formId = "close-email" }: { formId?: string }) {
           className={`${DISPLAY} max-w-[20ch] text-[36px] leading-[1] font-semibold sm:text-[50px]`}
         >
           Your next &ldquo;small change&rdquo; is worth{" "}
-          {rupees(STORY.change.amount)}. Charge for it.
+          <span className="font-sans tracking-[-0.03em] [font-stretch:100%] tabular-nums">
+            {rupees(STORY.change.amount)}
+          </span>
+          . Charge for it.
         </h2>
         <Log
           className="mt-10"

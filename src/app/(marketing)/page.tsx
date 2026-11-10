@@ -47,8 +47,8 @@ export default function HomePage() {
       <Hero />
       <SmallRequests />
       <HowItWorks />
-      <ManyClients />
       <Evidence />
+      <ManyClients />
       <PricingSection />
       <FaqSection />
       <FinalCta />

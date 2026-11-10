@@ -90,7 +90,7 @@ export function LogRow({
             strong && "font-semibold",
           )}
         >
-          <span className="sr-only">Billed: </span>
+          <span className="sr-only">Amount: </span>
           {billed}
         </span>
       )}

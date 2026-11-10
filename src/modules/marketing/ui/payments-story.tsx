@@ -75,13 +75,13 @@ export function PaymentLedger() {
           </tbody>
           <tfoot>
             <tr className="bg-canvas">
-              <td className="py-4 pr-4 pl-3" colSpan={1}>
+              <td className="py-4 pr-4" colSpan={1}>
                 <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
-                  Project total · all received
+                  Total received
                 </p>
               </td>
               <td className="hidden md:table-cell" />
-              <td className="py-4 pr-3 pl-4 text-right text-[22px] font-semibold tracking-[-0.02em] tabular-nums">
+              <td className="py-4 pl-4 text-right text-[22px] font-semibold tracking-[-0.02em] tabular-nums">
                 {rupees(storyTotal())}
               </td>
             </tr>

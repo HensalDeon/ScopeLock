@@ -39,8 +39,10 @@ export function SmallRequests() {
               }
             >
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <Bubble>&ldquo;{a.ask}&rdquo;</Bubble>
-                <span className="text-[12px] text-muted-foreground">
+                <Bubble className="max-sm:rounded-none max-sm:border-0 max-sm:bg-transparent max-sm:p-0">
+                  &ldquo;{a.ask}&rdquo;
+                </Bubble>
+                <span className="text-[12px] text-muted-foreground max-sm:hidden">
                   {a.note}
                 </span>
               </div>

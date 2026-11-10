@@ -11,6 +11,7 @@ import {
 import { formatINR, minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { rupees, STORY } from "../domain/story";
+import { DocDetails } from "./doc-details";
 
 /**
  * The story's proposal and change order, drawn by the same components the
@@ -135,6 +136,7 @@ function PhoneSlip({
   total,
   note,
   open,
+  hide,
   children,
 }: {
   rows: [string, string][];
@@ -142,6 +144,8 @@ function PhoneSlip({
   note: string;
   /** "See the whole proposal". */
   open: string;
+  /** "Hide the proposal". */
+  hide: string;
   children: React.ReactNode;
 }) {
   return (
@@ -166,12 +170,9 @@ function PhoneSlip({
           <p className="pt-1 text-[13px] text-muted-foreground">{note}</p>
         </dl>
       </div>
-      <details className="group">
-        <summary className="inline-flex min-h-11 cursor-pointer items-center text-[14px] font-medium underline underline-offset-4">
-          {open}
-        </summary>
-        <Desk className="mt-2 flex justify-center">{children}</Desk>
-      </details>
+      <DocDetails show={open} hide={hide}>
+        <Desk className="flex justify-center">{children}</Desk>
+      </DocDetails>
     </div>
   );
 }
@@ -199,6 +200,7 @@ export function ProposalOnDesk() {
         total={["Agreed", rupees(STORY.agreed)]}
         note={`${STORY.pages.join(", ")}. Approved by ${STORY.client}, ${STORY.agreedOn}.`}
         open="See the whole proposal"
+        hide="Hide the proposal"
       >
         {doc(SHEET_SMALL)}
       </PhoneSlip>
@@ -231,6 +233,7 @@ export function ChangeOrderOnDesk({ className }: { className?: string }) {
         total={["This change", rupees(c.amount)]}
         note={CHANGE_ORDER.billing}
         open="See the whole change order"
+        hide="Hide the change order"
       >
         {doc(SHEET_SMALL)}
       </PhoneSlip>

@@ -22,6 +22,17 @@ const CLIENTS: {
   due: boolean;
 }[] = [
   {
+    when: "9 Nov",
+    client: "Kapoor Dental",
+    project: "Booking app",
+    status: "Waiting for Dr Kapoor",
+    tone: "waiting",
+    note: "CR-003, sent yesterday · Remind on WhatsApp",
+    amount: 18_000,
+    waiting: true,
+    due: false,
+  },
+  {
     when: "3 Nov",
     client: "Mehta Interiors",
     project: "Website, 5 pages",
@@ -30,17 +41,6 @@ const CLIENTS: {
     note: "₹80,000 agreed + ₹15,000 CR-001 · UPI",
     amount: 95_000,
     waiting: false,
-    due: false,
-  },
-  {
-    when: "Monday",
-    client: "Kapoor Dental",
-    project: "Booking app",
-    status: "Waiting for Dr Kapoor",
-    tone: "waiting",
-    note: "CR-003, sent 2 days ago · Remind on WhatsApp",
-    amount: 18_000,
-    waiting: true,
     due: false,
   },
   {
@@ -86,7 +86,7 @@ export function ManyClients() {
             <LogTotal label="Across all clients">
               <dl className="flex items-end gap-6 tabular-nums sm:justify-end">
                 <div>
-                  <dt className="text-[12px] text-muted-foreground">
+                  <dt className="text-[12px] whitespace-nowrap text-muted-foreground">
                     Waiting for a yes
                   </dt>
                   <dd className="text-[18px] font-semibold">

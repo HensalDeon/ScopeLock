@@ -14,6 +14,15 @@
         "value": "geist mono",
         "createdAt": "2026-11-10T06:47:35.650Z",
         "reason": "DESIGN.md names Geist Mono the ledger label face"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          "src/modules/marketing/ui/story-documents.tsx"
+        ],
+        "createdAt": "2026-11-10T07:53:53.065Z",
+        "reason": "DESIGN.md: client documents are white sheets on the Document Desk (#ebe8e2), the one sanctioned lift; not a card in a card"
       }
     ]
   }
