@@ -1,7 +1,14 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { completePlans, DEFAULT_PLANS, type Plan } from "../domain/plans";
+import {
+  completePlans,
+  DEFAULT_PLANS,
+  planById,
+  type Plan,
+} from "../domain/plans";
+import type { Subscription } from "../domain/subscription";
 import * as repo from "./repository";
+import { findSubscription } from "./subscriptions";
 
 export const PLANS_TAG = "plans";
 
@@ -19,4 +26,18 @@ export async function getPlans(): Promise<Plan[]> {
   } catch {
     return [...DEFAULT_PLANS];
   }
+}
+
+export type WorkspacePlan = { plan: Plan; subscription: Subscription };
+
+/** The plan a workspace is on (Free when it has no record). */
+export async function getWorkspacePlan(
+  workspaceId: string,
+): Promise<WorkspacePlan> {
+  const [plans, subscription] = await Promise.all([
+    getPlans(),
+    findSubscription(workspaceId),
+  ]);
+  const plan = planById(plans, subscription.planId) ?? (plans[0] as Plan);
+  return { plan, subscription };
 }

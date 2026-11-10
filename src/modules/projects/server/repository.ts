@@ -135,6 +135,13 @@ export async function countProjects(
   return projects(workspaceId).countDocuments(projectQuery(filter));
 }
 
+/** Projects that count towards the plan's limit: anything not archived. */
+export async function countActiveProjects(
+  workspaceId: string,
+): Promise<number> {
+  return projects(workspaceId).countDocuments({ status: { $ne: "archived" } });
+}
+
 /** How many projects each client has (for the clients list). */
 export async function countProjectsByClient(
   workspaceId: string,

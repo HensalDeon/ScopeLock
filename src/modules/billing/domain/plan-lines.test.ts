@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lineFeature, lineIssue } from "./plan-lines";
+import { lineFeature, lineIssue, statesLimit } from "./plan-lines";
 import { DEFAULT_PLANS } from "./plans";
 
 const [free, pro, agency] = DEFAULT_PLANS.map((p) => p);
@@ -41,5 +41,13 @@ describe("lineIssue", () => {
   it("leaves everyday lines alone", () => {
     expect(lineFeature("WhatsApp and email reminders")).toBeUndefined();
     expect(lineIssue(line("Unlimited change requests"), free!)).toBe(null);
+  });
+});
+
+describe("statesLimit", () => {
+  it("spots the lines that repeat a limit", () => {
+    expect(statesLimit("6 active projects")).toBe(true);
+    expect(statesLimit("Up to 5 team members")).toBe(true);
+    expect(statesLimit("Unlimited change requests")).toBe(false);
   });
 });

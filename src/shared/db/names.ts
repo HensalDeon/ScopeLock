@@ -27,9 +27,11 @@ export const COLLECTIONS = {
   invoices: "invoices",
   requestLimits: "requestLimits",
   counters: "counters",
-  // Platform level (not per workspace): plans, their price history, and
-  // the admin audit log.
+  // Platform level: plans, their price history, the admin audit log, and
+  // each workspace's ScopeLock plan (ScopeLock's own billing record about a
+  // workspace, managed by the platform, one per workspace).
   plans: "plans",
+  subscriptions: "subscriptions",
   planPrices: "planPrices",
   adminAudit: "adminAudit",
 } as const;

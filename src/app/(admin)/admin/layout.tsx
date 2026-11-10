@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { AdminNav } from "@/modules/admin";
 import { requireAdmin } from "@/modules/admin/server";
 import { Logo } from "@/shared/ui/brand";
 import { PageLoader } from "@/shared/ui/brand/brand-loader";
@@ -27,11 +28,12 @@ async function AdminFrame({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh flex-col bg-canvas">
       <header className="border-b bg-background">
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-8">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <Link href="/dashboard" className="max-sm:py-2.5">
               <Logo className="text-lg" />
             </Link>
             <span className="border-l pl-3 text-sm font-medium">Admin</span>
+            <AdminNav />
           </div>
           <div className="flex items-center gap-4 text-sm">
             <span className="truncate text-muted-foreground max-sm:hidden">

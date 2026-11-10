@@ -18,6 +18,7 @@ export {
 } from "./server/queries";
 // For the changes and portal modules (repository level, workspace given).
 export {
+  countActiveProjects,
   nextChangeNumber,
   setChangeTotals,
   setPaymentTotals,

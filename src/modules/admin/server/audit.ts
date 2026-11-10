@@ -36,16 +36,22 @@ export async function logAdminChange(
   );
 }
 
+/** Newest first; only one kind ("plan.updated") or one thing (its page). */
 export async function listAdminChanges(
   page: number,
+  only: { action?: string; href?: string } = {},
 ): Promise<Page<AuditEntry>> {
+  const filter = {
+    ...(only.action ? { action: only.action } : {}),
+    ...(only.href ? { href: only.href } : {}),
+  };
   return paginate(
     page,
-    () => audit().countDocuments(),
+    () => audit().countDocuments(filter),
     async ({ skip, limit }) =>
       (
         await audit()
-          .find({}, { sort: { at: -1, _id: -1 }, skip, limit })
+          .find(filter, { sort: { at: -1, _id: -1 }, skip, limit })
           .toArray()
       ).map(({ _id, ...d }) => ({ ...d, id: String(_id) })),
   );

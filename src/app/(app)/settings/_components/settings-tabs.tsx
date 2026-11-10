@@ -6,12 +6,13 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/shared/lib/utils";
 
 // In the order a new freelancer sets things up: who you are, how you get
-// paid, how invoices are taxed, then how documents look.
+// paid, how invoices are taxed, how documents look, then the plan.
 const TABS = [
   { href: "/settings", label: "Business & account" },
   { href: "/settings/payments", label: "Payments" },
   { href: "/settings/invoicing", label: "Invoices & GST" },
   { href: "/settings/documents", label: "Documents" },
+  { href: "/settings/plan", label: "Plan & usage" },
 ] as const;
 
 export function SettingsTabs() {
@@ -27,7 +28,7 @@ export function SettingsTabs() {
     <nav
       ref={nav}
       aria-label="Settings"
-      // Phones: all four in a 2×2 grid (a sideways strip hid "Documents").
+      // Phones: a two-column grid (a sideways strip hid the later tabs).
       className="mb-8 grid grid-cols-2 border-b sm:flex sm:gap-1 sm:overflow-x-auto"
     >
       {TABS.map((tab) => {

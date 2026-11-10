@@ -30,6 +30,14 @@ const limitIn = (label: string, noun: RegExp): number | undefined => {
   return m ? Number(m[1]) : undefined;
 };
 
+/** A line that states a limit ("6 active projects", "Up to 5 team members"). */
+export function statesLimit(label: string): boolean {
+  return (
+    limitIn(label, /active projects?\b/) !== undefined ||
+    limitIn(label, /team members?\b/) !== undefined
+  );
+}
+
 /** What's wrong with one line, in words, or null. */
 export function lineIssue(
   line: { label: string; soon: boolean },

@@ -30,7 +30,9 @@ async function AdminPlans({
   await requireAdmin();
   const [plans, changes] = await Promise.all([
     getPlans(),
-    listAdminChanges(parsePage((await searchParams).page)),
+    listAdminChanges(parsePage((await searchParams).page), {
+      action: "plan.updated",
+    }),
   ]);
   return (
     <>

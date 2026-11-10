@@ -102,7 +102,13 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
   ],
   // Platform level: a plan's price history, newest first; the admin log.
   [COLLECTIONS.planPrices]: [{ key: { planId: 1, createdAt: -1 } }],
-  [COLLECTIONS.adminAudit]: [{ key: { at: -1 } }],
+  [COLLECTIONS.adminAudit]: [
+    { key: { at: -1 } },
+    { key: { action: 1, at: -1 } },
+    { key: { href: 1, at: -1 } },
+  ],
+  // One ScopeLock plan per workspace.
+  [COLLECTIONS.subscriptions]: [{ key: { workspaceId: 1 }, unique: true }],
 };
 
 export async function ensureIndexes(
