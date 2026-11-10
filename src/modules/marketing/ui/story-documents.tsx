@@ -68,7 +68,7 @@ const CHANGE_ORDER: ChangeOrderData = {
     {
       id: "blog",
       title: "Blog",
-      description: "Categories, search and 3 starter posts.",
+      description: STORY.change.blog,
       amount: minor(1_100_000),
     },
     {

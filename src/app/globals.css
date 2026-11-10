@@ -331,6 +331,12 @@
 .sl-stamp {
   transform-origin: center;
 }
+.sl-total .sl-strike {
+  grid-area: 1 / 1;
+}
+.sl-total .sl-settle {
+  grid-area: 1 / 2;
+}
 @media (prefers-reduced-motion: no-preference) {
   [data-approval-play]:not([data-play]) .sl-wait {
     opacity: 1;
@@ -338,9 +344,17 @@
   [data-approval-play]:not([data-play]) .sl-stamp {
     opacity: 0;
   }
-  /* The new total takes no room until it lands, so ₹80,000 sits flush. */
-  [data-approval-play]:not([data-play]) .sl-settle {
-    display: none;
+  /* The new total holds its place while hidden (nothing below moves). On
+     wider screens ₹80,000 waits flush right in that place, is struck there,
+     then slides aside as ₹95,000 settles (ApprovalPlay animates the slide). */
+  [data-approval-play]:not([data-settled]) .sl-settle {
+    visibility: hidden;
+  }
+  @media (min-width: 40rem) {
+    [data-approval-play]:not([data-settled]) .sl-total .sl-strike {
+      grid-area: 1 / 2;
+      justify-self: end;
+    }
   }
   /* Priced, not yet agreed: the amount waits too. */
   [data-approval-play]:not([data-play]) .sl-pending {
@@ -359,10 +373,10 @@
     animation: sl-stamp-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 400ms both;
   }
   [data-play] .sl-strike {
-    animation: sl-strike 320ms ease-out 900ms both;
+    animation: sl-strike 320ms ease-out 700ms both;
   }
-  [data-play] .sl-settle {
-    animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 1000ms both;
+  [data-settled] .sl-settle {
+    animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }
 @keyframes sl-pending-in {

@@ -21,12 +21,41 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
     // A beat after the row is in view, so on wide screens (where it's in
     // the first screen) the eye has reached it before the yes lands.
     let timer = 0;
-    const play = () => {
-      timer = window.setTimeout(() => el.setAttribute("data-play", ""), 700);
+    let settleTimer = 0;
+    const settle = () => {
+      // The struck total moves aside for the new one: measure, switch, then
+      // slide from where it was (no jump).
+      const strike = el.querySelector<HTMLElement>(".sl-strike");
+      const before = strike?.getBoundingClientRect().left ?? 0;
+      el.setAttribute("data-settled", "");
+      const after = strike?.getBoundingClientRect().left ?? 0;
+      if (strike && before !== after)
+        strike.animate(
+          [
+            { transform: `translateX(${before - after}px)` },
+            { transform: "none" },
+          ],
+          { duration: 360, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+        );
     };
+    const play = () => {
+      timer = window.setTimeout(() => {
+        el.setAttribute("data-play", "");
+        settleTimer = window.setTimeout(settle, 1050);
+      }, 700);
+    };
+    const stop = () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(settleTimer);
+    };
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.setAttribute("data-play", "");
+      el.setAttribute("data-settled", "");
+      return;
+    }
     if (!("IntersectionObserver" in window)) {
       play();
-      return () => window.clearTimeout(timer);
+      return stop;
     }
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -40,7 +69,7 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
     io.observe(row);
     return () => {
       io.disconnect();
-      window.clearTimeout(timer);
+      stop();
     };
   }, []);
   return (
@@ -55,4 +84,4 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
 
 /** Without JavaScript nothing would play: show the approved state. */
 const NO_SCRIPT =
-  "[data-approval-play] .sl-wait{opacity:0!important}[data-approval-play] .sl-stamp,[data-approval-play] .sl-settle,[data-approval-play] .sl-pending{opacity:1!important}[data-approval-play] .sl-settle{display:inline!important}[data-approval-play] .sl-strike{text-decoration-color:currentColor!important}";
+  "[data-approval-play] .sl-wait{opacity:0!important}[data-approval-play] .sl-stamp,[data-approval-play] .sl-settle,[data-approval-play] .sl-pending{opacity:1!important}[data-approval-play] .sl-settle{visibility:visible!important}[data-approval-play] .sl-total .sl-strike{grid-area:1/1!important;justify-self:auto!important}[data-approval-play] .sl-strike{text-decoration-color:currentColor!important}";

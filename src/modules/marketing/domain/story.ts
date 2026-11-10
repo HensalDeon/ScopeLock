@@ -25,7 +25,9 @@ export const STORY = {
     label: "CR-001",
     title: "Blog + WhatsApp chat button",
     detail:
-      "A blog with categories and 3 starter posts, and a WhatsApp chat button on every page.",
+      "A blog with categories, search and 3 starter posts, and a WhatsApp chat button on every page.",
+    /** What the blog line covers, word for word on every document. */
+    blog: "Categories, search and 3 starter posts.",
     amount: 15_000,
     askedOn: "28 Oct",
     sentAt: "3:19 pm",

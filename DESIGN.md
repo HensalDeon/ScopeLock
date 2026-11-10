@@ -158,6 +158,13 @@ typography:
     lineHeight: 0.96
     letterSpacing: "-0.01em"
     fontVariation: "'wdth' 87.5"
+  hero-short:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "58px"
+    fontWeight: 600
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
   hero-wide:
     fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
     fontSize: "64px"
@@ -378,7 +385,7 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 - **Label** (400, 0.6875rem, uppercase, 0.12–0.14em tracking): mono column heads, card captions ("APPROVED WORK", "DRAFT", "LIVE PREVIEW").
 - **Document display** (Cormorant Garamond 600, about 2.4rem, 1.08): titles and the total investment figure inside client documents.
 - **Small steps:** caption 12px (badges, meta under a row) and small 13px (compact UI text, document fine print, footers).
-- **Marketing (Persuade only):** headlines in **Anek Latin** (by Ek Type, Mumbai) at 600, semi-condensed (`wdth` 87.5), -0.01em, line height about 1: the hero 46px → 64px → 74px, section headings 36px → 50px, step titles 30px → 36px. Legal titles 38px → 50px in the same face. Lead text stays Geist at 17px (hero lead 18px); legal body text 15.5px at 1.7 line height (about 68 characters a line). These never appear inside the app.
+- **Marketing (Persuade only):** headlines in **Anek Latin** (by Ek Type, Mumbai) at 600, semi-condensed (`wdth` 87.5), -0.01em, line height about 1: the hero 46px → 64px → 74px (58px on wide but short screens, ≤800px tall, so the first screen holds the whole approval), section headings 36px → 50px, step titles 30px → 36px. Legal titles 38px → 50px in the same face. Lead text stays Geist at 17px (hero lead 18px); legal body text 15.5px at 1.7 line height (about 68 characters a line). These never appear inside the app.
 - **Documents:** the serif steps scale with the sheet: h3 1.2rem, h2 1.55rem → 1.85rem wide, titles 2.1rem → 2.85rem wide (1.9rem on a change order's compact cover), figures 2.2–2.4rem. Accounts documents (invoice, statement) stay in Geist at body and small sizes.
 - **Email:** inline sizes 16px / 20px / 30px with Roboto and a system mono, because email apps ignore the site's CSS; the only place those fonts appear.
 

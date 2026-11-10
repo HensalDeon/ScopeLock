@@ -33,9 +33,9 @@ export function Evidence() {
                 from="you"
                 className="border-white/25 bg-transparent text-[#e8ecf2]"
               >
-                Here&apos;s what {c.label} covered: categories, search and 3
-                starter posts, approved {c.askedOn} at {c.approvedAt}. Hindi
-                would be a new change.
+                Here&apos;s what {c.label} covered: a blog with{" "}
+                {c.blog.charAt(0).toLowerCase() + c.blog.slice(1, -1)}, approved{" "}
+                {c.askedOn} at {c.approvedAt}. Hindi would be a new change.
               </Bubble>
             </div>
           </div>

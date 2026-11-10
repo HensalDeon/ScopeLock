@@ -39,7 +39,7 @@ export function Hero() {
               <LogTotal label="Project total">
                 <p
                   data-approval-total
-                  className="flex min-h-[26px] items-baseline gap-3 sm:justify-end"
+                  className="sl-total grid grid-cols-[auto_auto] items-baseline justify-start gap-x-3 sm:justify-end"
                 >
                   <span className="sl-strike text-[16px] text-muted-foreground tabular-nums">
                     <span className="sr-only">was </span>
