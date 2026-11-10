@@ -18,9 +18,7 @@
       {
         "rule": "nested-cards",
         "value": "*",
-        "files": [
-          "src/modules/marketing/ui/story-documents.tsx"
-        ],
+        "files": ["src/modules/marketing/ui/story-documents.tsx"],
         "createdAt": "2026-11-10T07:53:53.065Z",
         "reason": "DESIGN.md: client documents are white sheets on the Document Desk (#ebe8e2), the one sanctioned lift; not a card in a card"
       }
