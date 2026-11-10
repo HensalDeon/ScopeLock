@@ -62,7 +62,7 @@ export function RateCard({
                 {formatINR(plan.monthlyPrice)}
               </span>
               <span className="mt-1.5 block text-[13px] text-muted-foreground">
-                {plan.monthlyPrice === 0 ? "for 2 projects" : "planned"}
+                {plan.monthlyPrice === 0 ? "for 2 active projects" : "planned"}
               </span>
             </p>
           </li>

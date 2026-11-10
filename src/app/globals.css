@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* Wide but short screens (1366x768 laptops): the landing hero tightens. */
+@custom-variant short (@media (min-width: 64rem) and (max-height: 50rem));
 
 @theme inline {
   --font-display: var(--font-anek), var(--font-sans);
@@ -342,7 +344,7 @@
   }
   /* Priced, not yet agreed: the amount waits too. */
   [data-approval-play]:not([data-play]) .sl-pending {
-    opacity: 0.45;
+    opacity: 0.62;
   }
   [data-play] .sl-pending {
     animation: sl-pending-in 300ms ease-out 400ms both;
@@ -365,7 +367,7 @@
 }
 @keyframes sl-pending-in {
   from {
-    opacity: 0.45;
+    opacity: 0.62;
   }
   to {
     opacity: 1;
@@ -421,4 +423,9 @@
 }
 .sl-site {
   caret-color: var(--foreground);
+}
+/* Sections take focus only so the next Tab starts there (skip link, in-page
+   links); they don't need a ring of their own. */
+.sl-site [tabindex="-1"]:focus {
+  outline: none;
 }

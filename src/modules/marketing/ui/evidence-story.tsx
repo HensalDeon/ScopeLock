@@ -26,15 +26,16 @@ export function Evidence() {
                 {STORY.clientFirst}
               </span>
               <Bubble className="border-white/10 bg-white/[0.06] text-[#e8ecf2]">
-                Wasn&apos;t the blog part of the original website?
+                Can the blog be in Hindi too? That was part of it, no?
               </Bubble>
               <span className="mt-3 text-[12px] text-[#8d99ad]">You</span>
               <Bubble
                 from="you"
                 className="border-white/25 bg-transparent text-[#e8ecf2]"
               >
-                Here&apos;s the change you approved on {c.askedOn}, at{" "}
-                {c.approvedAt}.
+                Here&apos;s what {c.label} covered: categories, search and 3
+                starter posts, approved {c.askedOn} at {c.approvedAt}. Hindi
+                would be a new change.
               </Bubble>
             </div>
           </div>

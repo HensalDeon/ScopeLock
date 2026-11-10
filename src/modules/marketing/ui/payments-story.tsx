@@ -10,8 +10,8 @@ export function PaymentLedger() {
       <div className="border-t border-foreground">
         <table className="w-full text-left text-[14px] sm:text-[15px]">
           <caption className="sr-only">
-            Payments on {STORY.company}&apos;s website, with{" "}
-            {STORY.change.label} added to the {STORY.change.billedWith} payment
+            Payments on the {STORY.company} website, with {STORY.change.label}{" "}
+            added to the {STORY.change.billedWith} payment
           </caption>
           <thead>
             <tr className="border-b font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">

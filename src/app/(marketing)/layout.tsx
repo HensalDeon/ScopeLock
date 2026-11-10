@@ -21,7 +21,11 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
       </a>
       <SmoothScroll />
       <SiteHeader />
-      <main id="main" className="flex-1">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="flex-1 scroll-mt-16 outline-none"
+      >
         {children}
       </main>
       <SiteFooter />

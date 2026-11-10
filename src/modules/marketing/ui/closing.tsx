@@ -58,7 +58,7 @@ export function FinalCta({ formId = "close-email" }: { formId?: string }) {
           className={`${DISPLAY} max-w-[20ch] text-[36px] leading-[1] font-semibold sm:text-[50px]`}
         >
           Your next &ldquo;small change&rdquo; is worth{" "}
-          <span className="font-sans tracking-[-0.03em] [font-stretch:100%] tabular-nums">
+          <span className="font-sans text-[0.92em] tracking-[-0.03em] [font-stretch:100%] tabular-nums">
             {rupees(STORY.change.amount)}
           </span>
           . Charge for it.

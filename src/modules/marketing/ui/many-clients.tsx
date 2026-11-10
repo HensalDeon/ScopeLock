@@ -76,7 +76,7 @@ export function ManyClients() {
       <Container className="py-20 lg:py-28">
         <SectionHeading
           title="Every client, one list."
-          intro="A studio or an agency runs ten threads like Rahul's at once. One workspace holds every client: the overview shows each change waiting for a yes and each payment due, and reminds clients on WhatsApp in one tap. Team logins are coming."
+          intro="A studio or an agency runs ten threads like Rahul's at once. One workspace holds every client: the overview shows each proposal or change waiting for a yes and each payment due, and reminds clients on WhatsApp in one tap. Team logins are coming."
         />
         <Log
           className="mt-12"

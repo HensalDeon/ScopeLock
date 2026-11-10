@@ -80,7 +80,7 @@ const FOOTER_LINKS = [
     title: "Product",
     links: [
       { href: "/#how-it-works", label: "How it works" },
-      { href: "/pricing", label: "Pricing" },
+      { href: "/pricing", label: "Compare plans" },
       { href: "/#faq", label: "Questions" },
       { href: "/sign-in", label: "Sign in" },
     ],

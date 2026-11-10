@@ -47,11 +47,13 @@ export function DocDetails({
           type="button"
           onClick={() => {
             setOpen(false);
+            toggle.current?.focus({ preventScroll: true });
             toggle.current?.scrollIntoView({ block: "center" });
           }}
           className={cn(link, "mt-2")}
         >
           {hide}
+          <ChevronDown aria-hidden className="size-4 rotate-180" />
         </button>
       </div>
     </div>

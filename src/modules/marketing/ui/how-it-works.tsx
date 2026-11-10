@@ -41,7 +41,7 @@ export function HowItWorks() {
             text="When a request comes in on WhatsApp, a call or email, log it with a price in under a minute. Each one gets a number (CR-001, CR-002…), and your client gets a change order: what changed, what it costs, which payment it joins."
           >
             <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
-              <div className="grid content-start gap-2 max-sm:hidden">
+              <div className="grid content-start gap-2 self-start max-sm:hidden lg:sticky lg:top-24">
                 {STORY.asks.map((a) => (
                   <div key={a.at} className="grid gap-1">
                     <span className="font-mono text-[12px] text-muted-foreground tabular-nums">

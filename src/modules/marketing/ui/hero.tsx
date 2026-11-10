@@ -15,14 +15,14 @@ export function Hero() {
   const c = STORY.change;
   return (
     <section className="border-b">
-      <Container className="pt-10 pb-12 sm:pt-12 lg:pb-14">
+      <Container className="pt-10 pb-12 sm:pt-12 lg:pb-14 short:pt-6">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-end lg:gap-16">
           <h1
-            className={`${DISPLAY} max-w-[16ch] text-[46px] leading-[0.96] font-semibold sm:max-w-none sm:text-[64px] lg:text-[74px]`}
+            className={`${DISPLAY} max-w-[16ch] text-[46px] leading-[0.96] font-semibold sm:max-w-none sm:text-[64px] lg:text-[74px] short:text-[58px]`}
           >
             How much extra work did you do last month without charging?
           </h1>
-          <p className="max-w-[46ch] text-[18px] leading-relaxed text-pretty text-muted-foreground lg:pb-1.5">
+          <p className="max-w-[46ch] text-[18px] leading-relaxed text-pretty text-muted-foreground lg:pb-1.5 short:text-[16px] short:leading-normal">
             For freelancers, studios and agencies in India. ScopeLock records
             what your client agreed to, turns every &ldquo;can you just
             add…&rdquo; into a priced change request, and gets it approved
@@ -32,12 +32,15 @@ export function Hero() {
 
         <ApprovalPlay>
           <Log
-            className="mt-9 sm:mt-10"
+            className="mt-9 sm:mt-10 short:mt-6"
             label={`${STORY.company}: a client's requests, priced and approved`}
             heads={["Time", `${STORY.company} · ${STORY.project}`, "Amount"]}
             footer={
               <LogTotal label="Project total">
-                <p className="flex items-baseline gap-3 sm:justify-end">
+                <p
+                  data-approval-total
+                  className="flex min-h-[26px] items-baseline gap-3 sm:justify-end"
+                >
                   <span className="sl-strike text-[16px] text-muted-foreground tabular-nums">
                     <span className="sr-only">was </span>
                     {rupees(STORY.agreed)}
@@ -94,7 +97,7 @@ function ChangeLine() {
       <p className="min-w-0 basis-full text-[15px] font-semibold sm:flex-1 sm:basis-auto sm:text-[16px]">
         <span className="mr-2 font-mono text-[11.5px] font-normal text-muted-foreground">
           {c.label}
-        </span>
+        </span>{" "}
         {c.title}
       </p>
       <span className="grid">

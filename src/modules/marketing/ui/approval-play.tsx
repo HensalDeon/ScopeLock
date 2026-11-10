@@ -12,7 +12,11 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
-    const row = el?.querySelector("[data-approval-row]");
+    // The total settles last: play once it is on screen, so the whole
+    // moment is seen (on short laptops too).
+    const row =
+      el?.querySelector("[data-approval-total]") ??
+      el?.querySelector("[data-approval-row]");
     if (!el || !row) return;
     // A beat after the row is in view, so on wide screens (where it's in
     // the first screen) the eye has reached it before the yes lands.
@@ -31,7 +35,7 @@ export function ApprovalPlay({ children }: { children: React.ReactNode }) {
           io.disconnect();
         }
       },
-      { threshold: 0.6 },
+      { threshold: 0.9 },
     );
     io.observe(row);
     return () => {

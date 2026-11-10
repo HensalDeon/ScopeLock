@@ -97,7 +97,7 @@ export function SignUpStart({
           invert ? "text-[#a3adbd]" : "text-muted-foreground",
         )}
       >
-        Free for 2 projects. No card needed.
+        Free for 2 active projects. No card needed.
       </p>
     </div>
   );
