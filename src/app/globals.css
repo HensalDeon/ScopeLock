@@ -313,55 +313,78 @@
   text-underline-offset: 3px;
 }
 
-/* ─── Marketing grid backdrop (GridBackdrop) ───────────────────────────────
-   Two gradient pairs: 24px cells with a heavier rule every 4th. A line sits
-   exactly on the horizontal centre so the field is symmetric with the
-   centred container. The lit copy is the same lines at carrying strength,
-   masked to a disc under the pointer. */
-.sl-grid,
-.sl-grid-lit {
-  --sl-cell: 24px;
-  --sl-block: 96px;
-  background-image:
-    linear-gradient(to right, var(--sl-minor) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--sl-minor) 1px, transparent 1px),
-    linear-gradient(to right, var(--sl-major) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--sl-major) 1px, transparent 1px);
-  background-size:
-    var(--sl-cell) var(--sl-cell),
-    var(--sl-cell) var(--sl-cell),
-    var(--sl-block) var(--sl-block),
-    var(--sl-block) var(--sl-block);
-  background-position:
-    calc(50% + var(--sl-cell) / 2) 0,
-    calc(50% + var(--sl-cell) / 2) 0,
-    calc(50% + var(--sl-block) / 2) 0,
-    calc(50% + var(--sl-block) / 2) 0;
-}
-.sl-grid {
-  --sl-minor: rgb(11 18 32 / 0.035);
-  --sl-major: rgb(11 18 32 / 0.07);
-  --mx: -1000px;
-  --my: -1000px;
-  /* Fade toward the edges so the grid never ends on a hard line. */
-  mask-image: radial-gradient(
-    ellipse 75% 85% at 50% 40%,
-    #000 35%,
-    transparent 100%
-  );
-}
-.sl-grid-lit {
-  --sl-minor: rgb(11 18 32 / 0.11);
-  --sl-major: rgb(11 18 32 / 0.2);
+/* ─── Landing page: the approval lands once ────────────────────────────────
+   CR-001's "Waiting" gives way to "Approved" in one press, then the old
+   total is struck and the new one settles. Runs once on load; without
+   motion (or animation support) the page shows the approved state. */
+.sl-wait {
   opacity: 0;
-  transition: opacity 0.3s ease;
-  mask-image: radial-gradient(
-    circle 200px at var(--mx) var(--my),
-    #000 0%,
-    rgb(0 0 0 / 0.45) 45%,
-    transparent 72%
-  );
+  animation: sl-wait-out 180ms ease-out 1100ms both;
 }
-.sl-grid[data-lit="true"] .sl-grid-lit {
-  opacity: 1;
+.sl-stamp {
+  transform-origin: center;
+  animation: sl-stamp-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 1150ms both;
+}
+.sl-strike {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1.5px;
+  animation: sl-strike 320ms ease-out 1650ms both;
+}
+.sl-settle {
+  animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 1750ms both;
+}
+@keyframes sl-wait-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sl-stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.45);
+    filter: blur(3px);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.94);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes sl-strike {
+  from {
+    text-decoration-color: transparent;
+  }
+  to {
+    text-decoration-color: currentColor;
+  }
+}
+@keyframes sl-settle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-wait,
+  .sl-stamp,
+  .sl-strike,
+  .sl-settle {
+    animation: none;
+  }
+}
+
+/* Browser surfaces on the marketing pages carry the palette too. */
+.sl-site ::selection {
+  background: rgb(11 18 32 / 0.14);
+  color: inherit;
+}
+.sl-site {
+  caret-color: var(--foreground);
 }

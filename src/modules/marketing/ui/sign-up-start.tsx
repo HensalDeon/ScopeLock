@@ -1,0 +1,45 @@
+import Form from "next/form";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+
+/**
+ * The page's one action, in its working form: type your email here and the
+ * sign-up page opens with it filled in. Works without JavaScript.
+ */
+export function SignUpStart({
+  id,
+  className,
+}: {
+  /** Unique per page: the form appears more than once. */
+  id: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("grid gap-3", className)}>
+      <Form
+        action="/sign-up"
+        className="flex flex-col gap-2.5 sm:flex-row sm:items-center"
+      >
+        <label htmlFor={id} className="sr-only">
+          Your email
+        </label>
+        <Input
+          id={id}
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          placeholder="you@yourstudio.in"
+          className="h-12 text-[15px] sm:w-80 md:text-[15px]"
+        />
+        <Button type="submit" size="lg" className="h-12 px-6 text-[15px]">
+          Create free account
+        </Button>
+      </Form>
+      <p className="text-sm text-muted-foreground">
+        Free for 2 projects. No card needed.
+      </p>
+    </div>
+  );
+}

@@ -37,3 +37,12 @@ export function authErrorMessage(
     return "That didn't go through. Check what you entered and try again.";
   return "Something went wrong on our side. Please try again.";
 }
+
+/**
+ * The email typed on the landing page (`/sign-up?email=…`), to fill in the
+ * sign-up form. Anything that doesn't look like one address is dropped.
+ */
+export function prefillEmail(raw: string | string[] | undefined): string {
+  const value = (Array.isArray(raw) ? raw[0] : raw)?.trim() ?? "";
+  return value.length <= 254 && /^[^\s@]+@[^\s@]+$/.test(value) ? value : "";
+}

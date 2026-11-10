@@ -1,162 +1,130 @@
-import { Check } from "lucide-react";
-import { formatINR, rupeesToPaise } from "@/shared/lib/money";
-import { cn } from "@/shared/lib/utils";
-import { Container, Leader, SectionHeading } from "./primitives";
+import { rupees, STORY, storyTotal } from "../domain/story";
+import { ClientApproval } from "./client-view";
+import { PaymentLedger } from "./payments-story";
+import { Container, SectionHeading } from "./primitives";
+import { ChangeOrderOnDesk, ProposalOnDesk } from "./story-documents";
+import { Bubble } from "./thread-log";
 
-/** Landing page, section 2. How it works. */
-
-const rupees = (n: number) => formatINR(rupeesToPaise(n));
-
+/**
+ * How it works: the same project, day by day. The date runs down the left
+ * gutter like the hero's log; each day shows what ScopeLock made.
+ */
 export function HowItWorks() {
+  const c = STORY.change;
   return (
-    <section id="how-it-works" className="scroll-mt-16 border-b bg-canvas">
+    <section id="how-it-works" className="scroll-mt-16 border-b">
       <Container className="py-20 lg:py-28">
         <SectionHeading
-          eyebrow="How it works"
           title="From “can you just add…” to paid, in four steps."
+          intro="An example project, day by day. The proposal and change order below are the documents ScopeLock makes, as the client sees them."
         />
-        <ol className="mt-14 grid gap-4 md:grid-cols-2">
-          <StepCard
-            n={1}
+        <ol className="mt-14 border-b">
+          <Day
+            date={STORY.agreedOn}
             title="Lock the scope"
-            text="List what's included and the price. Your client approves it from a link, so the baseline is agreed in writing before work starts."
+            figure={{ amount: rupees(STORY.agreed), label: "agreed" }}
+            text="List what's included and the price, and ScopeLock turns it into a proposal in your brand. Your client approves it from a link, so the baseline is agreed in writing before work starts."
           >
-            <ul className="grid gap-1.5 text-[13.5px]">
-              {["Home", "About", "Services", "Gallery", "Contact"].map((p) => (
-                <li key={p} className="flex items-center gap-2">
-                  <Check
-                    className="size-3.5 text-muted-foreground"
-                    aria-hidden
-                  />
-                  {p} page
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 flex items-baseline border-t pt-3 text-[13.5px]">
-              <span className="text-muted-foreground">Approved 04 Nov</span>
-              <Leader />
-              <span className="font-semibold tabular-nums">
-                {rupees(80_000)}
-              </span>
-            </p>
-          </StepCard>
-
-          <StepCard
-            n={2}
-            title="Log every extra request"
-            text="When a request comes in on WhatsApp, a call or email, log it with a price in under a minute. Note where it came from."
+            <ProposalOnDesk />
+          </Day>
+          <Day
+            date={c.askedOn}
+            time={c.sentAt}
+            title="Price every extra request"
+            figure={{
+              amount: `+ ${rupees(c.amount)}`,
+              label: `${c.label}, sent`,
+            }}
+            text="When a request comes in on WhatsApp, a call or email, log it with a price in under a minute. Your client gets a change order: what changed, what it costs, which payment it joins."
           >
-            <dl className="grid gap-2.5 text-[13.5px]">
-              <MiniField label="What they asked for" value="Blog section" />
-              <div className="grid grid-cols-2 gap-2.5">
-                <MiniField label="Price" value={rupees(12_000)} mono />
-                <MiniField label="Came from" value="WhatsApp" />
-              </div>
-            </dl>
-          </StepCard>
-
-          <StepCard
-            n={3}
-            title="Your client approves"
-            text="They get one link: what changed, what it costs and when it's billed. No login, no app. Their answer is saved with the date and time."
-          >
-            <div className="grid gap-2 text-[13.5px]">
-              <p className="flex items-baseline">
-                <span>
-                  <span className="mr-1.5 font-mono text-[11px] text-muted-foreground">
-                    CR-004
+            <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
+              <div className="grid content-start gap-2">
+                {STORY.asks.map((a) => (
+                  <div key={a.at} className="grid gap-1">
+                    <span className="font-mono text-[12px] text-muted-foreground tabular-nums">
+                      {STORY.clientFirst}, {a.at}
+                    </span>
+                    <Bubble>{a.text}</Bubble>
+                  </div>
+                ))}
+                <div className="mt-3 grid justify-items-end gap-1">
+                  <span className="font-mono text-[12px] text-muted-foreground tabular-nums">
+                    You, {c.sentAt}
                   </span>
-                  Blog section
-                </span>
-                <Leader />
-                <span className="font-semibold tabular-nums">
-                  {rupees(12_000)}
-                </span>
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <span className="flex h-8 items-center justify-center rounded-md bg-primary text-[13px] font-medium text-primary-foreground">
-                  Approve
-                </span>
-                <span className="flex h-8 items-center justify-center rounded-md border bg-background text-[13px] font-medium">
-                  Decline
-                </span>
+                  <Bubble from="you">
+                    Happy to add both. Here&apos;s the price; you can approve it
+                    from this link.{" "}
+                    <span className="underline underline-offset-3">
+                      {c.label} · {STORY.change.title}
+                    </span>
+                  </Bubble>
+                </div>
               </div>
+              <ChangeOrderOnDesk />
             </div>
-          </StepCard>
-
-          <StepCard
-            n={4}
-            title="Get paid your way"
-            text="Add it to the next milestone, the final payment, or ask for it now. Clients pay by UPI, bank transfer or your payment link."
+          </Day>
+          <Day
+            date={c.askedOn}
+            time={c.approvedAt}
+            title={`${STORY.clientFirst} approves from his phone`}
+            figure={{ amount: rupees(storyTotal()), label: "project total" }}
+            text="One link, usually on WhatsApp. No login, no app. His answer is saved as a signed record with the date and time."
           >
-            <div className="grid gap-1 rounded-md border bg-background px-3 py-2.5 text-[13.5px]">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="font-medium">Before launch</span>
-                <span className="font-medium tabular-nums">
-                  {rupees(47_000)}
-                </span>
-              </div>
-              <div className="flex items-baseline justify-between gap-3 text-muted-foreground">
-                <span className="truncate font-mono text-[12px]">
-                  UPI · UTR 431209876543
-                </span>
-                <span className="shrink-0 text-success-ink">Received</span>
-              </div>
-            </div>
-          </StepCard>
+            <ClientApproval />
+          </Day>
+          <Day
+            date={STORY.milestones[2].paidOn}
+            title="Get paid on your terms"
+            figure={{ amount: rupees(storyTotal()), label: "all received" }}
+            text="Approving and paying are separate. Each change joins the next payment, the final one, a payment you choose, or is paid on its own. With a GSTIN, every payment you ask for comes with a GST invoice."
+          >
+            <PaymentLedger />
+          </Day>
         </ol>
       </Container>
     </section>
   );
 }
 
-function StepCard({
-  n,
+function Day({
+  date,
+  time,
   title,
   text,
+  figure,
   children,
 }: {
-  n: number;
+  date: string;
+  time?: string;
   title: string;
   text: string;
+  /** The log's billed figure, moving with the story. */
+  figure: { amount: string; label: string };
   children: React.ReactNode;
 }) {
   return (
-    <li className="grid content-start gap-5 rounded-xl border bg-background p-6 sm:p-7">
-      <div className="grid gap-2">
-        <p className="font-mono text-[12px] text-muted-foreground tabular-nums">
-          Step {n}
-        </p>
-        <h3 className="text-xl font-semibold tracking-[-0.02em]">{title}</h3>
-        <p className="text-[15px] leading-relaxed text-pretty text-muted-foreground">
+    <li className="grid grid-cols-[3.25rem_minmax(0,1fr)] gap-x-3 gap-y-8 border-t py-12 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:gap-x-6 sm:gap-y-10 sm:py-16">
+      <p className="pt-2 font-mono text-[12px] text-muted-foreground tabular-nums sm:sticky sm:top-24 sm:self-start">
+        <span className="block">{date}</span>
+        {time && <span className="block">{time}</span>}
+      </p>
+      <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_11rem] lg:gap-x-12">
+        <h3 className="text-[26px] leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-[30px]">
+          {title}
+        </h3>
+        <p className="max-w-[58ch] text-[16px] leading-relaxed text-pretty text-muted-foreground lg:pt-1.5">
           {text}
         </p>
+        <p className="grid content-start gap-0.5 border-t pt-3 lg:border-t-0 lg:pt-1 lg:text-right">
+          <span className="text-[22px] leading-none font-semibold tracking-[-0.02em] tabular-nums">
+            {figure.amount}
+          </span>
+          <span className="text-[13px] text-muted-foreground">
+            {figure.label}
+          </span>
+        </p>
       </div>
-      <div className="rounded-lg border bg-canvas p-4">{children}</div>
+      <div className="col-span-full min-w-0 sm:col-start-2">{children}</div>
     </li>
-  );
-}
-
-function MiniField({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="grid gap-1">
-      <dt className="text-[12px] text-muted-foreground">{label}</dt>
-      <dd
-        className={cn(
-          "rounded-md border bg-background px-2.5 py-1.5",
-          mono && "tabular-nums",
-        )}
-      >
-        {value}
-      </dd>
-    </div>
   );
 }

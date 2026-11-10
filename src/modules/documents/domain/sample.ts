@@ -11,8 +11,9 @@ export function sampleProposal(
   business: ProposalDocumentData["business"],
   voice: "I" | "we",
   defaults: ProposalDefaults = STARTER_PROPOSAL_DEFAULTS,
+  /** Issue date; fixed for pages that are prerendered (the landing page). */
+  now: Date = new Date(),
 ): ProposalDocumentData {
-  const now = new Date();
   return {
     voice,
     business,

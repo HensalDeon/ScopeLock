@@ -1,157 +1,105 @@
-import { Check } from "lucide-react";
-import Link from "next/link";
-import { formatINR, paise } from "@/shared/lib/money";
-import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
-import { GridBackdrop } from "./grid-backdrop";
+import { rupees, STORY, storyTotal } from "../domain/story";
 import { Container } from "./primitives";
+import { SignUpStart } from "./sign-up-start";
+import { Bubble, Log, LogDate, LogRow, LogTotal } from "./thread-log";
 
+/**
+ * The first screen: the question, then one client's thread kept as a log.
+ * Rahul's two asks become CR-001; on first view its "Waiting" gives way to
+ * "Approved" in one press and the total settles on ₹95,000. Without motion,
+ * the page simply shows the approved state.
+ */
 export function Hero() {
+  const c = STORY.change;
   return (
-    <section className="relative overflow-hidden border-b">
-      <GridBackdrop />
-      <Container className="relative grid items-center gap-14 py-16 sm:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16 lg:py-24">
-        <div className="grid content-start gap-7">
-          <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-            For freelancers and agencies in India
-          </p>
-          <h1 className="text-[40px] leading-[1.02] font-semibold tracking-[-0.045em] text-balance sm:text-[56px] lg:text-[62px]">
+    <section className="border-b">
+      <Container className="pt-10 pb-12 sm:pt-12 lg:pb-14">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-end lg:gap-16">
+          <h1 className="max-w-[15ch] text-[40px] leading-[1.02] font-semibold tracking-[-0.04em] text-balance sm:max-w-none sm:text-[56px] lg:text-[62px]">
             How much extra work did you do last month without charging?
           </h1>
-          <p className="max-w-[54ch] text-[18px] leading-relaxed text-pretty text-muted-foreground">
+          <p className="max-w-[46ch] text-[18px] leading-relaxed text-pretty text-muted-foreground lg:pb-1.5">
             ScopeLock records what your client agreed to, turns every &ldquo;can
             you just add…&rdquo; into a priced change request, and gets it
             approved before you start the work.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button asChild size="lg" className="h-11 px-5 text-[15px]">
-              <Link href="/sign-up">Start free</Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="h-11 px-5 text-[15px]"
-            >
-              <Link href="/#how-it-works">See how it works</Link>
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Free for 2 projects. No card needed.
-          </p>
         </div>
 
-        <HeroExchange />
+        <Log
+          className="mt-9 sm:mt-10"
+          label={`${STORY.company}: a client's requests, priced and approved`}
+          heads={["Time", `${STORY.company} · ${STORY.project}`, "Billed"]}
+          footer={
+            <LogTotal label={`Project total, with ${STORY.clientFirst}'s yes`}>
+              <p className="flex items-baseline gap-3 sm:justify-end">
+                <span className="sl-strike text-[16px] text-muted-foreground tabular-nums">
+                  <span className="sr-only">was </span>
+                  {rupees(STORY.agreed)}
+                </span>
+                <span className="sl-settle text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums">
+                  <span className="sr-only">now </span>
+                  {rupees(storyTotal())}
+                </span>
+              </p>
+            </LogTotal>
+          }
+        >
+          <LogRow
+            time={STORY.agreedOn}
+            who="Agreed scope"
+            ghost
+            billed={rupees(STORY.agreed)}
+          >
+            <p className="text-[15px] text-pretty sm:text-[16px]">
+              {STORY.pages.join(", ")}. Paid 30/30/40.
+            </p>
+          </LogRow>
+          <LogDate>{c.askedOn}</LogDate>
+          {STORY.asks.map((a) => (
+            <LogRow key={a.at} time={a.at} who={STORY.clientFirst}>
+              <Bubble>{a.text}</Bubble>
+            </LogRow>
+          ))}
+          <LogRow
+            time={c.sentAt}
+            who="You"
+            strong
+            billed={`+ ${rupees(c.amount)}`}
+          >
+            <ChangeLine />
+          </LogRow>
+        </Log>
+
+        <SignUpStart id="hero-email" className="mt-8" />
       </Container>
     </section>
   );
 }
 
-/**
- * The product in one story: a WhatsApp message becomes a priced change
- * request, and the client approves it. Times run down the left like a log.
- */
-function HeroExchange() {
+/** CR-001 as it sits in the log: waiting, then approved in one press. */
+function ChangeLine() {
+  const c = STORY.change;
   return (
-    <figure
-      aria-label="A client's WhatsApp request turned into an approved change request"
-      className="relative"
-    >
-      <ol className="relative grid gap-5">
-        <span
-          aria-hidden
-          className="absolute top-3 bottom-3 left-[3.35rem] w-px bg-border sm:left-[3.85rem]"
-        />
-
-        <Step time="3:12 pm" label="Rahul on WhatsApp">
-          <div className="max-w-[22rem] rounded-2xl rounded-tl-sm border bg-canvas px-4 py-3 text-[15px] leading-snug">
-            Hey, can you also add a blog section? Should be quick.
-          </div>
-        </Step>
-
-        <Step time="3:13 pm" label="You, in ScopeLock" accent>
-          <div className="rounded-xl border bg-background shadow-[0_1px_2px_rgba(11,18,32,0.04),0_16px_40px_-18px_rgba(11,18,32,0.18)]">
-            <div className="flex items-baseline justify-between gap-4 border-b px-4 py-3">
-              <p className="text-[15px] font-medium">
-                <span className="mr-2 font-mono text-[11.5px] text-muted-foreground">
-                  CR-004
-                </span>
-                Blog section
-              </p>
-              <p className="text-[15px] font-semibold tabular-nums">
-                {formatINR(paise(1_200_000))}
-              </p>
-            </div>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 px-4 py-3 text-[13px]">
-              <dt className="text-muted-foreground">Original scope</dt>
-              <dd>5 pages, no blog</dd>
-              <dt className="text-muted-foreground">Billed with</dt>
-              <dd>Final milestone</dd>
-            </dl>
-            <div className="flex items-center justify-between gap-3 border-t px-4 py-2.5 text-[13px]">
-              <span className="text-muted-foreground">Sent to Rahul</span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-warning-soft px-2 py-0.5 text-warning-ink">
-                <span className="size-1.5 rounded-full bg-warning" />
-                Waiting for approval
-              </span>
-            </div>
-          </div>
-        </Step>
-
-        <Step time="3:42 pm" label="Rahul tapped Approve">
-          <div className="flex items-center gap-3 rounded-xl border border-brand/30 bg-success-soft px-4 py-3">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand text-white">
-              <Check className="size-4" aria-hidden />
-            </span>
-            <div className="min-w-0 text-[14px] leading-snug">
-              <p className="font-medium">Approved by Rahul Mehta</p>
-              <p className="text-muted-foreground">
-                Project value{" "}
-                <span className="tabular-nums">
-                  {formatINR(paise(8_000_000))}
-                </span>{" "}
-                →{" "}
-                <span className="font-medium text-foreground tabular-nums">
-                  {formatINR(paise(9_200_000))}
-                </span>
-              </p>
-            </div>
-          </div>
-        </Step>
-      </ol>
-    </figure>
-  );
-}
-
-function Step({
-  time,
-  label,
-  accent = false,
-  children,
-}: {
-  time: string;
-  label: string;
-  accent?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <li className="relative grid grid-cols-[2.9rem_minmax(0,1fr)] gap-4 sm:grid-cols-[3.4rem_minmax(0,1fr)]">
-      <div className="relative pt-1 text-right">
-        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
-          {time}
+    <div className="flex max-w-[36rem] flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-foreground/80 bg-background px-4 py-3">
+      <p className="min-w-0 basis-full text-[15px] font-semibold sm:flex-1 sm:basis-auto sm:text-[16px]">
+        <span className="mr-2 font-mono text-[11.5px] font-normal text-muted-foreground">
+          {c.label}
         </span>
+        {c.title}
+      </p>
+      <span className="grid">
         <span
           aria-hidden
-          className={cn(
-            "absolute top-[0.55rem] -right-[0.6rem] size-2 rounded-full border-2 border-background ring-1 sm:-right-[0.62rem]",
-            accent ? "bg-foreground ring-foreground" : "bg-border ring-border",
-          )}
-        />
-      </div>
-      <div className="grid min-w-0 gap-2">
-        <p className="text-[12px] text-muted-foreground">{label}</p>
-        {children}
-      </div>
-    </li>
+          className="sl-wait col-start-1 row-start-1 inline-flex h-6 items-center gap-1.5 rounded-full bg-warning-soft px-2.5 text-[12px] font-medium text-warning-ink"
+        >
+          <span className="size-1.5 rounded-full bg-warning" />
+          Waiting for {STORY.clientFirst}
+        </span>
+        <span className="sl-stamp col-start-1 row-start-1 inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-[12px] font-medium">
+          <span className="size-1.5 rounded-full bg-brand" />
+          Approved {c.approvedAt}
+        </span>
+      </span>
+    </div>
   );
 }

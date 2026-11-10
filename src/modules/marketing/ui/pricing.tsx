@@ -1,66 +1,60 @@
-import { Check } from "lucide-react";
-import Link from "next/link";
-import { PLANS, type Plan } from "@/modules/billing";
+import { PLANS } from "@/modules/billing";
 import { formatINR } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
 
-export function PricingCards({ className }: { className?: string }) {
+/**
+ * The plans as a rate card: one ruled row per plan, the monthly price in the
+ * figure column. Paid prices are planned (pricing opens at launch).
+ */
+export function RateCard({ className }: { className?: string }) {
   return (
-    <div className={cn("grid gap-4 lg:grid-cols-3", className)}>
-      {PLANS.map((plan) => (
-        <PlanCard key={plan.id} plan={plan} />
-      ))}
-    </div>
-  );
-}
-
-function PlanCard({ plan }: { plan: Plan }) {
-  return (
-    <div
-      className={cn(
-        "relative flex flex-col rounded-xl border bg-background p-6 sm:p-7",
-        plan.highlighted && "border-foreground/80",
-      )}
-    >
-      <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-lg font-semibold tracking-tight">{plan.name}</h3>
-      </div>
-      <p className="mt-1.5 text-sm text-muted-foreground">{plan.summary}</p>
-
-      <p className="mt-6 flex items-baseline gap-1.5">
-        <span className="text-[40px] leading-none font-semibold tracking-[-0.04em] tabular-nums">
-          {formatINR(plan.monthlyPrice)}
-        </span>
-        <span className="text-sm text-muted-foreground">
-          {plan.monthlyPrice === 0 ? "/ month" : "/ month, planned"}
-        </span>
-      </p>
-
-      <Button
-        asChild
-        size="lg"
-        variant={plan.highlighted ? "default" : "outline"}
-        className="mt-6 w-full max-sm:h-11"
+    <div className={cn("border-t border-foreground", className)}>
+      <div
+        aria-hidden
+        className="hidden grid-cols-[13rem_minmax(0,1fr)_11rem] gap-6 border-b py-2.5 font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase md:grid"
       >
-        <Link href="/sign-up">{plan.cta}</Link>
-      </Button>
-
-      <ul className="mt-7 grid gap-2.5 border-t pt-6 text-[14.5px]">
-        {plan.features.map((feature) => (
-          <li key={feature.label} className="flex gap-2.5">
-            <Check
-              className="mt-1 size-4 shrink-0 text-muted-foreground"
-              aria-hidden
-            />
-            <span>
-              {feature.label}
-              {feature.soon && (
-                <span className="ml-1.5 rounded border px-1 py-px text-[11px] text-muted-foreground">
-                  soon
-                </span>
-              )}
-            </span>
+        <span>Plan</span>
+        <span>Includes</span>
+        <span className="text-right">Per month</span>
+      </div>
+      <ul aria-label="Plans">
+        {PLANS.map((plan) => (
+          <li
+            key={plan.id}
+            className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-3 border-b py-6 md:grid-cols-[13rem_minmax(0,1fr)_11rem]"
+          >
+            <div className="grid content-start gap-1">
+              <h3 className="text-[20px] font-semibold tracking-[-0.02em]">
+                {plan.name}
+              </h3>
+              <p className="text-[14px] text-pretty text-muted-foreground">
+                {plan.summary}
+              </p>
+            </div>
+            <ul className="col-span-full row-start-2 flex flex-wrap gap-x-5 gap-y-1.5 text-[15px] md:col-span-1 md:col-start-2 md:row-start-1 md:pt-1">
+              {plan.features.map((f) => (
+                <li key={f.label} className="flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="size-1 shrink-0 rounded-full bg-muted-foreground/60"
+                  />
+                  {f.label}
+                  {f.soon && (
+                    <span className="rounded border px-1 py-px text-[11px] text-muted-foreground">
+                      soon
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="col-start-2 row-start-1 text-right md:col-start-3">
+              <span className="block text-[28px] leading-none font-semibold tracking-[-0.03em] tabular-nums">
+                {formatINR(plan.monthlyPrice)}
+              </span>
+              <span className="mt-1.5 block text-[13px] text-muted-foreground">
+                {plan.monthlyPrice === 0 ? "for 2 projects" : "planned"}
+              </span>
+            </p>
           </li>
         ))}
       </ul>

@@ -1,0 +1,20 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-11-10T06:47:35.622Z",
+        "reason": "DESIGN.md names Geist the brand's display and body face (The Signed Ledger)"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "createdAt": "2026-11-10T06:47:35.650Z",
+        "reason": "DESIGN.md names Geist Mono the ledger label face"
+      }
+    ]
+  }
+}

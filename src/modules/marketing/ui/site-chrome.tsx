@@ -9,7 +9,7 @@ import { Container } from "./primitives";
 const NAV = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/#faq", label: "Questions" },
 ] as const;
 
 export function SiteHeader() {
@@ -38,14 +38,18 @@ export function SiteHeader() {
           <Link
             href="/sign-in"
             className={cn(
-              "rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+              "rounded-md px-3 py-2 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
               TOUCH_LINK,
             )}
           >
             Sign in
           </Link>
-          <Button asChild className={TOUCH}>
-            <Link href="/sign-up">Start free</Link>
+          <Button
+            asChild
+            variant="outline"
+            className={cn(TOUCH, "max-sm:hidden")}
+          >
+            <Link href="/sign-up">Create free account</Link>
           </Button>
         </div>
       </Container>
@@ -59,7 +63,7 @@ const FOOTER_LINKS = [
     links: [
       { href: "/#how-it-works", label: "How it works" },
       { href: "/pricing", label: "Pricing" },
-      { href: "/#faq", label: "FAQ" },
+      { href: "/#faq", label: "Questions" },
       { href: "/sign-in", label: "Sign in" },
     ],
   },

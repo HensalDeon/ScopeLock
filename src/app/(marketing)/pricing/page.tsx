@@ -5,7 +5,7 @@ import {
   Container,
   Faq,
   FinalCta,
-  PricingCards,
+  RateCard,
   SectionHeading,
   type FaqItem,
 } from "@/modules/marketing";
@@ -123,11 +123,10 @@ export default function PricingPage() {
         <Container className="py-16 sm:py-20">
           <SectionHeading
             as="h1"
-            eyebrow="Pricing"
             title="Pays for itself with one approved change."
             intro="Start free on your next project. Pro and Agency are planned prices; paid plans aren't open yet, so everyone starts on Free. Prices in Indian rupees; GST extra where applicable."
           />
-          <PricingCards className="mt-12" />
+          <RateCard className="mt-12" />
         </Container>
       </section>
 
@@ -196,7 +195,6 @@ export default function PricingPage() {
       <section className="border-b">
         <Container className="grid gap-10 py-16 sm:py-20 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
           <SectionHeading
-            eyebrow="Billing"
             title="Plans and payments."
             className="content-start self-start"
           />
