@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { authErrorMessage } from "./auth-flow";
+import { authErrorMessage, prefillEmail } from "./auth-flow";
 
 describe("authErrorMessage", () => {
   it("maps known codes", () => {
@@ -31,5 +31,20 @@ describe("authErrorMessage", () => {
       /Check what you entered/,
     );
     expect(authErrorMessage({ status: 0 })).toMatch(/Couldn't reach ScopeLock/);
+  });
+});
+
+describe("prefillEmail", () => {
+  it("keeps one plausible address, trimmed", () => {
+    expect(prefillEmail("  asha@studio.in ")).toBe("asha@studio.in");
+    expect(prefillEmail(["asha@studio.in", "x@y.z"])).toBe("asha@studio.in");
+  });
+
+  it("drops empty, malformed and oversized values", () => {
+    expect(prefillEmail(undefined)).toBe("");
+    expect(prefillEmail("")).toBe("");
+    expect(prefillEmail("asha")).toBe("");
+    expect(prefillEmail("a b@studio.in")).toBe("");
+    expect(prefillEmail(`${"a".repeat(250)}@x.in`)).toBe("");
   });
 });

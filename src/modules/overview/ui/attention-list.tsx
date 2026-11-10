@@ -30,7 +30,10 @@ export function AttentionList({
             </span>
           )}
         </h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        {/* Empty: the empty state says it; don't say it twice. */}
+        {items.length > 0 && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
       </div>
       {items.length === 0 ? (
         <p className="rounded-xl border border-dashed px-5 py-4 text-sm text-pretty text-muted-foreground">
@@ -74,6 +77,13 @@ export function AttentionList({
                 <span className="text-sm font-semibold tabular-nums">
                   {item.amount}
                 </span>
+                {item.action && (
+                  <Button asChild variant="outline" size="sm" className={TOUCH}>
+                    <Link href={item.action.href as Route}>
+                      {item.action.label}
+                    </Link>
+                  </Button>
+                )}
                 {item.remind && (
                   <Button asChild variant="outline" size="sm" className={TOUCH}>
                     <a
@@ -82,7 +92,7 @@ export function AttentionList({
                       rel="noopener noreferrer"
                     >
                       <MessageCircle aria-hidden />
-                      Remind
+                      {item.remindLabel ?? "Remind"}
                     </a>
                   </Button>
                 )}

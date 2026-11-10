@@ -7,7 +7,9 @@ import "server-only";
 export {
   getGstRule,
   getInvoice,
+  getReplacementNumber,
   getInvoicing,
+  documentTax,
   gstOnDocuments,
 } from "./server/queries";
 export { issueInvoice, type IssuedInvoice } from "./server/issue";
@@ -16,5 +18,6 @@ export { issueInvoice, type IssuedInvoice } from "./server/issue";
 export {
   findInvoice,
   findInvoicing,
+  findReplacementNumber,
   setInvoiceStatus,
 } from "./server/repository";

@@ -80,3 +80,14 @@ export function gstOutcome(
       return `Invoices to ${who}: IGST ${GST_RATE_PERCENT}% (${stateName(tax.placeOfSupply) ?? tax.placeOfSupply}, a different state from yours).`;
   }
 }
+
+/** How a client's documents treat GST: added, export (none, LUT), or none. */
+export type TaxCase = "gst" | "export" | "none";
+
+export function taxCaseOf(
+  seller: Pick<InvoicingSettings, "gstin" | "state">,
+  buyer: Pick<Buyer, "country"> | null,
+): TaxCase {
+  if (!seller.gstin || !seller.state) return "none";
+  return isIndia(buyer?.country) ? "gst" : "export";
+}

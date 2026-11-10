@@ -116,3 +116,29 @@ export function approvalAmount(
   if (!gstPercent) return formatMoney(total, currency);
   return `${formatMoney(sum([total, percentOf(total, gstPercent)]), currency)} with GST`;
 }
+
+/**
+ * When a client's GST treatment has changed since the proposal was sent
+ * (moved abroad, new GSTIN), the signed proposal stays as it is: GST isn't
+ * part of the agreed price, it follows each invoice. This says so, in a
+ * line under the document. Null when nothing changed, or for proposals from
+ * before GST was shown on them.
+ */
+export function gstChangeNote(input: {
+  /** gstPercent on the sent proposal (undefined on older ones). */
+  shown: number | null | undefined;
+  now: { gstPercent: number | null; taxCase: "gst" | "export" | "none" };
+  clientName: string;
+  /** The agreed price, formatted ("₹80,000"). */
+  agreed: string;
+}): string | null {
+  if (input.shown === undefined) return null;
+  if ((input.shown ?? null) === input.now.gstPercent) return null;
+  const now =
+    input.now.taxCase === "gst"
+      ? `${input.now.gstPercent ?? 18}% GST`
+      : input.now.taxCase === "export"
+        ? "no GST, as an export of services"
+        : "no GST";
+  return `${input.clientName}'s details changed after this proposal was sent. Invoices issued from now on follow the new details: ${now}. Invoices already issued keep their GST. The agreed price, ${input.agreed}, hasn't changed.`;
+}

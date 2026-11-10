@@ -18,8 +18,6 @@ export type Plan = {
   activeProjects: number;
   teamMembers: number;
   features: { label: string; soon?: boolean }[];
-  cta: string;
-  highlighted?: boolean;
 };
 
 export const PLANS: readonly Plan[] = [
@@ -37,13 +35,12 @@ export const PLANS: readonly Plan[] = [
       { label: "UPI, bank and payment-link tracking" },
       { label: "Change order PDFs" },
     ],
-    cta: "Start free",
   },
   {
     id: "pro",
     name: "Pro",
     monthlyPrice: paise(49_900),
-    summary: "For freelancers with a full client list.",
+    summary: "For freelancers and small studios with a full client list.",
     activeProjects: 6,
     teamMembers: 1,
     features: [
@@ -54,8 +51,6 @@ export const PLANS: readonly Plan[] = [
       { label: "Payment reminders" },
       { label: "Full project statements" },
     ],
-    cta: "Start on Free",
-    highlighted: true,
   },
   {
     id: "agency",
@@ -71,7 +66,6 @@ export const PLANS: readonly Plan[] = [
       { label: "Up to 5 team members", soon: true },
       { label: "Priority support" },
     ],
-    cta: "Start on Free",
   },
 ];
 

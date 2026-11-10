@@ -7,4 +7,6 @@ import "server-only";
 export { PortalChangePage } from "./ui/portal-change-page";
 export { PortalInvoicePage } from "./ui/portal-invoice-page";
 export { PortalPaymentPage } from "./ui/portal-payment-page";
+export { PortalStatementPage } from "./ui/portal-statement-page";
 export { PortalPage } from "./ui/portal-page";
+export { portalTitle } from "./server/queries";

@@ -1,39 +1,36 @@
-import { Check } from "lucide-react";
-import { formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
-import { ShareLink } from "@/shared/ui/share-link";
 import type { ScheduleTotals } from "../domain/gst";
-import {
-  isReminder,
-  nextStep,
-  stillToAsk,
-  type NextStep,
-} from "../domain/next-step";
+import { nextStep, stillToAsk } from "../domain/next-step";
 import type { ScheduleItem } from "../domain/payment";
-import { PaymentActions } from "./payment-actions";
-import {
-  paymentActionProps,
-  payMessage,
-  type ScheduleRowContext,
-} from "./schedule-row";
+import { type ScheduleRowContext } from "./schedule-row";
 
 /**
  * Where an approved project's money stands, at the top of its page:
  * received, due, still to ask for and the total (with GST when there is
  * any), then the one next step. Server component.
  */
+import { NextStepRow } from "./next-step-row";
+
 export function ProjectMoneyStrip({
   items,
   totals,
   ctx,
   now,
+  setup,
 }: {
   items: ScheduleItem[];
   totals: ScheduleTotals;
   ctx: ScheduleRowContext;
   /** When the data was read (from the server query). */
   now: Date;
+  /** Asking issues an invoice that can't change: what's set up first. */
+  setup: {
+    methodsReady: boolean;
+    invoicingReady: boolean;
+    /** Client abroad, only UPI set up: a bank or link is needed first. */
+    abroadNeedsBankOrLink?: boolean;
+  };
 }) {
   const money = (amount: Minor) => formatMoney(amount, ctx.currency);
   const shown = totals.gst ?? totals;
@@ -47,10 +44,14 @@ export function ProjectMoneyStrip({
       note:
         shown.due > 0
           ? `Asked, waiting for ${ctx.client.firstName}`
-          : "Nothing asked yet",
+          : "Nothing waiting to be paid",
       waiting: shown.due > 0,
     },
-    { label: "Still to ask for", value: ask, note: "Not asked yet" },
+    {
+      label: "Still to ask for",
+      value: ask,
+      note: ask > 0 ? "Not asked yet" : "Every payment has been asked for",
+    },
     {
       label: totals.gst ? "Total with GST" : "Total",
       value: shown.total,
@@ -92,110 +93,17 @@ export function ProjectMoneyStrip({
           </div>
         ))}
       </dl>
-      {step && <NextStepRow step={step} ctx={ctx} money={money} now={now} />}
-    </section>
-  );
-}
-
-function NextStepRow({
-  step,
-  ctx,
-  money,
-  now,
-}: {
-  step: NextStep;
-  ctx: ScheduleRowContext;
-  money: (amount: Minor) => string;
-  now: Date;
-}) {
-  const name = ctx.client.firstName;
-  const row = "grid gap-3 border-t bg-canvas px-4 py-4 sm:px-5";
-  if (step.kind === "settled") {
-    return (
-      <p className={cn(row, "flex items-center gap-2 text-sm")}>
-        <Check aria-hidden className="size-4 text-brand" />
-        Every payment is in. Nothing left to ask for.
-      </p>
-    );
-  }
-  const { item } = step;
-  if (step.kind === "confirm") {
-    return (
-      <div className={row}>
-        <p className="text-sm font-medium text-pretty">
-          {item.label},{" "}
-          <span className="tabular-nums">{money(item.payable)}</span>: check it
-          reached your account, then confirm.
-        </p>
-        <div className="justify-self-start">
-          <PaymentActions {...paymentActionProps(item, ctx)} primary />
-        </div>
-      </div>
-    );
-  }
-  if (step.kind === "waiting") {
-    const payment = item.payment;
-    const url =
-      ctx.portalUrl && payment ? `${ctx.portalUrl}/pay/${payment.id}` : null;
-    // The first message isn't a reminder: it becomes one after a few days.
-    const reminder = !!payment && isReminder(payment.requestedAt, now);
-    return (
-      <div
-        className={cn(
-          row,
-          "sm:flex sm:flex-wrap sm:items-center sm:justify-between",
-        )}
-      >
-        <div className="grid gap-0.5">
-          <p className="text-sm font-medium text-pretty">
-            Waiting for {name} to pay: {item.label},{" "}
-            <span className="tabular-nums">{money(item.payable)}</span>.
-          </p>
-          {payment && (
-            <p className="text-sm text-pretty text-muted-foreground tabular-nums">
-              Asked {formatDateTime(payment.requestedAt)}
-              {payment.invoice ? ` with invoice ${payment.invoice.number}` : ""}
-              {ctx.client.email ? ` · emailed to ${ctx.client.email}` : ""}
-            </p>
-          )}
-        </div>
-        {url && (
-          <div className="justify-self-start">
-            <ShareLink
-              url={url}
-              phone={ctx.client.phone}
-              message={payMessage(item, ctx, { reminder })}
-              compact
-              copyLabel="Copy pay link"
-              whatsappLabel={
-                reminder
-                  ? `Remind ${name} on WhatsApp`
-                  : `Send ${name} the pay link on WhatsApp`
-              }
-            />
-          </div>
-        )}
-      </div>
-    );
-  }
-  const unlockedBy = item.milestoneId
-    ? ctx.unlockedBy[item.milestoneId]
-    : undefined;
-  return (
-    <div
-      className={cn(
-        row,
-        "sm:flex sm:flex-wrap sm:items-center sm:justify-between",
+      {step && (
+        <NextStepRow
+          step={step}
+          ctx={ctx}
+          money={money}
+          now={now}
+          setup={setup}
+          dueCount={items.filter((i) => i.state === "due").length}
+          dueTotal={shown.due}
+        />
       )}
-    >
-      <p className="text-sm font-medium text-pretty">
-        Next payment: {item.label},{" "}
-        <span className="tabular-nums">{money(item.payable)}</span>.
-        {unlockedBy ? ` Ask once ${unlockedBy} is done.` : ""}
-      </p>
-      <div className="justify-self-start">
-        <PaymentActions {...paymentActionProps(item, ctx)} primary />
-      </div>
-    </div>
+    </section>
   );
 }

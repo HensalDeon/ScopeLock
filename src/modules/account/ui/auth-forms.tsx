@@ -16,7 +16,17 @@ export async function SignInWithOptions() {
   return <SignInForm googleEnabled={isGoogleAuthEnabled()} />;
 }
 
-export async function SignUpWithOptions() {
+export async function SignUpWithOptions({
+  email,
+}: {
+  /** From `/sign-up?email=…` (the landing page's form). */
+  email?: Promise<string>;
+}) {
   await connection();
-  return <SignUpForm googleEnabled={isGoogleAuthEnabled()} />;
+  return (
+    <SignUpForm
+      googleEnabled={isGoogleAuthEnabled()}
+      defaultEmail={(await email) ?? ""}
+    />
+  );
 }

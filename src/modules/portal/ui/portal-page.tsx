@@ -13,6 +13,7 @@ import { decideProposal } from "../server/actions";
 import { getPortalView } from "../server/queries";
 import { DecisionPanel } from "./decision-panel";
 import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";
+import { PrintSetup } from "@/shared/ui/print-setup";
 
 /** The client's page for a link: the proposal, its changes and history. */
 export async function PortalPage({ token }: { token: string }) {
@@ -55,7 +56,13 @@ export async function PortalPage({ token }: { token: string }) {
     <>
       <PortalHeader
         title={`Proposal from ${business}`}
-        detail={`${data.reference} · ${money(headline)}`}
+        detail={`${data.title} · ${money(headline)} ${
+          state !== "approved"
+            ? "proposal"
+            : gstTax > 0
+              ? "project total with GST"
+              : "project total"
+        }`}
       >
         {state === "awaiting" && (
           <a
@@ -65,7 +72,7 @@ export async function PortalPage({ token }: { token: string }) {
             Approve or ask for changes
           </a>
         )}
-        <PrintButton variant="outline" />
+        <PrintButton label="Save proposal PDF" variant="outline" />
       </PortalHeader>
 
       {state === "approved" && decision && (
@@ -80,6 +87,7 @@ export async function PortalPage({ token }: { token: string }) {
         </StatusStrip>
       )}
 
+      <PrintSetup cover footer={`${business} · Proposal ${data.reference}`} />
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         {state === "approved" && (
           <div className="mx-auto mb-0 grid max-w-[210mm] grid-cols-[minmax(0,1fr)] gap-6 border-b bg-white px-5 py-7 sm:mb-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden">
@@ -132,6 +140,12 @@ export async function PortalPage({ token }: { token: string }) {
               payments={view.payments?.totals ?? null}
               money={money}
             />
+            <Link
+              href={`/c/${token}/statement`}
+              className="justify-self-start text-sm font-medium underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
+            >
+              Project statement: every change and payment on one page
+            </Link>
 
             {view.payments && view.payments.items.length > 0 && (
               <section
@@ -185,6 +199,7 @@ export async function PortalPage({ token }: { token: string }) {
         )}
 
         <ClassicDocument
+          note={view.gstNote}
           data={data}
           acceptance={
             state === "approved" && decision
@@ -193,6 +208,7 @@ export async function PortalPage({ token }: { token: string }) {
                   name: decision.name,
                   email: null,
                   at: decision.at,
+                  comment: decision.comment,
                 }
               : null
           }

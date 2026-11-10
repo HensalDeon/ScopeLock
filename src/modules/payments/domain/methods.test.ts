@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
+  abroadPaymentProblem,
+  payByWords,
   clientSeesLine,
+  payToFrom,
   methodsFor,
   methodsFormValues,
   methodsInputSchema,
@@ -125,5 +128,71 @@ describe("clientSeesLine", () => {
   });
   it("says plainly when nothing is set up", () => {
     expect(clientSeesLine({ ...base, filled: [] })).toMatch(/^Nothing yet/);
+  });
+});
+
+describe("payToFrom", () => {
+  const methods = {
+    upi: { vpa: "asha@okhdfc", payeeName: "Asha Menon" },
+    bank: null,
+    link: null,
+    qr: null,
+    other: null,
+    defaultMethod: null,
+  } as unknown as Parameters<typeof payToFrom>[0];
+  it("freezes UPI on rupee invoices only", () => {
+    expect(payToFrom(methods, "INR")?.upi?.vpa).toBe("asha@okhdfc");
+    expect(payToFrom(methods, "USD")).toBeNull();
+    // A client abroad can't use UPI: it's left off their invoice.
+    expect(payToFrom(methods, "INR", true)).toBeNull();
+  });
+});
+
+describe("abroadPaymentProblem", () => {
+  const bank = {
+    accountName: "A",
+    accountNumber: "1",
+    ifsc: null,
+    bankName: "HDFC",
+    branch: null,
+    swift: "HDFCINBB",
+    iban: null,
+  };
+  it("blocks asking a client abroad with only UPI set up", () => {
+    expect(
+      abroadPaymentProblem({ bank: null, link: null }, true, "Rahul"),
+    ).toMatch(/^Rahul is outside India, where UPI doesn't work/);
+  });
+  it("is fine with a bank account or link, or a client in India", () => {
+    expect(
+      abroadPaymentProblem({ bank, link: null }, true, "Rahul"),
+    ).toBeNull();
+    expect(
+      abroadPaymentProblem({ bank: null, link: null }, false, "Rahul"),
+    ).toBeNull();
+  });
+});
+
+describe("payByWords", () => {
+  const m = {
+    upi: { vpa: "asha@okhdfc", payeeName: "Asha" },
+    bank: {
+      accountName: "A",
+      accountNumber: "1",
+      ifsc: null,
+      bankName: "HDFC",
+      branch: null,
+      swift: "HDFCINBB",
+      iban: null,
+    },
+    link: null,
+    qr: null,
+    other: null,
+    defaultMethod: null,
+  } as unknown as Parameters<typeof payByWords>[0];
+  it("names what this client can use", () => {
+    expect(payByWords(m, "INR", false)).toBe("UPI or bank transfer");
+    // Abroad: no UPI.
+    expect(payByWords(m, "INR", true)).toBe("bank transfer");
   });
 });

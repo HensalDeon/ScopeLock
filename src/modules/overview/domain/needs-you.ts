@@ -18,6 +18,8 @@ export function needsYou(
   changes: readonly OverviewChange[],
   now: Date = new Date(),
   payments: readonly OverviewPayment[] = [],
+  /** A UPI ID, bank or link is saved; asking needs one first. */
+  paymentsReady = true,
 ): AttentionItem[] {
   const byId = new Map(projects.map((p) => [p.id, p]));
   const rows: { item: AttentionItem; rank: number; at: number }[] = [];
@@ -55,9 +57,14 @@ export function needsYou(
         tag: "Next payment",
         tone: "neutral",
         title: next.label,
-        detail: `${p.name} · not asked yet · ask ${who} when it's due`,
+        detail: paymentsReady
+          ? `${p.name} · not asked yet · ask ${who} when it's due`
+          : `${p.name} · add how you get paid before you ask ${who}`,
         amount: formatMoney(next.amount, p.currency),
-        href: `/projects/${p.id}`,
+        href: paymentsReady ? `/projects/${p.id}` : "/settings/payments",
+        action: paymentsReady
+          ? null
+          : { label: "Add payment details", href: "/settings/payments" },
         quote: null,
         remind: null,
       },

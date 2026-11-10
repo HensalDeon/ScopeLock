@@ -19,6 +19,8 @@ import type { ScopeItem } from "../domain/scope";
 
 export type ProjectDoc = WorkspaceOwned & {
   _id: ObjectId;
+  /** Missing before proposal numbering. */
+  number?: number;
   clientId: ObjectId;
   name: string;
   description: string | null;
@@ -80,6 +82,7 @@ export const projects = (workspaceId: string) =>
 export function toProject(doc: ProjectDoc): Project {
   return {
     id: doc._id.toHexString(),
+    number: doc.number ?? null,
     clientId: doc.clientId.toHexString(),
     name: doc.name,
     description: doc.description ?? null,

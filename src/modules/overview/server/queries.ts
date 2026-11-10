@@ -126,7 +126,13 @@ export async function getOverview(): Promise<OverviewData> {
     hasProjects: projects.length > 0,
     money: portfolioTotals(projects),
     waiting: waitingOnClients(projects, open, links, new Date(), payments),
-    needs: needsYou(projects, open, new Date(), payments),
+    needs: needsYou(
+      projects,
+      open,
+      new Date(),
+      payments,
+      hasAnyMethod(methods),
+    ),
     activity: activity.map((a) => ({
       ...a,
       project: names.has(a.projectId)

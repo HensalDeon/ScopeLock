@@ -4,6 +4,7 @@
  */
 export {
   approvalAmount,
+  gstChangeNote,
   type ChangeOrderData,
   type ProposalDocumentData,
 } from "./domain/document-data";
@@ -13,6 +14,7 @@ export {
   PROPOSAL_DEFAULTS_FIELDS,
   proposalDefaultsSchema,
   STARTER_PROPOSAL_DEFAULTS,
+  termsForTax,
   type ProposalDefaults,
 } from "./domain/defaults";
 export {

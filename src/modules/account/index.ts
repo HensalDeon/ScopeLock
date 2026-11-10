@@ -2,7 +2,7 @@
  * Account module: public, client-safe API (sign-in, sign-up, password reset,
  * email verification, profile). Server-only pieces are in ./server.ts.
  */
-export { authErrorMessage } from "./domain/auth-flow";
+export { authErrorMessage, prefillEmail } from "./domain/auth-flow";
 export { AccountNameForm } from "./ui/account-form";
 export { AuthHeading, FormSkeleton } from "./ui/auth-heading";
 export { ForgotPasswordForm } from "./ui/forgot-password-form";

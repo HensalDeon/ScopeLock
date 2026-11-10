@@ -5,6 +5,7 @@ import {
   closedKeys,
   paymentTotals,
   type Payment,
+  lineBreakdown,
 } from "./payment";
 import { notReceivedSchema, reportInputSchema } from "./payment-forms";
 
@@ -212,5 +213,34 @@ describe("what people type", () => {
       }).success,
     ).toBe(false);
     expect(notReceivedSchema.safeParse({ note: "" }).success).toBe(false);
+  });
+});
+
+describe("lineBreakdown", () => {
+  const rupees = (n: number) => `₹${(n / 100).toLocaleString("en-IN")}`;
+  it("says what a combined payment is made of", () => {
+    expect(
+      lineBreakdown(
+        [
+          {
+            kind: "baseline",
+            description: "40% of the agreed ₹32,000",
+            amount: minor(1_280_000),
+          },
+          {
+            kind: "change_request",
+            description: "CR-001 Blog",
+            amount: minor(1_500_000),
+          },
+        ],
+        rupees,
+      ),
+    ).toBe("₹12,800 agreed + ₹15,000 CR-001");
+    expect(
+      lineBreakdown(
+        [{ kind: "baseline", description: "x", amount: minor(1) }],
+        rupees,
+      ),
+    ).toBeNull();
   });
 });

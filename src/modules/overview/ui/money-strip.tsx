@@ -19,7 +19,7 @@ export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
     {
       label: "Received",
       amounts: rows.map((r) => ({ c: r.currency, v: r.received })),
-      note: taxed ? "Confirmed, GST included" : "Payments you've confirmed",
+      note: "Confirmed by you",
       waiting: false,
     },
     {
@@ -27,7 +27,7 @@ export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
       amounts: rows.map((r) => ({ c: r.currency, v: r.due })),
       note: any((r) => r.due)
         ? "Asked for, not received yet"
-        : "Nothing asked for is unpaid",
+        : "Nothing waiting to be paid",
       waiting: true,
     },
     {
@@ -41,7 +41,7 @@ export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
       waiting: false,
     },
     {
-      label: taxed ? "Approved, with GST" : "Approved work",
+      label: taxed ? "Total with GST" : "Total",
       amounts: rows.map((r) => ({ c: r.currency, v: r.total })),
       note: taxed
         ? `${formatMoney(minor(taxed.total - taxed.tax), taxed.currency)} + ${formatMoney(taxed.tax, taxed.currency)} GST · ${plural(approvedCount, "project")}`

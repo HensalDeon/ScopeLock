@@ -17,7 +17,6 @@ export default function ContactPage() {
     <Container className="py-14 sm:py-20">
       <SectionHeading
         as="h1"
-        eyebrow="Contact"
         title="Talk to a person."
         intro="Questions about your account, billing or a client link? Email us and a real person replies, usually within one business day."
       />

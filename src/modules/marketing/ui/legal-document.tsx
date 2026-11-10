@@ -1,5 +1,5 @@
 import { legal } from "@/shared/config/site";
-import { Container } from "./primitives";
+import { Container, DISPLAY } from "./primitives";
 
 export type LegalSection = {
   id: string;
@@ -27,10 +27,12 @@ export function LegalDocument({
         <p className="font-mono text-[11.5px] tracking-[0.14em] text-muted-foreground uppercase">
           Last updated {legal.lastUpdated}
         </p>
-        <h1 className="text-[34px] leading-[1.08] font-semibold tracking-[-0.035em] sm:text-[44px]">
+        <h1
+          className={`${DISPLAY} text-[38px] leading-[1] font-semibold sm:text-[50px]`}
+        >
           {title}
         </h1>
-        <div className="max-w-[68ch] text-[16.5px] leading-relaxed text-pretty text-muted-foreground">
+        <div className="max-w-[68ch] text-[17px] leading-relaxed text-pretty text-muted-foreground">
           {intro}
         </div>
       </header>

@@ -97,7 +97,12 @@ export function verdictLabel(
 export function acceptanceOf(
   approval: Pick<
     Approval,
-    "decision" | "subject" | "decidedBy" | "decidedAt" | "snapshotHash"
+    | "decision"
+    | "subject"
+    | "decidedBy"
+    | "decidedAt"
+    | "snapshotHash"
+    | "comment"
   > & { intact: boolean },
   checkedAt: Date,
 ): {
@@ -105,6 +110,7 @@ export function acceptanceOf(
   name: string;
   email: string;
   at: Date;
+  comment: string | null;
   record: { hash: string; intact: boolean; checkedAt: Date };
 } {
   return {
@@ -112,6 +118,7 @@ export function acceptanceOf(
     name: approval.decidedBy.name,
     email: approval.decidedBy.email,
     at: approval.decidedAt,
+    comment: approval.comment ?? null,
     record: { hash: approval.snapshotHash, intact: approval.intact, checkedAt },
   };
 }

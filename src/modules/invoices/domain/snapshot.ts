@@ -27,6 +27,12 @@ export type ProjectStatement = {
   thisInvoice: Minor;
   /** Left after this invoice and the earlier ones are paid. */
   balanceAfter: Minor;
+  /**
+   * What the client still has to pay across this and earlier unpaid
+   * invoices, GST included (the lines above are before GST). Missing on
+   * invoices issued before it existed.
+   */
+  owedWithGst?: Minor;
 };
 
 export function projectStatement(input: {
@@ -35,6 +41,7 @@ export function projectStatement(input: {
   receivedBefore: Minor;
   awaitingBefore: Minor;
   thisInvoice: Minor;
+  owedWithGst?: Minor;
 }): ProjectStatement {
   const projectTotal = sum([
     input.originalScope,
@@ -88,6 +95,25 @@ export type InvoiceSnapshot = {
   export: { country: string; lutArn: string; endorsement: string } | null;
   /** On the final invoice: the whole project, so the client sees it adds up. */
   statement: ProjectStatement | null;
+  /**
+   * How to pay, as set up when the invoice was issued (frozen with it, so a
+   * later change in settings never alters an old invoice). Missing on
+   * invoices issued before it existed.
+   */
+  payTo?: InvoicePayTo | null;
+};
+
+export type InvoicePayTo = {
+  upi: { vpa: string; payeeName: string } | null;
+  bank: {
+    accountName: string;
+    accountNumber: string;
+    ifsc: string | null;
+    bankName: string;
+    swift: string | null;
+    iban: string | null;
+  } | null;
+  link: { label: string; url: string } | null;
 };
 
 const stateLabel = (code: StateCode | null) =>
@@ -115,6 +141,7 @@ export function buildInvoice(input: {
   lines: { description: string; amount: Minor }[];
   currency: CurrencyCode;
   statement: ProjectStatement | null;
+  payTo?: InvoicePayTo | null;
 }): InvoiceSnapshot {
   const { settings, buyer } = input;
   const registered = Boolean(settings.gstin && settings.state);
@@ -127,7 +154,11 @@ export function buildInvoice(input: {
     issuedOn: input.issuedOn,
     seller: {
       name: settings.legalName ?? input.business.name,
-      company: null,
+      // The trade name clients know ("Asha Designs") above the legal name.
+      company:
+        settings.legalName && settings.legalName !== input.business.name
+          ? input.business.name
+          : null,
       address: settings.address,
       state: stateLabel(settings.state),
       country: null,
@@ -164,6 +195,7 @@ export function buildInvoice(input: {
           }
         : null,
     statement: input.statement,
+    payTo: input.payTo ?? null,
   };
 }
 

@@ -1,4 +1,4 @@
-import { formatDateTime } from "@/shared/lib/dates";
+import { formatDate, formatDateTime } from "@/shared/lib/dates";
 
 /** The client's answer, printed on the document itself (not app chrome). */
 export type DocumentAcceptance = {
@@ -7,6 +7,8 @@ export type DocumentAcceptance = {
   name: string;
   email: string | null;
   at: Date;
+  /** What the client wrote with their answer (a reason to decline). */
+  comment?: string | null;
   /** The signed record's fingerprint and whether it still matches. */
   record?: { hash: string; intact: boolean; checkedAt: Date } | null;
 };
@@ -21,7 +23,9 @@ export function AcceptanceBlock({
 }: {
   acceptance: DocumentAcceptance;
 }) {
-  const short = (hash: string) => `${hash.slice(0, 4)}…${hash.slice(-4)}`;
+  // A record carries the full date, year included.
+  const when = (d: Date) =>
+    `${formatDate(d, { withYear: true })}, ${formatDateTime(d, { now: d }).split(", ").at(-1)}`;
   return (
     <section
       aria-label="Client's answer"
@@ -32,16 +36,20 @@ export function AcceptanceBlock({
       </p>
       <p>
         {a.verdict} by <strong className="font-semibold">{a.name}</strong>
-        {a.email ? ` (${a.email})` : ""} on {formatDateTime(a.at)} IST.
+        {a.email ? ` (${a.email})` : ""} on {when(a.at)} IST.
       </p>
+      {a.comment && <p>Their note: “{a.comment}”</p>}
       {a.record && (
         <p className="text-xs text-[#565a63] tabular-nums">
-          Record fingerprint{" "}
-          <span className="font-mono">{short(a.record.hash)}</span>, checked{" "}
-          {formatDateTime(a.record.checkedAt)}:{" "}
+          Checked {when(a.record.checkedAt)}:{" "}
           {a.record.intact
             ? "intact, this is exactly what they saw."
             : "it doesn't match. This content has changed since they answered."}
+        </p>
+      )}
+      {a.record && (
+        <p className="font-mono text-[11px] break-all text-[#6b6f78]">
+          SHA-256 {a.record.hash}
         </p>
       )}
     </section>

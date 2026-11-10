@@ -10,9 +10,16 @@ import { findInvoicing, issueInvoice } from "@/modules/invoices/server";
 import type { ProjectWithClient } from "@/modules/projects/server";
 import { withTransaction } from "@/shared/db/transaction";
 import { UserError } from "@/shared/lib/form-state";
-import { minor, type Minor } from "@/shared/lib/money";
+import { minor, sum, type Minor } from "@/shared/lib/money";
 import type { ScheduleItem } from "../domain/payment";
 import * as repo from "./repository";
+import * as settingsRepo from "./settings-repository";
+import { isIndia } from "@/shared/lib/india";
+import {
+  abroadPaymentProblem,
+  hasAnyMethod,
+  payToFrom,
+} from "../domain/methods";
 import type { PaymentSchedule } from "./schedule";
 
 class AlreadyRequested extends Error {}
@@ -39,7 +46,10 @@ export async function createRequest(input: {
       "This project has no client any more, so there's no one to invoice.",
     );
   }
-  const settings = await findInvoicing(ws);
+  const [settings, { methods }] = await Promise.all([
+    findInvoicing(ws),
+    settingsRepo.findMethods(ws),
+  ]);
   const buyer = {
     name: client.name,
     company: client.company,
@@ -49,7 +59,17 @@ export async function createRequest(input: {
     gstin: client.gstin,
     email: client.email,
   };
-  const problem = issueProblem(settings, buyer);
+  const problem =
+    // The pay page and invoice need somewhere to pay: set that up first.
+    (hasAnyMethod(methods)
+      ? null
+      : "Add how you get paid (UPI, bank or a payment link) in Settings → Payments, then ask again.") ??
+    issueProblem(settings, buyer) ??
+    abroadPaymentProblem(
+      methods,
+      !isIndia(buyer.country),
+      client.name.trim().split(/\s+/)[0] ?? client.name,
+    );
   if (problem) throw new UserError(problem);
   const missing = buyerProblems(buyer, item.total, settings);
   if (missing.length > 0) {
@@ -72,6 +92,11 @@ export async function createRequest(input: {
         receivedBefore: schedule.totals.received,
         awaitingBefore: schedule.totals.due,
         thisInvoice: item.total,
+        // With GST, what's actually left to pay: earlier unpaid + this one.
+        owedWithGst: sum([
+          schedule.totals.gst?.due ?? schedule.totals.due,
+          item.payable,
+        ]),
       })
     : null;
 
@@ -93,6 +118,7 @@ export async function createRequest(input: {
           })),
           currency: project.currency,
           statement,
+          payTo: payToFrom(methods, project.currency, !isIndia(buyer.country)),
         },
         session,
       );

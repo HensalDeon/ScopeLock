@@ -1,5 +1,12 @@
 import { cn } from "@/shared/lib/utils";
 
+/**
+ * The marketing display face (DESIGN.md marketing-display): Anek Latin,
+ * semi-condensed. Headlines only; body, figures and the app stay in Geist.
+ */
+export const DISPLAY =
+  "font-display [font-stretch:87.5%] tracking-[-0.01em] text-balance";
+
 export function Container({
   className,
   children,
@@ -14,28 +21,11 @@ export function Container({
   );
 }
 
-/** Small mono label above a section heading. */
-export function Eyebrow({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <p
-      className={cn(
-        "font-mono text-[11.5px] tracking-[0.14em] text-muted-foreground uppercase",
-        className,
-      )}
-    >
-      {children}
-    </p>
-  );
-}
-
+/**
+ * A section's heading, with its intro beside it on wide screens (as in the
+ * hero): the heading carries the section, no label above it.
+ */
 export function SectionHeading({
-  eyebrow,
   title,
   intro,
   className,
@@ -44,22 +34,23 @@ export function SectionHeading({
 }: {
   /** "h1" when it opens its own page (pricing, contact). */
   as?: "h1" | "h2";
-  eyebrow?: string;
   title: React.ReactNode;
   intro?: React.ReactNode;
   className?: string;
   invert?: boolean;
 }) {
   return (
-    <div className={cn("grid max-w-2xl gap-4", className)}>
-      {eyebrow && (
-        <Eyebrow className={invert ? "text-[#8b95a7]" : undefined}>
-          {eyebrow}
-        </Eyebrow>
+    <div
+      className={cn(
+        "grid gap-4",
+        intro && "lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start lg:gap-16",
+        className,
       )}
+    >
       <Heading
         className={cn(
-          "text-[32px] leading-[1.08] font-semibold tracking-[-0.035em] text-balance sm:text-[42px]",
+          DISPLAY,
+          "max-w-[20ch] text-[36px] leading-[1] font-semibold sm:text-[50px]",
           invert && "text-white",
         )}
       >
@@ -68,7 +59,7 @@ export function SectionHeading({
       {intro && (
         <p
           className={cn(
-            "max-w-[60ch] text-[17px] leading-relaxed text-pretty",
+            "max-w-[60ch] text-[17px] leading-relaxed text-pretty lg:pb-1",
             invert ? "text-[#a3adbd]" : "text-muted-foreground",
           )}
         >

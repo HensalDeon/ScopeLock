@@ -11,15 +11,16 @@ export function sampleProposal(
   business: ProposalDocumentData["business"],
   voice: "I" | "we",
   defaults: ProposalDefaults = STARTER_PROPOSAL_DEFAULTS,
+  /** Issue date; fixed for pages that are prerendered (the landing page). */
+  now: Date = new Date(),
 ): ProposalDocumentData {
-  const now = new Date();
   return {
     voice,
     business,
     client: {
       name: "Rahul Mehta",
       company: "Mehta Interiors",
-      email: "rahul@mehtainteriors.in",
+      email: "rahul@mehta-interiors.example",
       phone: "+919876543210",
     },
     reference: "P-SAMPLE",

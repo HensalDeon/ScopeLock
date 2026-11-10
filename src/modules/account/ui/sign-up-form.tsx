@@ -19,7 +19,14 @@ import { crossAuthBoundary } from "./cross-auth-boundary";
 import { GoogleButton } from "./google-button";
 import { PasswordInput } from "./password-input";
 
-export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
+export function SignUpForm({
+  googleEnabled,
+  defaultEmail = "",
+}: {
+  googleEnabled: boolean;
+  /** Typed on the landing page; the visitor can still change it. */
+  defaultEmail?: string;
+}) {
   // Unique per instance: visited pages stay mounted, so two copies of
   // this form can be in the document at once (CONVENTIONS §5).
   const uid = useId();
@@ -100,6 +107,7 @@ export function SignUpForm({ googleEnabled }: { googleEnabled: boolean }) {
             type="email"
             autoComplete="email"
             inputMode="email"
+            defaultValue={defaultEmail}
             required
           />
         </Field>

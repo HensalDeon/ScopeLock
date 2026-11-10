@@ -1,6 +1,8 @@
 import "server-only";
+import { cache } from "react";
 import type { ObjectId } from "mongodb";
 import { parseObjectId } from "@/shared/db/ids";
+import { formatMoney } from "@/shared/lib/money";
 import type {
   ProposalDefaults,
   ProposalDocumentData,
@@ -8,8 +10,11 @@ import type {
 import {
   getDocumentImages,
   getDocumentSettings,
+  gstChangeNote,
+  termsForTax,
 } from "@/modules/documents/server";
-import { gstOnDocuments } from "@/modules/invoices/server";
+import type { TaxCase } from "@/modules/invoices";
+import { documentTax } from "@/modules/invoices/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import {
   requireWorkspace,
@@ -20,9 +25,17 @@ import { type Project } from "../domain/project";
 import { getProjectOrNotFound, type ProjectWithClient } from "./queries";
 import { findPortalState } from "./portal-repository";
 
-/** Short, readable reference for a project's documents: "P-1F107C". */
-export function projectReference(project: Pick<Project, "id">): string {
-  return `P-${project.id.slice(-6).toUpperCase()}`;
+/**
+ * A project's reference on its documents: "P-007" (numbered per workspace),
+ * or "P-1F107C" for projects from before numbering, matching what their
+ * clients already saw and signed.
+ */
+export function projectReference(
+  project: Pick<Project, "id" | "number">,
+): string {
+  return project.number
+    ? `P-${String(project.number).padStart(3, "0")}`
+    : `P-${project.id.slice(-6).toUpperCase()}`;
 }
 
 /**
@@ -30,15 +43,15 @@ export function projectReference(project: Pick<Project, "id">): string {
  * for "Preview as client". Once sent, it's the proposal exactly as sent
  * (what the client sees and approves); drafts render from current data.
  */
-export async function getProposalDocument(projectId: string) {
+async function loadGetProposalDocument(projectId: string) {
   const [project, context, settings] = await Promise.all([
     getProjectOrNotFound(projectId),
     requireWorkspace(),
     getDocumentSettings(),
   ]);
-  const gst =
+  const tax =
     project.status === "draft"
-      ? await gstOnDocuments(context.workspace.workspaceId, project.client)
+      ? await documentTax(context.workspace.workspaceId, project.client)
       : null;
   const sent =
     project.status === "draft"
@@ -55,7 +68,33 @@ export async function getProposalDocument(projectId: string) {
     images: await getDocumentImages(settings),
     data:
       sent?.data ??
-      currentProposalData(project, context, settings.defaults, gst),
+      currentProposalData(project, context, settings.defaults, tax),
+    // Approved: the client's answer, as their copy of the proposal shows it.
+    acceptance:
+      sent &&
+      (project.status === "active" || project.status === "completed") &&
+      project.lastDecision?.decision === "approved"
+        ? {
+            verdict: "Approved",
+            name: project.lastDecision.name,
+            email: project.lastDecision.email,
+            at: project.lastDecision.at,
+            comment: project.lastDecision.comment,
+          }
+        : null,
+    // Sent, and GST for this client has changed since: say so under it.
+    gstNote:
+      sent && project.client
+        ? gstChangeNote({
+            shown: sent.data.gstPercent,
+            now: await documentTax(
+              context.workspace.workspaceId,
+              project.client,
+            ),
+            clientName: project.client.name,
+            agreed: formatMoney(sent.data.total, sent.data.currency),
+          })
+        : null,
   };
 }
 
@@ -64,15 +103,22 @@ export function currentProposalData(
   project: ProjectWithClient,
   { workspace, user }: Pick<WorkspaceContext, "workspace" | "user">,
   defaults: ProposalDefaults,
-  gstPercent: number | null = null,
+  tax: { gstPercent: number | null; taxCase: TaxCase } | null = null,
 ): ProposalDocumentData {
+  const doc = toProposalDocument(
+    project,
+    documentBusiness({ workspace, user }),
+    defaults,
+  );
   return {
-    ...toProposalDocument(
-      project,
-      documentBusiness({ workspace, user }),
-      defaults,
+    ...doc,
+    // The starter GST term says what really happens for this client.
+    terms: termsForTax(
+      doc.terms,
+      tax?.taxCase ?? null,
+      tax?.gstPercent ?? null,
     ),
-    gstPercent,
+    gstPercent: tax?.gstPercent ?? null,
   };
 }
 
@@ -168,3 +214,6 @@ export function toProposalDocument(
     terms: p.terms,
   };
 }
+
+/** Cached per request: the page and its title share one lookup. */
+export const getProposalDocument = cache(loadGetProposalDocument);

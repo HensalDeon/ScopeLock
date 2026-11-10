@@ -316,3 +316,80 @@ export function clientSeesLine(input: {
       : "";
   return `Your client sees: ${ordered.map((k) => words[k]).join(" · ")}.${tip}`;
 }
+
+/**
+ * The "Pay to" details frozen into an invoice when it's issued: UPI (rupees
+ * only), bank and payment link. Null when none is set up.
+ */
+export function payToFrom(
+  methods: PaymentMethods,
+  currency: CurrencyCode,
+  /** The client is outside India: UPI can't be used from there. */
+  clientAbroad = false,
+): {
+  upi: { vpa: string; payeeName: string } | null;
+  bank: {
+    accountName: string;
+    accountNumber: string;
+    ifsc: string | null;
+    bankName: string;
+    swift: string | null;
+    iban: string | null;
+  } | null;
+  link: { label: string; url: string } | null;
+} | null {
+  const upi = currency === "INR" && !clientAbroad ? methods.upi : null;
+  const bank = methods.bank && {
+    accountName: methods.bank.accountName,
+    accountNumber: methods.bank.accountNumber,
+    ifsc: methods.bank.ifsc,
+    bankName: methods.bank.bankName,
+    swift: methods.bank.swift,
+    iban: methods.bank.iban,
+  };
+  const link = methods.link;
+  return upi || bank || link
+    ? { upi: upi ?? null, bank: bank ?? null, link: link ?? null }
+    : null;
+}
+
+/**
+ * A client outside India can't pay by UPI, and GST law counts the work as a
+ * zero-rated export only when paid in foreign currency or INR through an
+ * RBI-permitted route (IGST Act s.2(6)). So asking needs a bank account
+ * (with SWIFT for international transfers) or a payment link first.
+ */
+export function abroadPaymentProblem(
+  methods: Pick<PaymentMethods, "bank" | "link">,
+  clientAbroad: boolean,
+  firstName: string,
+): string | null {
+  if (!clientAbroad || methods.bank || methods.link) return null;
+  return `${firstName} is outside India, where UPI doesn't work. Add a bank account (with its SWIFT code) or a payment link in Settings → Payments, then ask again.`;
+}
+
+/**
+ * How this client can pay, in words, for the WhatsApp message: "UPI or
+ * bank transfer", "bank transfer or Razorpay". A client abroad never gets
+ * UPI or the QR (Indian rails). Empty when nothing is set up.
+ */
+export function payByWords(
+  methods: PaymentMethods,
+  currency: CurrencyCode,
+  clientAbroad: boolean,
+): string {
+  const words: Record<MethodKind, string> = {
+    upi: "UPI",
+    bank: "bank transfer",
+    link: methods.link?.label ?? "the payment link",
+    qr: "the QR code",
+    other: "the way we agreed",
+  };
+  const kinds = methodsFor(methods, currency).filter(
+    (k) => !(clientAbroad && (k === "upi" || k === "qr")),
+  );
+  const list = kinds.map((k) => words[k]);
+  return list.length <= 1
+    ? (list[0] ?? "")
+    : `${list.slice(0, -1).join(", ")} or ${list.at(-1)}`;
+}

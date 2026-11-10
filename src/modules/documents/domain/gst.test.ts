@@ -1,4 +1,4 @@
-import { approvalAmount } from "./document-data";
+import { approvalAmount, gstChangeNote } from "./document-data";
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import { gstOver, withGst } from "./gst";
@@ -25,5 +25,36 @@ describe("approvalAmount", () => {
       "₹94,400 with GST",
     );
     expect(approvalAmount(minor(8_000_000), null, "INR")).toBe("₹80,000");
+  });
+});
+
+describe("gstChangeNote", () => {
+  const base = { clientName: "Rahul Mehta", agreed: "₹80,000" };
+  it("explains when invoices now differ from the signed proposal", () => {
+    expect(
+      gstChangeNote({
+        ...base,
+        shown: 18,
+        now: { gstPercent: null, taxCase: "export" },
+      }),
+    ).toBe(
+      "Rahul Mehta's details changed after this proposal was sent. Invoices issued from now on follow the new details: no GST, as an export of services. Invoices already issued keep their GST. The agreed price, ₹80,000, hasn't changed.",
+    );
+  });
+  it("says nothing when nothing changed, or for older proposals", () => {
+    expect(
+      gstChangeNote({
+        ...base,
+        shown: 18,
+        now: { gstPercent: 18, taxCase: "gst" },
+      }),
+    ).toBeNull();
+    expect(
+      gstChangeNote({
+        ...base,
+        shown: undefined,
+        now: { gstPercent: null, taxCase: "none" },
+      }),
+    ).toBeNull();
   });
 });

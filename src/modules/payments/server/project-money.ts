@@ -1,9 +1,10 @@
 import "server-only";
 import type { ChangeRequest } from "@/modules/changes";
-import { gstHints } from "@/modules/invoices";
+import { gstHints, taxCaseOf } from "@/modules/invoices";
 import { findInvoicing } from "@/modules/invoices/server";
 import { requireWorkspace } from "@/modules/workspace/server";
-import { hasAnyMethod } from "../domain/methods";
+import { isIndia } from "@/shared/lib/india";
+import { hasAnyMethod, payByWords } from "../domain/methods";
 import { getProjectPayments } from "./queries";
 import type { PaymentSchedule, ProjectForSchedule } from "./schedule";
 import * as settingsRepo from "./settings-repository";
@@ -11,8 +12,22 @@ import * as settingsRepo from "./settings-repository";
 export type ProjectMoney = PaymentSchedule & {
   /** False until at least one payment method is set up. */
   methodsReady: boolean;
+  /** Invoice details saved (legal name, address or GSTIN). */
+  invoicingReady: boolean;
   /** GST applies but the client has no state or GSTIN on record. */
   stateFallback: { yourState: string; clientHref: string } | null;
+  /**
+   * The client is abroad (zero-rated export) but the project is in rupees:
+   * GST law counts it as an export only if paid in foreign exchange (or INR
+   * through an RBI-permitted route), IGST Act s.2(6).
+   */
+  exportCheck: { clientHref: string } | null;
+  /** The client is outside India: their invoices are exports, no GST. */
+  exportClient: boolean;
+  /** Client abroad with only UPI/QR set up: they'd have no way to pay. */
+  abroadNeedsBankOrLink: boolean;
+  /** How this client can pay, in words, for messages ("UPI or bank transfer"). */
+  payBy: string;
   /** When this was read (for "asked 3 days ago" style decisions). */
   now: Date;
 };
@@ -39,6 +54,21 @@ export async function getProjectMoney(
   return {
     ...schedule,
     methodsReady: hasAnyMethod(methods),
+    exportClient:
+      taxCaseOf(settings, client as Parameters<typeof taxCaseOf>[1]) ===
+      "export",
+    payBy: payByWords(
+      methods,
+      project.currency,
+      Boolean(client && !isIndia(client.country)),
+    ),
+    abroadNeedsBankOrLink:
+      Boolean(client && !isIndia(client.country)) &&
+      !methods.bank &&
+      !methods.link,
+    invoicingReady: Boolean(
+      settings.legalName || settings.address || settings.gstin,
+    ),
     now: new Date(),
     stateFallback:
       gst.fallbackState && client
@@ -46,6 +76,13 @@ export async function getProjectMoney(
             yourState: gst.fallbackState,
             clientHref: `/clients/${client.id}#billing`,
           }
+        : null,
+    exportCheck:
+      client &&
+      project.currency === "INR" &&
+      taxCaseOf(settings, client as Parameters<typeof taxCaseOf>[1]) ===
+        "export"
+        ? { clientHref: `/clients/${client.id}#billing` }
         : null,
   };
 }

@@ -19,6 +19,7 @@ import {
 import {
   countActivity,
   findActivity,
+  findDeletedChanges,
   findRecentActivity,
   insertActivity,
   type NewActivity,
@@ -69,18 +70,21 @@ export async function listProjectActivity(
   const { workspace, user } = await requireWorkspace();
   const ws = workspace.workspaceId;
   const viewer: Viewer = { kind: "member", userId: user.id };
-  const result = await paginate(
-    page,
-    () => countActivity(ws, id),
-    (window) => findActivity(ws, id, undefined, window),
-    pageSize,
-  );
+  const [result, deleted] = await Promise.all([
+    paginate(
+      page,
+      () => countActivity(ws, id),
+      (window) => findActivity(ws, id, undefined, window),
+      pageSize,
+    ),
+    findDeletedChanges(ws, id),
+  ]);
   return {
     ...result,
     items: result.items.map((e) => ({
       id: e.id,
       at: e.at,
-      link: changeLinkOf(e),
+      link: changeLinkOf(e, deleted),
       ...describeActivity(e, viewer),
     })),
   };
@@ -120,14 +124,15 @@ export async function listRecentActivity(
 ): Promise<(ActivityItem & { projectId: string })[]> {
   const { workspace, user } = await requireWorkspace();
   const viewer: Viewer = { kind: "member", userId: user.id };
-  const events = await findRecentActivity(workspace.workspaceId, limit, [
-    "change.created",
+  const [events, deleted] = await Promise.all([
+    findRecentActivity(workspace.workspaceId, limit, ["change.created"]),
+    findDeletedChanges(workspace.workspaceId),
   ]);
   return events.map((e) => ({
     id: e.id,
     at: e.at,
     projectId: e.projectId,
-    link: changeLinkOf(e),
+    link: changeLinkOf(e, deleted),
     ...describeActivity(e, viewer),
   }));
 }

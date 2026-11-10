@@ -8,7 +8,9 @@ import {
   type InvoiceSnapshot,
   type InvoiceStatus,
 } from "../domain/snapshot";
+import { amountInWords } from "../domain/words";
 import { Label, Party } from "./invoice-parties";
+import { InvoicePayToBlock } from "./invoice-pay-to";
 import { InvoiceStatement } from "./invoice-statement";
 
 const day = (iso: string) =>
@@ -25,9 +27,12 @@ export function InvoiceDocument({
   logoUrl,
   accent,
   className,
+  replacedBy = null,
 }: {
   invoice: InvoiceSnapshot;
   status: InvoiceStatus;
+  /** A cancelled invoice: the number of the one issued in its place. */
+  replacedBy?: string | null;
   logoUrl: string | null;
   /** The workspace's document accent, for the top rule. */
   accent: string;
@@ -40,18 +45,33 @@ export function InvoiceDocument({
   return (
     <article
       className={cn(
-        "@container border-t-4 bg-white px-6 py-8 text-[#1d1f24] [print-color-adjust:exact] @xl:px-12 @xl:py-10",
+        "@container border-t-4 bg-white px-6 py-8 text-[#1d1f24] [print-color-adjust:exact] sm:px-12 sm:py-10 print:px-[14mm]",
         className,
       )}
       style={{ borderTopColor: accent }}
     >
+      {status === "cancelled" && (
+        <div
+          role="note"
+          className="mb-8 grid gap-1 border-2 border-[#1d1f24] px-4 py-3 text-[#1d1f24]"
+        >
+          <p className="text-lg font-semibold tracking-[0.2em] uppercase">
+            Cancelled
+          </p>
+          <p className="text-[0.85rem]">
+            {replacedBy
+              ? `Replaced by invoice ${replacedBy}. Nothing is owed on this one.`
+              : "This invoice was cancelled. Nothing is owed on it."}
+          </p>
+        </div>
+      )}
       <header className="flex flex-wrap items-start justify-between gap-6">
         <div className="flex min-w-0 items-center gap-3">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- signed R2 URL, already resized at upload
             <img
               src={logoUrl}
-              alt={`${invoice.seller.name} logo`}
+              alt={`${invoice.seller.company ?? invoice.seller.name} logo`}
               className="h-10 w-auto max-w-[8rem] object-contain"
             />
           ) : (
@@ -59,11 +79,11 @@ export function InvoiceDocument({
               aria-hidden
               className="flex size-9 shrink-0 items-center justify-center rounded-md border text-[12px] font-semibold"
             >
-              {initialsOf(invoice.seller.name)}
+              {initialsOf(invoice.seller.company ?? invoice.seller.name)}
             </span>
           )}
           <p className="truncate text-lg font-semibold tracking-[-0.01em]">
-            {invoice.seller.name}
+            {invoice.seller.company ?? invoice.seller.name}
           </p>
         </div>
         <div className="text-right">
@@ -169,9 +189,12 @@ export function InvoiceDocument({
           <dd>{money(invoice.total)}</dd>
         </div>
       </dl>
+      <p className="mt-2 ml-auto max-w-xs text-right text-[13px] text-pretty text-[#3a3d44]">
+        {amountInWords(invoice.total, invoice.currency)}
+      </p>
 
       {invoice.export && (
-        <div className="mt-8 grid gap-1 rounded border px-4 py-3 text-[0.8rem] leading-relaxed">
+        <div className="mt-8 grid gap-1 rounded border px-4 py-3 text-[13px] leading-relaxed">
           <p className="font-semibold">{invoice.export.endorsement}</p>
           <p className="text-[#3a3d44]">
             LUT ARN {invoice.export.lutArn} · Country of destination{" "}
@@ -181,29 +204,45 @@ export function InvoiceDocument({
       )}
 
       {invoice.statement && (
-        <InvoiceStatement statement={invoice.statement} money={money} />
+        <InvoiceStatement
+          statement={invoice.statement}
+          money={money}
+          invoiceTotal={invoice.total}
+        />
       )}
 
-      <footer className="mt-10 grid gap-3 border-t pt-4 text-[0.8rem] text-[#3a3d44] @md:grid-cols-[1fr_auto]">
-        <div className="grid gap-1">
-          {invoice.reverseCharge === false && (
-            <p>Tax payable on reverse charge: No</p>
-          )}
-          {invoice.tax.kind === "none" && invoice.title === "Invoice" && (
+      {/* Pay-to and the signature print together, never a lone page. */}
+      <div className="[break-inside:avoid]">
+        {invoice.payTo && status !== "cancelled" && (
+          <InvoicePayToBlock payTo={invoice.payTo} />
+        )}
+
+        <footer className="mt-10 grid gap-3 border-t pt-4 text-[13px] text-[#3a3d44] @md:grid-cols-[1fr_auto]">
+          <div className="grid gap-1">
+            {invoice.reverseCharge === false && (
+              <p>Tax payable on reverse charge: No</p>
+            )}
+            {invoice.tax.kind === "none" && invoice.title === "Invoice" && (
+              <p>
+                The supplier isn&apos;t registered under GST, so no GST is
+                charged.
+              </p>
+            )}
             <p>
-              The supplier isn&apos;t registered under GST, so no GST is
-              charged.
+              {invoice.paymentLabel} payment for {invoice.projectName}.
             </p>
-          )}
-          <p>
-            {invoice.paymentLabel} payment for {invoice.projectName}.
-          </p>
-        </div>
-        <div className="@md:text-right">
-          <Label>Authorised signatory</Label>
-          <p className="mt-1 font-medium">{invoice.seller.name}</p>
-        </div>
-      </footer>
+          </div>
+          <div className="@md:text-right">
+            <Label>Authorised signatory</Label>
+            {/* Room to sign a printed copy (Rule 46(q)). */}
+            <div
+              aria-hidden
+              className="mt-2 h-12 w-48 border-b border-[#c9ccd2] @md:ml-auto"
+            />
+            <p className="mt-1 font-medium">{invoice.seller.name}</p>
+          </div>
+        </footer>
+      </div>
     </article>
   );
 }

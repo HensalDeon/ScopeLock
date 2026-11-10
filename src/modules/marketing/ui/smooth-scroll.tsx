@@ -53,6 +53,11 @@ export function SmoothScroll() {
       // Section offsets come from each section's scroll-margin-top.
       lenis.scrollTo(target, { duration: 1.1 });
       if (location.hash !== url.hash) history.pushState(null, "", url.hash);
+      // Taking over the click cancels the browser's own focus move: do it
+      // here, so "Skip to content" and section links move keyboard focus.
+      if (!target.hasAttribute("tabindex"))
+        target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
     };
 
     // Capture phase on document runs before React's root listener.

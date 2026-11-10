@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import { PLANS } from "@/modules/billing";
 import {
   Container,
+  DISPLAY,
   Faq,
   FinalCta,
-  PricingCards,
+  RateCard,
   SectionHeading,
   type FaqItem,
 } from "@/modules/marketing";
@@ -13,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "ScopeLock is free for 2 projects. Pro is ₹499 a month for freelancers, Agency is ₹1,999 a month for studios and agencies.",
+    "ScopeLock is free for 2 projects. Pro is ₹499 a month for freelancers and small studios, Agency is ₹1,999 a month for studios and agencies with more clients.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -57,10 +58,7 @@ const COMPARISON: { group: string; rows: Row[] }[] = [
         values: [true, true, true],
       },
       { label: "Change order PDFs", values: [true, true, true] },
-      {
-        label: "Full project statement PDFs (soon)",
-        values: [false, true, true],
-      },
+      { label: "Project statement PDFs", values: [false, true, true] },
       { label: "Payment reminders", values: [false, true, true] },
       { label: "Revenue recovered reports", values: [false, false, true] },
     ],
@@ -126,17 +124,16 @@ export default function PricingPage() {
         <Container className="py-16 sm:py-20">
           <SectionHeading
             as="h1"
-            eyebrow="Pricing"
             title="Pays for itself with one approved change."
             intro="Start free on your next project. Pro and Agency are planned prices; paid plans aren't open yet, so everyone starts on Free. Prices in Indian rupees; GST extra where applicable."
           />
-          <PricingCards className="mt-12" />
+          <RateCard className="mt-12" planHeading="h2" />
         </Container>
       </section>
 
       <section className="border-b bg-canvas">
         <Container className="py-16 sm:py-20">
-          <h2 className="text-2xl font-semibold tracking-[-0.02em]">
+          <h2 className={`${DISPLAY} text-[30px] leading-none font-semibold`}>
             Compare plans
           </h2>
           <div className="relative mt-8 overflow-x-auto rounded-xl border bg-background">
@@ -199,7 +196,6 @@ export default function PricingPage() {
       <section className="border-b">
         <Container className="grid gap-10 py-16 sm:py-20 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
           <SectionHeading
-            eyebrow="Billing"
             title="Plans and payments."
             className="content-start self-start"
           />

@@ -78,6 +78,12 @@ export type ProjectTotals = {
 
 export type Project = {
   id: string;
+  /**
+   * The workspace's proposal number (P-007). Null on projects created
+   * before numbering; they keep their earlier reference (P-1F107C), which
+   * is also what their signed proposals say.
+   */
+  number: number | null;
   clientId: string;
   name: string;
   description: string | null;

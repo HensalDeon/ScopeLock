@@ -20,6 +20,15 @@ colors:
   hairline: "#e3e6eb"
   field-edge: "#d6dae1"
   document-desk: "#ebe8e2"
+  # Dark surfaces: the default document cover, its photo overlay base, and
+  # the landing page's record panel / social card.
+  document-cover: "#111318"
+  cover-overlay: "#0f1014"
+  night-panel: "#111a2c"
+  # Quieter fills: the secondary button/badge surface and the frame of the
+  # brand tile (app icon, loader).
+  secondary-fill: "#f1f3f6"
+  brand-tile-frame: "#f2f5f8"
 typography:
   display:
     fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
@@ -56,12 +65,189 @@ typography:
     fontWeight: 600
     lineHeight: 1.08
     letterSpacing: "-0.01em"
+  # App, small steps
+  caption:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.4
+  small:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.4
+  # App, larger moments (sign-in code, auth showcase, onboarding)
+  code-digits:
+    fontFamily: "Geist Mono, ui-monospace, monospace"
+    fontSize: "22px"
+    fontWeight: 500
+    lineHeight: 1.2
+  showcase-figure:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "26px"
+    fontWeight: 600
+    lineHeight: 1
+  onboarding-title:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 600
+    lineHeight: 1.2
+  # Marketing site (Persuade): lead text and display steps. Headlines use
+  # the marketing display face (Anek Latin, semi-condensed); body, figures and
+  # the app stay in Geist.
+  marketing-step:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  marketing-section:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "36px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  marketing-display:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "50px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  marketing-lead:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 400
+    lineHeight: 1.6
+  hero-lead:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
+    lineHeight: 1.6
+  wordmark:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "19px"
+    fontWeight: 600
+    lineHeight: 1.2
+  marketing-h2:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "32px"
+    fontWeight: 600
+    lineHeight: 1.08
+  legal-title:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "38px"
+    fontWeight: 600
+    lineHeight: 1
+  marketing-h2-wide:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "42px"
+    fontWeight: 600
+    lineHeight: 1.08
+  legal-title-wide:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "50px"
+    fontWeight: 600
+    lineHeight: 1
+  hero:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "46px"
+    fontWeight: 600
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  hero-short:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "58px"
+    fontWeight: 600
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  hero-wide:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "64px"
+    fontWeight: 600
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  hero-xl:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "74px"
+    fontWeight: 600
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  # Client documents (Cormorant Garamond), sized to the sheet
+  document-h3:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.2rem"
+    fontWeight: 600
+    lineHeight: 1.2
+  document-cover-line:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.35rem"
+    fontWeight: 600
+    lineHeight: 1.2
+  document-h2:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.55rem"
+    fontWeight: 600
+    lineHeight: 1.15
+  document-h2-wide:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.85rem"
+    fontWeight: 600
+    lineHeight: 1.15
+  document-title-compact:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "1.9rem"
+    fontWeight: 600
+    lineHeight: 1.08
+  document-title:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "2.1rem"
+    fontWeight: 600
+    lineHeight: 1.06
+  document-figure:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "2.2rem"
+    fontWeight: 600
+    lineHeight: 1
+  document-title-wide:
+    fontFamily: "Cormorant Garamond, Georgia, serif"
+    fontSize: "2.85rem"
+    fontWeight: 600
+    lineHeight: 1.06
+  # Email (inline styles; email apps ignore the site CSS)
+  email-body:
+    fontFamily: "Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.5
+  email-title:
+    fontFamily: "Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "20px"
+    fontWeight: 600
+    lineHeight: 1.3
+  email-mono:
+    fontFamily: "SFMono-Regular, Menlo, Consolas, monospace"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.5
+  email-figure:
+    fontFamily: "Roboto, Helvetica, Arial, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: 1.1
 rounded:
   sm: "0.3rem"
   md: "0.4rem"
   lg: "0.5rem"
   xl: "0.7rem"
   pill: "9999px"
+  email: "12px"
 spacing:
   xs: "4px"
   sm: "8px"
@@ -169,6 +355,9 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 - **Hairline** (#e3e6eb): every border and row divider.
 - **Field Edge** (#d6dae1): input and select borders, a step darker than hairlines so fields read as editable.
 - **Document Desk** (#ebe8e2): the warm backdrop behind a client document preview, so the white sheet reads as paper.
+- **Secondary Fill** (#f1f3f6): secondary buttons and badges.
+- **Brand Tile Frame** (#f2f5f8): the light frame around the Focus Lock tile (app icon, loader).
+- **Selection** (ink at 14%, `rgb(11 18 32 / 0.14)`): selected text on the marketing site, so even the browser's own highlight is ink.
 
 ### Named Rules
 
@@ -180,7 +369,7 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 
 ## Typography
 
-**Display Font:** Geist (with ui-sans-serif, system-ui)
+**Display Font:** Geist (with ui-sans-serif, system-ui) in the app; Anek Latin on the marketing site
 **Body Font:** Geist (with ui-sans-serif, system-ui)
 **Label/Mono Font:** Geist Mono (with ui-monospace)
 **Document Font:** Cormorant Garamond (with Georgia), client documents only
@@ -195,10 +384,16 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 - **Body** (400, 0.875rem, 1.5): rows, descriptions, form text; prose capped near 65ch (`max-w-prose`).
 - **Label** (400, 0.6875rem, uppercase, 0.12–0.14em tracking): mono column heads, card captions ("APPROVED WORK", "DRAFT", "LIVE PREVIEW").
 - **Document display** (Cormorant Garamond 600, about 2.4rem, 1.08): titles and the total investment figure inside client documents.
+- **Small steps:** caption 12px (badges, meta under a row) and small 13px (compact UI text, document fine print, footers).
+- **Marketing (Persuade only):** headlines in **Anek Latin** (by Ek Type, Mumbai) at 600, semi-condensed (`wdth` 87.5), -0.01em, line height about 1: the hero 46px → 64px → 74px (58px on wide but short screens, ≤800px tall, so the first screen holds the whole approval), section headings 36px → 50px, step titles 30px → 36px. Legal titles 38px → 50px in the same face. Lead text stays Geist at 17px (hero lead 18px); legal body text 15.5px at 1.7 line height (about 68 characters a line). These never appear inside the app.
+- **Documents:** the serif steps scale with the sheet: h3 1.2rem, h2 1.55rem → 1.85rem wide, titles 2.1rem → 2.85rem wide (1.9rem on a change order's compact cover), figures 2.2–2.4rem. Accounts documents (invoice, statement) stay in Geist at body and small sizes.
+- **Email:** inline sizes 16px / 20px / 30px with Roboto and a system mono, because email apps ignore the site's CSS; the only place those fonts appear.
 
 ### Named Rules
 
 **The Tabular Figures Rule.** Every amount, count, date and reference number uses tabular numerals, so columns of money line up digit for digit.
+
+**The Marketing Voice Rule.** Anek Latin sets marketing headlines only (hero, section and step headings, plan names, legal titles). Body text, figures and every ₹ amount stay in Geist with tabular numerals, so money on the website matches money in the app. Never in the app.
 
 **The Serif Is For Signing Rule.** Cormorant Garamond appears only inside client-facing documents (proposal, change request, invoice cover). The app chrome never uses it.
 
@@ -229,7 +424,7 @@ The app is flat. Depth comes from tone and hairlines: white panels with a 1px ha
 
 ## Shapes
 
-Gently rounded and consistent. Controls (buttons, inputs, selects) use an 8px radius (0.5rem); panels, lists and tables use a slightly larger 11px radius (0.7rem), so containers read softer than the controls inside them. Status badges are full pills. Rows inside a panel are square, divided by hairlines. Client documents use a near-square 2px corner, like paper.
+Gently rounded and consistent. Controls (buttons, inputs, selects) use an 8px radius (0.5rem); panels, lists and tables use a slightly larger 11px radius (0.7rem), so containers read softer than the controls inside them. Status badges are full pills. Rows inside a panel are square, divided by hairlines. Client documents use a near-square 2px corner, like paper. On the landing page only, chat lines are bubbles with 14px corners and one 4px "tail" corner (bottom-left for the client, bottom-right for you).
 
 ## Components
 
@@ -274,6 +469,14 @@ The signature container: a white panel with a hairline border and 11px corners, 
 ### Money strip
 
 Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Approved work, Received, Due now, Awaiting approval. At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in"). The strip is the only place that step's button appears; the payment's own row keeps its details and points up ("Next step, at the top of the page").
+
+### Thread log (landing page)
+
+The landing page's signature: one client's chat kept as a ledger.
+
+- **Structure:** a 1px ink rule on top, mono column heads (Time · the project · Billed), then rows divided by hairlines: a mono time gutter (5.5rem; 3.25rem on phones), the entry in the middle, the billed figure right-aligned in tabular numerals. A canvas-grey row marks a new day; totals sit on a canvas-grey footer.
+- **Entries:** the client's lines are canvas bubbles; yours have an ink edge at 25%; a priced change request is an ink-edged 11px card with its CR number in mono and a status pill. Already agreed or never billed rows sit back in muted slate, never by lowering opacity.
+- **The one motion:** when CR-001's row is mostly in view, its "Waiting" pill gives way to "Approved" in one press (scale 1.45 → 0.94 → 1 with a brief blur, 460ms), then the old total is struck (320ms) and the new one settles up 8px (520ms), all on `cubic-bezier(0.16, 1, 0.3, 1)`. It runs once per visit, including after client-side navigation. Until it plays the row waits for Rahul; with reduced motion, or without JavaScript (a `noscript` rule), the approved state shows from the start.
 
 ### Client document
 

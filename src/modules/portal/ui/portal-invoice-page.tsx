@@ -1,9 +1,11 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { INVOICE_STATUS_LABELS, InvoiceDocument } from "@/modules/invoices";
+import { formatMoney } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
 import { getPortalInvoice } from "../server/queries";
 import { Footer, Notice, PortalHeader } from "./portal-chrome";
+import { PrintSetup } from "@/shared/ui/print-setup";
 
 /** An invoice on the client's link, ready to print or save as PDF. */
 export async function PortalInvoicePage({
@@ -41,11 +43,24 @@ export async function PortalInvoicePage({
           </Link>
         }
       >
+        {/* Unpaid: pay straight from the invoice. */}
+        {invoice.status === "issued" && (
+          <Link
+            href={`/c/${token}/pay/${invoice.paymentId}`}
+            className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 max-sm:h-11 max-sm:px-4"
+          >
+            Pay {formatMoney(invoice.total, invoice.currency)}
+          </Link>
+        )}
         <PrintButton variant="outline" />
       </PortalHeader>
+      <PrintSetup
+        footer={`${invoice.seller.company ?? invoice.seller.name} · ${invoice.title} ${invoice.number}`}
+      />
       <main className="px-0 py-0 sm:px-4 sm:py-6 print:p-0">
         <InvoiceDocument
           invoice={invoice}
+          replacedBy={view.replacedBy}
           status={invoice.status}
           logoUrl={view.logoUrl}
           accent={view.accent}

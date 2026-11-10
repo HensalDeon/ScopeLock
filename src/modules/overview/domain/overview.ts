@@ -1,5 +1,6 @@
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatAgo } from "@/shared/lib/dates";
+import { isReminder } from "@/shared/lib/reminder";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { whatsappLink } from "@/shared/lib/phone";
 
@@ -94,8 +95,12 @@ export type AttentionItem = {
   href: string;
   /** A client note to show under the row. */
   quote: string | null;
-  /** WhatsApp reminder link, for things waiting on the client. */
+  /** WhatsApp link, for things waiting on the client. */
   remind: string | null;
+  /** "Send on WhatsApp" the first days, "Remind" after (isReminder). */
+  remindLabel?: string;
+  /** An in-app next action ("Add payment details"). */
+  action?: { label: string; href: string } | null;
 };
 
 export const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
@@ -146,7 +151,9 @@ export function waitingOnClients(
         remind: reminderLink(
           p.client?.phone ?? null,
           links.get(p.id) ?? null,
-          `Hi ${who(p)}, just checking whether you've had a chance to look at the proposal for ${p.name} (${amount}). Here's the link:`,
+          p.sentAt && isReminder(p.sentAt, now)
+            ? `Hi ${who(p)}, just checking whether you've had a chance to look at the proposal for ${p.name} (${amount}). Here's the link:`
+            : `Hi ${who(p)}, here's the proposal for ${p.name} (${amount}):`,
         ),
       },
       since: p.sentAt?.getTime() ?? 0,
@@ -170,7 +177,9 @@ export function waitingOnClients(
         remind: reminderLink(
           p.client?.phone ?? null,
           url ? `${url}/changes/${c.number}` : null,
-          `Hi ${who(p)}, just checking whether you've had a chance to look at ${c.label} for ${p.name}: ${c.title} (${amount}). Here's the link:`,
+          c.sentAt && isReminder(c.sentAt, now)
+            ? `Hi ${who(p)}, just checking whether you've had a chance to look at ${c.label} for ${p.name}: ${c.title} (${amount}). Here's the link:`
+            : `Hi ${who(p)}, here's ${c.label} for ${p.name}: ${c.title} (${amount}). You can approve or decline it here:`,
         ),
       },
       since: c.sentAt?.getTime() ?? 0,
@@ -196,11 +205,21 @@ export function waitingOnClients(
         remind: reminderLink(
           p.client?.phone ?? null,
           url ? `${url}/pay/${pay.id}` : null,
-          `Hi ${who(p)}, a gentle reminder that the ${pay.label} payment for ${p.name} (${amount}) is due. You can pay here:`,
+          isReminder(pay.requestedAt, now)
+            ? `Hi ${who(p)}, a gentle reminder that the ${pay.label} payment for ${p.name} (${amount}) is due. You can pay here:`
+            : `Hi ${who(p)}, here's the pay link for the ${pay.label} payment on ${p.name} (${amount}):`,
         ),
       },
       since: pay.requestedAt.getTime(),
     });
   }
-  return rows.sort((a, b) => a.since - b.since).map((r) => r.item);
+  return rows
+    .sort((a, b) => a.since - b.since)
+    .map((r) => ({
+      ...r.item,
+      remindLabel:
+        r.since && isReminder(new Date(r.since), now)
+          ? "Remind"
+          : "Send on WhatsApp",
+    }));
 }

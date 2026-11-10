@@ -26,6 +26,7 @@ export const COLLECTIONS = {
   invoicingSettings: "invoicingSettings",
   invoices: "invoices",
   requestLimits: "requestLimits",
+  counters: "counters",
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

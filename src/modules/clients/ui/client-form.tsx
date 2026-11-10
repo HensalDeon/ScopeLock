@@ -228,6 +228,8 @@ export function ClientForm(
           errorFor={form.errorFor}
           seller={props.seller}
           who={values.name.trim().split(/\s+/)[0] || "this client"}
+          billsInRupees={(values.currency || props.defaultCurrency) === "INR"}
+          saved={initial ?? null}
         />
 
         <div className="flex flex-wrap items-center gap-3">

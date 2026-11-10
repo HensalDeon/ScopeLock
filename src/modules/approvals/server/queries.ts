@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import {
@@ -61,7 +62,7 @@ function checked(doc: ApprovalDoc): CheckedApproval {
  * version". The snapshot is a ProposalDocumentData (baseline) or a
  * ChangeOrderData (change request); the caller renders it by subject type.
  */
-export async function getApprovalWithSnapshot(
+async function loadGetApprovalWithSnapshot(
   projectId: string,
   approvalId: string,
 ): Promise<{
@@ -83,3 +84,6 @@ export async function getApprovalWithSnapshot(
     acceptance: acceptanceOf(approval, new Date()),
   };
 }
+
+/** Cached per request: the page and its title share one lookup. */
+export const getApprovalWithSnapshot = cache(loadGetApprovalWithSnapshot);

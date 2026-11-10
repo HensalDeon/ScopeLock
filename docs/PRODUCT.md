@@ -4,7 +4,7 @@
 
 > The source for pitch decks, demo videos, the website and investor or partner conversations. Every claim here is true of the product as built. Planned work is marked **Coming**. Update this file whenever a user-visible feature ships (see `docs/CONVENTIONS.md`, Definition of done).
 >
-> **Status as of 8 Nov 2026:** proposal, client approval, change requests, payments and invoices (with GST) are built and tested. PDFs are next (Phase 6). Not yet launched or charging.
+> **Status as of 9 Nov 2026:** proposal, client approval, change requests, payments, invoices (with GST) and PDFs of every document, including the project statement, are built and tested. Not yet launched or charging.
 
 ---
 
@@ -49,8 +49,14 @@ When the freelancer does ask for more money, there's no record of what was agree
 
 ## 3. Who it's for
 
-- **First:** Indian freelance developers and designers, and small studios of 2 to 10 people, building websites, apps and digital work for clients.
-- **Next:** agencies (10+ people). Team accounts are coming.
+Three audiences, of equal importance to the business:
+
+- **Freelancers:** Indian freelance developers and designers building websites, apps and digital work for clients.
+- **Studios:** small teams of 2 to 10 people doing the same work under a studio name.
+- **Agencies:** larger teams (10+ people) running many clients at once. Team members on one workspace are coming.
+
+Copy, pricing and examples speak to all three ("freelancers, studios and agencies"), never to freelancers first.
+
 - **The client** (the person who approves and pays) never needs an account: they get a link.
 
 **The person we picture:** Asha, a freelance web developer in Kochi. Her client is Rahul Mehta of Mehta Interiors. They agree a 5-page website for ₹80,000, paid 30/30/40. Two weeks in, Rahul asks for a blog and a WhatsApp chat button.
@@ -93,7 +99,7 @@ When the freelancer does ask for more money, there's no record of what was agree
 | **Installable app**    | Installs on a phone or desktop like an app (PWA)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Built            |
 | **Payments**           | Your payment methods (UPI, bank incl. SWIFT/IBAN, payment link, QR image, other). Ask for a payment in one tap; the client's page shows the amount, a UPI QR code with the amount filled in, a "Pay with a UPI app" button, your bank details or link. They tap "I've paid" with the UTR and a screenshot; you confirm it, say "not received" with a note, or mark it received yourself. Timeline milestones show which payment they unlock. Emails at every step; "received" and "due now" on the overview. Each approved project opens with where its money stands (received, due, still to ask for, total) and the one next step                                                                                                    | Built            |
 | **Invoices**           | A numbered invoice with every payment you ask for ("INV/26-27/007"; numbers never repeat or skip, and restart each financial year). With a GSTIN: a tax invoice with CGST + SGST or IGST at 18% and the place of supply; clients abroad get a zero-rated export invoice under your LUT. Proposals and change requests show the GST and the total with it ("₹96,000 plus 18% GST · ₹1,13,280 with GST"), asking for a payment shows the exact GST first, and payments and project totals show what the client actually pays, GST included. Without a GSTIN: a plain invoice. The final invoice shows the whole project: original scope, approved changes, paid and balance. Your client opens it from their link and prints or saves it | Built            |
-| **PDFs**               | PDFs of the proposal, change orders, invoices and the project statement. _Today: "Save PDF" through the browser's print dialog_                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Coming (Phase 6) |
+| **PDFs**               | Every document saves as a clean A4 PDF from the browser (Save PDF in the app and on the client's link): the proposal, change orders, invoices, signed records and the project statement (scope, every change, every payment and the totals). Each file is named after the document ("Tax invoice AD-26-27-010 · Asha Menon"). Invoices carry the pay-to details as they were when issued, the total in words, a signature line, and a clear "Cancelled" mark naming the replacement. The client's answer prints on the document itself                                                                                                                                                                                                 | Built            |
 | **Subscriptions**      | Free, Pro and Agency plans with Razorpay                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Coming (Phase 8) |
 
 ---
@@ -181,7 +187,7 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 | Hosting     | Vercel now; built to run on any Node server (Hostinger later)                                 | No lock-in                                                                                       |
 | App install | PWA                                                                                           | Installs on phone and desktop                                                                    |
 | QR codes    | `qrcode` (UPI QR with the amount, drawn on the server)                                        | Nothing about the payment goes to a third-party image service                                    |
-| Coming      | Razorpay (subscriptions), PDF generation, Sentry                                              | Phases 6–8                                                                                       |
+| Coming      | Razorpay (subscriptions), Sentry, server-made PDF files for email attachments                 | Phases 7–8                                                                                       |
 
 **Engineering quality**
 
@@ -194,11 +200,11 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 
 Not live yet; prices may change before launch.
 
-| Plan       | Price          | For                                 | Includes                                                                                                                             |
-| ---------- | -------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Free**   | ₹0             | Trying it on your next project      | 2 active projects, unlimited change requests, client approval links, payment tracking                                                |
-| **Pro**    | ₹499 / month   | Freelancers with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, payment reminders, full project statements |
-| **Agency** | ₹1,999 / month | Studios and agencies                | 15 active projects, revenue-recovered reports, priority support, team members (coming)                                               |
+| Plan       | Price          | For                                                   | Includes                                                                                                                             |
+| ---------- | -------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Free**   | ₹0             | Trying it on your next project                        | 2 active projects, unlimited change requests, client approval links, payment tracking                                                |
+| **Pro**    | ₹499 / month   | Freelancers and small studios with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, payment reminders, full project statements |
+| **Agency** | ₹1,999 / month | Studios and agencies                                  | 15 active projects, revenue-recovered reports, priority support, team members (coming)                                               |
 
 **The value in one line:** one recovered change request (₹15,000 in the demo story) pays for over two years of Pro.
 
@@ -231,8 +237,8 @@ Not live yet; prices may change before launch.
 | 4     | Change requests, client history, signed versions                                                                                                          | Done    |
 | 5A    | Payments: UPI QR with amount, bank, links, "I've paid" with UTR and screenshot, confirmation, timeline-linked milestones                                  | Done    |
 | 5B    | Numbered invoices with optional GST, export under LUT, final statement, invoice page for clients                                                          | Done    |
-| 6     | PDFs of every document                                                                                                                                    | Next    |
-| 7     | Dashboard and polish; real use on my own client projects                                                                                                  | Planned |
+| 6     | PDFs of every document                                                                                                                                    | Done    |
+| 7     | Dashboard and polish; real use on my own client projects                                                                                                  | Next    |
 | 8     | Launch: plans and Razorpay, legal pages, domain, monitoring                                                                                               | Planned |
 | Later | Automatic payment confirmation, WhatsApp capture (forward a message, get a draft CR), approver email codes, retainers, teams, more templates, e-invoicing | Ideas   |
 
@@ -272,7 +278,7 @@ Not live yet; prices may change before launch.
 | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | "A signed record of exactly what your client approved, and when"                             | "Legally binding" or "court-proof" (we haven't had legal review; Phase 8)                               |
 | "ScopeLock never holds your money; clients pay you directly"                                 | "We process payments" or "payment gateway"                                                              |
-| "Payments and invoices are built; PDFs are coming next"                                      | That PDF downloads work today (until Phase 6 ships; the browser's "Save as PDF" works)                  |
+| "Every document saves as a PDF from the browser"                                             | That PDFs are emailed as attachments (they're shared by link or saved by the client)                    |
 | "Free to start; planned Pro ₹499 / month"                                                    | Final prices or "free forever" (pricing goes live in Phase 8)                                           |
 | "Built for Indian freelancers; GST invoices with CGST + SGST or IGST, and exports under LUT" | "Fully GST compliant" or e-invoicing (IRN) claims (a CA should review the format; e-invoicing is later) |
 | "Your data is walled off per business; links are secret and replaceable"                     | "Bank-grade" or "military-grade" security, or certifications we don't hold                              |

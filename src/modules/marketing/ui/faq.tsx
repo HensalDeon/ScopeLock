@@ -12,6 +12,10 @@ export const PRODUCT_FAQ: FaqItem[] = [
     a: "No. Clients pay you directly through your UPI ID, QR code, bank account or payment link. ScopeLock records what was paid and when. We never hold your money.",
   },
   {
+    q: "We're a studio, not a freelancer. Does it fit?",
+    a: "Yes. Set your workspace up as a studio or agency and your proposals and change orders go out under your studio's name, written as \"we\". Each client and project sits in the same workspace, with one shared view of what's approved, due and paid. Adding team members to a workspace is coming.",
+  },
+  {
     q: "What if my client says no to a change?",
     a: "Then you don't do that work, and the record shows they declined it. You can adjust the price or the scope and send it again. Either way, nobody is arguing about it three weeks later.",
   },
@@ -42,7 +46,7 @@ export function Faq({ items }: { items: FaqItem[] }) {
     <div className="divide-y border-y">
       {items.map((item) => (
         <details key={item.q} className="group">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-left text-[16.5px] font-medium focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-left text-[17px] font-medium focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
             {item.q}
             <Plus
               className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-45"

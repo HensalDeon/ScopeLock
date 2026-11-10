@@ -8,12 +8,30 @@ import {
   getDocumentSettings,
 } from "@/modules/documents/server";
 import { INVOICE_STATUS_LABELS, InvoiceDocument } from "@/modules/invoices";
-import { getInvoice } from "@/modules/invoices/server";
+import { getInvoice, getReplacementNumber } from "@/modules/invoices/server";
 import { formatMoney } from "@/shared/lib/money";
 import { Button } from "@/shared/ui/button";
 import { PrintButton } from "@/shared/ui/print-button";
+import { PrintSetup } from "@/shared/ui/print-setup";
+import { documentTitle } from "@/shared/lib/document-title";
 
-export const metadata: Metadata = { title: "Invoice" };
+// Also the saved PDF's file name: "Tax invoice AD-26-27-010 · Asha Menon".
+export async function generateMetadata({
+  params,
+}: PageProps<"/projects/[id]/invoices/[invoiceId]">): Promise<Metadata> {
+  const { id, invoiceId } = await params;
+  const invoice = await getInvoice(id, invoiceId);
+  return {
+    title: invoice
+      ? {
+          absolute: documentTitle(
+            `${invoice.title} ${invoice.number}`,
+            invoice.seller.company ?? invoice.seller.name,
+          ),
+        }
+      : "Invoice",
+  };
+}
 
 export default function InvoicePage({
   params,
@@ -41,7 +59,10 @@ async function InvoiceView({
     getDocumentSettings(),
   ]);
   if (!invoice) notFound();
-  const images = await getDocumentImages(settings);
+  const [images, replacedBy] = await Promise.all([
+    getDocumentImages(settings),
+    getReplacementNumber(invoice),
+  ]);
 
   return (
     <>
@@ -75,9 +96,13 @@ async function InvoiceView({
         Issued invoices don&apos;t change. To correct one, cancel the payment
         request and ask again: that issues a new invoice with a new number.
       </div>
+      <PrintSetup
+        footer={`${invoice.seller.company ?? invoice.seller.name} · ${invoice.title} ${invoice.number}`}
+      />
       <main className="px-0 py-0 sm:px-4 sm:py-4 print:p-0">
         <InvoiceDocument
           invoice={invoice}
+          replacedBy={replacedBy}
           status={invoice.status}
           logoUrl={settings.style.showLogo ? images.logoUrl : null}
           accent={settings.style.accent}

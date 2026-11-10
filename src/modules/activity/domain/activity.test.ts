@@ -145,6 +145,10 @@ describe("changeLinkOf", () => {
   });
   it("doesn't link a deleted draft or other events", () => {
     expect(changeLinkOf(ev("change.deleted", "CR-004"))).toBeNull();
+    // A draft deleted later: its earlier lines don't link either.
+    expect(
+      changeLinkOf(ev("change.created", "CR-004"), new Set(["p1:CR-004"])),
+    ).toBeNull();
     expect(changeLinkOf(ev("payment.requested", "INV/26-27/001"))).toBeNull();
   });
 });

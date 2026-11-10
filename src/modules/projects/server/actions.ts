@@ -10,7 +10,7 @@ import { getDocumentSettings } from "@/modules/documents/server";
 import { z } from "zod";
 import { findClient } from "@/modules/clients/server";
 import { workspaceAction } from "@/modules/workspace/server";
-import { gstOnDocuments } from "@/modules/invoices/server";
+import { documentTax } from "@/modules/invoices/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { UserError, type FormState } from "@/shared/lib/form-state";
 import {
@@ -167,14 +167,14 @@ export const sendProposal = workspaceAction(
         "This project's client was removed. Edit the project and choose a client first.",
       );
     }
-    const [settings, state, gst] = await Promise.all([
+    const [settings, state, tax] = await Promise.all([
       getDocumentSettings(),
       portalRepo.findPortalState(context.workspace.workspaceId, id),
-      gstOnDocuments(context.workspace.workspaceId, project.client),
+      documentTax(context.workspace.workspaceId, project.client),
     ]);
     const now = new Date();
     const data = {
-      ...currentProposalData(project, context, settings.defaults, gst),
+      ...currentProposalData(project, context, settings.defaults, tax),
       issuedOn: now,
     };
     const sent = await portalRepo.markSent(

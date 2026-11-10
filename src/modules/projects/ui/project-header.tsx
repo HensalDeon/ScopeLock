@@ -1,4 +1,4 @@
-import { Eye, Pencil } from "lucide-react";
+import { Eye, FileText, Pencil } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { clientFirstName, type Client } from "@/modules/clients";
@@ -70,6 +70,14 @@ export function ProjectHeader({
               <Link href={`/projects/${project.id}/edit` as Route}>
                 <Pencil aria-hidden />
                 Edit scope
+              </Link>
+            </Button>
+          )}
+          {(project.status === "active" || project.status === "completed") && (
+            <Button asChild variant="outline" className={TOUCH}>
+              <Link href={`/projects/${project.id}/statement` as Route}>
+                <FileText aria-hidden />
+                Statement
               </Link>
             </Button>
           )}

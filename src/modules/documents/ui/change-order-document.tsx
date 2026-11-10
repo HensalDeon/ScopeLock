@@ -24,7 +24,13 @@ export function ChangeOrderDocument({
   approved = false,
   titleAs: Title = "h1",
   acceptance = null,
+  withdrawnBy = null,
+  declined = false,
 }: {
+  /** The client declined it: the money was never added. */
+  declined?: boolean;
+  /** Cancelled by the freelancer: who, for the band on the document. */
+  withdrawnBy?: string | null;
   /** The client's answer, printed before the footer. */
   acceptance?: DocumentAcceptance | null;
   /** "h2" when the page around it already has an h1 (the app's CR page). */
@@ -53,6 +59,8 @@ export function ChangeOrderDocument({
       ? "font-(family-name:--font-doc-serif) font-semibold tracking-[-0.01em]"
       : "font-sans font-semibold tracking-[-0.02em]";
   const money = (amount: Minor) => formatMoney(amount, data.currency);
+  // Declined or cancelled: none of this money is added.
+  const closed = declined || Boolean(withdrawnBy);
   const gst = gstOver([data.total], data.gstPercent);
   const photo =
     style.cover === "image" && images.coverUrl
@@ -146,6 +154,20 @@ export function ChangeOrderDocument({
       </header>
 
       <div className="grid gap-8 px-6 py-8 @xl:px-12 @xl:py-10">
+        {withdrawnBy && (
+          <div
+            role="note"
+            className="grid gap-1 border-2 border-[#1d1f24] px-4 py-3 text-[#1d1f24]"
+          >
+            <p className="text-lg font-semibold tracking-[0.2em] uppercase">
+              Cancelled
+            </p>
+            <p className="text-[0.85rem]">
+              {withdrawnBy} withdrew this change request. Nothing was added to
+              the project.
+            </p>
+          </div>
+        )}
         {data.description && (
           <div className="grid max-w-[68ch] gap-3 text-[0.95rem] leading-relaxed text-pretty text-[#3a3d44]">
             {data.description
@@ -172,7 +194,7 @@ export function ChangeOrderDocument({
                 <td className="py-2.5 pr-3">
                   <span className="font-medium">{item.title}</span>
                   {item.description && (
-                    <span className="mt-0.5 block text-[0.82rem] leading-relaxed text-pretty text-[#565a63]">
+                    <span className="mt-0.5 block text-[13px] leading-relaxed text-pretty text-[#565a63]">
                       {item.description}
                     </span>
                   )}
@@ -212,21 +234,25 @@ export function ChangeOrderDocument({
               <span className="mb-0.5 block text-[11px] tracking-[0.14em] text-(--doc-soft-text) uppercase">
                 How it&apos;s paid
               </span>
-              {data.billing}
+              <span className={cn(closed && "line-through")}>
+                {data.billing}
+              </span>
             </p>
             <p className="text-[#565a63]">
-              The original proposal ({money(data.originalTotal)}) stays as
-              agreed.{" "}
-              {approved
-                ? "This was approved and is added on top."
-                : "This is added on top only if you approve it."}
+              {closed
+                ? `Not added. The original proposal (${money(data.originalTotal)}) stays as agreed.`
+                : `The original proposal (${money(data.originalTotal)}) stays as agreed. ${
+                    approved
+                      ? "This was approved and is added on top."
+                      : "This is added on top only if you approve it."
+                  }`}
             </p>
           </div>
         </div>
 
         {acceptance && <AcceptanceBlock acceptance={acceptance} />}
 
-        <footer className="flex flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
+        <footer className="flex [break-before:avoid] flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
           <p>
             {data.business.name}
             {data.business.email ? ` · ${data.business.email}` : ""}

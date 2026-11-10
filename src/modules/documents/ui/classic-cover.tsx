@@ -41,8 +41,8 @@ export function Cover({
         // outside the outer one, so no line runs through text. Smaller on
         // narrow pages (phones), A4 size from @xl.
         <div aria-hidden className="pointer-events-none">
-          <div className="absolute -top-[175px] -right-[175px] size-[350px] rounded-full border border-(--doc-ring) @xl:-top-65 @xl:-right-65 @xl:size-130" />
-          <div className="absolute -top-35 -right-35 size-70 rounded-full border border-(--doc-ring) @xl:-top-[205px] @xl:-right-[205px] @xl:size-[410px]" />
+          <div className="absolute -top-[175px] -right-[175px] hidden size-[350px] rounded-full border border-(--doc-ring) @md:block @xl:-top-65 @xl:-right-65 @xl:size-130" />
+          <div className="absolute -top-35 -right-35 hidden size-70 rounded-full border border-(--doc-ring) @md:block @xl:-top-[205px] @xl:-right-[205px] @xl:size-[410px]" />
         </div>
       )}
 

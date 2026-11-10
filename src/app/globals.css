@@ -3,8 +3,11 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* Wide but short screens (1366x768 laptops): the landing hero tightens. */
+@custom-variant short (@media (min-width: 64rem) and (max-height: 50rem));
 
 @theme inline {
+  --font-display: var(--font-anek), var(--font-sans);
   --color-brand: var(--brand);
   --color-canvas: var(--canvas);
   --color-warning: var(--warning);
@@ -313,55 +316,131 @@
   text-underline-offset: 3px;
 }
 
-/* ─── Marketing grid backdrop (GridBackdrop) ───────────────────────────────
-   Two gradient pairs: 24px cells with a heavier rule every 4th. A line sits
-   exactly on the horizontal centre so the field is symmetric with the
-   centred container. The lit copy is the same lines at carrying strength,
-   masked to a disc under the pointer. */
-.sl-grid,
-.sl-grid-lit {
-  --sl-cell: 24px;
-  --sl-block: 96px;
-  background-image:
-    linear-gradient(to right, var(--sl-minor) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--sl-minor) 1px, transparent 1px),
-    linear-gradient(to right, var(--sl-major) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--sl-major) 1px, transparent 1px);
-  background-size:
-    var(--sl-cell) var(--sl-cell),
-    var(--sl-cell) var(--sl-cell),
-    var(--sl-block) var(--sl-block),
-    var(--sl-block) var(--sl-block);
-  background-position:
-    calc(50% + var(--sl-cell) / 2) 0,
-    calc(50% + var(--sl-cell) / 2) 0,
-    calc(50% + var(--sl-block) / 2) 0,
-    calc(50% + var(--sl-block) / 2) 0;
-}
-.sl-grid {
-  --sl-minor: rgb(11 18 32 / 0.035);
-  --sl-major: rgb(11 18 32 / 0.07);
-  --mx: -1000px;
-  --my: -1000px;
-  /* Fade toward the edges so the grid never ends on a hard line. */
-  mask-image: radial-gradient(
-    ellipse 75% 85% at 50% 40%,
-    #000 35%,
-    transparent 100%
-  );
-}
-.sl-grid-lit {
-  --sl-minor: rgb(11 18 32 / 0.11);
-  --sl-major: rgb(11 18 32 / 0.2);
+/* ─── Landing page: the approval lands once ────────────────────────────────
+   CR-001 waits for Rahul until its row is mostly in view (ApprovalPlay sets
+   data-play), then "Waiting" gives way to "Approved" in one press, the old
+   total is struck and the new one settles. With reduced motion (or no
+   JavaScript, via a noscript rule) the approved state shows from the start. */
+.sl-wait {
   opacity: 0;
-  transition: opacity 0.3s ease;
-  mask-image: radial-gradient(
-    circle 200px at var(--mx) var(--my),
-    #000 0%,
-    rgb(0 0 0 / 0.45) 45%,
-    transparent 72%
-  );
 }
-.sl-grid[data-lit="true"] .sl-grid-lit {
-  opacity: 1;
+.sl-strike {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1.5px;
+}
+.sl-stamp {
+  transform-origin: center;
+}
+.sl-total .sl-strike {
+  grid-area: 1 / 1;
+}
+.sl-total .sl-settle {
+  grid-area: 1 / 2;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-approval-play]:not([data-play]) .sl-wait {
+    opacity: 1;
+  }
+  [data-approval-play]:not([data-play]) .sl-stamp {
+    opacity: 0;
+  }
+  /* The new total holds its place while hidden (nothing below moves). On
+     wider screens ₹80,000 waits flush right in that place, is struck there,
+     then slides aside as ₹95,000 settles (ApprovalPlay animates the slide). */
+  [data-approval-play]:not([data-settled]) .sl-settle {
+    visibility: hidden;
+  }
+  @media (min-width: 40rem) {
+    [data-approval-play]:not([data-settled]) .sl-total .sl-strike {
+      grid-area: 1 / 2;
+      justify-self: end;
+    }
+  }
+  /* Priced, not yet agreed: the amount waits too. */
+  [data-approval-play]:not([data-play]) .sl-pending {
+    opacity: 0.62;
+  }
+  [data-play] .sl-pending {
+    animation: sl-pending-in 300ms ease-out 400ms both;
+  }
+  [data-approval-play]:not([data-play]) .sl-strike {
+    text-decoration-color: transparent;
+  }
+  [data-play] .sl-wait {
+    animation: sl-wait-out 180ms ease-out 350ms both;
+  }
+  [data-play] .sl-stamp {
+    animation: sl-stamp-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 400ms both;
+  }
+  [data-play] .sl-strike {
+    animation: sl-strike 320ms ease-out 700ms both;
+  }
+  /* Starts once the struck total has slid clear of it. */
+  [data-settled] .sl-settle {
+    animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 140ms both;
+  }
+}
+@keyframes sl-pending-in {
+  from {
+    opacity: 0.62;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sl-wait-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sl-stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.45);
+    filter: blur(3px);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.94);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes sl-strike {
+  from {
+    text-decoration-color: transparent;
+  }
+  to {
+    text-decoration-color: currentColor;
+  }
+}
+@keyframes sl-settle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Browser surfaces on the marketing pages carry the palette too. */
+.sl-site ::selection {
+  background: rgb(11 18 32 / 0.14);
+  color: inherit;
+}
+.sl-site {
+  caret-color: var(--foreground);
+}
+/* Sections take focus only so the next Tab starts there (skip link, in-page
+   links); they don't need a ring of their own. */
+.sl-site [tabindex="-1"]:focus {
+  outline: none;
 }

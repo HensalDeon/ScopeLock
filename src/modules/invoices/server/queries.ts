@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { financialYear } from "@/shared/lib/india";
@@ -8,7 +9,7 @@ import {
   type Buyer,
   type InvoicingSettings,
 } from "../domain/invoice";
-import { gstHints } from "../domain/preview";
+import { gstHints, taxCaseOf, type TaxCase } from "../domain/preview";
 import type { Invoice } from "../domain/snapshot";
 import * as repo from "./repository";
 
@@ -38,7 +39,7 @@ export async function getInvoicing(): Promise<{
 }
 
 /** The signed-in workspace's invoice on this project, or null. */
-export async function getInvoice(
+async function loadGetInvoice(
   projectId: string,
   invoiceId: string,
 ): Promise<Invoice | null> {
@@ -75,4 +76,30 @@ export async function getGstRule(): Promise<
   const settings = await repo.findInvoicing(workspace.workspaceId);
   return (client) =>
     gstHints(settings, client).addsGst ? GST_RATE_PERCENT : null;
+}
+
+/** Cached per request: the page and its title share one lookup. */
+export const getInvoice = cache(loadGetInvoice);
+
+/** A cancelled invoice's replacement number, for the signed-in workspace. */
+export async function getReplacementNumber(
+  invoice: Parameters<typeof repo.findReplacementNumber>[1],
+): Promise<string | null> {
+  const { workspace } = await requireWorkspace();
+  return repo.findReplacementNumber(workspace.workspaceId, invoice);
+}
+
+/**
+ * GST on a client's documents: the rate shown (18 or null) and the case,
+ * which picks the wording of the proposal's GST term.
+ */
+export async function documentTax(
+  workspaceId: string,
+  client: Pick<Buyer, "state" | "country" | "gstin"> | null,
+): Promise<{ gstPercent: number | null; taxCase: TaxCase }> {
+  const settings = await repo.findInvoicing(workspaceId);
+  return {
+    gstPercent: gstHints(settings, client).addsGst ? GST_RATE_PERCENT : null,
+    taxCase: taxCaseOf(settings, client),
+  };
 }

@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { PLANS } from "@/modules/billing";
 import {
-  ClientView,
   Evidence,
   FaqSection,
   FinalCta,
   Hero,
   HowItWorks,
-  Payments,
+  ManyClients,
   PricingSection,
   SmallRequests,
 } from "@/modules/marketing";
@@ -48,9 +47,8 @@ export default function HomePage() {
       <Hero />
       <SmallRequests />
       <HowItWorks />
-      <ClientView />
-      <Payments />
       <Evidence />
+      <ManyClients />
       <PricingSection />
       <FaqSection />
       <FinalCta />

@@ -20,3 +20,5 @@ export {
   type PortalPayment,
 } from "./server/public";
 export { findPaymentDocs, toPayment } from "./server/repository";
+// Pure, for server code that must not load the payments UI.
+export { lineBreakdown } from "./domain/payment";

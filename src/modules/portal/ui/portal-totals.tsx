@@ -34,7 +34,10 @@ export function PortalTotals({
         )}
         {gst ? (
           <>
-            <Row label="Total before GST">{money(total)}</Row>
+            {/* Only when changes make it differ from the proposal. */}
+            {approvedChanges > 0 && (
+              <Row label="Total before GST">{money(total)}</Row>
+            )}
             <Row label="GST on invoices">{money(gst.tax)}</Row>
             <Row label="Total with GST" strong>
               {money(sum([total, gst.tax]))}
@@ -45,7 +48,7 @@ export function PortalTotals({
             {money(total)}
           </Row>
         )}
-        {paid > 0 && <Row label="Paid so far">{money(paid)}</Row>}
+        {paid > 0 && <Row label="Received">{money(paid)}</Row>}
         {due > 0 && (
           <Row label="Due now" tone="waiting">
             {money(due)}

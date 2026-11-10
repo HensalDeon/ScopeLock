@@ -9,6 +9,7 @@ import { formatMoney } from "@/shared/lib/money";
 import { reportPayment } from "../server/payment-actions";
 import { getPortalPayment } from "../server/queries";
 import { Footer, Notice, PortalHeader, StatusStrip } from "./portal-chrome";
+import { PrintSetup } from "@/shared/ui/print-setup";
 import { ReportPaymentForm } from "./report-payment-form";
 
 /** One payment on the client's link: how much, how to pay, "I've paid". */
@@ -65,6 +66,9 @@ export async function PortalPaymentPage({
         </StatusStrip>
       )}
 
+      {/* Its own print rules: no Chrome header or URL footer, which would
+          print this link's secret address for anyone holding the paper. */}
+      <PrintSetup footer={`${businessName} · ${payment.label} payment`} />
       <main className="mx-auto grid max-w-[210mm] gap-6 px-4 py-6 sm:py-8">
         <section className="grid gap-3 rounded-lg border bg-white p-5 sm:p-6">
           <h1 className="grid gap-1">
@@ -94,13 +98,24 @@ export async function PortalPaymentPage({
                 </span>
               </li>
             ))}
-            {payment.tax > 0 && (
+            {payment.tax > 0 ? (
               <li className="flex justify-between gap-4">
                 <span className="text-muted-foreground">GST</span>
                 <span className="tabular-nums">
                   {formatMoney(payment.tax, payment.currency)}
                 </span>
               </li>
+            ) : (
+              view.isExport && (
+                <li className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
+                    No GST: export of services under LUT
+                  </span>
+                  <span className="tabular-nums">
+                    {formatMoney(0 as typeof payment.tax, payment.currency)}
+                  </span>
+                </li>
+              )
             )}
           </ul>
           {payment.invoice && (
@@ -143,7 +158,7 @@ export async function PortalPaymentPage({
             </section>
             <section
               aria-labelledby="paid-heading"
-              className="grid gap-4 rounded-lg border bg-white p-5 sm:p-6"
+              className="grid gap-4 rounded-lg border bg-white p-5 sm:p-6 print:hidden"
             >
               <div className="grid gap-1">
                 <h2 id="paid-heading" className="text-base font-semibold">

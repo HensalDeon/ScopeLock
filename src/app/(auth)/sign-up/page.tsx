@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { AuthHeading, FormSkeleton } from "@/modules/account";
+import { AuthHeading, FormSkeleton, prefillEmail } from "@/modules/account";
 import { SignUpWithOptions } from "@/modules/account/server";
 
 export const metadata: Metadata = { title: "Create an account" };
 
 /** Signed-in visitors are sent to the app by the proxy before this renders. */
-export default function SignUpPage() {
+export default function SignUpPage({ searchParams }: PageProps<"/sign-up">) {
   return (
     <>
       <AuthHeading
@@ -15,7 +15,9 @@ export default function SignUpPage() {
         description="Next you'll add your business name. Clients see it on every approval link and change order."
       />
       <Suspense fallback={<FormSkeleton fields={3} />}>
-        <SignUpWithOptions />
+        <SignUpWithOptions
+          email={searchParams.then((p) => prefillEmail(p.email))}
+        />
       </Suspense>
       <p className="mt-8 text-sm text-muted-foreground">
         Already have an account?{" "}

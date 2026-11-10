@@ -34,11 +34,13 @@ function sameYear(a: Date, b: Date): boolean {
 /** "18 Nov" this year, "18 Nov 2025" otherwise. */
 export function formatDate(
   date: Date,
-  { now = new Date(), withYear = false } = {},
+  { now, withYear = false }: { now?: Date; withYear?: boolean } = {},
 ): string {
-  return (withYear || !sameYear(date, now) ? dayMonthYear : dayMonth).format(
-    date,
-  );
+  // The clock is read only when needed, so documents dated with their year
+  // can be prerendered (the landing page shows real ones).
+  return (
+    withYear || !sameYear(date, now ?? new Date()) ? dayMonthYear : dayMonth
+  ).format(date);
 }
 
 /** "18 Nov, 3:42 pm" (lowercase am/pm, as written in India). */
