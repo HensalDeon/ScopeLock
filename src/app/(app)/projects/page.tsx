@@ -29,7 +29,7 @@ export default function ProjectsPage({ searchParams }: PageProps<"/projects">) {
           </Button>
         }
       />
-      <Suspense fallback={<ListSkeleton rows={3} />}>
+      <Suspense fallback={<ListSkeleton rows={3} search />}>
         <Projects searchParams={searchParams} />
       </Suspense>
     </PageContainer>

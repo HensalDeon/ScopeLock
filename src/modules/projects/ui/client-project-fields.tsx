@@ -120,7 +120,7 @@ export function ClientProjectFields({
               <button
                 type="button"
                 onClick={() => setAddingClient(true)}
-                className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
               >
                 Client not listed? Add them here
               </button>

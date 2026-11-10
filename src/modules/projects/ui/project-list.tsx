@@ -1,5 +1,5 @@
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { LinkChevron } from "@/shared/ui/link-pending";
 import { clientLabel } from "@/modules/clients";
 import { formatDate } from "@/shared/lib/dates";
 import { formatMoney, sum } from "@/shared/lib/money";
@@ -57,10 +57,7 @@ export function ProjectList({
               status={project.status}
               className="col-start-1 row-start-2 w-fit sm:col-start-3 sm:row-start-1"
             />
-            <ChevronRight
-              className="hidden size-4 text-muted-foreground sm:block"
-              aria-hidden
-            />
+            <LinkChevron className="hidden sm:block" />
           </Link>
         </li>
       ))}

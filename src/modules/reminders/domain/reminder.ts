@@ -20,14 +20,22 @@ export function reminderKey(
   return `${projectId}:${kind}:${ref}`;
 }
 
-/** When the next email reminder can go, or null if one can go now. */
+/**
+ * When the next email reminder can go, or null if one can go now: a day
+ * after the last reminder, and a day after the item was sent or asked for
+ * (a reminder minutes after the request would read as pushy).
+ */
 export function nextReminderAt(
   lastSent: Date | null,
   now: Date = new Date(),
+  since: Date | null = null,
 ): Date | null {
-  if (!lastSent) return null;
+  const latest = [lastSent, since]
+    .filter((d): d is Date => d !== null)
+    .reduce<Date | null>((a, b) => (a && a > b ? a : b), null);
+  if (!latest) return null;
   const next = new Date(
-    lastSent.getTime() + REMIND_EMAIL_GAP_HOURS * 60 * 60 * 1000,
+    latest.getTime() + REMIND_EMAIL_GAP_HOURS * 60 * 60 * 1000,
   );
   return next > now ? next : null;
 }

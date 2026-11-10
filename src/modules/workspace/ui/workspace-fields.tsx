@@ -94,7 +94,11 @@ export function WorkspaceFields({
                     {BUSINESS_TYPE_LABELS[type].detail}
                   </FieldDescription>
                 </FieldContent>
-                <RadioGroupItem value={type} id={`${uid}-type-${type}`} />
+                <RadioGroupItem
+                  value={type}
+                  id={`${uid}-type-${type}`}
+                  aria-label={`${BUSINESS_TYPE_LABELS[type].title}: ${BUSINESS_TYPE_LABELS[type].detail}`}
+                />
               </Field>
             </FieldLabel>
           ))}

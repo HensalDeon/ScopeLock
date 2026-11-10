@@ -87,13 +87,50 @@ export function OverviewView({ data }: { data: OverviewData }) {
   );
 }
 
+/** The overview's shape while it loads: four figure cells, then rows. */
 export function OverviewSkeleton() {
+  const bar = (w: string, tone = "bg-muted") => (
+    <div className={`h-3 rounded ${w} ${tone}`} />
+  );
   return (
     <div aria-hidden className="grid gap-8">
-      <div className="h-28 rounded-xl border bg-canvas" />
+      <div className="grid grid-cols-2 rounded-xl border bg-background lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="grid gap-3 border-b px-5 py-4 odd:border-r lg:border-r lg:border-b-0 lg:last:border-r-0"
+          >
+            {bar("w-16", "bg-muted/70")}
+            <div className="h-6 w-24 rounded bg-muted" />
+            {bar("w-28", "bg-muted/70")}
+          </div>
+        ))}
+      </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="h-72 rounded-xl border bg-canvas" />
-        <div className="h-72 rounded-xl border bg-canvas" />
+        <div className="grid gap-3">
+          {bar("w-24")}
+          <div className="divide-y rounded-xl border bg-background">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex items-center gap-4 px-5 py-4">
+                <div className="grid flex-1 gap-2">
+                  {bar("w-20", "bg-muted/70")}
+                  {bar("w-44")}
+                  {bar("w-56", "bg-muted/70")}
+                </div>
+                {bar("w-16")}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-4">
+          {bar("w-28")}
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="grid gap-2 pl-5">
+              {bar("w-48", "bg-muted/70")}
+              {bar("w-32", "bg-muted/50")}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

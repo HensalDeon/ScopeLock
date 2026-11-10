@@ -62,14 +62,22 @@ export function MobileNav({
           <div
             className="flex h-full flex-col gap-5 p-3 pt-4"
             onClickCapture={(event) => {
-              if ((event.target as Element).closest("a[href]")) setOpen(false);
+              // A link to another page: stay open, showing it loading, until
+              // the page changes (which closes the sheet). A link to this
+              // page changes nothing, so close now.
+              const link = (event.target as Element).closest("a[href]");
+              if (
+                link instanceof HTMLAnchorElement &&
+                new URL(link.href).pathname === pathname
+              )
+                setOpen(false);
             }}
           >
             <div className="px-1.5">
               <Logo className="text-base" />
             </div>
             {workspace}
-            <NavLinks onNavigate={() => setOpen(false)} />
+            <NavLinks />
             <div className="mt-auto">{footer}</div>
           </div>
         </SheetContent>

@@ -46,7 +46,7 @@ export function AccentPicker({
               title={preset.label}
               onClick={() => onChange(preset.hex)}
               className={cn(
-                "flex size-9 items-center justify-center rounded-full ring-offset-2 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex size-9 items-center justify-center rounded-full ring-offset-2 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring max-sm:size-11",
                 selected && "ring-2 ring-foreground",
               )}
               style={{ background: preset.hex }}
@@ -67,7 +67,7 @@ export function AccentPicker({
           type="color"
           value={shown}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 w-11 cursor-pointer rounded-md border bg-background p-1"
+          className="h-9 w-11 cursor-pointer rounded-md border bg-background p-1 max-sm:h-11"
         />
         <FieldLabel htmlFor={`${uid}-hex`} className="sr-only">
           Colour code

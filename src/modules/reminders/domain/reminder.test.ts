@@ -16,6 +16,14 @@ describe("nextReminderAt", () => {
   it("allows another after 24 hours", () => {
     expect(nextReminderAt(hoursAgo(25), now)).toBeNull();
   });
+  it("waits a day after the item was sent, too", () => {
+    expect(nextReminderAt(null, now, hoursAgo(2))).not.toBeNull();
+    expect(nextReminderAt(null, now, hoursAgo(30))).toBeNull();
+    // The later of the two decides.
+    expect(nextReminderAt(hoursAgo(30), now, hoursAgo(3))?.getTime()).toBe(
+      hoursAgo(3).getTime() + 24 * 3_600_000,
+    );
+  });
 });
 
 describe("reminderKey", () => {

@@ -96,8 +96,7 @@ export function InstallApp({ className }: { className?: string }) {
           onClick={dismiss}
           aria-label="Don't show install again"
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
-            TOUCH,
+            "flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground max-sm:size-11",
           )}
         >
           <X aria-hidden className="size-4" />

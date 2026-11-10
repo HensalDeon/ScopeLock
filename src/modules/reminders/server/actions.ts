@@ -34,7 +34,7 @@ async function target(
   ref: string,
   project: NonNullable<Awaited<ReturnType<typeof findProjectWithClient>>>,
   portal: string,
-): Promise<{ item: string; amount: string; url: string }> {
+): Promise<{ item: string; amount: string; url: string; since: Date | null }> {
   const money = (n: Parameters<typeof formatMoney>[0]) =>
     formatMoney(n, project.currency);
   if (kind === "proposal") {
@@ -43,6 +43,7 @@ async function target(
       item: "the proposal",
       amount: money(project.baseline.total),
       url: portal,
+      since: project.sentAt,
     };
   }
   if (kind === "change") {
@@ -54,6 +55,7 @@ async function target(
       item: `${changeLabel(change.number)} ${change.title}`,
       amount: money(change.total),
       url: `${portal}/changes/${change.number}`,
+      since: change.sentAt,
     };
   }
   const payment = (await listOwedPayments()).find(
@@ -64,6 +66,7 @@ async function target(
     item: payment.label,
     amount: money(payment.payable),
     url: `${portal}/pay/${payment.id}`,
+    since: payment.requestedAt,
   };
 }
 
@@ -89,16 +92,24 @@ export const emailReminder = workspaceAction(
         "This client has no email saved. Add one on their client page, or send the link on WhatsApp.",
       );
     const key = reminderKey(project.id, kind, ref);
-    const wait = nextReminderAt((await listLastReminders()).get(key) ?? null);
-    if (wait)
-      throw new UserError(
-        `You emailed a reminder about this in the last day. You can send another after ${formatDateTime(wait)}.`,
-      );
     const portal = (await getShareState(project.id)).url;
     if (!portal) throw new UserError(GONE);
 
-    const { item, amount, url } = await target(kind, ref, project, portal);
+    const { item, amount, url, since } = await target(
+      kind,
+      ref,
+      project,
+      portal,
+    );
     const client = project.client?.name.trim().split(/\s+/)[0] ?? "there";
+    const last = (await listLastReminders()).get(key) ?? null;
+    const wait = nextReminderAt(last, new Date(), since);
+    if (wait)
+      throw new UserError(
+        last
+          ? `You emailed a reminder about this in the last day. The next one can go from ${formatDateTime(wait)}.`
+          : `This went to ${client} less than a day ago. A reminder can go from ${formatDateTime(wait)}.`,
+      );
     await sendEmail({
       to,
       ...reminderEmail({

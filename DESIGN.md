@@ -432,7 +432,7 @@ Gently rounded and consistent. Controls (buttons, inputs, selects) use an 8px ra
 
 Precise and restrained: compact, crisp, one clear next step.
 
-- **Shape:** gently rounded (8px), 32px tall (28px small, 24px extra-small), 14px medium text. On phones, actions in rows and side cards grow to 44px tall to tap (`TOUCH`, `TOUCH_LINK`).
+- **Shape:** gently rounded (8px), 32px tall (28px small, 24px extra-small), 14px medium text. On phones every button size is at least 44px to tap (built into the Button; `TOUCH` and `TOUCH_LINK` for links and custom controls).
 - **Primary:** ink navy fill, white text; at most one per view, for the next step ("Send for approval", "Ask for ₹33,984").
 - **Hover / Focus:** primary lightens to 80% ink; focus shows a 3px emerald ring at 50% plus an emerald border; pressing nudges the button down 1px.
 - **Outline:** white with a hairline border, quiet fill on hover; the default for secondary actions ("Ask for payment", "+ Add a line").
@@ -468,7 +468,7 @@ The signature container: a white panel with a hairline border and 11px corners, 
 
 ### Money strip
 
-Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Approved work, Received, Due now, Awaiting approval. At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in"). The strip is the only place that step's button appears; the payment's own row keeps its details and points up ("Next step, at the top of the page").
+Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Received, Due now, Still to ask for, Total (with GST when any), with a "Revenue recovered" strip under it: approved change requests this month and all time, in emerald (the one place emerald marks money recovered). At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in"). The strip is the only place that step's button appears; the payment's own row keeps its details and points up ("Next step, at the top of the page").
 
 ### Thread log (landing page)
 

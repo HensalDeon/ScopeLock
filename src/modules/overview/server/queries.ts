@@ -33,6 +33,7 @@ import {
   type OverviewPayment,
   type ProjectMoneyFigures,
 } from "../domain/overview";
+import { nextReminderAt } from "@/modules/reminders";
 import { needsYou } from "../domain/needs-you";
 import { revenueRecovered, type RecoveredTotals } from "../domain/recovered";
 import { setupSteps, type SetupStep } from "../domain/setup";
@@ -145,6 +146,7 @@ export async function getOverview(): Promise<OverviewData> {
       new Date(),
       payments,
       reminded,
+      nextReminderAt,
     ),
     needs: needsYou(
       projects,

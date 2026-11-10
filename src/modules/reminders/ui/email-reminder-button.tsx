@@ -17,24 +17,39 @@ export function EmailReminderButton({
   kind,
   refId,
   sentLabel,
+  align = "end",
 }: {
   projectId: string;
   kind: "proposal" | "change" | "payment";
   refId: string;
-  /** "Emailed 3 hours ago": one went in the last day. */
+  /** Why none can go yet ("Emailed today… · next from …"); null: one can. */
   sentLabel: string | null;
+  /** Lines up with its row: right in lists, left in the project strip. */
+  align?: "start" | "end";
 }) {
   const [state, action, pending] = useActionState(emailReminder, IDLE);
   const sent = state.status === "success" ? "Emailed just now" : sentLabel;
   if (sent)
     return (
-      <p className="inline-flex min-h-8 items-center gap-1.5 text-[13px] text-muted-foreground">
-        <Mail aria-hidden className="size-3.5" />
+      <p
+        role="status"
+        className={cn(
+          "inline-flex min-h-8 max-w-60 items-start gap-1.5 text-[13px] text-pretty text-muted-foreground",
+          align === "end" && "text-right",
+        )}
+      >
+        <Mail aria-hidden className="mt-0.5 size-3.5 shrink-0" />
         {sent}
       </p>
     );
   return (
-    <form action={action} className="grid justify-items-end gap-1">
+    <form
+      action={action}
+      className={cn(
+        "grid gap-1",
+        align === "end" ? "justify-items-end" : "justify-items-start",
+      )}
+    >
       <input type="hidden" name="projectId" value={projectId} />
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="ref" value={refId} />
@@ -51,7 +66,10 @@ export function EmailReminderButton({
       {state.status === "error" && state.message && (
         <p
           role="alert"
-          className="max-w-56 text-right text-[12px] text-destructive"
+          className={cn(
+            "max-w-56 text-[12px] text-destructive",
+            align === "end" && "text-right",
+          )}
         >
           {state.message}
         </p>

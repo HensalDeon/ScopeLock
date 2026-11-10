@@ -27,6 +27,7 @@ export function AttentionList({
           {title}
           {items.length > 0 && (
             <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">
+              <span className="sr-only">: </span>
               {items.length}
             </span>
           )}

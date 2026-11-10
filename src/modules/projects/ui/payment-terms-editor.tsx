@@ -125,6 +125,7 @@ export function PaymentTermsEditor({
                 <RadioGroupItem
                   value={option.value}
                   id={`${uid}-billing-${option.value}`}
+                  aria-label={`${option.title}: ${option.detail}`}
                 />
               </Field>
             </FieldLabel>

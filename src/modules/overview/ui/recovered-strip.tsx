@@ -28,19 +28,10 @@ export function RecoveredStrip({ rows }: { rows: RecoveredTotals[] }) {
             : "When a client approves a change request, its price adds up here: extra work you didn't do for free."}
         </p>
       </div>
-      {rows.length > 0 && (
-        <>
+      {rows.length > 0 &&
+        (rows.every((r) => r.thisMonth === r.allTime) ? (
           <Figure
-            label="This month"
-            rows={rows.map((r) => ({
-              key: r.currency,
-              amount: formatMoney(r.thisMonth, r.currency),
-              note: changes(r.thisMonthCount),
-              zero: r.thisMonth === 0,
-            }))}
-          />
-          <Figure
-            label="All time"
+            label="All this month"
             rows={rows.map((r) => ({
               key: r.currency,
               amount: formatMoney(r.allTime, r.currency),
@@ -48,8 +39,28 @@ export function RecoveredStrip({ rows }: { rows: RecoveredTotals[] }) {
               zero: false,
             }))}
           />
-        </>
-      )}
+        ) : (
+          <>
+            <Figure
+              label="This month"
+              rows={rows.map((r) => ({
+                key: r.currency,
+                amount: formatMoney(r.thisMonth, r.currency),
+                note: changes(r.thisMonthCount),
+                zero: r.thisMonth === 0,
+              }))}
+            />
+            <Figure
+              label="All time"
+              rows={rows.map((r) => ({
+                key: r.currency,
+                amount: formatMoney(r.allTime, r.currency),
+                note: changes(r.allTimeCount),
+                zero: false,
+              }))}
+            />
+          </>
+        ))}
     </section>
   );
 }

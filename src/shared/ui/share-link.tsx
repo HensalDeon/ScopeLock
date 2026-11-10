@@ -3,6 +3,7 @@
 import { Check, Copy, MessageCircle } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { whatsappLink } from "@/shared/lib/phone";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { TOUCH } from "@/shared/ui/touch";
@@ -90,10 +91,15 @@ export function ShareLink({
           {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
           {copied ? "Copied" : copyLabel}
         </Button>
+        {/* Long labels ("Send Priyadarshini the ₹1,25,000 pay link…") wrap
+            on phones instead of being cut off. */}
         <Button
           asChild
           variant={primary ? "default" : "outline"}
-          className={TOUCH}
+          className={cn(
+            TOUCH,
+            "max-sm:h-auto max-sm:min-h-11 max-sm:max-w-full max-sm:shrink max-sm:py-2 max-sm:text-left max-sm:whitespace-normal",
+          )}
         >
           <a href={whatsapp} target="_blank" rel="noopener noreferrer">
             <MessageCircle aria-hidden />

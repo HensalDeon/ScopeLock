@@ -34,7 +34,7 @@ export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
           </Button>
         }
       />
-      <Suspense fallback={<ListSkeleton rows={4} />}>
+      <Suspense fallback={<ListSkeleton rows={4} search />}>
         <Clients searchParams={searchParams} />
       </Suspense>
     </PageContainer>

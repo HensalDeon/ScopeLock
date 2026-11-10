@@ -79,13 +79,19 @@ export function VerifyEmailForm({ email }: { email: string }) {
         <CodeInput
           name="code"
           aria-label="6-digit code"
+          placeholder="······"
           aria-invalid={message?.tone === "error" || undefined}
           className="h-9 w-[9.5rem] px-2.5 text-[17px] tracking-[0.36em]"
           onValueChange={(code) => {
             if (isCompleteCode(code)) void verify(code);
           }}
         />
-        <Button type="submit" disabled={pending} className="h-9">
+        <Button
+          type="submit"
+          variant="outline"
+          disabled={pending}
+          className="h-9"
+        >
           {pending ? "Checking…" : "Confirm"}
         </Button>
         <button

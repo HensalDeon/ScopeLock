@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/shared/lib/utils";
+import { LinkPending } from "@/shared/ui/link-pending";
 
 type NavItem = {
   href: "/dashboard" | "/projects" | "/clients" | "/settings";
@@ -47,7 +48,8 @@ export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               className={cn("size-4", active && "text-brand")}
               aria-hidden
             />
-            {label}
+            <span className="flex-1">{label}</span>
+            <LinkPending />
           </Link>
         );
       })}

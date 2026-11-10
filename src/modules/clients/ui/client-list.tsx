@@ -1,5 +1,5 @@
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { LinkChevron } from "@/shared/ui/link-pending";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { formatPhone } from "@/shared/lib/phone";
@@ -54,10 +54,7 @@ export function ClientList({
               )}
               {client.email && <p className="truncate">{client.email}</p>}
             </div>
-            <ChevronRight
-              className="size-4 shrink-0 text-muted-foreground"
-              aria-hidden
-            />
+            <LinkChevron />
           </Link>
         </li>
       ))}

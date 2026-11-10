@@ -25,7 +25,7 @@ export async function Shell() {
   );
 
   const userMenu = (
-    <div className="grid gap-2">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-2">
       <InstallApp />
       <UserMenu
         name={user.name}

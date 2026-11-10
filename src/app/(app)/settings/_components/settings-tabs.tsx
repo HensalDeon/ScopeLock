@@ -17,7 +17,7 @@ const TABS = [
 export function SettingsTabs() {
   const pathname = usePathname();
   const nav = useRef<HTMLElement>(null);
-  // Phones: the strip scrolls sideways; keep the current tab in view.
+  // Narrow tablets: the strip can scroll sideways; keep the current tab in view.
   useEffect(() => {
     nav.current
       ?.querySelector('[aria-current="page"]')
@@ -27,7 +27,8 @@ export function SettingsTabs() {
     <nav
       ref={nav}
       aria-label="Settings"
-      className="mb-8 flex gap-1 overflow-x-auto border-b"
+      // Phones: all four in a 2×2 grid (a sideways strip hid "Documents").
+      className="mb-8 grid grid-cols-2 border-b sm:flex sm:gap-1 sm:overflow-x-auto"
     >
       {TABS.map((tab) => {
         const active = pathname === tab.href;
@@ -37,7 +38,7 @@ export function SettingsTabs() {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "-mb-px shrink-0 border-b-2 px-3 pb-2.5 text-sm whitespace-nowrap transition-colors max-sm:flex max-sm:h-11 max-sm:items-center max-sm:pb-0",
+              "-mb-px shrink-0 border-b-2 px-3 pb-2.5 text-sm whitespace-nowrap transition-colors max-sm:flex max-sm:h-11 max-sm:items-center max-sm:pb-0 max-sm:pl-1",
               active
                 ? "border-foreground font-medium text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",
