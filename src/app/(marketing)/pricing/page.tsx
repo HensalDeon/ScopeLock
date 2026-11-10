@@ -59,8 +59,22 @@ const COMPARISON: { group: string; rows: Row[] }[] = [
       },
       { label: "Change order PDFs", values: [true, true, true] },
       { label: "Project statement PDFs", values: [false, true, true] },
-      { label: "Payment reminders", values: [false, true, true] },
-      { label: "Revenue recovered reports", values: [false, false, true] },
+      {
+        label: "WhatsApp and email reminders",
+        values: [true, true, true],
+      },
+      {
+        label: "Automatic payment reminders",
+        values: [false, "Soon", "Soon"],
+      },
+      {
+        label: "Revenue recovered on your overview",
+        values: [true, true, true],
+      },
+      {
+        label: "Revenue recovered reports by client and month",
+        values: [false, false, "Soon"],
+      },
     ],
   },
   {

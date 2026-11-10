@@ -200,11 +200,11 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 
 Not live yet; prices may change before launch.
 
-| Plan       | Price          | For                                                   | Includes                                                                                                                             |
-| ---------- | -------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Free**   | ₹0             | Trying it on your next project                        | 2 active projects, unlimited change requests, client approval links, payment tracking                                                |
-| **Pro**    | ₹499 / month   | Freelancers and small studios with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, payment reminders, full project statements |
-| **Agency** | ₹1,999 / month | Studios and agencies                                  | 15 active projects, revenue-recovered reports, priority support, team members (coming)                                               |
+| Plan       | Price          | For                                                   | Includes                                                                                                                                                |
+| ---------- | -------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Free**   | ₹0             | Trying it on your next project                        | 2 active projects, unlimited change requests, client approval links, payment tracking, WhatsApp and email reminders, revenue recovered on the overview  |
+| **Pro**    | ₹499 / month   | Freelancers and small studios with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, automatic payment reminders (coming), full project statements |
+| **Agency** | ₹1,999 / month | Studios and agencies                                  | 15 active projects, revenue recovered reports by client and month (coming), priority support, team members (coming)                                     |
 
 **The value in one line:** one recovered change request (₹15,000 in the demo story) pays for over two years of Pro.
 
