@@ -25,4 +25,11 @@ describe("landing page story", () => {
     expect(FREE_ASKS).toHaveLength(10); // "ten small ones"
     expect(formatINR(neverBilled())).toBe("₹58,500");
   });
+
+  it("says what CR-001 covers in the same words everywhere", () => {
+    expect(STORY.change.detail).toContain(
+      "categories, search and 3 starter posts",
+    );
+    expect(STORY.change.blog).toBe("Categories, search and 3 starter posts.");
+  });
 });

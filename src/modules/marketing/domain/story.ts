@@ -9,6 +9,8 @@ import { formatINR, rupeesToPaise, sum, type Minor } from "@/shared/lib/money";
 
 export const rupees = (n: number) => formatINR(rupeesToPaise(n));
 
+const BLOG = "Categories, search and 3 starter posts.";
+
 export const STORY = {
   freelancer: "Asha Menon",
   studio: "Asha Menon Studio",
@@ -24,10 +26,9 @@ export const STORY = {
   change: {
     label: "CR-001",
     title: "Blog + WhatsApp chat button",
-    detail:
-      "A blog with categories, search and 3 starter posts, and a WhatsApp chat button on every page.",
     /** What the blog line covers, word for word on every document. */
-    blog: "Categories, search and 3 starter posts.",
+    blog: BLOG,
+    detail: `A blog with ${BLOG.charAt(0).toLowerCase()}${BLOG.slice(1, -1)}, and a WhatsApp chat button on every page.`,
     amount: 15_000,
     askedOn: "28 Oct",
     sentAt: "3:19 pm",

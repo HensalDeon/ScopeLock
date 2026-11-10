@@ -79,7 +79,7 @@ export function HowItWorks() {
             date={STORY.milestones[2].paidOn}
             title="Get paid on your terms"
             figure={{ amount: rupees(storyTotal()), label: "all received" }}
-            text="Approving and paying are separate. Each change joins the next payment, the final one, a payment you choose, or is paid on its own. With a GSTIN, every payment you ask for comes with a GST invoice."
+            text="Approving and paying are separate. Each change is added to the next payment, the final one or one you pick, or paid on its own. With a GSTIN, every payment you ask for comes with a GST invoice."
           >
             <PaymentLedger />
           </Day>

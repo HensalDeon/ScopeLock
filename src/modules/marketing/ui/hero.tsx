@@ -80,7 +80,7 @@ export function Hero() {
           </Log>
         </ApprovalPlay>
 
-        <SignUpStart id="hero-email" className="mt-8" />
+        <SignUpStart id="hero-email" className="mt-8 short:mt-6" />
       </Container>
     </section>
   );

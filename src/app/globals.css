@@ -375,8 +375,9 @@
   [data-play] .sl-strike {
     animation: sl-strike 320ms ease-out 700ms both;
   }
+  /* Starts once the struck total has slid clear of it. */
   [data-settled] .sl-settle {
-    animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 140ms both;
   }
 }
 @keyframes sl-pending-in {
