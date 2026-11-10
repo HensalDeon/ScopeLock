@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
 import {
   abroadPaymentProblem,
+  payByWords,
   clientSeesLine,
   payToFrom,
   methodsFor,
@@ -169,5 +170,29 @@ describe("abroadPaymentProblem", () => {
     expect(
       abroadPaymentProblem({ bank: null, link: null }, false, "Rahul"),
     ).toBeNull();
+  });
+});
+
+describe("payByWords", () => {
+  const m = {
+    upi: { vpa: "asha@okhdfc", payeeName: "Asha" },
+    bank: {
+      accountName: "A",
+      accountNumber: "1",
+      ifsc: null,
+      bankName: "HDFC",
+      branch: null,
+      swift: "HDFCINBB",
+      iban: null,
+    },
+    link: null,
+    qr: null,
+    other: null,
+    defaultMethod: null,
+  } as unknown as Parameters<typeof payByWords>[0];
+  it("names what this client can use", () => {
+    expect(payByWords(m, "INR", false)).toBe("UPI or bank transfer");
+    // Abroad: no UPI.
+    expect(payByWords(m, "INR", true)).toBe("bank transfer");
   });
 });

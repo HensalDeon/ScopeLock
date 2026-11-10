@@ -5,7 +5,11 @@ import {
   changeLabel,
   type ChangeRequest,
 } from "@/modules/changes";
-import { CLIENT_PAYMENT_LABELS, type ScheduleItem } from "@/modules/payments";
+import {
+  CLIENT_PAYMENT_LABELS,
+  type ScheduleItem,
+  lineBreakdown,
+} from "@/modules/payments";
 import { cn } from "@/shared/lib/utils";
 
 /** Rows of the client's project page: totals, change requests, payments. */
@@ -111,6 +115,11 @@ export function PaymentRow({
         <span className="line-clamp-2 block font-medium break-words">
           {item.label}
         </span>
+        {lineBreakdown(item.lines, money) && (
+          <span className="block text-xs text-muted-foreground tabular-nums">
+            {lineBreakdown(item.lines, money)}
+          </span>
+        )}
         <span
           className={cn(
             "text-xs",

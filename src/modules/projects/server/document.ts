@@ -69,6 +69,19 @@ async function loadGetProposalDocument(projectId: string) {
     data:
       sent?.data ??
       currentProposalData(project, context, settings.defaults, tax),
+    // Approved: the client's answer, as their copy of the proposal shows it.
+    acceptance:
+      sent &&
+      (project.status === "active" || project.status === "completed") &&
+      project.lastDecision?.decision === "approved"
+        ? {
+            verdict: "Approved",
+            name: project.lastDecision.name,
+            email: project.lastDecision.email,
+            at: project.lastDecision.at,
+            comment: project.lastDecision.comment,
+          }
+        : null,
     // Sent, and GST for this client has changed since: say so under it.
     gstNote:
       sent && project.client

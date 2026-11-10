@@ -236,8 +236,15 @@ async function loadPortalPayment(
   const invoice = invoiceId
     ? await findInvoice(opened.workspaceId, invoiceId, opened.projectId)
     : null;
-  // UPI and QR are Indian rails: a client abroad gets bank or link only.
-  const abroad = Boolean(invoice && !isIndia(invoice.buyer.country));
+  // UPI and QR are Indian rails: a client abroad (as they are now, even on
+  // an invoice issued before they moved) gets bank or link only.
+  const clientId = parseObjectId(opened.project.clientId);
+  const client = clientId
+    ? await findClientInWorkspace(opened.workspaceId, clientId)
+    : null;
+  const abroad = client
+    ? !isIndia(client.country)
+    : Boolean(invoice && !isIndia(invoice.buyer.country));
   const payable = abroad
     ? {
         ...found,

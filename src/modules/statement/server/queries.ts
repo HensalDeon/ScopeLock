@@ -4,7 +4,8 @@ import { changeLabel, type ChangeRequest } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
 import type { ProposalDocumentData } from "@/modules/documents";
 import type { Payment, ScheduleItem } from "@/modules/payments";
-import { getProjectPayments } from "@/modules/payments/server";
+import { getProjectPayments, lineBreakdown } from "@/modules/payments/server";
+import { formatMoney } from "@/shared/lib/money";
 import { getProposalDocument } from "@/modules/projects/server";
 import { buildStatement, type Statement } from "../domain/statement";
 
@@ -70,6 +71,7 @@ export function statementFrom(input: {
       invoiceNumber: i.payment?.invoice?.number ?? null,
       requestedAt: i.payment?.requestedAt ?? null,
       receivedOn: i.payment?.confirmation?.receivedOn ?? null,
+      breakdown: lineBreakdown(i.lines, (a) => formatMoney(a, data.currency)),
     })),
     requests: (input.requests ?? []).map((r) => ({
       key: r.key,

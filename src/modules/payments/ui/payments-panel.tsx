@@ -1,7 +1,3 @@
-import type { Route } from "next";
-import Link from "next/link";
-import { cn } from "@/shared/lib/utils";
-import { TOUCH_LINK } from "@/shared/ui/touch";
 import { nextStep } from "../domain/next-step";
 import type { ScheduleItem } from "../domain/payment";
 import { ScheduleRow, type ScheduleRowContext } from "./schedule-row";
@@ -28,29 +24,13 @@ export function PaymentsPanel({
   unlockedBy?: ScheduleRowContext["unlockedBy"];
   stateFallback?: ScheduleRowContext["stateFallback"];
 }) {
-  const rowCtx = { ...ctx, unlockedBy, stateFallback };
+  const rowCtx = { ...ctx, methodsReady, unlockedBy, stateFallback };
   // Asking for or confirming the next payment happens in the money strip;
   // its row points there instead of offering the same button twice.
   const step = nextStep(items);
   const above = step && step.kind !== "settled" ? step : null;
   return (
     <div className="grid gap-3">
-      {!methodsReady && (
-        <p className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-pretty text-warning-ink">
-          Add how you get paid (UPI, bank or a payment link) in{" "}
-          <Link
-            href={"/settings/payments" as Route}
-            className={cn(
-              "font-medium underline underline-offset-4",
-              TOUCH_LINK,
-            )}
-          >
-            Settings → Payments
-          </Link>{" "}
-          before asking for a payment, so {ctx.client.firstName} knows how to
-          pay.
-        </p>
-      )}
       <ol className="divide-y rounded-xl border bg-background">
         {items.map((item, index) => (
           <ScheduleRow

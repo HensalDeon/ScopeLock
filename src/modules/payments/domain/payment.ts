@@ -235,3 +235,20 @@ export function closedKeys(
 ): string[] {
   return payments.filter((p) => isActive(p.status)).map((p) => p.key);
 }
+
+/**
+ * A payment made of more than one thing, in a few words: "₹12,800 agreed
+ * + ₹15,000 CR-001". Null for a single line (the label already says it).
+ */
+export function lineBreakdown(
+  lines: readonly Pick<PaymentLine, "kind" | "description" | "amount">[],
+  money: (amount: Minor) => string,
+): string | null {
+  if (lines.length < 2) return null;
+  return lines
+    .map(
+      (l) =>
+        `${money(l.amount)} ${l.kind === "baseline" ? "agreed" : (l.description.split(" ")[0] ?? "change")}`,
+    )
+    .join(" + ");
+}

@@ -32,7 +32,7 @@ export function SetupChecklist({
                 .join(", ")}
             </span>
           </span>
-          <span className="inline-flex items-center gap-1 text-muted-foreground">
+          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-muted-foreground">
             <span className="group-open:hidden">Show steps</span>
             <span className="hidden group-open:inline">Hide steps</span>
             <ChevronDown
@@ -97,7 +97,7 @@ function Steps({ steps }: { steps: SetupStep[] }) {
               {step.href && !step.done ? (
                 <Link
                   href={step.href as Route}
-                  className="underline-offset-4 hover:underline"
+                  className="underline-offset-4 hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
                 >
                   {step.title}
                 </Link>

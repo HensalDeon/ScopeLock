@@ -45,7 +45,7 @@ export function InvoiceDocument({
   return (
     <article
       className={cn(
-        "@container border-t-4 bg-white px-6 py-8 text-[#1d1f24] [print-color-adjust:exact] @xl:px-12 @xl:py-10",
+        "@container border-t-4 bg-white px-6 py-8 text-[#1d1f24] [print-color-adjust:exact] sm:px-12 sm:py-10 print:px-[14mm]",
         className,
       )}
       style={{ borderTopColor: accent }}
@@ -53,7 +53,7 @@ export function InvoiceDocument({
       {status === "cancelled" && (
         <div
           role="note"
-          className="mb-8 grid gap-1 border-2 border-[#c8372d] px-4 py-3 text-[#9f2a22]"
+          className="mb-8 grid gap-1 border-2 border-[#1d1f24] px-4 py-3 text-[#1d1f24]"
         >
           <p className="text-lg font-semibold tracking-[0.2em] uppercase">
             Cancelled
@@ -204,7 +204,11 @@ export function InvoiceDocument({
       )}
 
       {invoice.statement && (
-        <InvoiceStatement statement={invoice.statement} money={money} />
+        <InvoiceStatement
+          statement={invoice.statement}
+          money={money}
+          invoiceTotal={invoice.total}
+        />
       )}
 
       {/* Pay-to and the signature print together, never a lone page. */}

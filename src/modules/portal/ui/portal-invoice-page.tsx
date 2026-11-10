@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { INVOICE_STATUS_LABELS, InvoiceDocument } from "@/modules/invoices";
+import { formatMoney } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
 import { getPortalInvoice } from "../server/queries";
 import { Footer, Notice, PortalHeader } from "./portal-chrome";
@@ -42,6 +43,15 @@ export async function PortalInvoicePage({
           </Link>
         }
       >
+        {/* Unpaid: pay straight from the invoice. */}
+        {invoice.status === "issued" && (
+          <Link
+            href={`/c/${token}/pay/${invoice.paymentId}`}
+            className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 max-sm:h-11 max-sm:px-4"
+          >
+            Pay {formatMoney(invoice.total, invoice.currency)}
+          </Link>
+        )}
         <PrintButton variant="outline" />
       </PortalHeader>
       <PrintSetup

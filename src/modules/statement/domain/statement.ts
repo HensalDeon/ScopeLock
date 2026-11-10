@@ -39,6 +39,8 @@ export type StatementInput = {
     requestedAt: Date | null;
     /** YYYY-MM-DD, as the freelancer recorded it. */
     receivedOn: string | null;
+    /** "₹12,800 agreed + ₹15,000 CR-001" when it combines lines. */
+    breakdown?: string | null;
   }[];
   /**
    * Every payment request ever made, cancelled ones included, so the
@@ -91,7 +93,9 @@ export type Statement = StatementInput & {
 };
 
 /** A record always carries the year: "9 Nov 2026". */
-const day = (date: Date) => formatDate(date, { withYear: true });
+// Non-breaking spaces: "10 Nov 2026" never splits across lines.
+const day = (date: Date) =>
+  formatDate(date, { withYear: true }).replace(/ /g, "\u00a0");
 const isoDay = (iso: string) => day(new Date(`${iso}T12:00:00+05:30`));
 
 function changeStatus(c: StatementInput["changes"][number]): string {
@@ -112,7 +116,7 @@ function paymentStatus(p: StatementInput["payments"][number]): string {
     case "due":
       return p.requestedAt ? `Asked for on ${day(p.requestedAt)}` : "Asked for";
     case "upcoming":
-      return "Not asked for yet";
+      return "Not due yet";
   }
 }
 
@@ -140,7 +144,9 @@ export function buildStatement(input: StatementInput): Statement {
     paymentRows: input.payments.map((p) => ({
       label: p.label,
       invoice: p.invoiceNumber,
-      status: paymentStatus(p),
+      status: p.breakdown
+        ? `${paymentStatus(p)} · ${p.breakdown}`
+        : paymentStatus(p),
       amount: p.payable,
       settled: p.state === "received",
     })),

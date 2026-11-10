@@ -15,7 +15,11 @@ import type { ScheduleItem } from "../domain/payment";
 import * as repo from "./repository";
 import * as settingsRepo from "./settings-repository";
 import { isIndia } from "@/shared/lib/india";
-import { abroadPaymentProblem, payToFrom } from "../domain/methods";
+import {
+  abroadPaymentProblem,
+  hasAnyMethod,
+  payToFrom,
+} from "../domain/methods";
 import type { PaymentSchedule } from "./schedule";
 
 class AlreadyRequested extends Error {}
@@ -56,6 +60,10 @@ export async function createRequest(input: {
     email: client.email,
   };
   const problem =
+    // The pay page and invoice need somewhere to pay: set that up first.
+    (hasAnyMethod(methods)
+      ? null
+      : "Add how you get paid (UPI, bank or a payment link) in Settings → Payments, then ask again.") ??
     issueProblem(settings, buyer) ??
     abroadPaymentProblem(
       methods,

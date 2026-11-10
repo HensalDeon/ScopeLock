@@ -367,3 +367,29 @@ export function abroadPaymentProblem(
   if (!clientAbroad || methods.bank || methods.link) return null;
   return `${firstName} is outside India, where UPI doesn't work. Add a bank account (with its SWIFT code) or a payment link in Settings → Payments, then ask again.`;
 }
+
+/**
+ * How this client can pay, in words, for the WhatsApp message: "UPI or
+ * bank transfer", "bank transfer or Razorpay". A client abroad never gets
+ * UPI or the QR (Indian rails). Empty when nothing is set up.
+ */
+export function payByWords(
+  methods: PaymentMethods,
+  currency: CurrencyCode,
+  clientAbroad: boolean,
+): string {
+  const words: Record<MethodKind, string> = {
+    upi: "UPI",
+    bank: "bank transfer",
+    link: methods.link?.label ?? "the payment link",
+    qr: "the QR code",
+    other: "the way we agreed",
+  };
+  const kinds = methodsFor(methods, currency).filter(
+    (k) => !(clientAbroad && (k === "upi" || k === "qr")),
+  );
+  const list = kinds.map((k) => words[k]);
+  return list.length <= 1
+    ? (list[0] ?? "")
+    : `${list.slice(0, -1).join(", ")} or ${list.at(-1)}`;
+}

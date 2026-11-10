@@ -33,6 +33,7 @@ export async function generateMetadata({
       ? {
           absolute: documentTitle(
             `${record.approval.label} ${verdictLabel(record.approval).toLowerCase()} by ${record.approval.decidedBy.name}`,
+            recordTitle(record.snapshot),
             "Signed record",
           ),
         }
@@ -142,5 +143,18 @@ async function Answer({
         )}
       </main>
     </>
+  );
+}
+
+/** The project and business a signed record is about, for its file name. */
+function recordTitle(snapshot: unknown): string | null {
+  const s = snapshot as {
+    title?: string;
+    projectTitle?: string;
+    business?: { name?: string };
+  };
+  return (
+    [s.projectTitle ?? s.title, s.business?.name].filter(Boolean).join(" · ") ||
+    null
   );
 }

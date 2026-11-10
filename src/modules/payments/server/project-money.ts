@@ -4,7 +4,7 @@ import { gstHints, taxCaseOf } from "@/modules/invoices";
 import { findInvoicing } from "@/modules/invoices/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { isIndia } from "@/shared/lib/india";
-import { hasAnyMethod } from "../domain/methods";
+import { hasAnyMethod, payByWords } from "../domain/methods";
 import { getProjectPayments } from "./queries";
 import type { PaymentSchedule, ProjectForSchedule } from "./schedule";
 import * as settingsRepo from "./settings-repository";
@@ -26,6 +26,8 @@ export type ProjectMoney = PaymentSchedule & {
   exportClient: boolean;
   /** Client abroad with only UPI/QR set up: they'd have no way to pay. */
   abroadNeedsBankOrLink: boolean;
+  /** How this client can pay, in words, for messages ("UPI or bank transfer"). */
+  payBy: string;
   /** When this was read (for "asked 3 days ago" style decisions). */
   now: Date;
 };
@@ -55,6 +57,11 @@ export async function getProjectMoney(
     exportClient:
       taxCaseOf(settings, client as Parameters<typeof taxCaseOf>[1]) ===
       "export",
+    payBy: payByWords(
+      methods,
+      project.currency,
+      Boolean(client && !isIndia(client.country)),
+    ),
     abroadNeedsBankOrLink:
       Boolean(client && !isIndia(client.country)) &&
       !methods.bank &&

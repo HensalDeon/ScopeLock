@@ -43,9 +43,9 @@ async function Preview({
   params: PageProps<"/projects/[id]/preview">["params"];
 }) {
   const { id } = await params;
-  const { project, data, style, images, gstNote } =
+  const { project, data, style, images, gstNote, acceptance } =
     await getProposalDocument(id);
-  const footer = `${data.business.name}  ·  Proposal ${data.reference}`;
+  const footer = `${data.business.name} · Proposal ${data.reference}`;
 
   return (
     <>
@@ -90,6 +90,7 @@ async function Preview({
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         <ClassicDocument
           note={gstNote}
+          acceptance={acceptance}
           data={data}
           style={style}
           images={images}

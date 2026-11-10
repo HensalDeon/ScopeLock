@@ -71,7 +71,7 @@ export function setupSteps(input: {
     },
     {
       title: "Log extra requests as they come in",
-      short: "extra requests",
+      short: "your first change request",
       detail:
         "Each one becomes a priced change request your client approves before you start.",
       done: projects.some((p) => p.changeCount > 0),

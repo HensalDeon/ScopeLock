@@ -207,8 +207,9 @@ export function ReportPaymentForm({
           className="font-mono"
         />
         <FieldDescription>
-          For UPI, the 12-digit number in your UPI app&apos;s payment details.
-          For a bank transfer, it&apos;s next to the payment on your statement.
+          {options.includes("upi")
+            ? "For UPI, the 12-digit number in your UPI app's payment details. For a bank transfer, it's next to the payment on your statement."
+            : "The reference next to the payment on your bank statement or receipt."}
         </FieldDescription>
         <FieldError>{form.errorFor("reference")}</FieldError>
       </Field>

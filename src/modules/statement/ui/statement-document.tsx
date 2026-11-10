@@ -23,7 +23,7 @@ export function StatementDocument({
   return (
     <article
       className={cn(
-        "@container border-t-4 bg-white px-6 py-8 text-[#1d1f24] [print-color-adjust:exact] @xl:px-12 @xl:py-10",
+        "@container border-t-4 bg-white px-6 py-8 text-[#1d1f24] [print-color-adjust:exact] sm:px-12 sm:py-10 print:px-[14mm]",
         className,
       )}
       style={{ borderTopColor: accent }}
@@ -144,16 +144,16 @@ export function StatementDocument({
           <div className="mt-2 grid gap-1.5 border-t pt-2">
             <Row label="Received">{money(s.totals.received)}</Row>
             <Row label="Asked for, not received">{money(s.totals.due)}</Row>
-            <Row label="Not asked for yet">{money(s.totals.toAsk)}</Row>
+            <Row label="Not due yet">{money(s.totals.toAsk)}</Row>
           </div>
         </dl>
-
-        <footer className="mt-10 border-t pt-4 text-[13px] text-pretty text-[#3a3d44]">
-          Every approval above is kept as a signed record of exactly what was
-          approved, by whom and when.
-          {s.totals.tax > 0 ? " Amounts with GST follow the invoices." : ""}
-        </footer>
       </div>
+
+      <footer className="mt-10 border-t pt-4 text-[13px] text-pretty text-[#3a3d44]">
+        Every approval above is kept as a signed record of exactly what was
+        approved, by whom and when.
+        {s.totals.tax > 0 ? " Amounts with GST follow the invoices." : ""}
+      </footer>
     </article>
   );
 }

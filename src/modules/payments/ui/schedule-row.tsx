@@ -26,6 +26,10 @@ export type ScheduleRowContext = {
   exportClient?: boolean;
   /** Client abroad with only UPI set up: asking waits for bank or link. */
   abroadNeedsBankOrLink?: boolean;
+  /** Payment details are set up (asking needs them). */
+  methodsReady?: boolean;
+  /** How this client can pay, in words ("UPI or bank transfer"). */
+  payBy?: string;
 };
 
 /**
@@ -69,7 +73,9 @@ export function ScheduleRow({
           )}
           {item.tax > 0 ? (
             <p className="text-xs text-muted-foreground tabular-nums">
-              {money(item.total)} + {money(item.tax)} GST
+              {item.lines.length === 1
+                ? `+ ${money(item.tax)} GST`
+                : `${money(item.total)} + ${money(item.tax)} GST`}
             </p>
           ) : (
             ctx.exportClient && (
@@ -101,7 +107,18 @@ export function ScheduleRow({
       <div className="pl-[2.5rem]">
         {actedAbove === "waiting" ? (
           // The strip sends the reminder; the row keeps the bookkeeping.
-          <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
+          <div className="grid gap-1">
+            <a
+              href={`#money-${ctx.projectId}`}
+              className={cn(
+                "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+                TOUCH_LINK,
+              )}
+            >
+              Its pay link is at the top of the page
+            </a>
+            <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
+          </div>
         ) : actedAbove ? (
           <div className="grid gap-1">
             <a
@@ -140,6 +157,7 @@ export function paymentActionProps(
     stateFallback: ctx.stateFallback,
     exportCheck: ctx.exportCheck ?? null,
     abroadNeedsBankOrLink: ctx.abroadNeedsBankOrLink ?? false,
+    methodsReady: ctx.methodsReady ?? true,
     share:
       ctx.portalUrl && item.payment
         ? {
@@ -159,6 +177,9 @@ export function payMessage(
 ) {
   const amount = formatMoney(item.payable, ctx.currency);
   return reminder
-    ? `Hi ${ctx.client.firstName}, a reminder: the payment for ${ctx.projectName} is due (${item.label}, ${amount}). You can pay by UPI or bank transfer here:`
-    : `Hi ${ctx.client.firstName}, here's the invoice for ${ctx.projectName} (${item.label}, ${amount}). You can pay by UPI or bank transfer here:`;
+    ? `Hi ${ctx.client.firstName}, a reminder: the payment for ${ctx.projectName} is due (${item.label}, ${amount}). ${payHere(ctx.payBy)}`
+    : `Hi ${ctx.client.firstName}, here's the invoice for ${ctx.projectName} (${item.label}, ${amount}). ${payHere(ctx.payBy)}`;
 }
+
+const payHere = (by?: string) =>
+  by ? `You can pay by ${by} here:` : "You can pay here:";

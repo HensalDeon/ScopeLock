@@ -83,6 +83,8 @@ async function ProjectDetail({
     exportCheck: money.exportCheck,
     exportClient: money.exportClient,
     abroadNeedsBankOrLink: money.abroadNeedsBankOrLink,
+    methodsReady: money.methodsReady,
+    payBy: money.payBy,
   };
 
   const scope = (
@@ -131,7 +133,7 @@ async function ProjectDetail({
           history under the main column. Phones: the share card first while
           the proposal is out; once approved it follows payments and changes,
           before the history. */}
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr_auto] lg:gap-y-4">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr_auto] lg:gap-y-4">
         <div
           className={cn(
             "lg:col-start-2 lg:row-start-1",

@@ -52,7 +52,7 @@ export function ApprovalRows({
                 </span>
               </span>
               {a.comment && (
-                <span className="truncate text-sm text-muted-foreground">
+                <span className="line-clamp-2 text-sm text-pretty text-muted-foreground">
                   “{a.comment}”
                 </span>
               )}

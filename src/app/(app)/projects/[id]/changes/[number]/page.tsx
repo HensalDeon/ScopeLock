@@ -32,15 +32,15 @@ export async function generateMetadata({
   params,
 }: PageProps<"/projects/[id]/changes/[number]">): Promise<Metadata> {
   const { id, number } = await params;
-  const [project, { change }] = await Promise.all([
-    getProjectOrNotFound(id),
+  const [{ change }, { workspace }] = await Promise.all([
     getChangeOrNotFound(id, number),
+    requireWorkspace(),
   ]);
   return {
     title: {
       absolute: documentTitle(
         `${changeLabel(change.number)} ${change.title}`,
-        project.name,
+        workspace.businessName,
       ),
     },
   };
@@ -129,6 +129,21 @@ async function ChangeDetail({
             approved={change.status === "approved"}
             withdrawnBy={
               change.status === "withdrawn" ? data.business.name : null
+            }
+            declined={change.status === "rejected"}
+            acceptance={
+              change.decision
+                ? {
+                    verdict:
+                      change.decision.decision === "approved"
+                        ? "Approved"
+                        : "Declined",
+                    name: change.decision.name,
+                    email: change.decision.email,
+                    at: change.decision.at,
+                    comment: change.decision.comment,
+                  }
+                : null
             }
             titleAs="h2"
             style={settings.style}

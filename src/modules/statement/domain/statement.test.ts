@@ -76,13 +76,13 @@ describe("buildStatement", () => {
   const s = buildStatement(input);
   it("lists what the client saw, with what happened", () => {
     expect(s.changeRows.map((r) => [r.label, r.status, r.counts])).toEqual([
-      ["CR-001", "Approved by Rahul Mehta on 9 Nov 2026", true],
-      ["CR-002", "Declined by Rahul Mehta on 9 Nov 2026", false],
+      ["CR-001", "Approved by Rahul Mehta on 9\u00a0Nov\u00a02026", true],
+      ["CR-002", "Declined by Rahul Mehta on 9\u00a0Nov\u00a02026", false],
     ]);
     expect(s.paymentRows.map((r) => r.status)).toEqual([
-      "Received on 9 Nov 2026",
-      "Asked for on 9 Nov 2026",
-      "Not asked for yet",
+      "Received on 9\u00a0Nov\u00a02026",
+      "Asked for on 9\u00a0Nov\u00a02026",
+      "Not due yet",
     ]);
   });
   it("adds up: scope + approved changes, then GST, received, due, to ask", () => {

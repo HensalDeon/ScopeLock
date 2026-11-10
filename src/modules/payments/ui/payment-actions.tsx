@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { formatIsoDate } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -27,6 +28,7 @@ export function PaymentActions({
   stateFallback,
   exportCheck = null,
   abroadNeedsBankOrLink = false,
+  methodsReady = true,
   breakdown,
   primary = false,
 }: {
@@ -34,6 +36,8 @@ export function PaymentActions({
   exportCheck?: { clientHref: string } | null;
   /** Client abroad with only UPI set up: asking is blocked until fixed. */
   abroadNeedsBankOrLink?: boolean;
+  /** No UPI, bank or link yet: asking waits (the invoice needs one). */
+  methodsReady?: boolean;
   item: ScheduleItem;
   projectId: string;
   /** Formatted total, e.g. "₹47,000". */
@@ -55,6 +59,19 @@ export function PaymentActions({
   const ids = { projectId, paymentId: item.payment?.id ?? "" };
 
   if (item.state === "upcoming") {
+    // Nowhere to pay yet: set that up instead of issuing an invoice.
+    if (!methodsReady) {
+      return (
+        <Button
+          asChild
+          size={primary ? "default" : "sm"}
+          variant={primary ? "default" : "outline"}
+          className={TOUCH}
+        >
+          <Link href="/settings/payments">Add payment details first</Link>
+        </Button>
+      );
+    }
     return open === "ask" ? (
       <AskPanel
         panelProps={panels.panel(`Ask ${clientFirstName} for ${amount}`)}
@@ -160,7 +177,7 @@ export function PaymentActions({
           primary={primary}
           compact
           copyLabel="Copy pay link"
-          whatsappLabel={`Send ${clientFirstName} the pay link on WhatsApp`}
+          whatsappLabel="Send this pay link on WhatsApp"
         />
       )}
       {open === "cancel" ? (

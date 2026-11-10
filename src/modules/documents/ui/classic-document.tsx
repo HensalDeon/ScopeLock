@@ -137,7 +137,7 @@ export function ClassicDocument({
           </section>
         )}
 
-        <footer className="mt-2 flex flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
+        <footer className="mt-2 flex [break-before:avoid] flex-wrap items-baseline justify-between gap-2 border-t border-[#e7e4dd] pt-5 text-xs text-[#6b6f78]">
           <p>
             {data.business.name}
             {data.business.email ? ` · ${data.business.email}` : ""}

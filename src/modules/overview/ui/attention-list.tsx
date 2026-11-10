@@ -77,6 +77,13 @@ export function AttentionList({
                 <span className="text-sm font-semibold tabular-nums">
                   {item.amount}
                 </span>
+                {item.action && (
+                  <Button asChild variant="outline" size="sm" className={TOUCH}>
+                    <Link href={item.action.href as Route}>
+                      {item.action.label}
+                    </Link>
+                  </Button>
+                )}
                 {item.remind && (
                   <Button asChild variant="outline" size="sm" className={TOUCH}>
                     <a

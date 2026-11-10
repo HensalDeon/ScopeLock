@@ -12,6 +12,7 @@ export {
 } from "./domain/methods";
 export {
   closedKeys,
+  lineBreakdown,
   type Payment,
   type ScheduleItem,
   type ScheduleState,

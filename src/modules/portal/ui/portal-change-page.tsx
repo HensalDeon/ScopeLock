@@ -108,6 +108,7 @@ export async function PortalChangePage({
           data={data}
           approved={change.status === "approved"}
           withdrawnBy={change.status === "withdrawn" ? businessName : null}
+          declined={change.status === "rejected"}
           acceptance={
             decision
               ? {

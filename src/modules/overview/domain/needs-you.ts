@@ -62,6 +62,9 @@ export function needsYou(
           : `${p.name} · add how you get paid before you ask ${who}`,
         amount: formatMoney(next.amount, p.currency),
         href: paymentsReady ? `/projects/${p.id}` : "/settings/payments",
+        action: paymentsReady
+          ? null
+          : { label: "Add payment details", href: "/settings/payments" },
         quote: null,
         remind: null,
       },

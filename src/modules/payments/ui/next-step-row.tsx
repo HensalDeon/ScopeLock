@@ -121,9 +121,10 @@ export function NextStepRow({
               compact
               copyLabel="Copy pay link"
               whatsappLabel={
+                // Names the payment: other rows may have pay links too.
                 reminder
-                  ? `Remind ${name} on WhatsApp`
-                  : `Send ${name} the pay link on WhatsApp`
+                  ? `Remind ${name} about ${money(item.payable)} on WhatsApp`
+                  : `Send ${name} the ${money(item.payable)} pay link on WhatsApp`
               }
             />
           </div>

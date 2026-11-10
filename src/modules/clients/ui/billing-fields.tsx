@@ -175,6 +175,13 @@ export function BillingFields({
       >
         {outcome}
       </p>
+      {!isIndia(values.country) && /\b\d{6}\b/.test(values.address) && (
+        <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
+          This address has an Indian PIN code, but {who} is in{" "}
+          {values.country.trim()}. Invoices print it under &ldquo;Billed
+          to&rdquo;, so update it to their address there.
+        </p>
+      )}
       {savedOutcome && savedOutcome !== outcome && (
         <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-pretty text-warning-ink">
           This changes how future invoices to {who} are taxed. Invoices already

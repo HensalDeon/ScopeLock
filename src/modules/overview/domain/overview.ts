@@ -99,6 +99,8 @@ export type AttentionItem = {
   remind: string | null;
   /** "Send on WhatsApp" the first days, "Remind" after (isReminder). */
   remindLabel?: string;
+  /** An in-app next action ("Add payment details"). */
+  action?: { label: string; href: string } | null;
 };
 
 export const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
