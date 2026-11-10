@@ -14,45 +14,64 @@ const NAV = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background">
-      <Container className="flex h-16 items-center justify-between gap-6">
-        <Link
-          href="/"
-          aria-label={`${site.name} home`}
-          className={cn("rounded-md", TOUCH_LINK)}
-        >
-          <Logo className="text-[19px]" />
-        </Link>
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+    <>
+      <header className="sticky top-0 z-40 border-b bg-background">
+        <Container className="flex h-16 items-center justify-between gap-6">
+          <Link
+            href="/"
+            aria-label={`${site.name} home`}
+            className={cn("rounded-md", TOUCH_LINK)}
+          >
+            <Logo className="text-[19px]" />
+          </Link>
+          <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link
+              href="/sign-in"
+              className={cn(
+                "rounded-md px-3 py-2 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
+                TOUCH_LINK,
+              )}
+            >
+              Sign in
+            </Link>
+            <Button asChild variant="outline" className={TOUCH}>
+              <Link href="/sign-up">
+                <span className="sm:hidden">Sign up free</span>
+                <span className="max-sm:hidden">Create free account</span>
+              </Link>
+            </Button>
+          </div>
+        </Container>
+      </header>
+      {/* Phones: the sections as a row under the header (not sticky). */}
+      <nav aria-label="Sections" className="border-b md:hidden">
+        <Container className="flex gap-1 max-sm:px-3">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "rounded-md px-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+                TOUCH_LINK,
+              )}
             >
               {item.label}
             </Link>
           ))}
-        </nav>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <Link
-            href="/sign-in"
-            className={cn(
-              "rounded-md px-3 py-2 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
-              TOUCH_LINK,
-            )}
-          >
-            Sign in
-          </Link>
-          <Button asChild variant="outline" className={TOUCH}>
-            <Link href="/sign-up">
-              <span className="sm:hidden">Sign up free</span>
-              <span className="max-sm:hidden">Create free account</span>
-            </Link>
-          </Button>
-        </div>
-      </Container>
-    </header>
+        </Container>
+      </nav>
+    </>
   );
 }
 
@@ -109,12 +128,14 @@ export function SiteFooter() {
           </div>
         ))}
       </Container>
-      <Container className="flex flex-wrap items-center justify-between gap-3 border-t py-6 text-[13px] text-muted-foreground">
-        <p>
-          © {legal.copyrightYear}{" "}
-          {isPlaceholder(legal.businessName) ? site.name : legal.businessName}
-        </p>
-        <p>Prices in Indian rupees. GST extra where applicable.</p>
+      <Container>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t py-6 text-[13px] text-muted-foreground">
+          <p>
+            © {legal.copyrightYear}{" "}
+            {isPlaceholder(legal.businessName) ? site.name : legal.businessName}
+          </p>
+          <p>Prices in Indian rupees. GST extra where applicable.</p>
+        </div>
       </Container>
     </footer>
   );

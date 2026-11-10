@@ -38,9 +38,9 @@ export function SmallRequests() {
                 </>
               }
             >
-              <div className="grid gap-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <Bubble>&ldquo;{a.ask}&rdquo;</Bubble>
-                <span className="pl-1 text-[12px] text-muted-foreground">
+                <span className="text-[12px] text-muted-foreground">
                   {a.note}
                 </span>
               </div>

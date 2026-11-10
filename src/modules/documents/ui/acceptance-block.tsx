@@ -25,7 +25,7 @@ export function AcceptanceBlock({
 }) {
   // A record carries the full date, year included.
   const when = (d: Date) =>
-    `${formatDate(d, { withYear: true })}, ${formatDateTime(d).split(", ").at(-1)}`;
+    `${formatDate(d, { withYear: true })}, ${formatDateTime(d, { now: d }).split(", ").at(-1)}`;
   return (
     <section
       aria-label="Client's answer"

@@ -5,11 +5,12 @@ import {
   sampleProposal,
   STARTER_PROPOSAL_DEFAULTS,
   type ChangeOrderData,
+  type DocumentAcceptance,
   type ProposalDocumentData,
 } from "@/modules/documents";
-import { minor } from "@/shared/lib/money";
+import { formatINR, minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
-import { STORY } from "../domain/story";
+import { rupees, STORY } from "../domain/story";
 
 /**
  * The story's proposal and change order, drawn by the same components the
@@ -32,6 +33,24 @@ const PROPOSAL: ProposalDocumentData = {
     new Date("2026-10-06T11:00:00+05:30"),
   ),
   reference: "P-007",
+  // The sections that carry the deal: what's included, the price, the
+  // 30/30/40 schedule. The rest of the sample proposal stays in Settings.
+  overview: null,
+  callout: null,
+  highlights: [],
+  timeline: [],
+  addons: [],
+  clientProvides: [],
+  exclusions: [],
+  terms: [],
+};
+
+const APPROVED: DocumentAcceptance = {
+  verdict: "Approved",
+  name: STORY.client,
+  email: STORY.clientEmail,
+  at: new Date("2026-10-07T18:05:00+05:30"),
+  comment: null,
 };
 
 const CHANGE_ORDER: ChangeOrderData = {
@@ -65,10 +84,7 @@ const CHANGE_ORDER: ChangeOrderData = {
   issuedOn: new Date("2026-10-28T15:19:00+05:30"),
 };
 
-/**
- * A sheet on the warm desk. The long proposal is cut off at the desk's edge
- * like a long page; the change order is short enough to show whole.
- */
+/** The warm desk a client document sits on. */
 function Desk({
   className,
   children,
@@ -79,7 +95,7 @@ function Desk({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl bg-[#ebe8e2] px-3 pt-4 max-sm:flex max-sm:justify-center sm:px-8 sm:pt-8",
+        "relative overflow-hidden rounded-xl bg-[#ebe8e2] p-3 sm:p-8",
         className,
       )}
     >
@@ -88,47 +104,137 @@ function Desk({
   );
 }
 
-// On phones the sheet keeps its A4 layout (640px) and is scaled down to
-// fit, so the whole page, money included, reads as one document.
+/** A real document, as a picture: described once, never read twice. */
+function Sheet({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div role="img" aria-label={label} data-nosnippet>
+      <div aria-hidden inert>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const SHEET =
-  "max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] max-sm:w-[640px] max-sm:[zoom:0.5] sm:rounded-[2px]";
+  "max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px]";
+/** Phones: the A4 layout scaled to half, inside "See the whole …". */
+const SHEET_SMALL = `${SHEET} w-[640px] [zoom:0.5]`;
+
+/**
+ * Phones read the money at full size; the whole sheet opens below it.
+ * Wider screens show the sheet itself.
+ */
+function PhoneSlip({
+  rows,
+  total,
+  note,
+  open,
+  children,
+}: {
+  rows: [string, string][];
+  total: [string, string];
+  note: string;
+  /** "See the whole proposal". */
+  open: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-3 sm:hidden">
+      <div className="rounded-xl bg-[#ebe8e2] p-3">
+        <dl className="rounded-[2px] bg-white px-4 py-3 text-[15px] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)]">
+          {rows.map(([k, v]) => (
+            <div
+              key={k}
+              className="flex items-baseline justify-between gap-4 border-b py-2"
+            >
+              <dt className="min-w-0">{k}</dt>
+              <dd className="tabular-nums">{v}</dd>
+            </div>
+          ))}
+          <div className="flex items-baseline justify-between gap-4 pt-3">
+            <dt className="font-semibold">{total[0]}</dt>
+            <dd className="text-[22px] font-semibold tabular-nums">
+              {total[1]}
+            </dd>
+          </div>
+          <p className="pt-1 text-[13px] text-muted-foreground">{note}</p>
+        </dl>
+      </div>
+      <details className="group">
+        <summary className="inline-flex min-h-11 cursor-pointer items-center text-[14px] font-medium underline underline-offset-4">
+          {open}
+        </summary>
+        <Desk className="mt-2 flex justify-center">{children}</Desk>
+      </details>
+    </div>
+  );
+}
 
 export function ProposalOnDesk() {
+  const label = `The proposal ${STORY.client} approved: ${STORY.pages.length} pages for ₹80,000, paid 30/30/40`;
+  const doc = (className: string) => (
+    <Sheet label={label}>
+      <ClassicDocument
+        data={PROPOSAL}
+        acceptance={APPROVED}
+        style={DEFAULT_DOCUMENT_STYLE}
+        titleAs="h2"
+        className={className}
+      />
+    </Sheet>
+  );
   return (
-    <Desk className="h-[30rem] sm:h-[42rem]">
-      <div
-        role="img"
-        aria-label={`The proposal ${STORY.client} approved: ${PROPOSAL.title}, ${STORY.pages.length} pages, ₹80,000 paid 30/30/40`}
+    <>
+      <PhoneSlip
+        rows={STORY.milestones.map((m) => [
+          `${m.name} ${m.percent}%`,
+          rupees(m.amount),
+        ])}
+        total={["Agreed", rupees(STORY.agreed)]}
+        note={`${STORY.pages.join(", ")}. Approved by ${STORY.client}, ${STORY.agreedOn}.`}
+        open="See the whole proposal"
       >
-        <div aria-hidden inert>
-          <ClassicDocument
-            data={PROPOSAL}
-            style={DEFAULT_DOCUMENT_STYLE}
-            titleAs="h2"
-            className={SHEET}
-          />
+        {doc(SHEET_SMALL)}
+      </PhoneSlip>
+      <Desk className="max-sm:hidden">
+        <div className="mx-auto w-[210mm] [zoom:0.5] md:[zoom:0.6] lg:[zoom:0.72]">
+          {doc(SHEET)}
         </div>
-      </div>
-    </Desk>
+      </Desk>
+    </>
   );
 }
 
 export function ChangeOrderOnDesk({ className }: { className?: string }) {
+  const c = STORY.change;
+  const label = `Change order ${c.label}: ${c.title}, ₹15,000, added to the ${c.billedWith} payment`;
+  const doc = (sheetClass: string) => (
+    <Sheet label={label}>
+      <ChangeOrderDocument
+        data={CHANGE_ORDER}
+        style={DEFAULT_DOCUMENT_STYLE}
+        titleAs="h2"
+        className={sheetClass}
+      />
+    </Sheet>
+  );
   return (
-    <Desk className={cn("pb-4 sm:pb-8", className)}>
-      <div
-        role="img"
-        aria-label={`Change order ${STORY.change.label}: ${STORY.change.title}, ₹15,000, added to the ${STORY.change.billedWith} payment`}
+    <div className={className}>
+      <PhoneSlip
+        rows={CHANGE_ORDER.items.map((i) => [i.title, formatINR(i.amount)])}
+        total={["This change", rupees(c.amount)]}
+        note={CHANGE_ORDER.billing}
+        open="See the whole change order"
       >
-        <div aria-hidden inert>
-          <ChangeOrderDocument
-            data={CHANGE_ORDER}
-            style={DEFAULT_DOCUMENT_STYLE}
-            titleAs="h2"
-            className={SHEET}
-          />
-        </div>
-      </div>
-    </Desk>
+        {doc(SHEET_SMALL)}
+      </PhoneSlip>
+      <Desk className="max-sm:hidden">{doc(SHEET)}</Desk>
+    </div>
   );
 }

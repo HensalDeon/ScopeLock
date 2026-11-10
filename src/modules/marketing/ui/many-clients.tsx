@@ -22,13 +22,13 @@ const CLIENTS: {
   due: boolean;
 }[] = [
   {
-    when: "3:42 pm",
+    when: "3 Nov",
     client: "Mehta Interiors",
     project: "Website, 5 pages",
-    status: "CR-001 approved",
+    status: "Paid in full",
     tone: "settled",
-    note: "Joins the Before launch payment",
-    amount: 15_000,
+    note: "₹80,000 agreed + ₹15,000 CR-001 · UPI",
+    amount: 95_000,
     waiting: false,
     due: false,
   },
@@ -49,7 +49,7 @@ const CLIENTS: {
     project: "Online store",
     status: "Payment due",
     tone: "waiting",
-    note: "Design approved, 30% · invoice sent",
+    note: "Design approved, 30%: ₹36,000 + 18% GST · invoice sent",
     amount: 42_480,
     waiting: false,
     due: true,
@@ -76,22 +76,30 @@ export function ManyClients() {
       <Container className="py-20 lg:py-28">
         <SectionHeading
           title="Every client, one list."
-          intro="A studio or an agency runs ten threads like Rahul's at once. The overview shows every change waiting for a yes and every payment due, across all your clients, and reminds them on WhatsApp in one tap."
+          intro="A studio or an agency runs ten threads like Rahul's at once. One workspace holds every client: the overview shows each change waiting for a yes and each payment due, and reminds clients on WhatsApp in one tap. Team logins are coming."
         />
         <Log
           className="mt-12"
           label="Example: several clients on one overview"
-          heads={["Updated", "Your clients", "Amount"]}
+          heads={["When", "Your clients", "Amount"]}
           footer={
-            <LogTotal label="Waiting on clients · due now">
-              <p className="flex items-baseline gap-3 tabular-nums sm:justify-end">
-                <span className="text-[16px] text-muted-foreground">
-                  {total((c) => c.waiting)}
-                </span>
-                <span className="text-[26px] leading-none font-semibold tracking-[-0.02em]">
-                  {total((c) => c.due)}
-                </span>
-              </p>
+            <LogTotal label="Across all clients">
+              <dl className="flex items-end gap-6 tabular-nums sm:justify-end">
+                <div>
+                  <dt className="text-[12px] text-muted-foreground">
+                    Waiting for a yes
+                  </dt>
+                  <dd className="text-[18px] font-semibold">
+                    {total((c) => c.waiting)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[12px] text-muted-foreground">Due now</dt>
+                  <dd className="text-[26px] leading-none font-semibold tracking-[-0.02em]">
+                    {total((c) => c.due)}
+                  </dd>
+                </div>
+              </dl>
             </LogTotal>
           }
         >

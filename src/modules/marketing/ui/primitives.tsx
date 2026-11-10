@@ -43,7 +43,7 @@ export function SectionHeading({
     <div
       className={cn(
         "grid gap-4",
-        intro && "lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-end lg:gap-16",
+        intro && "lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start lg:gap-16",
         className,
       )}
     >

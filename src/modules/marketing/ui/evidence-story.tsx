@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils";
 import { LogoMark } from "@/shared/ui/brand";
 import { rupees, STORY } from "../domain/story";
-import { Container, SectionHeading } from "./primitives";
+import { Container, DISPLAY, SectionHeading } from "./primitives";
 import { SignUpStart } from "./sign-up-start";
 import { Bubble } from "./thread-log";
 
@@ -79,7 +79,9 @@ export function Evidence() {
           </div>
         </div>
         <div className="mt-14 grid gap-5 border-t border-white/15 pt-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-12">
-          <p className="max-w-[34ch] text-[22px] leading-snug font-semibold text-pretty text-white">
+          <p
+            className={`${DISPLAY} max-w-[24ch] text-[30px] leading-[1.05] font-semibold text-white`}
+          >
             Keep a record like this for every extra your clients ask for.
           </p>
           <SignUpStart id="record-email" invert />

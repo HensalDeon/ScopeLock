@@ -95,6 +95,20 @@ typography:
   # Marketing site (Persuade): lead text and display steps. Headlines use
   # the marketing display face (Anek Latin, semi-condensed); body, figures and
   # the app stay in Geist.
+  marketing-step:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
+  marketing-section:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "36px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
   marketing-display:
     fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
     fontSize: "50px"
@@ -455,7 +469,7 @@ The landing page's signature: one client's chat kept as a ledger.
 
 - **Structure:** a 1px ink rule on top, mono column heads (Time · the project · Billed), then rows divided by hairlines: a mono time gutter (5.5rem; 3.25rem on phones), the entry in the middle, the billed figure right-aligned in tabular numerals. A canvas-grey row marks a new day; totals sit on a canvas-grey footer.
 - **Entries:** the client's lines are canvas bubbles; yours have an ink edge at 25%; a priced change request is an ink-edged 11px card with its CR number in mono and a status pill. Already agreed or never billed rows sit back in muted slate, never by lowering opacity.
-- **The one motion:** when CR-001's row is mostly in view, its "Waiting" pill gives way to "Approved" in one press (scale 1.45 → 0.94 → 1 with a brief blur, 460ms), then the old total is struck (320ms) and the new one settles up 8px (520ms), all on `cubic-bezier(0.16, 1, 0.3, 1)`. It runs once and never repeats. The page renders the approved state by default; a small inline script arms the waiting state and plays it, so without the script or with reduced motion the approved state simply shows.
+- **The one motion:** when CR-001's row is mostly in view, its "Waiting" pill gives way to "Approved" in one press (scale 1.45 → 0.94 → 1 with a brief blur, 460ms), then the old total is struck (320ms) and the new one settles up 8px (520ms), all on `cubic-bezier(0.16, 1, 0.3, 1)`. It runs once per visit, including after client-side navigation. Until it plays the row waits for Rahul; with reduced motion, or without JavaScript (a `noscript` rule), the approved state shows from the start.
 
 ### Client document
 

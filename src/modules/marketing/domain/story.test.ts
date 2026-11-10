@@ -21,8 +21,8 @@ describe("landing page story", () => {
     expect(extras[0]?.extra).toBe(STORY.change.amount);
   });
 
-  it("totals the free asks to ₹58,500", () => {
-    expect(FREE_ASKS).toHaveLength(6);
+  it("totals the ten free asks to ₹58,500", () => {
+    expect(FREE_ASKS).toHaveLength(10); // "ten small ones"
     expect(formatINR(neverBilled())).toBe("₹58,500");
   });
 });

@@ -127,7 +127,7 @@ export default function PricingPage() {
             title="Pays for itself with one approved change."
             intro="Start free on your next project. Pro and Agency are planned prices; paid plans aren't open yet, so everyone starts on Free. Prices in Indian rupees; GST extra where applicable."
           />
-          <RateCard className="mt-12" />
+          <RateCard className="mt-12" planHeading="h2" />
         </Container>
       </section>
 

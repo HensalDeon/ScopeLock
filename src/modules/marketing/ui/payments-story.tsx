@@ -7,7 +7,7 @@ import { rupees, STORY, storyTotal } from "../domain/story";
 export function PaymentLedger() {
   return (
     <div className="grid gap-8">
-      <div className="overflow-hidden rounded-xl border">
+      <div className="border-t border-foreground">
         <table className="w-full text-left text-[14px] sm:text-[15px]">
           <caption className="sr-only">
             Payments on {STORY.company}&apos;s website, with{" "}
@@ -15,7 +15,7 @@ export function PaymentLedger() {
           </caption>
           <thead>
             <tr className="border-b font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
-              <th scope="col" className="px-4 py-2.5 font-normal sm:px-5">
+              <th scope="col" className="py-2.5 pr-4 font-normal">
                 Payment
               </th>
               <th
@@ -24,10 +24,7 @@ export function PaymentLedger() {
               >
                 Paid by
               </th>
-              <th
-                scope="col"
-                className="px-4 py-2.5 text-right font-normal sm:px-5"
-              >
+              <th scope="col" className="py-2.5 pl-4 text-right font-normal">
                 Amount
               </th>
             </tr>
@@ -35,7 +32,7 @@ export function PaymentLedger() {
           <tbody>
             {STORY.milestones.map((m) => (
               <tr key={m.name} className="border-b align-top">
-                <td className="px-4 py-4 sm:px-5">
+                <td className="py-4 pr-4">
                   <p className="font-medium">
                     {m.name}{" "}
                     <span className="font-normal text-muted-foreground tabular-nums">
@@ -70,7 +67,7 @@ export function PaymentLedger() {
                     Received {m.paidOn}
                   </p>
                 </td>
-                <td className="px-4 py-4 text-right font-semibold tabular-nums sm:px-5">
+                <td className="py-4 pl-4 text-right font-semibold tabular-nums">
                   {rupees(m.amount + m.extra)}
                 </td>
               </tr>
@@ -78,13 +75,13 @@ export function PaymentLedger() {
           </tbody>
           <tfoot>
             <tr className="bg-canvas">
-              <td className="px-4 py-4 sm:px-5" colSpan={1}>
+              <td className="py-4 pr-4 pl-3" colSpan={1}>
                 <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
                   Project total · all received
                 </p>
               </td>
               <td className="hidden md:table-cell" />
-              <td className="px-4 py-4 text-right text-[22px] font-semibold tracking-[-0.02em] tabular-nums sm:px-5">
+              <td className="py-4 pr-3 pl-4 text-right text-[22px] font-semibold tracking-[-0.02em] tabular-nums">
                 {rupees(storyTotal())}
               </td>
             </tr>

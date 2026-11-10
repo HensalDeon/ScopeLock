@@ -315,23 +315,12 @@
 }
 
 /* ─── Landing page: the approval lands once ────────────────────────────────
-   By default (no script, reduced motion, client-side navigation) the hero
-   shows the approved state. A small inline script arms it (CR-001 waiting,
-   the old total standing) and plays it once when the row comes into view:
-   "Waiting" gives way to "Approved" in one press, the old total is struck
-   and the new one settles. */
+   CR-001 waits for Rahul until its row is mostly in view (ApprovalPlay sets
+   data-play), then "Waiting" gives way to "Approved" in one press, the old
+   total is struck and the new one settles. With reduced motion (or no
+   JavaScript, via a noscript rule) the approved state shows from the start. */
 .sl-wait {
   opacity: 0;
-}
-[data-arm] .sl-wait {
-  opacity: 1;
-}
-[data-arm] .sl-stamp,
-[data-arm] .sl-settle {
-  opacity: 0;
-}
-[data-arm] .sl-strike {
-  text-decoration-color: transparent;
 }
 .sl-strike {
   text-decoration-line: line-through;
@@ -340,17 +329,29 @@
 .sl-stamp {
   transform-origin: center;
 }
-[data-arm][data-play] .sl-wait {
-  animation: sl-wait-out 180ms ease-out 350ms both;
-}
-[data-arm][data-play] .sl-stamp {
-  animation: sl-stamp-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 400ms both;
-}
-[data-arm][data-play] .sl-strike {
-  animation: sl-strike 320ms ease-out 900ms both;
-}
-[data-arm][data-play] .sl-settle {
-  animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 1000ms both;
+@media (prefers-reduced-motion: no-preference) {
+  [data-approval-play]:not([data-play]) .sl-wait {
+    opacity: 1;
+  }
+  [data-approval-play]:not([data-play]) .sl-stamp,
+  [data-approval-play]:not([data-play]) .sl-settle {
+    opacity: 0;
+  }
+  [data-approval-play]:not([data-play]) .sl-strike {
+    text-decoration-color: transparent;
+  }
+  [data-play] .sl-wait {
+    animation: sl-wait-out 180ms ease-out 350ms both;
+  }
+  [data-play] .sl-stamp {
+    animation: sl-stamp-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 400ms both;
+  }
+  [data-play] .sl-strike {
+    animation: sl-strike 320ms ease-out 900ms both;
+  }
+  [data-play] .sl-settle {
+    animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 1000ms both;
+  }
 }
 @keyframes sl-wait-out {
   from {

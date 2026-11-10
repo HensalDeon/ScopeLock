@@ -59,18 +59,19 @@ export function FinalCta({ formId = "close-email" }: { formId?: string }) {
           label="Your next request"
           heads={["Time", "Your next project", "Amount"]}
         >
-          <LogRow time="Today" who="Your client">
-            <Bubble>Can you just add one more thing? Should be quick.</Bubble>
-          </LogRow>
           <LogRow
             time="Today"
-            who="You"
+            who="Your client"
             billed={
               <span className="text-muted-foreground">
-                {rupees(STORY.change.amount)}
+                + {rupees(STORY.change.amount)}
+                <span className="block text-[12px]">once you price it</span>
               </span>
             }
           >
+            <Bubble>Can you just add one more thing? Should be quick.</Bubble>
+          </LogRow>
+          <LogRow time="Today" who="You">
             <SignUpStart id={formId} />
           </LogRow>
         </Log>

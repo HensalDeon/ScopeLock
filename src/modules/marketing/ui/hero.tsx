@@ -1,5 +1,6 @@
 import { rupees, STORY, storyTotal } from "../domain/story";
 import { Container, DISPLAY } from "./primitives";
+import { ApprovalPlay } from "./approval-play";
 import { SignUpStart } from "./sign-up-start";
 import { Bubble, Log, LogDate, LogRow, LogTotal } from "./thread-log";
 
@@ -7,7 +8,7 @@ import { Bubble, Log, LogDate, LogRow, LogTotal } from "./thread-log";
  * The first screen: the question, then one client's thread kept as a log.
  * Rahul's two asks become CR-001; when that row comes into view its
  * "Waiting" gives way to "Approved" in one press and the total settles on
- * ₹95,000. Without the script (or with reduced motion) the page simply shows
+ * ₹95,000. Without JavaScript (or with reduced motion) the page simply shows
  * the approved state.
  */
 export function Hero() {
@@ -29,15 +30,13 @@ export function Hero() {
           </p>
         </div>
 
-        <div data-approval-play suppressHydrationWarning>
+        <ApprovalPlay>
           <Log
             className="mt-9 sm:mt-10"
             label={`${STORY.company}: a client's requests, priced and approved`}
             heads={["Time", `${STORY.company} · ${STORY.project}`, "Amount"]}
             footer={
-              <LogTotal
-                label={`Project total, with ${STORY.clientFirst}'s yes`}
-              >
+              <LogTotal label="Project total">
                 <p className="flex items-baseline gap-3 sm:justify-end">
                   <span className="sl-strike text-[16px] text-muted-foreground tabular-nums">
                     <span className="sr-only">was </span>
@@ -76,21 +75,13 @@ export function Hero() {
               <ChangeLine />
             </LogRow>
           </Log>
-        </div>
-        <script dangerouslySetInnerHTML={{ __html: PLAY_ON_VIEW }} />
+        </ApprovalPlay>
 
         <SignUpStart id="hero-email" className="mt-8" />
       </Container>
     </section>
   );
 }
-
-/**
- * Arms the approval (waiting state) before first paint and plays it once
- * when CR-001's row is mostly in view. Runs from the HTML as it loads; on
- * client-side navigation it doesn't run and the approved state shows.
- */
-const PLAY_ON_VIEW = `(function(){var s=document.currentScript,el=s&&s.previousElementSibling;if(!el||!("IntersectionObserver" in window)||matchMedia("(prefers-reduced-motion: reduce)").matches)return;var row=el.querySelector("[data-approval-row]");if(!row)return;el.setAttribute("data-arm","");var io=new IntersectionObserver(function(es){if(es[0].isIntersecting){el.setAttribute("data-play","");io.disconnect()}},{threshold:0.6});io.observe(row)})()`;
 
 /** CR-001 as it sits in the log: waiting, then approved in one press. */
 function ChangeLine() {

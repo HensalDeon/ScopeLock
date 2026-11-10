@@ -7,7 +7,14 @@ import { DISPLAY } from "./primitives";
  * The plans as a rate card: one ruled row per plan, the monthly price in the
  * figure column. Paid prices are planned (pricing opens at launch).
  */
-export function RateCard({ className }: { className?: string }) {
+export function RateCard({
+  className,
+  planHeading: Plan = "h3",
+}: {
+  className?: string;
+  /** "h2" when the card sits right under the page's h1 (/pricing). */
+  planHeading?: "h2" | "h3";
+}) {
   return (
     <div className={cn("border-t border-foreground", className)}>
       <div
@@ -25,11 +32,11 @@ export function RateCard({ className }: { className?: string }) {
             className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-3 border-b py-6 md:grid-cols-[13rem_minmax(0,1fr)_11rem]"
           >
             <div className="grid content-start gap-1">
-              <h3
+              <Plan
                 className={`${DISPLAY} text-[26px] leading-none font-semibold`}
               >
                 {plan.name}
-              </h3>
+              </Plan>
               <p className="text-[14px] text-pretty text-muted-foreground">
                 {plan.summary}
               </p>
