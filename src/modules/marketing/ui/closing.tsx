@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { planById, type Plan } from "@/modules/billing";
+import { coverage } from "../domain/pricing-copy";
 import { rupees, STORY } from "../domain/story";
 import { Faq, PRODUCT_FAQ } from "./faq";
 import { RateCard } from "./pricing";
@@ -6,15 +8,22 @@ import { Container, DISPLAY, SectionHeading } from "./primitives";
 import { SignUpStart } from "./sign-up-start";
 import { Bubble, Log, LogRow } from "./thread-log";
 
-export function PricingSection() {
+export function PricingSection({ plans }: { plans: readonly Plan[] }) {
+  const pro = planById(plans, "pro");
+  const covers = pro
+    ? coverage(STORY.change.amount * 100, pro.monthlyPrice)
+    : "";
+  const lead = covers
+    ? `Rahul's ${rupees(STORY.change.amount)} change alone would cover ${covers} of ${pro?.name}. `
+    : "";
   return (
     <section id="pricing" className="scroll-mt-16 border-b">
       <Container className="py-20 lg:py-28">
         <SectionHeading
           title="Pays for itself with one approved change."
-          intro={`Rahul's ${rupees(STORY.change.amount)} change alone would cover over two years of Pro. Paid plans open at launch; until then everyone starts on Free. Prices in rupees, GST extra where applicable.`}
+          intro={`${lead}Paid plans open at launch; until then everyone starts on Free. Prices in rupees, GST extra where applicable.`}
         />
-        <RateCard className="mt-12" />
+        <RateCard plans={plans} className="mt-12" />
         <Link
           href="/pricing"
           className="mt-6 inline-flex min-h-11 items-center text-[15px] font-medium underline underline-offset-4"

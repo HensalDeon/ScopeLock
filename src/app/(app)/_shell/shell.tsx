@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { canSeeAdmin } from "@/modules/admin/server";
 import { BUSINESS_TYPE_LABELS, BusinessInitials } from "@/modules/workspace";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { initialsOf } from "@/shared/lib/initials";
@@ -31,6 +32,7 @@ export async function Shell() {
         name={user.name}
         email={user.email}
         initials={initialsOf(user.name)}
+        admin={canSeeAdmin(user)}
       />
     </div>
   );

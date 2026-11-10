@@ -2,6 +2,8 @@ export { FaqSection, FinalCta, PricingSection } from "./ui/closing";
 export { Faq, type FaqItem } from "./ui/faq";
 export { Hero } from "./ui/hero";
 export { RateCard } from "./ui/pricing";
+export { ComparePlans } from "./ui/compare-plans";
+export { pricingDescription } from "./domain/pricing-copy";
 export { Container, DISPLAY, SectionHeading } from "./ui/primitives";
 export { ManyClients } from "./ui/many-clients";
 export { SiteFooter, SiteHeader } from "./ui/site-chrome";

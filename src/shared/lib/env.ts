@@ -68,6 +68,10 @@ const serverEnvSchema = z
     R2_ACCESS_KEY_ID: optional,
     R2_SECRET_ACCESS_KEY: optional,
     R2_BUCKET: optional,
+
+    // Platform admins: comma-separated emails that may open /admin (plans
+    // and prices). Their email must be confirmed. Unset = nobody.
+    ADMIN_EMAILS: optional,
   })
   .superRefine((e, ctx) => {
     if (e.NODE_ENV !== "production") return;

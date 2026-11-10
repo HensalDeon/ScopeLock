@@ -27,6 +27,11 @@ export const COLLECTIONS = {
   invoices: "invoices",
   requestLimits: "requestLimits",
   counters: "counters",
+  // Platform level (not per workspace): plans, their price history, and
+  // the admin audit log.
+  plans: "plans",
+  planPrices: "planPrices",
+  adminAudit: "adminAudit",
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

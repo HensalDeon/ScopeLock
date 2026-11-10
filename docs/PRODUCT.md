@@ -169,6 +169,7 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 - **Web security**
   - A strict content security policy, HTTPS enforced (HSTS), no framing by other sites (clickjacking protection), no content-type sniffing, and tight browser permissions.
   - Secrets live in the server environment, never in code or the database.
+- **Admin pages.** Plans and prices are edited from an admin page that only the confirmed emails listed in the server's environment can open, re-checked against the database on every page and save; anyone else gets the ordinary "page doesn't exist". Every change is written to a log that can't be edited, and every price a plan has had is kept.
 - **Money accuracy.** All amounts are stored as whole paise (or cents), never decimals, so totals and splits always add up exactly.
 
 ---
@@ -198,13 +199,13 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 
 ## 10. Pricing (planned, Phase 8)
 
-Not live yet; prices may change before launch.
+Not live yet; prices may change before launch. Plans (price, limits, what each unlocks, and the lines the pricing page lists) are managed from ScopeLock's admin page, and the landing and pricing pages always show the saved plans. These are the starting plans.
 
-| Plan       | Price          | For                                                   | Includes                                                                                                                                                |
-| ---------- | -------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Free**   | ₹0             | Trying it on your next project                        | 2 active projects, unlimited change requests, client approval links, payment tracking, WhatsApp and email reminders, revenue recovered on the overview  |
-| **Pro**    | ₹499 / month   | Freelancers and small studios with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, automatic payment reminders (coming), full project statements |
-| **Agency** | ₹1,999 / month | Studios and agencies                                  | 15 active projects, revenue recovered reports by client and month (coming), priority support, team members (coming)                                     |
+| Plan       | Price          | For                                                   | Includes                                                                                                                                                                                |
+| ---------- | -------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Free**   | ₹0             | Trying it on your next project                        | 2 active projects, unlimited change requests, client approval links, payment tracking, WhatsApp and email reminders, revenue recovered on the overview, change order and statement PDFs |
+| **Pro**    | ₹499 / month   | Freelancers and small studios with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, automatic payment reminders (coming)                                                          |
+| **Agency** | ₹1,999 / month | Studios and agencies                                  | 15 active projects, revenue recovered reports by client and month (coming), priority support, team members (coming)                                                                     |
 
 **The value in one line:** one recovered change request (₹15,000 in the demo story) pays for over two years of Pro.
 
@@ -228,19 +229,19 @@ Not live yet; prices may change before launch.
 
 ## 12. Roadmap
 
-| Phase | What                                                                                                                                                      | Status      |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| 0–1   | Foundation, accounts, workspace, marketing site                                                                                                           | Done        |
-| 2     | Clients and projects (scope, milestones)                                                                                                                  | Done        |
-| 3A    | Proposal content and document design (logo, cover, colours)                                                                                               | Done        |
-| 3B    | Client portal and signed baseline approval                                                                                                                | Done        |
-| 4     | Change requests, client history, signed versions                                                                                                          | Done        |
-| 5A    | Payments: UPI QR with amount, bank, links, "I've paid" with UTR and screenshot, confirmation, timeline-linked milestones                                  | Done        |
-| 5B    | Numbered invoices with optional GST, export under LUT, final statement, invoice page for clients                                                          | Done        |
-| 6     | PDFs of every document                                                                                                                                    | Done        |
-| 7     | Dashboard and polish; real use on my own client projects                                                                                                  | In progress |
-| 8     | Launch: plans and Razorpay, legal pages, domain, monitoring                                                                                               | Planned     |
-| Later | Automatic payment confirmation, WhatsApp capture (forward a message, get a draft CR), approver email codes, retainers, teams, more templates, e-invoicing | Ideas       |
+| Phase | What                                                                                                                                                      | Status  |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 0–1   | Foundation, accounts, workspace, marketing site                                                                                                           | Done    |
+| 2     | Clients and projects (scope, milestones)                                                                                                                  | Done    |
+| 3A    | Proposal content and document design (logo, cover, colours)                                                                                               | Done    |
+| 3B    | Client portal and signed baseline approval                                                                                                                | Done    |
+| 4     | Change requests, client history, signed versions                                                                                                          | Done    |
+| 5A    | Payments: UPI QR with amount, bank, links, "I've paid" with UTR and screenshot, confirmation, timeline-linked milestones                                  | Done    |
+| 5B    | Numbered invoices with optional GST, export under LUT, final statement, invoice page for clients                                                          | Done    |
+| 6     | PDFs of every document                                                                                                                                    | Done    |
+| 7     | Dashboard and polish (revenue recovered, reminders, PWA, QA)                                                                                              | Done    |
+| 8     | Launch: plans and Razorpay, legal pages, domain, monitoring                                                                                               | Planned |
+| Later | Automatic payment confirmation, WhatsApp capture (forward a message, get a draft CR), approver email codes, retainers, teams, more templates, e-invoicing | Ideas   |
 
 ---
 
