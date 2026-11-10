@@ -40,7 +40,7 @@ export const PLANS: readonly Plan[] = [
     id: "pro",
     name: "Pro",
     monthlyPrice: paise(49_900),
-    summary: "For freelancers with a full client list.",
+    summary: "For freelancers and small studios with a full client list.",
     activeProjects: 6,
     teamMembers: 1,
     features: [

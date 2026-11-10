@@ -85,8 +85,8 @@ export function SiteFooter() {
         <div className="grid content-start gap-3">
           <Logo className="text-lg" />
           <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Scope, change requests, approvals and payments for freelancers and
-            agencies. Made in India.
+            Scope, change requests, approvals and payments for freelancers,
+            studios and agencies. Made in India.
           </p>
         </div>
         {FOOTER_LINKS.map((group) => (

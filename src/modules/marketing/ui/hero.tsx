@@ -19,9 +19,10 @@ export function Hero() {
             How much extra work did you do last month without charging?
           </h1>
           <p className="max-w-[46ch] text-[18px] leading-relaxed text-pretty text-muted-foreground lg:pb-1.5">
-            ScopeLock records what your client agreed to, turns every &ldquo;can
-            you just add…&rdquo; into a priced change request, and gets it
-            approved before you start the work.
+            For freelancers, studios and agencies in India. ScopeLock records
+            what your client agreed to, turns every &ldquo;can you just
+            add…&rdquo; into a priced change request, and gets it approved
+            before you start the work.
           </p>
         </div>
 

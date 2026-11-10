@@ -19,15 +19,15 @@ import { STORY } from "../domain/story";
 
 const BUSINESS: ProposalDocumentData["business"] = {
   name: STORY.studio,
-  tagline: "Freelance web developer",
-  email: "asha@ashamenonstudio.in",
+  tagline: "Web design and development",
+  email: "hello@menon-studio.example",
   phone: null,
 };
 
 const PROPOSAL: ProposalDocumentData = {
   ...sampleProposal(
     BUSINESS,
-    "I",
+    "we",
     STARTER_PROPOSAL_DEFAULTS,
     new Date("2026-10-06T11:00:00+05:30"),
   ),
@@ -35,7 +35,7 @@ const PROPOSAL: ProposalDocumentData = {
 };
 
 const CHANGE_ORDER: ChangeOrderData = {
-  voice: "I",
+  voice: "we",
   business: BUSINESS,
   client: PROPOSAL.client,
   reference: STORY.change.label,

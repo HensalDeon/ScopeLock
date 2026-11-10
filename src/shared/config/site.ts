@@ -3,7 +3,7 @@ export const site = {
   name: "ScopeLock",
   tagline: "Stop doing extra work for free.",
   description:
-    "ScopeLock records what your client agreed to, turns every extra request into a priced change request, and gets it approved before you start. Built for freelancers and agencies in India.",
+    "ScopeLock records what your client agreed to, turns every extra request into a priced change request, and gets it approved before you start. Built for freelancers, studios and agencies in India.",
   /** Set APP_URL once the domain is bought; everything (metadata, sitemap, emails) follows. */
   url: process.env.APP_URL ?? "http://localhost:3000",
   // Keep in sync with src/shared/ui/brand/geometry.ts and globals.css (--brand, --brand-ink).

@@ -78,8 +78,8 @@ export default function OpenGraphImage() {
             Get paid for the extra work clients ask for.
           </div>
           <div style={{ fontSize: 26, color: muted, lineHeight: 1.35 }}>
-            Scope, change requests, approvals and payments for freelancers and
-            agencies.
+            Scope, change requests, approvals and payments for freelancers,
+            studios and agencies.
           </div>
         </div>
       </div>

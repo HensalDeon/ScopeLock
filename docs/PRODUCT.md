@@ -49,8 +49,14 @@ When the freelancer does ask for more money, there's no record of what was agree
 
 ## 3. Who it's for
 
-- **First:** Indian freelance developers and designers, and small studios of 2 to 10 people, building websites, apps and digital work for clients.
-- **Next:** agencies (10+ people). Team accounts are coming.
+Three audiences, of equal importance to the business:
+
+- **Freelancers:** Indian freelance developers and designers building websites, apps and digital work for clients.
+- **Studios:** small teams of 2 to 10 people doing the same work under a studio name.
+- **Agencies:** larger teams (10+ people) running many clients at once. Team members on one workspace are coming.
+
+Copy, pricing and examples speak to all three ("freelancers, studios and agencies"), never to freelancers first.
+
 - **The client** (the person who approves and pays) never needs an account: they get a link.
 
 **The person we picture:** Asha, a freelance web developer in Kochi. Her client is Rahul Mehta of Mehta Interiors. They agree a 5-page website for ₹80,000, paid 30/30/40. Two weeks in, Rahul asks for a blog and a WhatsApp chat button.
@@ -194,11 +200,11 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 
 Not live yet; prices may change before launch.
 
-| Plan       | Price          | For                                 | Includes                                                                                                                             |
-| ---------- | -------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Free**   | ₹0             | Trying it on your next project      | 2 active projects, unlimited change requests, client approval links, payment tracking                                                |
-| **Pro**    | ₹499 / month   | Freelancers with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, payment reminders, full project statements |
-| **Agency** | ₹1,999 / month | Studios and agencies                | 15 active projects, revenue-recovered reports, priority support, team members (coming)                                               |
+| Plan       | Price          | For                                                   | Includes                                                                                                                             |
+| ---------- | -------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Free**   | ₹0             | Trying it on your next project                        | 2 active projects, unlimited change requests, client approval links, payment tracking                                                |
+| **Pro**    | ₹499 / month   | Freelancers and small studios with a full client list | 6 active projects, your logo on client pages and PDFs, no ScopeLock branding for clients, payment reminders, full project statements |
+| **Agency** | ₹1,999 / month | Studios and agencies                                  | 15 active projects, revenue-recovered reports, priority support, team members (coming)                                               |
 
 **The value in one line:** one recovered change request (₹15,000 in the demo story) pays for over two years of Pro.
 

@@ -14,7 +14,7 @@ export const STORY = {
   studio: "Asha Menon Studio",
   client: "Rahul Mehta",
   clientFirst: "Rahul",
-  clientEmail: "rahul@mehtainteriors.in",
+  clientEmail: "rahul@mehta-interiors.example",
   company: "Mehta Interiors",
   project: "Website, 5 pages",
   pages: ["Home", "About", "Services", "Portfolio", "Contact"],

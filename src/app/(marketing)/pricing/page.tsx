@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "ScopeLock is free for 2 projects. Pro is ₹499 a month for freelancers, Agency is ₹1,999 a month for studios and agencies.",
+    "ScopeLock is free for 2 projects. Pro is ₹499 a month for freelancers and small studios, Agency is ₹1,999 a month for studios and agencies with more clients.",
   alternates: { canonical: "/pricing" },
 };
 

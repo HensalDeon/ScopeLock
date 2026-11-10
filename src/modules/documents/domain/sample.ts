@@ -20,7 +20,7 @@ export function sampleProposal(
     client: {
       name: "Rahul Mehta",
       company: "Mehta Interiors",
-      email: "rahul@mehtainteriors.in",
+      email: "rahul@mehta-interiors.example",
       phone: "+919876543210",
     },
     reference: "P-SAMPLE",

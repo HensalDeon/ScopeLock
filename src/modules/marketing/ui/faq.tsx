@@ -12,6 +12,10 @@ export const PRODUCT_FAQ: FaqItem[] = [
     a: "No. Clients pay you directly through your UPI ID, QR code, bank account or payment link. ScopeLock records what was paid and when. We never hold your money.",
   },
   {
+    q: "We're a studio, not a freelancer. Does it fit?",
+    a: "Yes. Set your workspace up as a studio or agency and your proposals and change orders go out under your studio's name, written as \"we\". Each client and project sits in the same workspace, with one shared view of what's approved, due and paid. Adding team members to a workspace is coming.",
+  },
+  {
     q: "What if my client says no to a change?",
     a: "Then you don't do that work, and the record shows they declined it. You can adjust the price or the scope and send it again. Either way, nobody is arguing about it three weeks later.",
   },
