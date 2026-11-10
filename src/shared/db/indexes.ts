@@ -46,8 +46,14 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
   [COLLECTIONS.changeRequests]: [
     // CR-001, CR-002… are unique within a project.
     { key: { workspaceId: 1, projectId: 1, number: 1 }, unique: true },
+    // The overview: open changes, and approved ones for "revenue recovered".
+    { key: { workspaceId: 1, status: 1, updatedAt: -1 } },
   ],
-  [COLLECTIONS.activity]: [{ key: { workspaceId: 1, projectId: 1, at: -1 } }],
+  [COLLECTIONS.activity]: [
+    { key: { workspaceId: 1, projectId: 1, at: -1 } },
+    // The overview: when each item was last reminded by email.
+    { key: { workspaceId: 1, type: 1, at: -1 } },
+  ],
   [COLLECTIONS.paymentSettings]: [{ key: { workspaceId: 1 }, unique: true }],
   [COLLECTIONS.payments]: [
     { key: { workspaceId: 1, projectId: 1, requestedAt: -1 } },

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { OfflineBanner } from "@/shared/pwa/offline-banner";
+import { RegisterServiceWorker } from "@/shared/pwa/register-sw";
 import { Shell, ShellSkeleton } from "./_shell/shell";
 import { VerifyEmailBanner } from "./_shell/verify-email-banner";
 
@@ -19,7 +21,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       <Suspense fallback={<ShellSkeleton />}>
         <Shell />
       </Suspense>
+      <RegisterServiceWorker />
       <div className="flex min-w-0 flex-1 flex-col">
+        <OfflineBanner />
         <Suspense fallback={null}>
           <VerifyEmailBanner />
         </Suspense>

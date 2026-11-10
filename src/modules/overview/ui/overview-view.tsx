@@ -3,6 +3,7 @@ import { formatMoney } from "@/shared/lib/money";
 import type { OverviewData } from "../server/queries";
 import { AttentionList } from "./attention-list";
 import { MoneyStrip } from "./money-strip";
+import { RecoveredStrip } from "./recovered-strip";
 import { SetupChecklist } from "./setup-checklist";
 import { SetupVisibility } from "./setup-visibility";
 
@@ -37,7 +38,10 @@ export function OverviewView({ data }: { data: OverviewData }) {
   return (
     <div className="grid gap-8">
       {!approved && checklist}
-      <MoneyStrip rows={data.money} />
+      <div className="grid gap-3">
+        <MoneyStrip rows={data.money} />
+        <RecoveredStrip rows={data.recovered} />
+      </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid gap-8">
           <AttentionList

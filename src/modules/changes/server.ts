@@ -5,6 +5,7 @@ import "server-only";
 
 export {
   getChangeOrNotFound,
+  listApprovedChangeTotals,
   listChanges,
   listOpenChanges,
 } from "./server/queries";

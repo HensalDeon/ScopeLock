@@ -1,6 +1,7 @@
 import { ChevronRight, MessageCircle } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
+import { EmailReminderButton } from "@/modules/reminders";
 import { Button } from "@/shared/ui/button";
 import { TOUCH } from "@/shared/ui/touch";
 import type { AttentionItem } from "../domain/overview";
@@ -83,6 +84,14 @@ export function AttentionList({
                       {item.action.label}
                     </Link>
                   </Button>
+                )}
+                {item.email && (
+                  <EmailReminderButton
+                    projectId={item.email.projectId}
+                    kind={item.email.kind}
+                    refId={item.email.ref}
+                    sentLabel={item.email.sentLabel}
+                  />
                 )}
                 {item.remind && (
                   <Button asChild variant="outline" size="sm" className={TOUCH}>

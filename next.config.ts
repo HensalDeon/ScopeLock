@@ -84,6 +84,20 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       {
+        // The service worker: always re-checked, so updates reach people.
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
+          },
+        ],
+      },
+      {
         // Client portal (Phase 3): secret-link pages. Never leak the token in
         // the Referer, never index, never cache in shared caches.
         source: "/c/:path*",

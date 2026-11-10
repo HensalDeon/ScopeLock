@@ -69,10 +69,10 @@ export async function countProjectsByClient(): Promise<Map<string, number>> {
 }
 
 export type ProjectSummaryWithClient = repo.ProjectSummary & {
-  client: Pick<Client, "name" | "phone"> | null;
+  client: Pick<Client, "name" | "phone" | "email"> | null;
 };
 
-/** Light rows for every live project, with client name and phone (overview). */
+/** Light rows for every live project, with client name, phone and email (overview). */
 export async function listProjectSummaries(): Promise<
   ProjectSummaryWithClient[]
 > {
@@ -85,7 +85,9 @@ export async function listProjectSummaries(): Promise<
     const client = clients.get(r.clientId);
     return {
       ...r,
-      client: client ? { name: client.name, phone: client.phone } : null,
+      client: client
+        ? { name: client.name, phone: client.phone, email: client.email }
+        : null,
     };
   });
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BUSINESS_TYPE_LABELS, BusinessInitials } from "@/modules/workspace";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { initialsOf } from "@/shared/lib/initials";
+import { InstallApp } from "@/shared/pwa/install-app";
 import { Logo } from "@/shared/ui/brand";
 import { MobileNav } from "./mobile-nav";
 import { NavLinks } from "./nav";
@@ -24,11 +25,14 @@ export async function Shell() {
   );
 
   const userMenu = (
-    <UserMenu
-      name={user.name}
-      email={user.email}
-      initials={initialsOf(user.name)}
-    />
+    <div className="grid gap-2">
+      <InstallApp />
+      <UserMenu
+        name={user.name}
+        email={user.email}
+        initials={initialsOf(user.name)}
+      />
+    </div>
   );
 
   return (

@@ -1,10 +1,15 @@
 import "server-only";
 import {
-  listRecentActivity,
   type ActivityItem,
+  listLastReminders,
+  listRecentActivity,
 } from "@/modules/activity/server";
 import { changeLabel } from "@/modules/changes";
-import { listChanges, listOpenChanges } from "@/modules/changes/server";
+import {
+  listApprovedChangeTotals,
+  listChanges,
+  listOpenChanges,
+} from "@/modules/changes/server";
 import { countClients } from "@/modules/clients/server";
 import { getInvoicing } from "@/modules/invoices/server";
 import { hasAnyMethod, nextStep, stillToAsk } from "@/modules/payments";
@@ -29,6 +34,7 @@ import {
   type ProjectMoneyFigures,
 } from "../domain/overview";
 import { needsYou } from "../domain/needs-you";
+import { revenueRecovered, type RecoveredTotals } from "../domain/recovered";
 import { setupSteps, type SetupStep } from "../domain/setup";
 import {
   dueByClient,
@@ -43,6 +49,8 @@ export type OverviewData = {
   setupHidden: boolean;
   hasProjects: boolean;
   money: CurrencyTotals[];
+  /** Approved change requests: this month and all time, per currency. */
+  recovered: RecoveredTotals[];
   waiting: AttentionItem[];
   needs: AttentionItem[];
   activity: (ActivityItem & {
@@ -61,6 +69,8 @@ export async function getOverview(): Promise<OverviewData> {
     { methods },
     invoicing,
     projects,
+    approvedChanges,
+    reminded,
   ] = await Promise.all([
     requireWorkspace(),
     countClients(),
@@ -70,6 +80,8 @@ export async function getOverview(): Promise<OverviewData> {
     getPaymentMethods(),
     getInvoicing(),
     listProjectSummaries().then(withMoney),
+    listApprovedChangeTotals(),
+    listLastReminders(),
   ]);
   const payments: OverviewPayment[] = owed.flatMap((p) =>
     p.status === "due" || p.status === "client_reported"
@@ -125,7 +137,15 @@ export async function getOverview(): Promise<OverviewData> {
     setupHidden: workspace.setupHidden,
     hasProjects: projects.length > 0,
     money: portfolioTotals(projects),
-    waiting: waitingOnClients(projects, open, links, new Date(), payments),
+    recovered: revenueRecovered(approvedChanges),
+    waiting: waitingOnClients(
+      projects,
+      open,
+      links,
+      new Date(),
+      payments,
+      reminded,
+    ),
     needs: needsYou(
       projects,
       open,

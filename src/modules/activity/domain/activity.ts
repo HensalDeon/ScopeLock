@@ -25,6 +25,8 @@ export const ACTIVITY_TYPES = [
   "payment.reported",
   "payment.confirmed",
   "payment.not_received",
+  // Yours only: an email reminder to the client (label: the reminder key).
+  "reminder.emailed",
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
@@ -167,6 +169,8 @@ export function describeActivity(
         `${who} confirmed the ${data.title} payment was received${amount}`,
         "done",
       );
+    case "reminder.emailed":
+      return line(`${who} emailed a reminder about ${data.title}`);
     case "payment.not_received":
       return line(
         `${who} marked the ${data.title} payment as not received yet`,

@@ -236,6 +236,23 @@ export async function findChangeStatuses(
 }
 
 /** Sent and draft CRs across the workspace (for the overview). */
+/** Approved change requests' value and date, for "revenue recovered". */
+export async function findApprovedChangeTotals(
+  workspaceId: string,
+): Promise<{ currency: CurrencyCode; total: number; approvedAt: Date }[]> {
+  const docs = await changes(workspaceId)
+    .find(
+      { status: "approved" },
+      { projection: { currency: 1, total: 1, "decision.at": 1 } },
+    )
+    .toArray();
+  return docs.flatMap((d) =>
+    d.decision
+      ? [{ currency: d.currency, total: d.total, approvedAt: d.decision.at }]
+      : [],
+  );
+}
+
 export async function findOpenChangeDocs(
   workspaceId: string,
 ): Promise<ChangeDoc[]> {
