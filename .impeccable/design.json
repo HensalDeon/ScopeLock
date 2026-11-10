@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-09T06:47:30+00:00",
+  "generatedAt": "2026-11-10T00:00:00+00:00",
   "title": "Design System: ScopeLock",
   "extensions": {
     "colorMeta": {
@@ -62,6 +62,21 @@
           "#f4faf7",
           "#fafdfb",
           "#fdfefe"
+        ]
+      },
+      "settled-ink": {
+        "role": "secondary",
+        "displayName": "Settled Ink",
+        "canonical": "#047857",
+        "tonalRamp": [
+          "#023627",
+          "#034e39",
+          "#03664a",
+          "#047857",
+          "#4fa089",
+          "#8ec2b3",
+          "#c8e1da",
+          "#ebf4f2"
         ]
       },
       "waiting-amber": {
@@ -258,32 +273,185 @@
           "#fbfaf9",
           "#fdfdfd"
         ]
+      },
+      "document-cover": {
+        "role": "neutral",
+        "displayName": "Document Cover",
+        "canonical": "#111318",
+        "tonalRamp": [
+          "#08090b",
+          "#0b0c10",
+          "#0e1014",
+          "#111318",
+          "#585a5d",
+          "#949597",
+          "#cbcbcc",
+          "#ececed"
+        ]
+      },
+      "cover-overlay": {
+        "role": "neutral",
+        "displayName": "Cover Overlay",
+        "canonical": "#0f1014",
+        "tonalRamp": [
+          "#070709",
+          "#0a0a0d",
+          "#0d0e11",
+          "#0f1014",
+          "#57585a",
+          "#939395",
+          "#cacacb",
+          "#ececec"
+        ]
+      },
+      "night-panel": {
+        "role": "neutral",
+        "displayName": "Night Panel",
+        "canonical": "#111a2c",
+        "tonalRamp": [
+          "#080c14",
+          "#0b111d",
+          "#0e1625",
+          "#111a2c",
+          "#585f6b",
+          "#9498a0",
+          "#cbcdd1",
+          "#ecedee"
+        ]
       }
     },
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Page titles."
+        "purpose": "Page titles (\"Overview\", project names)."
       },
       "figure": {
         "displayName": "Figure",
-        "purpose": "Headline money figures, tabular."
+        "purpose": "Headline money figures (overview cards, project total), tabular, right-aligned in a column."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Section and panel headings."
+        "purpose": "Section headings (\"Agreed scope\", \"Payments\") and panel titles."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Rows, descriptions, forms."
+        "purpose": "Rows, descriptions, form text; prose capped near 65ch."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Mono uppercase column heads and captions."
+        "purpose": "Mono uppercase column heads and card captions, 0.12-0.14em tracking."
       },
       "document-display": {
         "displayName": "Document display",
-        "purpose": "Serif titles and totals in client documents only."
+        "purpose": "Serif titles and the total investment figure inside client documents only."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Badges, meta under a row."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Compact UI text, document fine print, footers."
+      },
+      "code-digits": {
+        "displayName": "Code digits",
+        "purpose": "Sign-in code digits."
+      },
+      "showcase-figure": {
+        "displayName": "Showcase figure",
+        "purpose": "Auth showcase figures; the landing log's settled total."
+      },
+      "onboarding-title": {
+        "displayName": "Onboarding title",
+        "purpose": "Onboarding headings."
+      },
+      "marketing-lead": {
+        "displayName": "Marketing lead",
+        "purpose": "Marketing lead text (Persuade only)."
+      },
+      "hero-lead": {
+        "displayName": "Hero lead",
+        "purpose": "The landing hero's one-line lead (Persuade only)."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "The ScopeLock wordmark beside the mark."
+      },
+      "marketing-h2": {
+        "displayName": "Marketing h2",
+        "purpose": "Marketing section headings, narrow (Persuade only)."
+      },
+      "marketing-h2-wide": {
+        "displayName": "Marketing h2 wide",
+        "purpose": "Marketing section headings, wide (Persuade only)."
+      },
+      "legal-title": {
+        "displayName": "Legal title",
+        "purpose": "Legal page titles, narrow."
+      },
+      "legal-title-wide": {
+        "displayName": "Legal title wide",
+        "purpose": "Legal page titles, wide."
+      },
+      "hero": {
+        "displayName": "Hero",
+        "purpose": "Landing question at phone width (Persuade only)."
+      },
+      "hero-wide": {
+        "displayName": "Hero wide",
+        "purpose": "Landing question at sm (Persuade only)."
+      },
+      "hero-xl": {
+        "displayName": "Hero XL",
+        "purpose": "Landing question at lg (Persuade only)."
+      },
+      "document-h3": {
+        "displayName": "Document h3",
+        "purpose": "Serif h3 inside client documents."
+      },
+      "document-cover-line": {
+        "displayName": "Document cover line",
+        "purpose": "Serif line on a document cover."
+      },
+      "document-h2": {
+        "displayName": "Document h2",
+        "purpose": "Serif section heads in client documents."
+      },
+      "document-h2-wide": {
+        "displayName": "Document h2 wide",
+        "purpose": "Serif section heads, wide sheet."
+      },
+      "document-title-compact": {
+        "displayName": "Document title compact",
+        "purpose": "Change order's compact cover title."
+      },
+      "document-title": {
+        "displayName": "Document title",
+        "purpose": "Client document titles."
+      },
+      "document-figure": {
+        "displayName": "Document figure",
+        "purpose": "Serif figures in a document's investment box."
+      },
+      "document-title-wide": {
+        "displayName": "Document title wide",
+        "purpose": "Client document titles, wide sheet."
+      },
+      "email-body": {
+        "displayName": "Email body",
+        "purpose": "Inline email body; email apps ignore site CSS."
+      },
+      "email-title": {
+        "displayName": "Email title",
+        "purpose": "Inline email headings."
+      },
+      "email-mono": {
+        "displayName": "Email mono",
+        "purpose": "Inline email codes and references."
+      },
+      "email-figure": {
+        "displayName": "Email figure",
+        "purpose": "Inline email money figure."
       }
     },
     "shadows": [
@@ -291,6 +459,11 @@
         "name": "paper-sheet",
         "value": "0 10px 40px -20px rgba(0,0,0,0.35)",
         "purpose": "Client documents only (proposal, change request, invoice); removed for print."
+      },
+      {
+        "name": "menu",
+        "value": "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
+        "purpose": "Tailwind shadow-md / shadow-lg: dropdown menus and the mobile sheet only, as overlays."
       }
     ],
     "motion": [
@@ -300,9 +473,39 @@
         "purpose": "The Focus Lock loader: brackets snap in, core lands with a small overshoot."
       },
       {
+        "name": "duration-lock",
+        "value": "2.2s",
+        "purpose": "One Focus Lock loader cycle (snap, hold, release), infinite; reduced motion swaps it for a 1.6s opacity pulse."
+      },
+      {
         "name": "duration-state",
         "value": "150ms",
         "purpose": "Colour and background transitions on buttons, nav and fields."
+      },
+      {
+        "name": "ease-settle",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Landing approval motion: the Approved pill pressing in and the new total settling."
+      },
+      {
+        "name": "approval-wait-out",
+        "value": "180ms ease-out, 1100ms delay",
+        "purpose": "Landing only (.sl-wait): CR-001's Waiting pill fades out once."
+      },
+      {
+        "name": "approval-stamp",
+        "value": "460ms ease-settle, 1150ms delay",
+        "purpose": "Landing only (.sl-stamp): the Approved pill presses in once (scale 1.45 to 0.94 to 1, blur clears)."
+      },
+      {
+        "name": "approval-strike",
+        "value": "320ms ease-out, 1650ms delay",
+        "purpose": "Landing only (.sl-strike): the old total gets its strike line."
+      },
+      {
+        "name": "approval-settle",
+        "value": "520ms ease-settle, 1750ms delay",
+        "purpose": "Landing only (.sl-settle): the new total rises 8px into place. Runs once; under prefers-reduced-motion all four are off and the approved state shows."
       }
     ],
     "breakpoints": [
@@ -333,7 +536,7 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one next step on a view.",
+      "description": "The one next step on a view (at most one per view).",
       "html": "<button class=\"ds-btn-primary\">Ask for ₹33,984</button>",
       "css": ".ds-btn-primary{font:500 14px/1 Geist,system-ui,sans-serif;height:32px;padding:0 10px;border-radius:8px;border:1px solid transparent;background:#0b1220;color:#fff;cursor:pointer;transition:background .15s,transform .1s}.ds-btn-primary:hover{background:rgba(11,18,32,.8)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:none;border-color:#0e9f6e;box-shadow:0 0 0 3px rgba(14,159,110,.5)}"
     },
@@ -392,6 +595,22 @@
       "description": "Canvas sidebar, active item with emerald icon.",
       "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item is-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/></svg>Overview</a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 7h18v13H3zM3 7l3-3h6l2 3\"/></svg>Projects</a></nav>",
       "css": ".ds-nav{display:grid;gap:2px;width:220px;padding:12px;background:#f7f8fa}.ds-nav-item{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:6px;font:14px Geist,system-ui,sans-serif;color:#5a6475;text-decoration:none;transition:background .15s,color .15s}.ds-nav-item:hover{background:rgba(236,238,242,.7);color:#0b1220}.ds-nav-item.is-active{background:#eceef2;color:#0b1220;font-weight:500}.ds-nav-item.is-active svg{color:#0e9f6e}"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Cancel and remove actions: red text on a 10% red tint.",
+      "html": "<button class=\"ds-btn-destructive\">Cancel change request</button>",
+      "css": ".ds-btn-destructive{font:500 14px/1 Geist,system-ui,sans-serif;height:32px;padding:0 10px;border-radius:8px;border:1px solid transparent;background:rgba(200,55,45,.1);color:#c8372d;cursor:pointer;transition:background .15s}.ds-btn-destructive:hover{background:rgba(200,55,45,.2)}.ds-btn-destructive:focus-visible{outline:none;border-color:rgba(200,55,45,.4);box-shadow:0 0 0 3px rgba(200,55,45,.2)}"
+    },
+    {
+      "name": "Thread Log",
+      "kind": "custom",
+      "refersTo": "ledger-panel",
+      "description": "Landing page ledger: mono time gutter, entry, right-hand billed column, canvas footer; the approval lands once.",
+      "html": "<div class=\"ds-log\"><div class=\"ds-log-row ds-log-head\"><span>Time</span><span>Mehta Interiors · website</span><span class=\"ds-r\">Billed</span></div><div class=\"ds-log-row ds-ghost\"><span class=\"ds-t\">2 Oct</span><span>Agreed scope: 5 pages</span><span class=\"ds-r\">₹80,000</span></div><div class=\"ds-log-row\"><span class=\"ds-t\">3:12 pm</span><span><span class=\"ds-bubble\">Can you just add a blog?</span></span><span></span></div><div class=\"ds-log-row\"><span class=\"ds-t\">3:20 pm</span><span class=\"ds-cr\"><b><i>CR-001</i>Blog section</b><span class=\"ds-pill\"><span class=\"ds-dot\"></span>Approved 3:42 pm</span></span><span class=\"ds-r ds-strong\">+ ₹15,000</span></div><div class=\"ds-log-row ds-log-foot\"><span></span><span class=\"ds-lab\">Project total</span><span class=\"ds-r\"><s>₹80,000</s> <b class=\"ds-settle\">₹95,000</b></span></div></div>",
+      "css": ".ds-log{width:560px;border-top:1px solid #0b1220;font:15px/1.4 Geist,system-ui,sans-serif;color:#0b1220}.ds-log-row{display:grid;grid-template-columns:5.5rem minmax(0,1fr) 8rem;gap:0 20px;align-items:center;padding:12px 0;border-bottom:1px solid #e3e6eb}.ds-log-head,.ds-lab{font:11px Geist Mono,ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5a6475}.ds-log-head{padding:10px 0}.ds-t{font:12px Geist Mono,ui-monospace,monospace;color:#5a6475;font-variant-numeric:tabular-nums}.ds-r{text-align:right;font-variant-numeric:tabular-nums}.ds-ghost{color:#5a6475}.ds-strong{font-weight:600}.ds-bubble{display:inline-block;padding:10px 16px;border:1px solid #e3e6eb;border-radius:14px 14px 14px 4px;background:#f7f8fa}.ds-cr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;border:1px solid rgba(11,18,32,.8);border-radius:11px}.ds-cr b{font-weight:600}.ds-cr i{font:normal 11.5px Geist Mono,ui-monospace,monospace;color:#5a6475;margin-right:8px}.ds-pill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:9999px;background:#e6f5ee;font-size:12px;font-weight:500;animation:ds-stamp 460ms cubic-bezier(.16,1,.3,1) 600ms both}.ds-dot{width:6px;height:6px;border-radius:9999px;background:#0e9f6e}.ds-log-foot{background:#f7f8fa;padding:16px 0;border-bottom:0}.ds-log-foot s{font-size:16px;color:#5a6475;text-decoration-thickness:1.5px}.ds-settle{font-size:26px;line-height:1;font-weight:600;letter-spacing:-.02em;display:inline-block;animation:ds-settle 520ms cubic-bezier(.16,1,.3,1) 1100ms both}@keyframes ds-stamp{0%{opacity:0;transform:scale(1.45);filter:blur(3px)}55%{opacity:1;transform:scale(.94);filter:blur(0)}100%{opacity:1;transform:scale(1)}}@keyframes ds-settle{from{opacity:0;transform:translateY(8px)}}@media (prefers-reduced-motion:reduce){.ds-pill,.ds-settle{animation:none}}"
     }
   ],
   "narrative": {
@@ -418,7 +637,7 @@
       },
       {
         "name": "The Waiting Amber Rule",
-        "body": "Amber marks only things waiting on a person (the client or you), and always pairs a wash background with waiting ink text, never amber text on white.",
+        "body": "Amber marks only things waiting on a person (the client or you), and always pairs a wash background with waiting ink text, never amber text on white. History (activity timelines) never uses amber: past events are neutral, or emerald when something was settled.",
         "section": "colors"
       },
       {

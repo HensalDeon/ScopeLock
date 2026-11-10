@@ -31,7 +31,7 @@ export function SignUpStart({
           autoComplete="email"
           inputMode="email"
           placeholder="you@yourstudio.in"
-          className="h-12 text-[15px] sm:w-80 md:text-[15px]"
+          className="h-12 text-[15px] placeholder:text-muted-foreground sm:w-80 md:text-[15px]"
         />
         <Button type="submit" size="lg" className="h-12 px-6 text-[15px]">
           Create free account
