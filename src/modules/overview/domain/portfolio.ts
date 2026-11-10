@@ -86,13 +86,18 @@ export function portfolioTotals(
       r.draftProjects += 1;
     }
   }
-  return [...rows.values()].sort((a, b) =>
-    a.currency === "INR"
-      ? -1
-      : b.currency === "INR"
-        ? 1
-        : a.currency.localeCompare(b.currency),
-  );
+  return [...rows.values()].sort(byCurrencyOrder);
+}
+
+/** Rupees first, then the other currencies A–Z: the overview's one order. */
+export function byCurrencyOrder(
+  a: { currency: CurrencyCode },
+  b: { currency: CurrencyCode },
+): number {
+  if (a.currency === b.currency) return 0;
+  if (a.currency === "INR") return -1;
+  if (b.currency === "INR") return 1;
+  return a.currency.localeCompare(b.currency);
 }
 
 /**

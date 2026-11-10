@@ -235,24 +235,49 @@ export async function findChangeStatuses(
     .toArray();
 }
 
-/** Sent and draft CRs across the workspace (for the overview). */
 /** Approved change requests' value and date, for "revenue recovered". */
-export async function findApprovedChangeTotals(
-  workspaceId: string,
-): Promise<{ currency: CurrencyCode; total: number; approvedAt: Date }[]> {
+export async function findApprovedChangeTotals(workspaceId: string): Promise<
+  {
+    currency: CurrencyCode;
+    total: number;
+    approvedAt: Date;
+    projectId: string;
+    number: number;
+    title: string;
+  }[]
+> {
   const docs = await changes(workspaceId)
     .find(
       { status: "approved" },
-      { projection: { currency: 1, total: 1, "decision.at": 1 } },
+      {
+        projection: {
+          currency: 1,
+          total: 1,
+          "decision.at": 1,
+          projectId: 1,
+          number: 1,
+          title: 1,
+        },
+      },
     )
     .toArray();
   return docs.flatMap((d) =>
     d.decision
-      ? [{ currency: d.currency, total: d.total, approvedAt: d.decision.at }]
+      ? [
+          {
+            currency: d.currency,
+            total: d.total,
+            approvedAt: d.decision.at,
+            projectId: d.projectId.toHexString(),
+            number: d.number,
+            title: d.title,
+          },
+        ]
       : [],
   );
 }
 
+/** Sent and draft CRs across the workspace (for the overview). */
 export async function findOpenChangeDocs(
   workspaceId: string,
 ): Promise<ChangeDoc[]> {

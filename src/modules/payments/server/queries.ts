@@ -2,7 +2,8 @@ import "server-only";
 import type { ChangeRequest } from "@/modules/changes";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
-import { minor } from "@/shared/lib/money";
+import type { CurrencyCode } from "@/shared/lib/currency";
+import { minor, type Minor } from "@/shared/lib/money";
 import { signedUrls } from "@/shared/storage/r2";
 import type { PaymentMethods } from "../domain/methods";
 import type { Payment } from "../domain/payment";
@@ -62,5 +63,15 @@ export async function listOwedPayments(): Promise<Payment[]> {
   const { workspace } = await requireWorkspace();
   return (await repo.findOwedPaymentDocs(workspace.workspaceId)).map(
     repo.toPayment,
+  );
+}
+
+/** Change-request money received so far (before GST), for the overview. */
+export async function listReceivedChangeAmounts(): Promise<
+  { currency: CurrencyCode; amount: Minor }[]
+> {
+  const { workspace } = await requireWorkspace();
+  return (await repo.findReceivedChangeAmounts(workspace.workspaceId)).map(
+    (r) => ({ currency: r.currency, amount: minor(r.amount) }),
   );
 }

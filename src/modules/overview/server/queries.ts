@@ -17,6 +17,7 @@ import {
   getPaymentMethods,
   getProjectPayments,
   listOwedPayments,
+  listReceivedChangeAmounts,
 } from "@/modules/payments/server";
 import {
   findProjectWithClient,
@@ -35,7 +36,11 @@ import {
 } from "../domain/overview";
 import { nextReminderAt } from "@/modules/reminders";
 import { needsYou } from "../domain/needs-you";
-import { revenueRecovered, type RecoveredTotals } from "../domain/recovered";
+import {
+  latestApproved,
+  revenueRecovered,
+  type RecoveredTotals,
+} from "../domain/recovered";
 import { setupSteps, type SetupStep } from "../domain/setup";
 import {
   dueByClient,
@@ -52,6 +57,14 @@ export type OverviewData = {
   money: CurrencyTotals[];
   /** Approved change requests: this month and all time, per currency. */
   recovered: RecoveredTotals[];
+  /** The latest approved change, to name what "recovered" is made of. */
+  recoveredLatest: {
+    label: string;
+    title: string;
+    project: string;
+    href: string;
+    approvedAt: Date;
+  } | null;
   waiting: AttentionItem[];
   needs: AttentionItem[];
   activity: (ActivityItem & {
@@ -72,6 +85,7 @@ export async function getOverview(): Promise<OverviewData> {
     projects,
     approvedChanges,
     reminded,
+    receivedChanges,
   ] = await Promise.all([
     requireWorkspace(),
     countClients(),
@@ -83,6 +97,7 @@ export async function getOverview(): Promise<OverviewData> {
     listProjectSummaries().then(withMoney),
     listApprovedChangeTotals(),
     listLastReminders(),
+    listReceivedChangeAmounts(),
   ]);
   const payments: OverviewPayment[] = owed.flatMap((p) =>
     p.status === "due" || p.status === "client_reported"
@@ -138,7 +153,17 @@ export async function getOverview(): Promise<OverviewData> {
     setupHidden: workspace.setupHidden,
     hasProjects: projects.length > 0,
     money: portfolioTotals(projects),
-    recovered: revenueRecovered(approvedChanges),
+    recovered: revenueRecovered(approvedChanges, new Date(), receivedChanges),
+    recoveredLatest: ((latest) =>
+      latest
+        ? {
+            label: changeLabel(latest.number),
+            title: latest.title,
+            project: names.get(latest.projectId) ?? "a project",
+            href: `/projects/${latest.projectId}/changes/${latest.number}`,
+            approvedAt: latest.approvedAt,
+          }
+        : null)(latestApproved(approvedChanges)),
     waiting: waitingOnClients(
       projects,
       open,

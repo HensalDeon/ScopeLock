@@ -45,7 +45,14 @@ export async function listOpenChanges(): Promise<ChangeRequest[]> {
 
 /** Every approved change's value and date, for the overview's "recovered". */
 export async function listApprovedChangeTotals(): Promise<
-  { currency: CurrencyCode; total: Minor; approvedAt: Date }[]
+  {
+    currency: CurrencyCode;
+    total: Minor;
+    approvedAt: Date;
+    projectId: string;
+    number: number;
+    title: string;
+  }[]
 > {
   const { workspace } = await requireWorkspace();
   return (await repo.findApprovedChangeTotals(workspace.workspaceId)).map(

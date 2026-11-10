@@ -40,7 +40,11 @@ export function OverviewView({ data }: { data: OverviewData }) {
       {!approved && checklist}
       <div className="grid gap-3">
         <MoneyStrip rows={data.money} />
-        <RecoveredStrip rows={data.recovered} />
+        <RecoveredStrip
+          rows={data.recovered}
+          latest={data.recoveredLatest}
+          beforeGst={data.money.some((r) => r.tax > 0)}
+        />
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid gap-8">
@@ -105,6 +109,13 @@ export function OverviewSkeleton() {
             {bar("w-28", "bg-muted/70")}
           </div>
         ))}
+      </div>
+      <div className="-mt-5 flex items-center justify-between gap-6 rounded-xl border bg-background px-5 py-4">
+        <div className="grid gap-2">
+          {bar("w-32", "bg-muted/70")}
+          {bar("w-64", "bg-muted/50")}
+        </div>
+        <div className="h-5 w-24 rounded bg-muted" />
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid gap-3">

@@ -167,6 +167,26 @@ export async function findPaymentDoc(
   return payments(workspaceId).findOne({ _id: id, projectId });
 }
 
+/**
+ * Change-request money that has been received: the CR lines of confirmed
+ * payments (the work's value, before GST), for "revenue recovered".
+ */
+export async function findReceivedChangeAmounts(
+  workspaceId: string,
+): Promise<{ currency: CurrencyCode; amount: number }[]> {
+  const docs = await payments(workspaceId)
+    .find(
+      { status: "confirmed", "lines.kind": "change_request" },
+      { projection: { currency: 1, lines: 1 } },
+    )
+    .toArray();
+  return docs.flatMap((d) =>
+    d.lines
+      .filter((l) => l.kind === "change_request")
+      .map((l) => ({ currency: d.currency, amount: l.amount })),
+  );
+}
+
 /** Still owed across the workspace, oldest first (the overview). */
 export async function findOwedPaymentDocs(
   workspaceId: string,
