@@ -15,7 +15,7 @@ export function SmallRequests() {
         <Log
           className="mt-12"
           label="Requests from the last project, done for free"
-          heads={["Date", "Your last project, on WhatsApp", "Billed"]}
+          heads={["Date", "Your last project, on WhatsApp", "Amount"]}
           footer={
             <LogTotal label="Never billed">
               <p className="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums">

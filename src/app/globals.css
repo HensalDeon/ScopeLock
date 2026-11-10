@@ -5,6 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-display: var(--font-anek), var(--font-sans);
   --color-brand: var(--brand);
   --color-canvas: var(--canvas);
   --color-warning: var(--warning);
@@ -314,24 +315,42 @@
 }
 
 /* ─── Landing page: the approval lands once ────────────────────────────────
-   CR-001's "Waiting" gives way to "Approved" in one press, then the old
-   total is struck and the new one settles. Runs once on load; without
-   motion (or animation support) the page shows the approved state. */
+   By default (no script, reduced motion, client-side navigation) the hero
+   shows the approved state. A small inline script arms it (CR-001 waiting,
+   the old total standing) and plays it once when the row comes into view:
+   "Waiting" gives way to "Approved" in one press, the old total is struck
+   and the new one settles. */
 .sl-wait {
   opacity: 0;
-  animation: sl-wait-out 180ms ease-out 1100ms both;
 }
-.sl-stamp {
-  transform-origin: center;
-  animation: sl-stamp-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 1150ms both;
+[data-arm] .sl-wait {
+  opacity: 1;
+}
+[data-arm] .sl-stamp,
+[data-arm] .sl-settle {
+  opacity: 0;
+}
+[data-arm] .sl-strike {
+  text-decoration-color: transparent;
 }
 .sl-strike {
   text-decoration-line: line-through;
   text-decoration-thickness: 1.5px;
-  animation: sl-strike 320ms ease-out 1650ms both;
 }
-.sl-settle {
-  animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 1750ms both;
+.sl-stamp {
+  transform-origin: center;
+}
+[data-arm][data-play] .sl-wait {
+  animation: sl-wait-out 180ms ease-out 350ms both;
+}
+[data-arm][data-play] .sl-stamp {
+  animation: sl-stamp-in 460ms cubic-bezier(0.16, 1, 0.3, 1) 400ms both;
+}
+[data-arm][data-play] .sl-strike {
+  animation: sl-strike 320ms ease-out 900ms both;
+}
+[data-arm][data-play] .sl-settle {
+  animation: sl-settle 520ms cubic-bezier(0.16, 1, 0.3, 1) 1000ms both;
 }
 @keyframes sl-wait-out {
   from {
@@ -370,13 +389,9 @@
     opacity: 0;
     transform: translateY(8px);
   }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sl-wait,
-  .sl-stamp,
-  .sl-strike,
-  .sl-settle {
-    animation: none;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

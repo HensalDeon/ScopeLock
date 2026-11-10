@@ -37,3 +37,8 @@ export const legal = {
   lastUpdated: "4 November 2026",
   copyrightYear: 2026,
 } as const;
+
+/** A `legal` value not filled in yet ("[City]"): never shown on the site. */
+export function isPlaceholder(value: string): boolean {
+  return value.startsWith("[");
+}

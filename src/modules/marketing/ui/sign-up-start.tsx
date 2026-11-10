@@ -9,10 +9,13 @@ import { Input } from "@/shared/ui/input";
  */
 export function SignUpStart({
   id,
+  invert = false,
   className,
 }: {
   /** Unique per page: the form appears more than once. */
   id: string;
+  /** On the dark record band: white field and button. */
+  invert?: boolean;
   className?: string;
 }) {
   return (
@@ -31,13 +34,28 @@ export function SignUpStart({
           autoComplete="email"
           inputMode="email"
           placeholder="you@yourstudio.in"
-          className="h-12 text-[15px] placeholder:text-muted-foreground sm:w-80 md:text-[15px]"
+          className={cn(
+            "h-12 text-[15px] placeholder:text-muted-foreground sm:w-80 md:text-[15px]",
+            invert && "border-white/30 bg-white text-foreground dark:bg-white",
+          )}
         />
-        <Button type="submit" size="lg" className="h-12 px-6 text-[15px]">
+        <Button
+          type="submit"
+          size="lg"
+          className={cn(
+            "h-12 px-6 text-[15px]",
+            invert && "bg-white text-foreground hover:bg-white/85",
+          )}
+        >
           Create free account
         </Button>
       </Form>
-      <p className="text-sm text-muted-foreground">
+      <p
+        className={cn(
+          "text-sm",
+          invert ? "text-[#a3adbd]" : "text-muted-foreground",
+        )}
+      >
         Free for 2 projects. No card needed.
       </p>
     </div>

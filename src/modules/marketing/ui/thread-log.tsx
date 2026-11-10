@@ -102,7 +102,7 @@ export function LogRow({
 export function LogDate({ children }: { children: React.ReactNode }) {
   return (
     <li className={cn(ROW, "border-b bg-canvas py-2")}>
-      <span className="col-span-full font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase sm:col-span-1 sm:col-start-2">
+      <span className="col-span-full px-3 font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase sm:col-span-1 sm:col-start-2 sm:px-0">
         {children}
       </span>
     </li>

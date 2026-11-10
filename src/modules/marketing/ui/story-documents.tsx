@@ -65,7 +65,10 @@ const CHANGE_ORDER: ChangeOrderData = {
   issuedOn: new Date("2026-10-28T15:19:00+05:30"),
 };
 
-/** A sheet on the warm desk, cut off at the desk's edge like a long page. */
+/**
+ * A sheet on the warm desk. The long proposal is cut off at the desk's edge
+ * like a long page; the change order is short enough to show whole.
+ */
 function Desk({
   className,
   children,
@@ -76,7 +79,7 @@ function Desk({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl bg-[#ebe8e2] px-3 pt-3 sm:px-8 sm:pt-8",
+        "relative overflow-hidden rounded-xl bg-[#ebe8e2] px-3 pt-4 max-sm:flex max-sm:justify-center sm:px-8 sm:pt-8",
         className,
       )}
     >
@@ -85,12 +88,14 @@ function Desk({
   );
 }
 
+// On phones the sheet keeps its A4 layout (640px) and is scaled down to
+// fit, so the whole page, money included, reads as one document.
 const SHEET =
-  "max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px]";
+  "max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] max-sm:w-[640px] max-sm:[zoom:0.5] sm:rounded-[2px]";
 
 export function ProposalOnDesk() {
   return (
-    <Desk className="h-[34rem] sm:h-[42rem]">
+    <Desk className="h-[30rem] sm:h-[42rem]">
       <div
         role="img"
         aria-label={`The proposal ${STORY.client} approved: ${PROPOSAL.title}, ${STORY.pages.length} pages, ₹80,000 paid 30/30/40`}
@@ -110,7 +115,7 @@ export function ProposalOnDesk() {
 
 export function ChangeOrderOnDesk({ className }: { className?: string }) {
   return (
-    <Desk className={cn("h-[52rem] sm:h-[47rem]", className)}>
+    <Desk className={cn("pb-4 sm:pb-8", className)}>
       <div
         role="img"
         aria-label={`Change order ${STORY.change.label}: ${STORY.change.title}, ₹15,000, added to the ${STORY.change.billedWith} payment`}

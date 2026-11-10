@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { legal, site } from "@/shared/config/site";
+import { isPlaceholder, legal, site } from "@/shared/config/site";
 import { Logo } from "@/shared/ui/brand";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -34,7 +34,7 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/sign-in"
             className={cn(
@@ -44,12 +44,11 @@ export function SiteHeader() {
           >
             Sign in
           </Link>
-          <Button
-            asChild
-            variant="outline"
-            className={cn(TOUCH, "max-sm:hidden")}
-          >
-            <Link href="/sign-up">Create free account</Link>
+          <Button asChild variant="outline" className={TOUCH}>
+            <Link href="/sign-up">
+              <span className="sm:hidden">Sign up free</span>
+              <span className="max-sm:hidden">Create free account</span>
+            </Link>
           </Button>
         </div>
       </Container>
@@ -84,7 +83,7 @@ export function SiteFooter() {
       <Container className="grid gap-10 py-14 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-3">
           <Logo className="text-lg" />
-          <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+          <p className="max-w-sm text-sm leading-relaxed text-pretty text-muted-foreground">
             Scope, change requests, approvals and payments for freelancers,
             studios and agencies. Made in India.
           </p>
@@ -112,7 +111,8 @@ export function SiteFooter() {
       </Container>
       <Container className="flex flex-wrap items-center justify-between gap-3 border-t py-6 text-[13px] text-muted-foreground">
         <p>
-          © {legal.copyrightYear} {legal.businessName}
+          © {legal.copyrightYear}{" "}
+          {isPlaceholder(legal.businessName) ? site.name : legal.businessName}
         </p>
         <p>Prices in Indian rupees. GST extra where applicable.</p>
       </Container>

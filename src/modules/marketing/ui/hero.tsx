@@ -1,13 +1,14 @@
 import { rupees, STORY, storyTotal } from "../domain/story";
-import { Container } from "./primitives";
+import { Container, DISPLAY } from "./primitives";
 import { SignUpStart } from "./sign-up-start";
 import { Bubble, Log, LogDate, LogRow, LogTotal } from "./thread-log";
 
 /**
  * The first screen: the question, then one client's thread kept as a log.
- * Rahul's two asks become CR-001; on first view its "Waiting" gives way to
- * "Approved" in one press and the total settles on ₹95,000. Without motion,
- * the page simply shows the approved state.
+ * Rahul's two asks become CR-001; when that row comes into view its
+ * "Waiting" gives way to "Approved" in one press and the total settles on
+ * ₹95,000. Without the script (or with reduced motion) the page simply shows
+ * the approved state.
  */
 export function Hero() {
   const c = STORY.change;
@@ -15,7 +16,9 @@ export function Hero() {
     <section className="border-b">
       <Container className="pt-10 pb-12 sm:pt-12 lg:pb-14">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-end lg:gap-16">
-          <h1 className="max-w-[15ch] text-[40px] leading-[1.02] font-semibold tracking-[-0.04em] text-balance sm:max-w-none sm:text-[56px] lg:text-[62px]">
+          <h1
+            className={`${DISPLAY} max-w-[16ch] text-[46px] leading-[0.96] font-semibold sm:max-w-none sm:text-[64px] lg:text-[74px]`}
+          >
             How much extra work did you do last month without charging?
           </h1>
           <p className="max-w-[46ch] text-[18px] leading-relaxed text-pretty text-muted-foreground lg:pb-1.5">
@@ -26,50 +29,55 @@ export function Hero() {
           </p>
         </div>
 
-        <Log
-          className="mt-9 sm:mt-10"
-          label={`${STORY.company}: a client's requests, priced and approved`}
-          heads={["Time", `${STORY.company} · ${STORY.project}`, "Billed"]}
-          footer={
-            <LogTotal label={`Project total, with ${STORY.clientFirst}'s yes`}>
-              <p className="flex items-baseline gap-3 sm:justify-end">
-                <span className="sl-strike text-[16px] text-muted-foreground tabular-nums">
-                  <span className="sr-only">was </span>
-                  {rupees(STORY.agreed)}
-                </span>
-                <span className="sl-settle text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums">
-                  <span className="sr-only">now </span>
-                  {rupees(storyTotal())}
-                </span>
+        <div data-approval-play suppressHydrationWarning>
+          <Log
+            className="mt-9 sm:mt-10"
+            label={`${STORY.company}: a client's requests, priced and approved`}
+            heads={["Time", `${STORY.company} · ${STORY.project}`, "Amount"]}
+            footer={
+              <LogTotal
+                label={`Project total, with ${STORY.clientFirst}'s yes`}
+              >
+                <p className="flex items-baseline gap-3 sm:justify-end">
+                  <span className="sl-strike text-[16px] text-muted-foreground tabular-nums">
+                    <span className="sr-only">was </span>
+                    {rupees(STORY.agreed)}
+                  </span>
+                  <span className="sl-settle text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums">
+                    <span className="sr-only">now </span>
+                    {rupees(storyTotal())}
+                  </span>
+                </p>
+              </LogTotal>
+            }
+          >
+            <LogRow
+              time={STORY.agreedOn}
+              who="Agreed scope"
+              ghost
+              billed={rupees(STORY.agreed)}
+            >
+              <p className="text-[15px] text-pretty sm:text-[16px]">
+                {STORY.pages.join(", ")}. Paid 30/30/40.
               </p>
-            </LogTotal>
-          }
-        >
-          <LogRow
-            time={STORY.agreedOn}
-            who="Agreed scope"
-            ghost
-            billed={rupees(STORY.agreed)}
-          >
-            <p className="text-[15px] text-pretty sm:text-[16px]">
-              {STORY.pages.join(", ")}. Paid 30/30/40.
-            </p>
-          </LogRow>
-          <LogDate>{c.askedOn}</LogDate>
-          {STORY.asks.map((a) => (
-            <LogRow key={a.at} time={a.at} who={STORY.clientFirst}>
-              <Bubble>{a.text}</Bubble>
             </LogRow>
-          ))}
-          <LogRow
-            time={c.sentAt}
-            who="You"
-            strong
-            billed={`+ ${rupees(c.amount)}`}
-          >
-            <ChangeLine />
-          </LogRow>
-        </Log>
+            <LogDate>{c.askedOn}</LogDate>
+            {STORY.asks.map((a) => (
+              <LogRow key={a.at} time={a.at} who={STORY.clientFirst}>
+                <Bubble>{a.text}</Bubble>
+              </LogRow>
+            ))}
+            <LogRow
+              time={c.sentAt}
+              who="You"
+              strong
+              billed={`+ ${rupees(c.amount)}`}
+            >
+              <ChangeLine />
+            </LogRow>
+          </Log>
+        </div>
+        <script dangerouslySetInnerHTML={{ __html: PLAY_ON_VIEW }} />
 
         <SignUpStart id="hero-email" className="mt-8" />
       </Container>
@@ -77,11 +85,21 @@ export function Hero() {
   );
 }
 
+/**
+ * Arms the approval (waiting state) before first paint and plays it once
+ * when CR-001's row is mostly in view. Runs from the HTML as it loads; on
+ * client-side navigation it doesn't run and the approved state shows.
+ */
+const PLAY_ON_VIEW = `(function(){var s=document.currentScript,el=s&&s.previousElementSibling;if(!el||!("IntersectionObserver" in window)||matchMedia("(prefers-reduced-motion: reduce)").matches)return;var row=el.querySelector("[data-approval-row]");if(!row)return;el.setAttribute("data-arm","");var io=new IntersectionObserver(function(es){if(es[0].isIntersecting){el.setAttribute("data-play","");io.disconnect()}},{threshold:0.6});io.observe(row)})()`;
+
 /** CR-001 as it sits in the log: waiting, then approved in one press. */
 function ChangeLine() {
   const c = STORY.change;
   return (
-    <div className="flex max-w-[36rem] flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-foreground/80 bg-background px-4 py-3">
+    <div
+      data-approval-row
+      className="flex max-w-[36rem] flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-foreground/80 bg-background px-4 py-3"
+    >
       <p className="min-w-0 basis-full text-[15px] font-semibold sm:flex-1 sm:basis-auto sm:text-[16px]">
         <span className="mr-2 font-mono text-[11.5px] font-normal text-muted-foreground">
           {c.label}

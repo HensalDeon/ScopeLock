@@ -92,7 +92,16 @@ typography:
     fontSize: "28px"
     fontWeight: 600
     lineHeight: 1.2
-  # Marketing site (Persuade): lead text and display steps
+  # Marketing site (Persuade): lead text and display steps. Headlines use
+  # the marketing display face (Anek Latin, semi-condensed); body, figures and
+  # the app stay in Geist.
+  marketing-display:
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "50px"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
   marketing-lead:
     fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
     fontSize: "17px"
@@ -114,38 +123,41 @@ typography:
     fontWeight: 600
     lineHeight: 1.08
   legal-title:
-    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "34px"
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "38px"
     fontWeight: 600
-    lineHeight: 1.08
+    lineHeight: 1
   marketing-h2-wide:
     fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
     fontSize: "42px"
     fontWeight: 600
     lineHeight: 1.08
   legal-title-wide:
-    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "44px"
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "50px"
     fontWeight: 600
-    lineHeight: 1.08
+    lineHeight: 1
   hero:
-    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "40px"
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "46px"
     fontWeight: 600
-    lineHeight: 1.02
-    letterSpacing: "-0.04em"
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
   hero-wide:
-    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "56px"
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "64px"
     fontWeight: 600
-    lineHeight: 1.02
-    letterSpacing: "-0.04em"
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
   hero-xl:
-    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "62px"
+    fontFamily: "Anek Latin, Geist, ui-sans-serif, sans-serif"
+    fontSize: "74px"
     fontWeight: 600
-    lineHeight: 1.02
-    letterSpacing: "-0.04em"
+    lineHeight: 0.96
+    letterSpacing: "-0.01em"
+    fontVariation: "'wdth' 87.5"
   # Client documents (Cormorant Garamond), sized to the sheet
   document-h3:
     fontFamily: "Cormorant Garamond, Georgia, serif"
@@ -336,7 +348,7 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 
 ## Typography
 
-**Display Font:** Geist (with ui-sans-serif, system-ui)
+**Display Font:** Geist (with ui-sans-serif, system-ui) in the app; Anek Latin on the marketing site
 **Body Font:** Geist (with ui-sans-serif, system-ui)
 **Label/Mono Font:** Geist Mono (with ui-monospace)
 **Document Font:** Cormorant Garamond (with Georgia), client documents only
@@ -352,13 +364,15 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 - **Label** (400, 0.6875rem, uppercase, 0.12–0.14em tracking): mono column heads, card captions ("APPROVED WORK", "DRAFT", "LIVE PREVIEW").
 - **Document display** (Cormorant Garamond 600, about 2.4rem, 1.08): titles and the total investment figure inside client documents.
 - **Small steps:** caption 12px (badges, meta under a row) and small 13px (compact UI text, document fine print, footers).
-- **Marketing (Persuade only):** lead text 17px (hero lead 18px), section headings 32px → 42px wide, the hero 40px → 56px → 62px at -0.04em tracking, legal titles 34px → 44px, legal body text 15.5px at 1.7 line height (about 68 characters a line). These never appear inside the app.
+- **Marketing (Persuade only):** headlines in **Anek Latin** (by Ek Type, Mumbai) at 600, semi-condensed (`wdth` 87.5), -0.01em, line height about 1: the hero 46px → 64px → 74px, section headings 36px → 50px, step titles 30px → 36px. Legal titles 38px → 50px in the same face. Lead text stays Geist at 17px (hero lead 18px); legal body text 15.5px at 1.7 line height (about 68 characters a line). These never appear inside the app.
 - **Documents:** the serif steps scale with the sheet: h3 1.2rem, h2 1.55rem → 1.85rem wide, titles 2.1rem → 2.85rem wide (1.9rem on a change order's compact cover), figures 2.2–2.4rem. Accounts documents (invoice, statement) stay in Geist at body and small sizes.
 - **Email:** inline sizes 16px / 20px / 30px with Roboto and a system mono, because email apps ignore the site's CSS; the only place those fonts appear.
 
 ### Named Rules
 
 **The Tabular Figures Rule.** Every amount, count, date and reference number uses tabular numerals, so columns of money line up digit for digit.
+
+**The Marketing Voice Rule.** Anek Latin sets marketing headlines only (hero, section and step headings, plan names, legal titles). Body text, figures and every ₹ amount stay in Geist with tabular numerals, so money on the website matches money in the app. Never in the app.
 
 **The Serif Is For Signing Rule.** Cormorant Garamond appears only inside client-facing documents (proposal, change request, invoice cover). The app chrome never uses it.
 
@@ -441,7 +455,7 @@ The landing page's signature: one client's chat kept as a ledger.
 
 - **Structure:** a 1px ink rule on top, mono column heads (Time · the project · Billed), then rows divided by hairlines: a mono time gutter (5.5rem; 3.25rem on phones), the entry in the middle, the billed figure right-aligned in tabular numerals. A canvas-grey row marks a new day; totals sit on a canvas-grey footer.
 - **Entries:** the client's lines are canvas bubbles; yours have an ink edge at 25%; a priced change request is an ink-edged 11px card with its CR number in mono and a status pill. Already agreed or never billed rows sit back in muted slate, never by lowering opacity.
-- **The one motion:** on first view, CR-001's "Waiting" pill gives way to "Approved" in one press (scale 1.45 → 0.94 → 1 with a brief blur, 460ms), then the old total is struck (320ms) and the new one settles up 8px (520ms), all on `cubic-bezier(0.16, 1, 0.3, 1)` after a 1.1s pause. It runs once and never repeats; with reduced motion the approved state simply shows.
+- **The one motion:** when CR-001's row is mostly in view, its "Waiting" pill gives way to "Approved" in one press (scale 1.45 → 0.94 → 1 with a brief blur, 460ms), then the old total is struck (320ms) and the new one settles up 8px (520ms), all on `cubic-bezier(0.16, 1, 0.3, 1)`. It runs once and never repeats. The page renders the approved state by default; a small inline script arms the waiting state and plays it, so without the script or with reduced motion the approved state simply shows.
 
 ### Client document
 

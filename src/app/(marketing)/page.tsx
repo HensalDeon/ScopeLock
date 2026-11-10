@@ -6,6 +6,7 @@ import {
   FinalCta,
   Hero,
   HowItWorks,
+  ManyClients,
   PricingSection,
   SmallRequests,
 } from "@/modules/marketing";
@@ -46,6 +47,7 @@ export default function HomePage() {
       <Hero />
       <SmallRequests />
       <HowItWorks />
+      <ManyClients />
       <Evidence />
       <PricingSection />
       <FaqSection />

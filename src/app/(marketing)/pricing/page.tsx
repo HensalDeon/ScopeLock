@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { PLANS } from "@/modules/billing";
 import {
   Container,
+  DISPLAY,
   Faq,
   FinalCta,
   RateCard,
@@ -132,7 +133,7 @@ export default function PricingPage() {
 
       <section className="border-b bg-canvas">
         <Container className="py-16 sm:py-20">
-          <h2 className="text-2xl font-semibold tracking-[-0.02em]">
+          <h2 className={`${DISPLAY} text-[30px] leading-none font-semibold`}>
             Compare plans
           </h2>
           <div className="relative mt-8 overflow-x-auto rounded-xl border bg-background">

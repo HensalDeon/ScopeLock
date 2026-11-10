@@ -1,5 +1,12 @@
 import { cn } from "@/shared/lib/utils";
 
+/**
+ * The marketing display face (DESIGN.md marketing-display): Anek Latin,
+ * semi-condensed. Headlines only; body, figures and the app stay in Geist.
+ */
+export const DISPLAY =
+  "font-display [font-stretch:87.5%] tracking-[-0.01em] text-balance";
+
 export function Container({
   className,
   children,
@@ -42,7 +49,8 @@ export function SectionHeading({
     >
       <Heading
         className={cn(
-          "max-w-[20ch] text-[32px] leading-[1.08] font-semibold tracking-[-0.035em] text-balance sm:text-[42px]",
+          DISPLAY,
+          "max-w-[20ch] text-[36px] leading-[1] font-semibold sm:text-[50px]",
           invert && "text-white",
         )}
       >

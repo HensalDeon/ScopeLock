@@ -1,6 +1,7 @@
 import { PLANS } from "@/modules/billing";
 import { formatINR } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
+import { DISPLAY } from "./primitives";
 
 /**
  * The plans as a rate card: one ruled row per plan, the monthly price in the
@@ -24,7 +25,9 @@ export function RateCard({ className }: { className?: string }) {
             className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-3 border-b py-6 md:grid-cols-[13rem_minmax(0,1fr)_11rem]"
           >
             <div className="grid content-start gap-1">
-              <h3 className="text-[20px] font-semibold tracking-[-0.02em]">
+              <h3
+                className={`${DISPLAY} text-[26px] leading-none font-semibold`}
+              >
                 {plan.name}
               </h3>
               <p className="text-[14px] text-pretty text-muted-foreground">

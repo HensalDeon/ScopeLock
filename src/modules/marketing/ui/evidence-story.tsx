@@ -2,6 +2,7 @@ import { cn } from "@/shared/lib/utils";
 import { LogoMark } from "@/shared/ui/brand";
 import { rupees, STORY } from "../domain/story";
 import { Container, SectionHeading } from "./primitives";
+import { SignUpStart } from "./sign-up-start";
 import { Bubble } from "./thread-log";
 
 /** The last entry in the thread: the dispute, and the record that ends it. */
@@ -71,7 +72,17 @@ export function Evidence() {
                 </div>
               ))}
             </dl>
+            <p className="mt-4 border-t border-white/[0.07] pt-3 font-sans text-[13px] leading-relaxed text-[#a3adbd]">
+              The fingerprint changes if even one character of the record
+              changes, and ScopeLock checks it every time the record is opened.
+            </p>
           </div>
+        </div>
+        <div className="mt-14 grid gap-5 border-t border-white/15 pt-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-12">
+          <p className="max-w-[34ch] text-[22px] leading-snug font-semibold text-pretty text-white">
+            Keep a record like this for every extra your clients ask for.
+          </p>
+          <SignUpStart id="record-email" invert />
         </div>
       </Container>
     </section>

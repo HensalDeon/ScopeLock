@@ -1,7 +1,7 @@
 import { rupees, STORY, storyTotal } from "../domain/story";
 import { ClientApproval } from "./client-view";
 import { PaymentLedger } from "./payments-story";
-import { Container, SectionHeading } from "./primitives";
+import { Container, DISPLAY, SectionHeading } from "./primitives";
 import { ChangeOrderOnDesk, ProposalOnDesk } from "./story-documents";
 import { Bubble } from "./thread-log";
 
@@ -18,7 +18,7 @@ export function HowItWorks() {
           title="From “can you just add…” to paid, in four steps."
           intro="An example project, day by day. The proposal and change order below are the documents ScopeLock makes, as the client sees them."
         />
-        <ol className="mt-14 border-b">
+        <ol className="mt-14">
           <Day
             date={STORY.agreedOn}
             title="Lock the scope"
@@ -35,7 +35,7 @@ export function HowItWorks() {
               amount: `+ ${rupees(c.amount)}`,
               label: `${c.label}, sent`,
             }}
-            text="When a request comes in on WhatsApp, a call or email, log it with a price in under a minute. Your client gets a change order: what changed, what it costs, which payment it joins."
+            text="When a request comes in on WhatsApp, a call or email, log it with a price in under a minute. Each one gets a number (CR-001, CR-002…), and your client gets a change order: what changed, what it costs, which payment it joins."
           >
             <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
               <div className="grid content-start gap-2">
@@ -109,7 +109,9 @@ function Day({
         {time && <span className="block">{time}</span>}
       </p>
       <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_11rem] lg:gap-x-12">
-        <h3 className="text-[26px] leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-[30px]">
+        <h3
+          className={`${DISPLAY} text-[30px] leading-[1] font-semibold sm:text-[36px]`}
+        >
           {title}
         </h3>
         <p className="max-w-[58ch] text-[16px] leading-relaxed text-pretty text-muted-foreground lg:pt-1.5">
