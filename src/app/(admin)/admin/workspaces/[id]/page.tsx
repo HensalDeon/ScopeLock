@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ChangeLog } from "@/modules/admin";
 import { listAdminChanges, requireAdmin } from "@/modules/admin/server";
-import { WorkspacePlanForm } from "@/modules/billing";
+import { WorkspacePlanForm, workspacePlanState } from "@/modules/billing";
 import { getPlans, getWorkspacePlan } from "@/modules/billing/server";
 import { countActiveProjects } from "@/modules/projects/server";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
 import { findDirectoryEntry } from "@/shared/auth/directory";
-import { formatDate, formatDateTime } from "@/shared/lib/dates";
+import { formatDate } from "@/shared/lib/dates";
 import { parsePage } from "@/shared/lib/pagination";
 import { BackLink } from "@/shared/ui/back-link";
 import { ListSkeleton } from "@/shared/ui/list-states";
@@ -46,6 +46,7 @@ async function Workspace({
     countActiveProjects(id),
     listAdminChanges(parsePage((await searchParams).page), { href }),
   ]);
+  const state = workspacePlanState(subscription, plan, plans);
   const type =
     BUSINESS_TYPE_LABELS[
       entry.businessType as keyof typeof BUSINESS_TYPE_LABELS
@@ -88,24 +89,25 @@ async function Workspace({
       </Section>
       <Section
         title="Plan"
-        description="Until paid plans open, this is how a workspace gets Pro or Agency: beta users, friends, comps."
+        description="Set a plan by hand for beta users, friends and comps. This never charges anyone or changes a Razorpay subscription."
       >
         <div className="grid gap-6">
-          <p className="text-sm text-pretty">
-            On <span className="font-semibold">{plan.name}</span>
-            {subscription.setAt && subscription.setBy
-              ? `, set ${formatDateTime(subscription.setAt)} by ${subscription.setBy}`
-              : ", as every new workspace is"}
-            {subscription.note ? `. Reason: ${subscription.note}` : "."}
-          </p>
-          <WorkspacePlanForm
-            workspaceId={id}
-            workspaceName={entry.businessName}
-            current={plan.id}
-            savedNote={subscription.note}
-            activeProjects={active}
-            plans={plans}
-          />
+          <p className="text-sm text-pretty">{state.summary}</p>
+          {state.warning && (
+            <p className="text-sm text-pretty text-warning-ink">
+              {state.warning}
+            </p>
+          )}
+          {state.canSet && (
+            <WorkspacePlanForm
+              workspaceId={id}
+              workspaceName={entry.businessName}
+              current={plan.id}
+              savedNote={subscription.note}
+              activeProjects={active}
+              plans={plans}
+            />
+          )}
         </div>
       </Section>
       <Section
@@ -114,7 +116,8 @@ async function Workspace({
       >
         {history.total === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No changes yet. It has been on Free since it started.
+            No plan changes made here yet. Payments through Razorpay are in the
+            Razorpay dashboard.
           </p>
         ) : (
           <div className="grid gap-4">

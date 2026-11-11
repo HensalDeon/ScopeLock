@@ -60,18 +60,13 @@ export async function applyRazorpaySubscription(
     new Date(),
   );
   if (!next) return null;
-  // An older subscription's late event never overwrites a newer one.
-  if (
-    previous.source === "razorpay" &&
-    previous.razorpay &&
-    previous.razorpay.subscriptionId !== entity.id &&
-    (previous.razorpay.status === "active" ||
-      previous.razorpay.status === "authenticated" ||
-      previous.razorpay.status === "pending") &&
-    entity.status !== "active" &&
-    entity.status !== "authenticated"
-  )
-    return workspaceId;
+  // A late event from a subscription that's no longer the workspace's
+  // (replaced by a newer one, or by a plan an admin set by hand) never
+  // overwrites what's there now. Only a newly paid subscription does.
+  const ours = previous.razorpay?.subscriptionId === entity.id;
+  const starting =
+    entity.status === "active" || entity.status === "authenticated";
+  if (!ours && previous.source !== "free" && !starting) return workspaceId;
   await saveSubscription(workspaceId, next);
   return workspaceId;
 }

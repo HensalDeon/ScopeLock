@@ -29,3 +29,4 @@ export { PlansLedger } from "./ui/plans-ledger";
 export { PlanUsage } from "./ui/plan-usage";
 export { PriceHistory, type PriceEntry } from "./ui/price-history";
 export { WorkspacePlanForm } from "./ui/workspace-plan-form";
+export { workspacePlanState } from "./ui/workspace-plan-summary";

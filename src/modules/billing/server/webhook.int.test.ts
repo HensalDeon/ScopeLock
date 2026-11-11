@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hmacHex } from "../domain/razorpay";
 import { entitledPlanId } from "../domain/subscription";
 import { saveRazorpayPlanLink } from "./razorpay-plans";
-import { findSubscription } from "./subscriptions";
+import { findSubscription, saveSubscription } from "./subscriptions";
 import { handleRazorpayWebhook } from "./webhook";
 
 const secret = "whsec_test";
@@ -65,5 +65,32 @@ describe("Razorpay webhook", () => {
       await handleRazorpayWebhook({ ...ended, eventId: "evt_3", secret }),
     ).toMatchObject({ status: 200 });
     expect(entitledPlanId(await findSubscription(ws), new Date())).toBe("free");
+  });
+
+  it("never lets an old subscription's late event undo a plan an admin set", async () => {
+    const ws2 = "ws_razorpay_admin";
+    await saveRazorpayPlanLink("test", "agency", 199_900, "plan_test_agency");
+    await saveSubscription(ws2, {
+      planId: "agency",
+      source: "admin",
+      note: "Comp after cancelling",
+      setBy: "admin@scopelock.test",
+      setAt: new Date(),
+      razorpay: null,
+    });
+    const late = event("subscription.completed", {
+      id: "sub_old",
+      plan_id: "plan_test_agency",
+      status: "completed",
+      current_end: unix("2020-01-01T00:00:00Z"),
+      notes: { workspaceId: ws2 },
+    });
+    expect(
+      await handleRazorpayWebhook({ ...late, eventId: "evt_late", secret }),
+    ).toMatchObject({ status: 200 });
+    expect(await findSubscription(ws2)).toMatchObject({
+      planId: "agency",
+      source: "admin",
+    });
   });
 });
