@@ -20,7 +20,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   // Razorpay Checkout (paying for ScopeLock's own plans) loads its script
   // and opens its payment window in a frame.
-  `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   // Signed URLs from the private R2 bucket (logo, cover image).
   "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://cdn.razorpay.com",

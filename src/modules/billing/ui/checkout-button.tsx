@@ -100,7 +100,7 @@ export function CheckoutButton({
       });
       checkout.on("payment.failed", (r) =>
         setError(
-          `The payment didn't go through${r.error.description ? `: ${r.error.description}` : ""}. Nothing was charged; you can try again or pay another way.`,
+          `The payment didn't go through${r.error.description ? `: ${r.error.description.replace(/\.+$/, "")}` : ""}. Nothing was charged; you can try again or pay another way.`,
         ),
       );
       setStep("paying");

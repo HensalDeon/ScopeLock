@@ -17,6 +17,7 @@ export const PLATFORM_COLLECTIONS = {
   adminAudit: COLLECTIONS.adminAudit,
   subscriptions: COLLECTIONS.subscriptions,
   billingEvents: COLLECTIONS.billingEvents,
+  razorpayPlans: COLLECTIONS.razorpayPlans,
 } as const;
 
 export type PlatformCollection = keyof typeof PLATFORM_COLLECTIONS;

@@ -32,6 +32,8 @@ export const COLLECTIONS = {
   // workspace, managed by the platform, one per workspace).
   plans: "plans",
   subscriptions: "subscriptions",
+  // The Razorpay plan each price is sold as, per mode (test or live).
+  razorpayPlans: "razorpayPlans",
   // Razorpay webhook events already handled (one row per event id).
   billingEvents: "billingEvents",
   planPrices: "planPrices",

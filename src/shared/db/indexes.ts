@@ -101,13 +101,9 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     { key: { workspaceId: 1, clientId: 1, updatedAt: -1 } },
   ],
   // Platform level: a plan's price history, newest first; the admin log.
-  [COLLECTIONS.planPrices]: [
-    { key: { planId: 1, createdAt: -1 } },
-    {
-      key: { razorpayPlanId: 1 },
-      partialFilterExpression: { razorpayPlanId: { $type: "string" } },
-    },
-  ],
+  [COLLECTIONS.planPrices]: [{ key: { planId: 1, createdAt: -1 } }],
+  // Webhooks map Razorpay's plan id back to ours.
+  [COLLECTIONS.razorpayPlans]: [{ key: { razorpayPlanId: 1 } }],
   [COLLECTIONS.adminAudit]: [
     { key: { at: -1 } },
     { key: { action: 1, at: -1 } },

@@ -5,8 +5,12 @@ import {
   type RazorpaySubscriptionEntity,
 } from "../domain/razorpay";
 import type { Plan } from "../domain/plans";
-import { createRazorpayPlan } from "./razorpay";
-import * as repo from "./repository";
+import { createRazorpayPlan, razorpayMode } from "./razorpay";
+import {
+  findPlanIdForRazorpay,
+  findRazorpayPlanLink,
+  saveRazorpayPlanLink,
+} from "./razorpay-plans";
 import {
   findSubscription,
   findWorkspaceForRazorpay,
@@ -19,24 +23,16 @@ import {
  * the plan (and price) they signed up on.
  */
 export async function razorpayPlanFor(plan: Plan): Promise<string> {
-  const latest = await repo.findLatestPrice(plan.id);
-  if (latest?.monthlyPrice === plan.monthlyPrice && latest.razorpayPlanId)
-    return latest.razorpayPlanId;
+  const mode = razorpayMode();
+  const linked = await findRazorpayPlanLink(mode, plan.id, plan.monthlyPrice);
+  if (linked) return linked;
   const id = await createRazorpayPlan({
     name: `ScopeLock ${plan.name}`,
     amount: plan.monthlyPrice,
     description: plan.summary,
   });
-  if (latest?.monthlyPrice === plan.monthlyPrice) {
-    // Two people starting at once: keep whichever link landed first.
-    if (!(await repo.linkRazorpayPlan(latest.id, id))) {
-      const again = await repo.findLatestPrice(plan.id);
-      return again?.razorpayPlanId ?? id;
-    }
-  } else {
-    await repo.addLinkedPrice(plan.id, plan.monthlyPrice, id);
-  }
-  return id;
+  // Two people starting at once: whichever link landed first wins.
+  return saveRazorpayPlanLink(mode, plan.id, plan.monthlyPrice, id);
 }
 
 /**
@@ -55,7 +51,7 @@ export async function applyRazorpaySubscription(
     null;
   if (!workspaceId) return null;
   if (expectedWorkspaceId && workspaceId !== expectedWorkspaceId) return null;
-  const planId = await repo.findPlanIdForRazorpay(entity.plan_id);
+  const planId = await findPlanIdForRazorpay(entity.plan_id);
   const previous = await findSubscription(workspaceId);
   const next = subscriptionFromRazorpay(
     entity,

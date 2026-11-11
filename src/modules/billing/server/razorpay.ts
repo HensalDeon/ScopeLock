@@ -121,6 +121,11 @@ export async function changeRazorpayPlan(
   });
 }
 
+/** Test or live, from the key in use (their plans don't mix). */
+export function razorpayMode(): "test" | "live" {
+  return keys().id.startsWith("rzp_live_") ? "live" : "test";
+}
+
 /** The key id is public (Checkout needs it in the browser). */
 export function razorpayKeyId(): string {
   return keys().id;

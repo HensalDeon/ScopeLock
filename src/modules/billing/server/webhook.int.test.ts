@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hmacHex } from "../domain/razorpay";
 import { entitledPlanId } from "../domain/subscription";
-import { addLinkedPrice } from "./repository";
+import { saveRazorpayPlanLink } from "./razorpay-plans";
 import { findSubscription } from "./subscriptions";
 import { handleRazorpayWebhook } from "./webhook";
 
@@ -19,7 +19,7 @@ function event(type: string, entity: Record<string, unknown>) {
 
 describe("Razorpay webhook", () => {
   it("activates a paid plan once, rejects forgeries, and lapses after cancelling", async () => {
-    await addLinkedPrice("pro", 49_900, "plan_test_pro");
+    await saveRazorpayPlanLink("test", "pro", 49_900, "plan_test_pro");
     const sub = {
       id: "sub_test_1",
       plan_id: "plan_test_pro",
