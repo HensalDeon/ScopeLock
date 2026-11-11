@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAdmin, parseAdminEmails } from "./admins";
+import { isAdmin, isListedAdmin, parseAdminEmails } from "./admins";
 
 describe("parseAdminEmails", () => {
   it("reads a comma list, trimmed and lower-cased", () => {
@@ -26,5 +26,14 @@ describe("isAdmin", () => {
       false,
     );
     expect(isAdmin(null, admins)).toBe(false);
+  });
+});
+
+describe("isListedAdmin", () => {
+  it("matches a listed email whether or not it's confirmed yet", () => {
+    const admins = parseAdminEmails("admin@scopelock.test");
+    expect(isListedAdmin(" Admin@ScopeLock.test", admins)).toBe(true);
+    expect(isListedAdmin("someone@else.test", admins)).toBe(false);
+    expect(isListedAdmin(null, admins)).toBe(false);
   });
 });

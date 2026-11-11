@@ -1,12 +1,15 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
+import { isListedAdmin, parseAdminEmails } from "@/modules/admin";
 import { findDefaultWorkspaceId } from "@/shared/auth/membership";
 import { safeNextPath } from "@/shared/auth/redirect";
 import { auth } from "@/shared/auth/server";
+import { env } from "@/shared/lib/env";
 
 const AUTH_PAGES = new Set(["/sign-in", "/sign-up"]);
 const APP_HOME = "/dashboard";
 const ONBOARDING = "/onboarding";
+const ADMIN_HOME = "/admin";
 
 type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
 
@@ -16,7 +19,9 @@ type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
  *
  * - signed out                      → /sign-in?next=… (auth pages render)
  * - signed in, on sign-in/sign-up   → into the app
- * - signed in, no workspace yet     → /onboarding
+ * - signed in, no workspace yet     → /onboarding (an admin-only account,
+ *                                     one on ADMIN_EMAILS, goes to /admin:
+ *                                     it needs no business workspace)
  *
  * The session is read from Better Auth's signed cookie cache, so the usual
  * case costs no database call. Only a session without an active workspace
@@ -49,14 +54,19 @@ export async function proxy(request: NextRequest) {
 
   if (!session) return toSignIn(request);
   if (session.session.activeOrganizationId) return NextResponse.next();
-  return routeWithoutActiveWorkspace(request, session.user.id);
+  return routeWithoutActiveWorkspace(request, session.user);
 }
+
+/** On the admin list (the admin pages still check everything themselves). */
+const listedAdmin = (email: string) =>
+  isListedAdmin(email, parseAdminEmails(env().ADMIN_EMAILS));
 
 function destinationAfterAuth(
   request: NextRequest,
   session: NonNullable<Session>,
 ): string {
-  if (!session.session.activeOrganizationId) return ONBOARDING;
+  if (!session.session.activeOrganizationId)
+    return listedAdmin(session.user.email) ? ADMIN_HOME : ONBOARDING;
   return request.nextUrl.pathname === "/sign-in"
     ? safeNextPath(request.nextUrl.searchParams.get("next"), APP_HOME)
     : APP_HOME;
@@ -70,14 +80,17 @@ function destinationAfterAuth(
  */
 async function routeWithoutActiveWorkspace(
   request: NextRequest,
-  userId: string,
+  user: { id: string; email: string },
 ): Promise<NextResponse> {
+  const userId = user.id;
   const onOnboarding =
     request.nextUrl.pathname === ONBOARDING ||
     request.nextUrl.pathname.startsWith(`${ONBOARDING}/`);
   try {
     const workspaceId = await findDefaultWorkspaceId(userId);
     if (!workspaceId) {
+      // An admin-only account: the admin area, never a business to set up.
+      if (listedAdmin(user.email)) return redirectTo(request, ADMIN_HOME);
       return onOnboarding
         ? NextResponse.next()
         : redirectTo(request, ONBOARDING);

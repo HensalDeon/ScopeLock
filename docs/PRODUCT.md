@@ -169,7 +169,7 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 - **Web security**
   - A strict content security policy, HTTPS enforced (HSTS), no framing by other sites (clickjacking protection), no content-type sniffing, and tight browser permissions.
   - Secrets live in the server environment, never in code or the database.
-- **Admin pages.** Plans and prices are edited from an admin page that only the confirmed emails listed in the server's environment can open, re-checked against the database on every page and save; anyone else gets the ordinary "page doesn't exist". Every change is written to a log that can't be edited, and every price a plan has had is kept.
+- **Admin pages.** Plans and prices are edited from an admin page that only the confirmed emails listed in the server's environment can open, re-checked against the database on every page and save; anyone else gets the ordinary "page doesn't exist". An admin email can be used for admin alone, with no business workspace. Every change is written to a log that can't be edited, and every price a plan has had is kept.
 - **Paying for ScopeLock.** Plans are paid through Razorpay's own checkout, so card and UPI details never reach ScopeLock. A payment counts only once Razorpay's signature on it checks out, and every renewal, failed payment or cancellation Razorpay reports is verified the same way and applied once.
 - **Money accuracy.** All amounts are stored as whole paise (or cents), never decimals, so totals and splits always add up exactly.
 

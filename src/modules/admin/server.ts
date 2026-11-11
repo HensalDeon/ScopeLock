@@ -8,6 +8,8 @@ export {
   requireAdmin,
   isCurrentUserAdmin,
   canSeeAdmin,
+  getAdminAccess,
+  type AdminAccess,
   type AdminContext,
 } from "./server/access";
 export { adminAction } from "./server/action";
