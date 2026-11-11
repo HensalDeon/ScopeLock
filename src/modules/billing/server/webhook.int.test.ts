@@ -30,7 +30,12 @@ describe("Razorpay webhook", () => {
 
     const activated = event("subscription.activated", sub);
     expect(
-      await handleRazorpayWebhook({ ...activated, eventId: "evt_1", secret }),
+      await handleRazorpayWebhook({
+        ...activated,
+        eventId: "evt_1",
+        secret,
+        fetchLatest: async () => sub,
+      }),
     ).toEqual({ status: 200, body: "ok" });
     const saved = await findSubscription(ws);
     expect(saved).toMatchObject({ planId: "pro", source: "razorpay" });
@@ -38,7 +43,12 @@ describe("Razorpay webhook", () => {
 
     // The same event again is handled once.
     expect(
-      await handleRazorpayWebhook({ ...activated, eventId: "evt_1", secret }),
+      await handleRazorpayWebhook({
+        ...activated,
+        eventId: "evt_1",
+        secret,
+        fetchLatest: async () => sub,
+      }),
     ).toEqual({ status: 200, body: "already handled" });
 
     // A body that doesn't match its signature is refused.
@@ -62,7 +72,16 @@ describe("Razorpay webhook", () => {
       current_end: unix("2020-01-01T00:00:00Z"),
     });
     expect(
-      await handleRazorpayWebhook({ ...ended, eventId: "evt_3", secret }),
+      await handleRazorpayWebhook({
+        ...ended,
+        eventId: "evt_3",
+        secret,
+        fetchLatest: async () => ({
+          ...sub,
+          status: "cancelled",
+          current_end: unix("2020-01-01T00:00:00Z"),
+        }),
+      }),
     ).toMatchObject({ status: 200 });
     expect(entitledPlanId(await findSubscription(ws), new Date())).toBe("free");
   });
@@ -86,11 +105,52 @@ describe("Razorpay webhook", () => {
       notes: { workspaceId: ws2 },
     });
     expect(
-      await handleRazorpayWebhook({ ...late, eventId: "evt_late", secret }),
+      await handleRazorpayWebhook({
+        ...late,
+        eventId: "evt_late",
+        secret,
+        fetchLatest: async () => ({
+          id: "sub_old",
+          plan_id: "plan_test_agency",
+          status: "completed",
+          current_end: unix("2020-01-01T00:00:00Z"),
+          notes: { workspaceId: ws2 },
+        }),
+      }),
     ).toMatchObject({ status: 200 });
     expect(await findSubscription(ws2)).toMatchObject({
       planId: "agency",
       source: "admin",
+    });
+  });
+
+  it("keeps a plan an admin set back to Free when the old subscription reports in", async () => {
+    const ws3 = "ws_razorpay_free";
+    await saveSubscription(ws3, {
+      planId: "free",
+      source: "free",
+      note: "Refunded, back to Free",
+      setBy: "admin@scopelock.test",
+      setAt: new Date(),
+      razorpay: null,
+    });
+    const old = {
+      id: "sub_refunded",
+      plan_id: "plan_test_pro",
+      status: "cancelled",
+      current_end: unix("2099-01-01T00:00:00Z"),
+      notes: { workspaceId: ws3 },
+    };
+    const late = event("subscription.cancelled", old);
+    await handleRazorpayWebhook({
+      ...late,
+      eventId: "evt_free",
+      secret,
+      fetchLatest: async () => old,
+    });
+    expect(await findSubscription(ws3)).toMatchObject({
+      planId: "free",
+      note: "Refunded, back to Free",
     });
   });
 });

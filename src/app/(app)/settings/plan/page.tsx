@@ -25,16 +25,18 @@ export default function PlanSettingsPage() {
 async function PlanSettings() {
   const { workspace, user, role } = await requireWorkspace();
   const id = workspace.workspaceId;
-  const [{ plan, subscription }, plans, active] = await Promise.all([
-    getWorkspacePlan(id),
-    getPlans(),
-    countActiveProjects(id),
-  ]);
+  const [{ plan, subscription, chargedPrice }, plans, active] =
+    await Promise.all([
+      getWorkspacePlan(id),
+      getPlans(),
+      countActiveProjects(id),
+    ]);
   return (
     <PlanUsage
       plan={plan}
       plans={plans}
       subscription={subscription}
+      chargedPrice={chargedPrice}
       projects={projectUsage(plan, active)}
       billing={
         isBillingConfigured()

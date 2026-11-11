@@ -68,18 +68,33 @@ export const FREE_SUBSCRIPTION: Subscription = {
  */
 export function entitledPlanId(sub: Subscription, now: Date): PlanId {
   if (sub.source !== "razorpay" || !sub.razorpay) return sub.planId;
-  const { status, currentEnd } = sub.razorpay;
+  const { status, currentEnd, cancelAtCycleEnd } = sub.razorpay;
+  // Paid up to a date: once it's passed, a cancelled plan is over whatever
+  // a late event said about its status.
+  const paidUp = Boolean(currentEnd && currentEnd > now);
+  if (cancelAtCycleEnd) return paidUp ? sub.planId : "free";
   if (status === "authenticated" || status === "active" || status === "pending")
     return sub.planId;
   if (
     (status === "cancelled" ||
       status === "completed" ||
       status === "expired") &&
-    currentEnd &&
-    currentEnd > now
+    paidUp
   )
     return sub.planId;
   return "free";
+}
+
+/**
+ * Razorpay should have renewed or ended this by now (a webhook may have
+ * been missed): worth reading it again from Razorpay.
+ */
+export function needsResync(sub: Subscription, now: Date): boolean {
+  const rz = sub.source === "razorpay" ? sub.razorpay : null;
+  if (!rz?.currentEnd) return false;
+  const live = ["authenticated", "active", "pending"].includes(rz.status);
+  const overdue = now.getTime() - rz.currentEnd.getTime() > 2 * 86_400_000;
+  return live && overdue;
 }
 
 /** A Razorpay subscription that's still billing (can be switched or cancelled). */

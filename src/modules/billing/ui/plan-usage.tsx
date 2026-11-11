@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatINR } from "@/shared/lib/money";
+import { formatINR, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { Section } from "@/shared/ui/page";
 import { statesLimit } from "../domain/plan-lines";
@@ -19,19 +19,31 @@ const Soon = () => (
  * plan points to archiving a finished project.
  */
 export function PlanUsage({
-  plan,
-  plans,
+  plan: listedPlan,
+  plans: listedPlans,
   subscription,
   projects,
   billing,
+  chargedPrice = null,
 }: {
   plan: Plan;
   plans: readonly Plan[];
   subscription: Subscription;
   projects: Usage;
   billing: Billing;
+  /** What they're actually charged (their sign-up price), if paying. */
+  chargedPrice?: Minor | null;
 }) {
   const given = subscription.source === "admin";
+  // A subscriber keeps the price they signed up at: show that, not today's.
+  const listPrice = listedPlan.monthlyPrice;
+  const keptPrice =
+    chargedPrice != null && chargedPrice !== listPrice ? chargedPrice : null;
+  const plan =
+    keptPrice === null
+      ? listedPlan
+      : { ...listedPlan, monthlyPrice: keptPrice };
+  const plans = listedPlans.map((p) => (p.id === plan.id ? plan : p));
   const price = (p: Plan) => (
     <>
       <span className="font-semibold tabular-nums">
@@ -60,6 +72,12 @@ export function PlanUsage({
             {given && (
               <p className="text-sm text-pretty text-muted-foreground">
                 ScopeLock put your workspace on {plan.name}, free of charge.
+              </p>
+            )}
+            {keptPrice !== null && (
+              <p className="text-sm text-pretty text-muted-foreground">
+                You keep the price you subscribed at. {plan.name} is{" "}
+                {formatINR(listPrice)} a month for new subscribers.
               </p>
             )}
             <BillingStatus

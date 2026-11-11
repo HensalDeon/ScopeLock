@@ -9,6 +9,7 @@ import {
   planChange,
   type Subscription,
 } from "../domain/subscription";
+import { KeepPlanButton } from "./keep-plan-button";
 import { CheckoutLock, PlanAction, type Payer } from "./plan-checkout";
 
 const projectsWord = (n: number) => `active project${n === 1 ? "" : "s"}`;
@@ -42,13 +43,17 @@ export function PlanChanging({
   const given = subscription.source === "admin";
   const renewing = isRenewing(subscription);
   const end = subscription.razorpay?.currentEnd ?? null;
+  // A move to a smaller plan waiting for the next billing date.
+  const scheduled = renewing
+    ? (subscription.razorpay?.scheduledPlanId ?? null)
+    : null;
   const actions = billing.open && billing.canPay && !given;
   return (
     <Section
       title="Changing plan"
       description={
         billing.open
-          ? "Paid monthly through Razorpay by UPI, card or net banking. You're charged exactly the price shown."
+          ? "Paid monthly through Razorpay by UPI, card or net banking. You're charged exactly the price shown when you pay."
           : "Paid plans aren't open yet, so there's nothing to pay."
       }
     >
@@ -81,7 +86,15 @@ export function PlanChanging({
                         : ""}
                     </span>
                   </div>
-                  {actions && kind !== "current" && (
+                  {actions && p.id === scheduled && (
+                    <span className="text-right text-sm text-muted-foreground">
+                      From {end ? formatDate(end) : "your next billing date"}
+                    </span>
+                  )}
+                  {actions && kind === "current" && scheduled && (
+                    <KeepPlanButton planName={plan.name} />
+                  )}
+                  {actions && kind !== "current" && p.id !== scheduled && (
                     <PlanAction
                       kind={kind}
                       planId={p.id}

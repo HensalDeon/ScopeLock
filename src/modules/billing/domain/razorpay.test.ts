@@ -10,6 +10,7 @@ import {
   entitledPlanId,
   FREE_SUBSCRIPTION,
   isRenewing,
+  needsResync,
   planChange,
   type Subscription,
 } from "./subscription";
@@ -133,5 +134,24 @@ describe("entitledPlanId", () => {
         at,
       ),
     ).toBe("agency");
+  });
+});
+
+describe("late or missing events", () => {
+  it("ends a cancelled plan on its date even if a late event says active", () => {
+    const sub = subscriptionFromRazorpay(entity(), planFor, null, at)!;
+    sub.razorpay = {
+      ...sub.razorpay!,
+      cancelAtCycleEnd: true,
+      currentEnd: new Date("2026-11-01T00:00:00Z"),
+    };
+    expect(entitledPlanId(sub, at)).toBe("free");
+  });
+
+  it("asks Razorpay again when a live plan is well past its renewal date", () => {
+    const sub = subscriptionFromRazorpay(entity(), planFor, null, at)!;
+    expect(needsResync(sub, at)).toBe(false);
+    expect(needsResync(sub, new Date("2026-12-14T00:00:00Z"))).toBe(true);
+    expect(needsResync(FREE_SUBSCRIPTION, at)).toBe(false);
   });
 });

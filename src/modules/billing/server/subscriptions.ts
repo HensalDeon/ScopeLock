@@ -52,6 +52,17 @@ export async function findCheckoutAttempt(
   return c;
 }
 
+/** The subscription the workspace's last Checkout was for, if any. */
+export async function findCheckoutSubscriptionId(
+  workspaceId: string,
+): Promise<string | null> {
+  const doc = await subscriptions().findOne(
+    { workspaceId },
+    { projection: { checkout: 1 } },
+  );
+  return doc?.checkout?.subscriptionId ?? null;
+}
+
 /** The workspace a Razorpay subscription belongs to, if we know it. */
 export async function findWorkspaceForRazorpay(
   subscriptionId: string,

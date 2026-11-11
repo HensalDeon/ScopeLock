@@ -3,6 +3,7 @@ import {
   webhookSignatureValid,
   type RazorpaySubscriptionEntity,
 } from "../domain/razorpay";
+import { fetchRazorpaySubscription } from "./razorpay";
 import { applyRazorpaySubscription } from "./razorpay-sync";
 import { forgetBillingEvent, recordBillingEvent } from "./subscriptions";
 
@@ -18,6 +19,11 @@ export async function handleRazorpayWebhook(input: {
   signature: string | null;
   eventId: string | null;
   secret: string | null;
+  /**
+   * The subscription as Razorpay has it now. Events can arrive late or out
+   * of order (and retries do), so the event's copy is never trusted alone.
+   */
+  fetchLatest?: (id: string) => Promise<RazorpaySubscriptionEntity>;
 }): Promise<WebhookResult> {
   if (
     !input.secret ||
@@ -45,7 +51,10 @@ export async function handleRazorpayWebhook(input: {
   if (!(await recordBillingEvent(eventId, type)))
     return { status: 200, body: "already handled" };
   try {
-    await applyRazorpaySubscription(entity);
+    const latest = await (input.fetchLatest ?? fetchRazorpaySubscription)(
+      entity.id,
+    );
+    await applyRazorpaySubscription(latest);
     return { status: 200, body: "ok" };
   } catch (error) {
     console.error("[razorpay webhook] not applied", type, error);

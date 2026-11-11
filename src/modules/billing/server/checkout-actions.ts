@@ -11,6 +11,7 @@ import { isRenewing, planChange } from "../domain/subscription";
 import { getPlans, getWorkspacePlan } from "./queries";
 import {
   cancelRazorpaySubscription,
+  cancelScheduledRazorpayChange,
   changeRazorpayPlan,
   createRazorpaySubscription,
   fetchRazorpaySubscription,
@@ -60,14 +61,18 @@ export const startCheckout = workspaceAction(
     if (earlier) {
       const entity = await fetchRazorpaySubscription(earlier.subscriptionId);
       if (["authenticated", "active", "pending"].includes(entity.status)) {
-        await applyRazorpaySubscription(entity, workspace.workspaceId);
+        await applyRazorpaySubscription(entity);
         refresh();
         throw new UserError(
           "Your earlier payment went through, so nothing more was charged. Your plan is updated.",
         );
       }
-      // Unpaid (created): Razorpay never charges it. Reuse it for the same plan.
-      if (entity.status === "created" && earlier.planId === plan.id)
+      // Unpaid (created): Razorpay never charges it. Reuse it only for the
+      // same plan at today's price (an admin may have changed the price).
+      if (
+        entity.status === "created" &&
+        entity.plan_id === (await razorpayPlanFor(plan))
+      )
         return { id: earlier.subscriptionId };
     }
     const sub = await createRazorpaySubscription({
@@ -105,16 +110,20 @@ export const confirmCheckout = workspaceAction(
       throw new UserError(
         "That payment couldn't be verified. If you were charged, contact us.",
       );
+    // The payment is real (signed); it belongs to the workspace it was
+    // started from, even if another one is open in this tab now.
     const entity = await fetchRazorpaySubscription(input.subscriptionId);
-    const applied = await applyRazorpaySubscription(
-      entity,
-      workspace.workspaceId,
-    );
+    const applied = await applyRazorpaySubscription(entity);
     if (!applied)
       throw new UserError(
-        "That payment isn't for this workspace. If you were charged, contact us.",
+        "We couldn't match that payment to a workspace. If you were charged, contact us.",
       );
     refresh();
+    if (applied !== workspace.workspaceId)
+      return {
+        message:
+          "Paid. The plan applies to the workspace you started paying from.",
+      };
     const { plan } = await getWorkspacePlan(workspace.workspaceId);
     return { message: `Paid. You're on ${plan.name} now.` };
   },
@@ -148,7 +157,7 @@ export const switchPlan = workspaceAction(
       when,
     );
     if (when === "now") {
-      await applyRazorpaySubscription(entity, workspace.workspaceId);
+      await applyRazorpaySubscription(entity);
     } else {
       const sub = await findSubscription(workspace.workspaceId);
       if (sub.razorpay)
@@ -193,9 +202,33 @@ export const cancelPlan = workspaceAction(
       },
     });
     refresh();
-    const end = sub.razorpay.currentEnd;
+    const end = entity.current_end
+      ? new Date(entity.current_end * 1000)
+      : sub.razorpay.currentEnd;
     return {
       message: `Cancelled. You keep your plan${end ? ` until ${formatDate(end)}` : " until the end of this billing period"}, then move to Free.`,
     };
+  },
+);
+
+/** Undo a move to a smaller plan that's waiting for the next billing date. */
+export const keepPlan = workspaceAction(
+  {
+    fields: [],
+    schema: z.object({}),
+    roles: OWNERS,
+    failureMessage: "Nothing was changed. Please try again.",
+  },
+  async (_input, { workspace }) => {
+    const sub = await findSubscription(workspace.workspaceId);
+    if (!sub.razorpay?.scheduledPlanId || !isRenewing(sub))
+      throw new UserError("Refresh the page: there's no change waiting.");
+    await cancelScheduledRazorpayChange(sub.razorpay.subscriptionId);
+    await saveSubscription(workspace.workspaceId, {
+      ...sub,
+      razorpay: { ...sub.razorpay, scheduledPlanId: null },
+    });
+    refresh();
+    return { message: "Done. Your plan stays as it is." };
   },
 );

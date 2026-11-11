@@ -259,6 +259,24 @@ export async function setChangeTotals(
   );
 }
 
+/**
+ * Holds the project as not archived for a write that's about to ask the
+ * client for something (a payment, a change request). Inside a transaction
+ * it also blocks an archive racing it. False if it's archived (or gone).
+ */
+export async function claimActiveProject(
+  workspaceId: string,
+  id: ObjectId,
+  session?: ClientSession,
+): Promise<boolean> {
+  const r = await projects(workspaceId).updateOne(
+    { _id: id, archivedAt: null },
+    { $set: { archivedAt: null } },
+    { session },
+  );
+  return r.matchedCount === 1;
+}
+
 /** Not archived, and nothing waits on the client (as archiveBlocker). */
 const ARCHIVABLE = {
   archivedAt: null,

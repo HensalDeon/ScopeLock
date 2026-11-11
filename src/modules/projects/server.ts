@@ -21,6 +21,7 @@ export {
 export { projectLimitMessage } from "./server/limits";
 // For the changes and portal modules (repository level, workspace given).
 export {
+  claimActiveProject,
   countActiveProjects,
   nextChangeNumber,
   setChangeTotals,

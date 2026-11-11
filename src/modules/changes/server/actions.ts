@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { logActivity } from "@/modules/activity/server";
 import {
+  claimActiveProject,
   findProjectWithClient,
   getShareState,
   nextChangeNumber,
@@ -211,6 +212,9 @@ export const sendChange = workspaceAction(
         "This change request was already sent. Refresh the page.",
       );
     }
+    // Archived meanwhile (another tab): nothing is sent.
+    if (!(await claimActiveProject(ws, projectId)))
+      throw new UserError(ARCHIVED_READ_ONLY);
     const now = new Date();
     const sent = await repo.markChangeSent(ws, doc._id, {
       data: changeOrderData(project, doc, context, {

@@ -99,13 +99,27 @@ export async function fetchRazorpaySubscription(
   return call("GET", `/subscriptions/${encodeURIComponent(id)}`);
 }
 
-/** Stops renewing; the period already paid for runs to its end. */
+/**
+ * Stops renewing. At cycle end (default) the period already paid for runs
+ * to its end; immediately for a stray second subscription.
+ */
 export async function cancelRazorpaySubscription(
   id: string,
+  when: "cycle_end" | "now" = "cycle_end",
 ): Promise<RazorpaySubscriptionEntity> {
   return call("POST", `/subscriptions/${encodeURIComponent(id)}/cancel`, {
-    cancel_at_cycle_end: 1,
+    cancel_at_cycle_end: when === "cycle_end" ? 1 : 0,
   });
+}
+
+/** Drops a plan change scheduled for the next billing date. */
+export async function cancelScheduledRazorpayChange(
+  id: string,
+): Promise<RazorpaySubscriptionEntity> {
+  return call(
+    "POST",
+    `/subscriptions/${encodeURIComponent(id)}/cancel_scheduled_changes`,
+  );
 }
 
 /** Moves to another plan: now (upgrade) or at the next billing date. */

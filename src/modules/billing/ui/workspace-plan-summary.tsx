@@ -24,7 +24,7 @@ export function workspacePlanState(
         summary: `Pays for ${paid?.name ?? plan.name} through Razorpay${end ? `, renewing on ${end}` : ""} (subscription ${rz.subscriptionId}).`,
         canSet: false,
         warning:
-          "A plan can't be set by hand while this renews: Razorpay would keep charging for a plan they no longer have. They switch or cancel from Settings → Plan & usage, or you cancel the subscription in the Razorpay dashboard first.",
+          "A plan can't be set by hand while this renews: Razorpay would keep charging for a plan they no longer have. They switch or cancel from Settings → Plan & usage, or you cancel the subscription in the Razorpay dashboard first. If it's already cancelled there, this updates when its paid period ends.",
       };
     if (plan.id !== "free")
       return {
@@ -40,7 +40,7 @@ export function workspacePlanState(
     };
   }
   if (
-    subscription.source === "admin" &&
+    // Set by an admin (Free included: taken back to Free by hand).
     subscription.setAt &&
     subscription.setBy
   )

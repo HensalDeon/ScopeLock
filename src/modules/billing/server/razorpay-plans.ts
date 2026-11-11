@@ -61,3 +61,11 @@ export async function findPlanIdForRazorpay(
   const doc = await links().findOne({ razorpayPlanId });
   return doc?.planId ?? null;
 }
+
+/** The monthly price (paise) a Razorpay plan charges, if it's one of ours. */
+export async function findRazorpayPlanPrice(
+  razorpayPlanId: string,
+): Promise<number | null> {
+  const doc = await links().findOne({ razorpayPlanId });
+  return doc?.monthlyPrice ?? null;
+}
