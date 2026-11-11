@@ -53,10 +53,12 @@ export function CheckoutButton({
       data.set("subscriptionId", r.razorpay_subscription_id);
       data.set("signature", r.razorpay_signature);
       const result = await confirmCheckout(IDLE, data);
-      // Success refreshes the page with the new plan; otherwise wait for
-      // Razorpay's own confirmation (the webhook), never pay again.
+      // Success refreshes the page with the new plan, and the other plans'
+      // buttons work again. Otherwise wait for Razorpay's own confirmation
+      // (the webhook) with every plan button locked: never pay twice.
       setStep("paid");
       if (result.status === "error") setError(result.message ?? null);
+      else lock.setBusy(false);
     });
 
   const pay = () =>
