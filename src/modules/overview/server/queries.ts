@@ -222,8 +222,9 @@ async function withMoney(
           toAsk: stillToAsk(items),
           total: shown.total,
           tax: totals.gst?.tax ?? minor(0),
+          // An archived project is read-only: nothing to ask for from it.
           nextAsk:
-            step?.kind === "ask"
+            !s.archived && step?.kind === "ask"
               ? { label: step.item.label, amount: step.item.payable }
               : null,
         },

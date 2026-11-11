@@ -22,7 +22,11 @@ import {
   SharePanel,
   unlockingSteps,
 } from "@/modules/projects";
-import { getProjectOrNotFound, getShareState } from "@/modules/projects/server";
+import {
+  getProjectOrNotFound,
+  getShareState,
+  projectLimitMessage,
+} from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { formatMoney, minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
@@ -54,7 +58,7 @@ async function ProjectDetail({
   params,
 }: Pick<PageProps<"/projects/[id]">, "params">) {
   const { id } = await params;
-  const [project, share, approvals, changes, activity, { user }] =
+  const [project, share, approvals, changes, activity, { user, workspace }] =
     await Promise.all([
       getProjectOrNotFound(id),
       getShareState(id),
@@ -64,6 +68,7 @@ async function ProjectDetail({
       requireWorkspace(),
     ]);
   const approved = isScopeApproved(project.status);
+  const archived = project.archivedAt !== null;
   const money = approved
     ? await getProjectMoney(project, project.client, changes)
     : null;
@@ -85,6 +90,7 @@ async function ProjectDetail({
     abroadNeedsBankOrLink: money.abroadNeedsBankOrLink,
     methodsReady: money.methodsReady,
     payBy: money.payBy,
+    readOnly: archived,
   };
 
   const scope = (
@@ -114,7 +120,18 @@ async function ProjectDetail({
 
   return (
     <div className="grid gap-8">
-      <ProjectHeader project={project} hasLink={share.hasLink} />
+      <ProjectHeader
+        project={project}
+        hasLink={share.hasLink}
+        restoreFull={
+          archived
+            ? await projectLimitMessage(
+                workspace.workspaceId,
+                "restore this one",
+              )
+            : null
+        }
+      />
       {money && ctx && (
         <ProjectMoneyStrip
           items={money.items}
@@ -134,32 +151,35 @@ async function ProjectDetail({
           the proposal is out; once approved it follows payments and changes,
           before the history. */}
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:grid-rows-[auto_1fr_auto] lg:gap-y-4">
-        <div
-          className={cn(
-            "lg:col-start-2 lg:row-start-1",
-            approved && "max-lg:order-1",
-          )}
-        >
-          <SharePanel
-            projectId={project.id}
-            status={project.status}
-            url={share.url}
-            hasLink={share.hasLink}
-            sentAt={share.sentAt}
-            lastDecision={project.lastDecision}
-            emailVerified={user.emailVerified}
-            client={client}
-            message={shareMessage({
-              status: project.status,
-              clientFirstName: client.firstName,
-              projectName: project.name,
-              total: formatMoney(
-                minor(share.sentTotal ?? project.baseline.total),
-                project.currency,
-              ),
-            })}
-          />
-        </div>
+        {/* Archived: read-only, so nothing to send, withdraw or replace. */}
+        {!archived && (
+          <div
+            className={cn(
+              "lg:col-start-2 lg:row-start-1",
+              approved && "max-lg:order-1",
+            )}
+          >
+            <SharePanel
+              projectId={project.id}
+              status={project.status}
+              url={share.url}
+              hasLink={share.hasLink}
+              sentAt={share.sentAt}
+              lastDecision={project.lastDecision}
+              emailVerified={user.emailVerified}
+              client={client}
+              message={shareMessage({
+                status: project.status,
+                clientFirstName: client.firstName,
+                projectName: project.name,
+                total: formatMoney(
+                  minor(share.sentTotal ?? project.baseline.total),
+                  project.currency,
+                ),
+              })}
+            />
+          </div>
+        )}
 
         <div className="grid gap-8 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           {approved ? (
@@ -169,7 +189,7 @@ async function ProjectDetail({
                 projectId={project.id}
                 changes={changes}
                 currency={project.currency}
-                canCreate={project.status === "active"}
+                canCreate={project.status === "active" && !archived}
                 addons={project.proposal.addons}
                 headingId={`changes-${project.id}`}
               />

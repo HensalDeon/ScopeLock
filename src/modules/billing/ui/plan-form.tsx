@@ -215,7 +215,7 @@ export function PlanForm({ defaults }: { defaults: PlanFormValues }) {
 
       <Section
         title="Limits"
-        description="Shown on the pricing page. Not enforced in workspaces yet; once it is, archived projects won't count."
+        description="Applied in every workspace on this plan: a new project can't be started past the limit. Archived projects don't count."
       >
         <div className="grid gap-5 sm:grid-cols-2">
           {text("activeProjects", "Active projects", undefined, {
@@ -233,7 +233,7 @@ export function PlanForm({ defaults }: { defaults: PlanFormValues }) {
 
       <Section
         title="What it unlocks"
-        description="Shown on the pricing page. Workspaces don't have plans yet, so nothing is switched on or off in the app until they do."
+        description="Built features apply at once to every workspace on this plan. Ones not built yet only show on the pricing page."
       >
         <PlanFeatures on={values.features} onToggle={toggle} />
       </Section>

@@ -10,7 +10,6 @@ const STYLES: Record<ProjectStatus, string> = {
   awaiting_approval: "border-warning/25 bg-warning-soft text-warning-ink",
   active: "border-brand/25 bg-success-soft text-foreground",
   completed: "border-border bg-background text-muted-foreground",
-  archived: "border-border bg-background text-muted-foreground",
 };
 
 export function ProjectStatusBadge({

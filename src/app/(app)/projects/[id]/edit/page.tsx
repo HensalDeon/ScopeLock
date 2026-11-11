@@ -63,7 +63,8 @@ async function Form({
       getGstRule(),
     ],
   );
-  if (!isEditable(project.status)) redirect(`/projects/${project.id}`);
+  if (!isEditable(project.status) || project.archivedAt)
+    redirect(`/projects/${project.id}`);
 
   return (
     <ProjectForm

@@ -30,6 +30,8 @@ export type ScheduleRowContext = {
   methodsReady?: boolean;
   /** How this client can pay, in words ("UPI or bank transfer"). */
   payBy?: string;
+  /** Archived project: show the payments, offer no actions. */
+  readOnly?: boolean;
 };
 
 /**
@@ -104,37 +106,39 @@ export function ScheduleRow({
           {money(item.payable)}
         </p>
       </div>
-      <div className="pl-[2.5rem]">
-        {actedAbove === "waiting" ? (
-          // The strip sends the reminder; the row keeps the bookkeeping.
-          <div className="grid gap-1">
-            <a
-              href={`#money-${ctx.projectId}`}
-              className={cn(
-                "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
-                TOUCH_LINK,
-              )}
-            >
-              Its pay link is at the top of the page
-            </a>
-            <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
-          </div>
-        ) : actedAbove ? (
-          <div className="grid gap-1">
-            <a
-              href={`#money-${ctx.projectId}`}
-              className={cn(
-                "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
-                TOUCH_LINK,
-              )}
-            >
-              Next step, at the top of the page
-            </a>
-          </div>
-        ) : (
-          <PaymentActions {...paymentActionProps(item, ctx)} />
-        )}
-      </div>
+      {!ctx.readOnly && (
+        <div className="pl-[2.5rem]">
+          {actedAbove === "waiting" ? (
+            // The strip sends the reminder; the row keeps the bookkeeping.
+            <div className="grid gap-1">
+              <a
+                href={`#money-${ctx.projectId}`}
+                className={cn(
+                  "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+                  TOUCH_LINK,
+                )}
+              >
+                Its pay link is at the top of the page
+              </a>
+              <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
+            </div>
+          ) : actedAbove ? (
+            <div className="grid gap-1">
+              <a
+                href={`#money-${ctx.projectId}`}
+                className={cn(
+                  "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+                  TOUCH_LINK,
+                )}
+              >
+                Next step, at the top of the page
+              </a>
+            </div>
+          ) : (
+            <PaymentActions {...paymentActionProps(item, ctx)} />
+          )}
+        </div>
+      )}
     </li>
   );
 }

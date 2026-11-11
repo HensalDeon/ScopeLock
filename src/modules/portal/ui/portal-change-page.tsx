@@ -156,7 +156,7 @@ export async function PortalChangePage({
           </section>
         )}
       </main>
-      <Footer />
+      <Footer branded={view.branded} />
     </>
   );
 }

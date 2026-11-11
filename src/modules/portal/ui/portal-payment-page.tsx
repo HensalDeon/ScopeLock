@@ -180,7 +180,7 @@ export async function PortalPaymentPage({
           </>
         )}
       </main>
-      <Footer />
+      <Footer branded={view.branded} />
     </>
   );
 }

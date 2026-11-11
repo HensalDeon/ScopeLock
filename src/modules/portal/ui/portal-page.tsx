@@ -255,7 +255,7 @@ export async function PortalPage({ token }: { token: string }) {
           </section>
         )}
       </main>
-      <Footer />
+      <Footer branded={view.branded} />
     </>
   );
 }

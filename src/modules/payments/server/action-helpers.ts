@@ -6,6 +6,7 @@ import {
   getShareState,
   type ProjectWithClient,
 } from "@/modules/projects/server";
+import { ARCHIVED_READ_ONLY } from "@/modules/projects";
 import { type WorkspaceContext } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
 import { UserError } from "@/shared/lib/form-state";
@@ -37,6 +38,7 @@ export async function activeProject(
 ): Promise<ProjectWithClient> {
   const project = await findProjectWithClient(projectId.toHexString());
   if (!project) throw new UserError("This project doesn't exist any more.");
+  if (project.archivedAt) throw new UserError(ARCHIVED_READ_ONLY);
   if (project.status !== "active" && project.status !== "completed") {
     throw new UserError(
       "Payments start once your client has approved the proposal.",

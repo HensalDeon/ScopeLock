@@ -10,8 +10,7 @@ import { whatsappLink } from "@/shared/lib/phone";
  * server query loads the data; the UI only renders what these return.
  */
 
-type Status =
-  "draft" | "awaiting_approval" | "active" | "completed" | "archived";
+type Status = "draft" | "awaiting_approval" | "active" | "completed";
 
 /** What the money strip needs from a project. */
 export type ProjectFigures = {

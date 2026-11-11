@@ -39,11 +39,14 @@ export function DocumentStyleEditor({
   preview,
   images: initialImages,
   uploadsEnabled,
+  branded,
 }: {
   initial: DocumentStyle;
   preview: ProposalDocumentData;
   images: DocumentImages;
   uploadsEnabled: boolean;
+  /** The plan shows the logo to clients (Pro, Agency). */
+  branded: boolean;
 }) {
   // Kept locally so the preview shows a new image the moment it's uploaded.
   const [images, setImages] = useState(initialImages);
@@ -135,7 +138,11 @@ export function DocumentStyleEditor({
           <ImageUpload
             kind="logo"
             label="Logo"
-            hint="PNG, JPG or WebP, up to 5 MB. A transparent PNG looks best."
+            hint={
+              branded
+                ? "PNG, JPG or WebP, up to 5 MB. A transparent PNG looks best."
+                : "PNG, JPG or WebP, up to 5 MB. On Free, clients see your initials instead; your logo shows to them on Pro and Agency."
+            }
             url={images.logoUrl}
             enabled={uploadsEnabled}
             onChange={(logoUrl) => setImages((i) => ({ ...i, logoUrl }))}
@@ -213,13 +220,20 @@ export function DocumentStyleEditor({
             </div>
           </div>
         )}
+        {!branded && images.logoUrl && (
+          <p className="text-sm text-pretty text-muted-foreground">
+            The preview shows what clients see on Free: your initials, not your
+            logo.
+          </p>
+        )}
         {/* Phones scroll the page, not a box inside it. */}
         <div className="rounded-lg border bg-[#ebe8e2] p-3 lg:max-h-[78vh] lg:overflow-auto lg:p-5">
           <ClassicDocument
             titleAs="h2"
             data={preview}
             style={style}
-            images={images}
+            // What clients see: no logo unless the plan includes branding.
+            images={branded ? images : { ...images, logoUrl: null }}
             className="mx-auto max-w-[210mm] rounded-[2px] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] lg:[zoom:0.72]"
           />
         </div>

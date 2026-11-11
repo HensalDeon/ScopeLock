@@ -73,7 +73,9 @@ export function Notice({
   );
 }
 
-export function Footer() {
+/** "Sent with ScopeLock", on Free. Pro and Agency show only their own brand. */
+export function Footer({ branded }: { branded: boolean }) {
+  if (branded) return <div className="py-4 print:hidden" aria-hidden />;
   return (
     <footer className="flex items-center justify-center gap-2 px-4 py-8 text-xs text-[#4f535b] print:hidden">
       <LogoMark className="size-3.5" />

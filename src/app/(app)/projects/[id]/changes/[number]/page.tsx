@@ -152,33 +152,47 @@ async function ChangeDetail({
           />
         </div>
         <aside className="grid gap-4 max-lg:order-first lg:sticky lg:top-6 print:hidden">
-          <ChangeActions
-            change={change}
-            projectId={project.id}
-            editHref={`${base}/changes/${change.number}/edit` as Route}
-            reviseHref={
-              change.status === "rejected" || change.status === "withdrawn"
-                ? (`${base}/changes/new?from=${change.number}` as Route)
-                : null
-            }
-            emailVerified={context.user.emailVerified}
-            clientFirstName={firstName}
-            link={
-              share.url
-                ? {
-                    url: `${share.url}/changes/${change.number}`,
-                    phone: project.client?.phone ?? null,
-                    message: changeShareMessage({
-                      clientFirstName: firstName,
-                      projectName: project.name,
-                      title: change.title,
-                      total,
-                      status: change.status,
-                    }),
-                  }
-                : null
-            }
-          />
+          {project.archivedAt ? (
+            <p className="rounded-xl border bg-canvas px-5 py-4 text-sm text-pretty">
+              <span className="font-medium">This project is archived.</span>{" "}
+              Restore it on{" "}
+              <Link
+                href={base as Route}
+                className="font-medium underline underline-offset-4"
+              >
+                the project page
+              </Link>{" "}
+              to change or send this request.
+            </p>
+          ) : (
+            <ChangeActions
+              change={change}
+              projectId={project.id}
+              editHref={`${base}/changes/${change.number}/edit` as Route}
+              reviseHref={
+                change.status === "rejected" || change.status === "withdrawn"
+                  ? (`${base}/changes/new?from=${change.number}` as Route)
+                  : null
+              }
+              emailVerified={context.user.emailVerified}
+              clientFirstName={firstName}
+              link={
+                share.url
+                  ? {
+                      url: `${share.url}/changes/${change.number}`,
+                      phone: project.client?.phone ?? null,
+                      message: changeShareMessage({
+                        clientFirstName: firstName,
+                        projectName: project.name,
+                        title: change.title,
+                        total,
+                        status: change.status,
+                      }),
+                    }
+                  : null
+              }
+            />
+          )}
           {change.decision && (
             <Link
               href={`${base}/answers/${change.decision.approvalId}` as Route}

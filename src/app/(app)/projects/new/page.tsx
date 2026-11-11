@@ -6,8 +6,10 @@ import { getDocumentSettings } from "@/modules/documents/server";
 import {
   clientOptions,
   newProjectValues,
+  PlanFullNotice,
   ProjectForm,
 } from "@/modules/projects";
+import { listArchivable, projectLimitMessage } from "@/modules/projects/server";
 import { FreshOnEachVisit } from "@/shared/ui/fresh-on-each-visit";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { BackLink } from "@/shared/ui/back-link";
@@ -47,6 +49,9 @@ async function Form({
       requireWorkspace(),
       getGstRule(),
     ]);
+  const full = await projectLimitMessage(workspace.workspaceId);
+  if (full)
+    return <PlanFullNotice message={full} ready={await listArchivable()} />;
   return (
     <FreshOnEachVisit>
       <ProjectForm

@@ -56,7 +56,6 @@ export function portfolioTotals(
     return r;
   };
   for (const p of projects) {
-    if (p.status === "archived") continue;
     const r = row(p.currency);
     if (p.status === "active" || p.status === "completed") {
       r.approvedProjects += 1;

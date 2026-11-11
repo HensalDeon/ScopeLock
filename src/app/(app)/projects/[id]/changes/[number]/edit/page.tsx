@@ -39,7 +39,7 @@ async function EditChange({
     listChanges(id),
   ]);
   const page = `/projects/${project.id}/changes/${change.number}` as Route;
-  if (change.status !== "draft") redirect(page);
+  if (change.status !== "draft" || project.archivedAt) redirect(page);
   const { payments } = await getProjectPayments(project, changes);
 
   return (

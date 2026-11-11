@@ -1,13 +1,15 @@
-import type { Client } from "@/modules/clients";
+import { clientFirstName, type Client } from "@/modules/clients";
 import { formatDateTime } from "@/shared/lib/dates";
 import { formatPhone, whatsappLink } from "@/shared/lib/phone";
 import { cn } from "@/shared/lib/utils";
 import { TOUCH_LINK } from "@/shared/ui/touch";
 import { SideCard, SideCardTitle } from "@/shared/ui/side-card";
+import { archiveBlocker } from "../domain/archive";
 import { isEditable, type Project } from "../domain/project";
+import { ArchiveProjectButton } from "./archive-project-button";
 import { DeleteProjectButton } from "./delete-project-button";
 
-/** The client's contact card, dates and (for drafts) delete. */
+/** The client's contact card, dates, archive and (for drafts) delete. */
 export function ProjectSidebar({
   project,
 }: {
@@ -61,6 +63,25 @@ export function ProjectSidebar({
           </dl>
         </SideCard>
       )}
+      {!project.archivedAt && (
+        <div className="grid gap-2 px-1">
+          <ArchiveProjectButton
+            projectId={project.id}
+            projectName={project.name}
+            archived={false}
+            blocker={archiveBlocker(
+              project,
+              client ? clientFirstName(client) : "your client",
+            )}
+          />
+          {isEditable(project.status) && (
+            <DeleteProjectButton
+              projectId={project.id}
+              projectName={project.name}
+            />
+          )}
+        </div>
+      )}
       <p className="px-1 text-xs text-muted-foreground">
         {/* Each date stays on one line ("2:04 am" never splits). */}
         <span className="whitespace-nowrap">
@@ -75,14 +96,6 @@ export function ProjectSidebar({
           </>
         )}
       </p>
-      {isEditable(project.status) && (
-        <div className="px-1">
-          <DeleteProjectButton
-            projectId={project.id}
-            projectName={project.name}
-          />
-        </div>
-      )}
     </>
   );
 }

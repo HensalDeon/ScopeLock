@@ -21,6 +21,8 @@ export type ProjectDoc = WorkspaceOwned & {
   _id: ObjectId;
   /** Missing before proposal numbering. */
   number?: number;
+  /** Set while archived (read-only, not counted towards the plan). */
+  archivedAt?: Date | null;
   clientId: ObjectId;
   name: string;
   description: string | null;
@@ -127,6 +129,7 @@ export function toProject(doc: ProjectDoc): Project {
       paid: minor(doc.totals.paid),
       due: minor(doc.totals.due),
     },
+    archivedAt: doc.archivedAt ?? null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };

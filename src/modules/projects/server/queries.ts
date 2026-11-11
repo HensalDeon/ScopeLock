@@ -27,12 +27,16 @@ export async function listProjects(
   page: number,
   /** From parseSearch: the project's name or its client's. */
   search: string | null = null,
+  archived = false,
 ): Promise<Page<ProjectWithClient>> {
   const { workspace } = await requireWorkspace();
   const ws = workspace.workspaceId;
-  const filter = search
-    ? { search: { text: search, clientIds: await searchClientIds(search) } }
-    : {};
+  const filter = {
+    archived,
+    ...(search
+      ? { search: { text: search, clientIds: await searchClientIds(search) } }
+      : {}),
+  };
   const result = await paginate(
     page,
     () => repo.countProjects(ws, filter),
@@ -55,6 +59,20 @@ export async function listProjectsForClient(
     () => repo.countProjects(ws, { clientId: id }),
     (window) => repo.findProjects(ws, { clientId: id }, window),
   );
+}
+
+/** Projects that could be archived now (for a full plan's notice). */
+export async function listArchivable(): Promise<
+  { id: string; name: string }[]
+> {
+  const { workspace } = await requireWorkspace();
+  return repo.findArchivable(workspace.workspaceId);
+}
+
+/** Archived projects (for the "Archived (3)" link). */
+export async function countArchivedProjects(): Promise<number> {
+  const { workspace } = await requireWorkspace();
+  return repo.countProjects(workspace.workspaceId, { archived: true });
 }
 
 export async function countProjects(): Promise<number> {

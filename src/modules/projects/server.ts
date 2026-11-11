@@ -4,6 +4,8 @@
 import "server-only";
 
 export {
+  countArchivedProjects,
+  listArchivable,
   countProjects,
   countProjectsByClient,
   findProjectWithClient,
@@ -16,6 +18,7 @@ export {
   type ProjectWithClient,
   type ShareState,
 } from "./server/queries";
+export { projectLimitMessage } from "./server/limits";
 // For the changes and portal modules (repository level, workspace given).
 export {
   countActiveProjects,

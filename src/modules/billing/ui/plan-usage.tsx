@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatINR } from "@/shared/lib/money";
+import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Section } from "@/shared/ui/page";
 import { statesLimit } from "../domain/plan-lines";
@@ -16,9 +17,8 @@ const Soon = () => (
 
 /**
  * Settings → Plan & usage: the workspace's plan, how much of it is used,
- * and how changing plan will work. Paid plans aren't open and limits
- * aren't applied yet, so this page only informs: no upgrade button, no
- * warnings.
+ * and how changing plan will work. Paid plans aren't open yet, so there's
+ * no upgrade button; a full plan points to archiving a finished project.
  */
 export function PlanUsage({
   plan,
@@ -67,11 +67,33 @@ export function PlanUsage({
           <dl className="grid divide-y rounded-lg border bg-background">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1 px-4 py-3">
               <dt className="text-sm">Active projects</dt>
-              <dd className="text-right text-[15px] font-semibold tabular-nums">
+              <dd
+                className={cn(
+                  "text-right text-[15px] font-semibold tabular-nums",
+                  projects.full && "text-warning-ink",
+                )}
+              >
                 {projects.used} of {projects.limit}
               </dd>
-              <dd className="col-span-full text-[12px] text-pretty text-muted-foreground">
-                Limits aren&apos;t applied yet, so you can keep adding projects.
+              <dd
+                className={cn(
+                  "col-span-full text-[13px] text-pretty",
+                  projects.full ? "text-warning-ink" : "text-muted-foreground",
+                )}
+              >
+                {projects.over
+                  ? `More than ${plan.name} allows. They all keep working; archive ${projects.used - projects.limit + 1} to start a new one.`
+                  : projects.full
+                    ? "Your plan is full. Archive a finished project to start a new one."
+                    : "Every project that isn't archived counts."}{" "}
+                {projects.full && (
+                  <Link
+                    href="/projects"
+                    className="font-medium text-foreground underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
+                  >
+                    Go to projects
+                  </Link>
+                )}
               </dd>
             </div>
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 px-4 py-3">
@@ -141,7 +163,9 @@ export function PlanUsage({
                 When paid plans open, you&apos;ll change plan here and pay
                 monthly by UPI, card or net banking, with a GST invoice each
                 time. Moving up starts straight away; moving down applies from
-                your next billing date. Nothing you&apos;ve made is removed.
+                your next billing date. Nothing you&apos;ve made is removed: if
+                you have more active projects than the smaller plan allows, they
+                keep working, and you archive one before starting another.
               </p>
             )}
             <p>

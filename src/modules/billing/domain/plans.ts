@@ -28,7 +28,7 @@ export const FEATURE_LABELS: Record<
   brandedClientPages: {
     title: "Your branding for clients",
     detail:
-      "Your logo on approval pages and PDFs, and no “Sent with ScopeLock”.",
+      "Your logo on client pages and documents instead of your initials, and no “Sent with ScopeLock”.",
     built: true,
   },
   automaticReminders: {

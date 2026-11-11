@@ -12,6 +12,7 @@ import {
   nextChangeNumber,
   type ProjectWithClient,
 } from "@/modules/projects/server";
+import { ARCHIVED_READ_ONLY } from "@/modules/projects";
 import {
   workspaceAction,
   type WorkspaceContext,
@@ -51,6 +52,7 @@ const NOT_ACTIVE =
 async function activeProject(projectId: ObjectId): Promise<ProjectWithClient> {
   const project = await findProjectWithClient(projectId.toHexString());
   if (!project) throw new UserError("This project doesn't exist any more.");
+  if (project.archivedAt) throw new UserError(ARCHIVED_READ_ONLY);
   if (project.status !== "active") throw new UserError(NOT_ACTIVE);
   return project;
 }

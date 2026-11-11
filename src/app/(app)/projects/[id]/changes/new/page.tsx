@@ -1,5 +1,6 @@
 import type { Metadata, Route } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import {
   billingContext,
@@ -44,6 +45,8 @@ async function NewChange({
   ]);
   const back = `/projects/${project.id}` as Route;
 
+  // Archived projects are read-only: back to the project (Restore is there).
+  if (project.archivedAt) redirect(back);
   if (project.status !== "active") {
     return (
       <div className="grid gap-4">

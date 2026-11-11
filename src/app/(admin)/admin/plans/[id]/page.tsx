@@ -40,7 +40,7 @@ async function EditPlan({
       </BackLink>
       <PageHeader
         title={`Edit ${plan.name}`}
-        description="Saved changes show on the landing and pricing pages straight away. Workspaces don't have plans yet, so limits and features aren't applied in the app until they do."
+        description="Saved changes show on the landing and pricing pages straight away, and apply at once to every workspace on this plan."
       />
       <PlanForm defaults={planFormValues(plan)} />
       <div className="mt-12 border-t pt-8">
