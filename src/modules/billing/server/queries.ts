@@ -6,7 +6,7 @@ import {
   planById,
   type Plan,
 } from "../domain/plans";
-import type { Subscription } from "../domain/subscription";
+import { entitledPlanId, type Subscription } from "../domain/subscription";
 import * as repo from "./repository";
 import { findSubscription } from "./subscriptions";
 
@@ -38,6 +38,9 @@ export async function getWorkspacePlan(
     getPlans(),
     findSubscription(workspaceId),
   ]);
-  const plan = planById(plans, subscription.planId) ?? (plans[0] as Plan);
+  // A cancelled or failed paid plan falls back to Free when it runs out.
+  const plan =
+    planById(plans, entitledPlanId(subscription, new Date())) ??
+    (plans[0] as Plan);
   return { plan, subscription };
 }

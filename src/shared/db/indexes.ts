@@ -101,14 +101,29 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     { key: { workspaceId: 1, clientId: 1, updatedAt: -1 } },
   ],
   // Platform level: a plan's price history, newest first; the admin log.
-  [COLLECTIONS.planPrices]: [{ key: { planId: 1, createdAt: -1 } }],
+  [COLLECTIONS.planPrices]: [
+    { key: { planId: 1, createdAt: -1 } },
+    {
+      key: { razorpayPlanId: 1 },
+      partialFilterExpression: { razorpayPlanId: { $type: "string" } },
+    },
+  ],
   [COLLECTIONS.adminAudit]: [
     { key: { at: -1 } },
     { key: { action: 1, at: -1 } },
     { key: { href: 1, at: -1 } },
   ],
   // One ScopeLock plan per workspace.
-  [COLLECTIONS.subscriptions]: [{ key: { workspaceId: 1 }, unique: true }],
+  [COLLECTIONS.subscriptions]: [
+    { key: { workspaceId: 1 }, unique: true },
+    // Webhooks find the workspace by Razorpay's subscription id.
+    {
+      key: { "razorpay.subscriptionId": 1 },
+      partialFilterExpression: {
+        "razorpay.subscriptionId": { $type: "string" },
+      },
+    },
+  ],
 };
 
 export async function ensureIndexes(

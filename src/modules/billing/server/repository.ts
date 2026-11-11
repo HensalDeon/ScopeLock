@@ -75,6 +75,57 @@ export async function addPrice(
   );
 }
 
+/** The plan's current price entry (newest), if any price was ever recorded. */
+export async function findLatestPrice(planId: PlanId): Promise<{
+  id: ObjectId;
+  monthlyPrice: number;
+  razorpayPlanId: string | null;
+} | null> {
+  const doc = await prices().findOne({ planId }, { sort: { createdAt: -1 } });
+  return doc?._id
+    ? {
+        id: doc._id,
+        monthlyPrice: doc.monthlyPrice,
+        razorpayPlanId: doc.razorpayPlanId,
+      }
+    : null;
+}
+
+/** Ties a price to the Razorpay plan it's sold as (once; never changed). */
+export async function linkRazorpayPlan(
+  priceId: ObjectId,
+  razorpayPlanId: string,
+): Promise<boolean> {
+  const r = await prices().updateOne(
+    { _id: priceId, razorpayPlanId: null },
+    { $set: { razorpayPlanId } },
+  );
+  return r.modifiedCount === 1;
+}
+
+/** A price recorded with its Razorpay plan (no price history before). */
+export async function addLinkedPrice(
+  planId: PlanId,
+  monthlyPrice: number,
+  razorpayPlanId: string,
+): Promise<void> {
+  await prices().insertOne({
+    planId,
+    monthlyPrice,
+    razorpayPlanId,
+    createdAt: new Date(),
+    createdBy: "starting price",
+  });
+}
+
+/** Which of our plans a Razorpay plan sells (any price, old ones too). */
+export async function findPlanIdForRazorpay(
+  razorpayPlanId: string,
+): Promise<PlanId | null> {
+  const doc = await prices().findOne({ razorpayPlanId });
+  return doc?.planId ?? null;
+}
+
 export async function hasPriceHistory(
   planId: PlanId,
   session?: ClientSession,

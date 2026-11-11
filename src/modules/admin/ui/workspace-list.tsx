@@ -11,6 +11,8 @@ export type WorkspaceRow = {
   plan: string;
   /** Put on the plan by an admin (not paid). */
   given: boolean;
+  /** Pays through Razorpay. */
+  paying: boolean;
 };
 
 /** Admin: workspaces as rows, each opening its page. */
@@ -30,6 +32,9 @@ export function WorkspaceList({ rows }: { rows: WorkspaceRow[] }) {
               {w.plan}
               {w.given && (
                 <span className="text-muted-foreground"> (given)</span>
+              )}
+              {w.paying && (
+                <span className="text-muted-foreground"> (paying)</span>
               )}
             </span>
             <span className="truncate text-[13px] text-muted-foreground">

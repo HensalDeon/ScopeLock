@@ -15,6 +15,7 @@ export {
   type PlanId,
 } from "./domain/plans";
 export {
+  entitledPlanId,
   FREE_SUBSCRIPTION,
   projectUsage,
   type PlanSource,

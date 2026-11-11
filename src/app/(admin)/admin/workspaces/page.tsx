@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { WorkspaceList } from "@/modules/admin";
 import { requireAdmin } from "@/modules/admin/server";
-import { planById } from "@/modules/billing";
+import { entitledPlanId, planById } from "@/modules/billing";
 import {
   findGivenWorkspaceIds,
   findSubscriptions,
@@ -63,12 +63,16 @@ async function Workspaces({
     getPlans(),
     findSubscriptions(page.items.map((w) => w.workspaceId)),
   ]);
+  const now = new Date();
   const rows = page.items.map((w) => {
     const sub = subs.get(w.workspaceId);
     return {
       ...w,
-      plan: planById(plans, sub?.planId ?? "free")?.name ?? "Free",
+      plan:
+        planById(plans, sub ? entitledPlanId(sub, now) : "free")?.name ??
+        "Free",
       given: sub?.source === "admin",
+      paying: sub?.source === "razorpay",
     };
   });
   return (

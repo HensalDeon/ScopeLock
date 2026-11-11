@@ -10,6 +10,8 @@ export {
   PLANS_TAG,
   type WorkspacePlan,
 } from "./server/queries";
+export { handleRazorpayWebhook } from "./server/webhook";
+export { razorpayKeyId } from "./server/razorpay";
 export {
   findGivenWorkspaceIds,
   findSubscriptions,

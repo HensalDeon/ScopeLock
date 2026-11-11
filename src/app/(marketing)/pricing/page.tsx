@@ -26,7 +26,7 @@ const BILLING_FAQ: FaqItem[] = [
   },
   {
     q: "How do I pay for ScopeLock?",
-    a: "There's nothing to pay yet: paid plans aren't open. When they open, you'll pay monthly by UPI, card or net banking, with a GST invoice for every payment.",
+    a: "There's nothing to pay yet: paid plans aren't open. When they open, you'll pay monthly by UPI, card or net banking, with an invoice for every payment.",
   },
   {
     q: "What happens if I go over my plan's limit?",

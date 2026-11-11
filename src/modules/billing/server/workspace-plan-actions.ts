@@ -7,6 +7,7 @@ import { UserError } from "@/shared/lib/form-state";
 import { planById } from "../domain/plans";
 import {
   adminSubscription,
+  isRenewing,
   setWorkspacePlanSchema,
 } from "../domain/subscription";
 import { getPlans } from "./queries";
@@ -30,6 +31,11 @@ export const setWorkspacePlan = adminAction(
       findSubscription(input.workspaceId),
     ]);
     const name = (id: string) => planById(plans, id)?.name ?? id;
+    // A paying customer's Razorpay subscription would keep charging.
+    if (isRenewing(before))
+      throw new UserError(
+        "This workspace pays through Razorpay. They cancel from Settings → Plan & usage (or cancel it in the Razorpay dashboard) before you set a plan by hand.",
+      );
     if (before.planId === input.planId && before.note === input.note)
       return { message: "Nothing changed." };
 

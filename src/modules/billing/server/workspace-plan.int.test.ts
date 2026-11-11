@@ -32,6 +32,7 @@ describe("a workspace's plan", () => {
       note: "Beta user",
       setBy: admin.email,
       setAt: at,
+      razorpay: null,
     });
     expect((await findSubscriptions([ws, "ws_other"])).get(ws)?.planId).toBe(
       "pro",

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PlanUsage, projectUsage } from "@/modules/billing";
-import { getPlans, getWorkspacePlan } from "@/modules/billing/server";
+import {
+  getPlans,
+  getWorkspacePlan,
+  razorpayKeyId,
+} from "@/modules/billing/server";
+import { isBillingConfigured } from "@/shared/lib/env";
 import { countActiveProjects } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 
@@ -18,7 +23,7 @@ export default function PlanSettingsPage() {
 }
 
 async function PlanSettings() {
-  const { workspace } = await requireWorkspace();
+  const { workspace, user, role } = await requireWorkspace();
   const id = workspace.workspaceId;
   const [{ plan, subscription }, plans, active] = await Promise.all([
     getWorkspacePlan(id),
@@ -31,6 +36,20 @@ async function PlanSettings() {
       plans={plans}
       subscription={subscription}
       projects={projectUsage(plan, active)}
+      billing={
+        isBillingConfigured()
+          ? {
+              open: true,
+              canPay: role === "owner" || role === "admin",
+              keyId: razorpayKeyId(),
+              payer: {
+                name: user.name,
+                email: user.email,
+                contact: workspace.phone,
+              },
+            }
+          : { open: false }
+      }
     />
   );
 }

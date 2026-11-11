@@ -16,6 +16,7 @@ export const PLATFORM_COLLECTIONS = {
   planPrices: COLLECTIONS.planPrices,
   adminAudit: COLLECTIONS.adminAudit,
   subscriptions: COLLECTIONS.subscriptions,
+  billingEvents: COLLECTIONS.billingEvents,
 } as const;
 
 export type PlatformCollection = keyof typeof PLATFORM_COLLECTIONS;

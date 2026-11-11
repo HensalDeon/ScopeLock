@@ -72,6 +72,13 @@ const serverEnvSchema = z
     // Platform admins: comma-separated emails that may open /admin (plans
     // and prices). Their email must be confirmed. Unset = nobody.
     ADMIN_EMAILS: optional,
+
+    // Razorpay: ScopeLock's own subscriptions (Pro, Agency). Optional;
+    // paid plans can't be bought until all three are set. Test keys
+    // (rzp_test_…) in development.
+    RAZORPAY_KEY_ID: optional,
+    RAZORPAY_KEY_SECRET: optional,
+    RAZORPAY_WEBHOOK_SECRET: optional,
   })
   .superRefine((e, ctx) => {
     if (e.NODE_ENV !== "production") return;
@@ -135,6 +142,14 @@ export function isStorageConfigured(): boolean {
     e.R2_ACCESS_KEY_ID &&
     e.R2_SECRET_ACCESS_KEY &&
     e.R2_BUCKET,
+  );
+}
+
+/** Paid plans can be bought (Razorpay keys and webhook secret set). */
+export function isBillingConfigured(): boolean {
+  const e = env();
+  return Boolean(
+    e.RAZORPAY_KEY_ID && e.RAZORPAY_KEY_SECRET && e.RAZORPAY_WEBHOOK_SECRET,
   );
 }
 

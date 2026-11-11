@@ -1,0 +1,69 @@
+import { describe, expect, it } from "vitest";
+import { hmacHex } from "../domain/razorpay";
+import { entitledPlanId } from "../domain/subscription";
+import { addLinkedPrice } from "./repository";
+import { findSubscription } from "./subscriptions";
+import { handleRazorpayWebhook } from "./webhook";
+
+const secret = "whsec_test";
+const ws = "ws_razorpay_test";
+const unix = (iso: string) => Math.floor(new Date(iso).getTime() / 1000);
+
+function event(type: string, entity: Record<string, unknown>) {
+  const rawBody = JSON.stringify({
+    event: type,
+    payload: { subscription: { entity } },
+  });
+  return { rawBody, signature: hmacHex(secret, rawBody) };
+}
+
+describe("Razorpay webhook", () => {
+  it("activates a paid plan once, rejects forgeries, and lapses after cancelling", async () => {
+    await addLinkedPrice("pro", 49_900, "plan_test_pro");
+    const sub = {
+      id: "sub_test_1",
+      plan_id: "plan_test_pro",
+      status: "active",
+      current_end: unix("2099-01-01T00:00:00Z"),
+      notes: { workspaceId: ws, planId: "pro" },
+    };
+
+    const activated = event("subscription.activated", sub);
+    expect(
+      await handleRazorpayWebhook({ ...activated, eventId: "evt_1", secret }),
+    ).toEqual({ status: 200, body: "ok" });
+    const saved = await findSubscription(ws);
+    expect(saved).toMatchObject({ planId: "pro", source: "razorpay" });
+    expect(entitledPlanId(saved, new Date())).toBe("pro");
+
+    // The same event again is handled once.
+    expect(
+      await handleRazorpayWebhook({ ...activated, eventId: "evt_1", secret }),
+    ).toEqual({ status: 200, body: "already handled" });
+
+    // A body that doesn't match its signature is refused.
+    const forged = event("subscription.activated", {
+      ...sub,
+      plan_id: "plan_test_agency",
+    });
+    expect(
+      await handleRazorpayWebhook({
+        rawBody: forged.rawBody,
+        signature: activated.signature,
+        eventId: "evt_2",
+        secret,
+      }),
+    ).toMatchObject({ status: 400 });
+
+    // Cancelled, and the paid period is over: back to Free.
+    const ended = event("subscription.cancelled", {
+      ...sub,
+      status: "cancelled",
+      current_end: unix("2020-01-01T00:00:00Z"),
+    });
+    expect(
+      await handleRazorpayWebhook({ ...ended, eventId: "evt_3", secret }),
+    ).toMatchObject({ status: 200 });
+    expect(entitledPlanId(await findSubscription(ws), new Date())).toBe("free");
+  });
+});

@@ -32,6 +32,8 @@ export const COLLECTIONS = {
   // workspace, managed by the platform, one per workspace).
   plans: "plans",
   subscriptions: "subscriptions",
+  // Razorpay webhook events already handled (one row per event id).
+  billingEvents: "billingEvents",
   planPrices: "planPrices",
   adminAudit: "adminAudit",
 } as const;
