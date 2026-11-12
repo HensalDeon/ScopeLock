@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
 import { EmailReminderButton, nextReminderAt } from "@/modules/reminders";
+import { AutoReminderLine } from "./auto-reminder-line";
 import { TOUCH, TOUCH_LINK } from "@/shared/ui/touch";
 import { isReminder, type NextStep } from "../domain/next-step";
 import { PaymentActions } from "./payment-actions";
@@ -112,6 +113,7 @@ export function NextStepRow({
               {ctx.client.email ? ` · emailed to ${ctx.client.email}` : ""}
             </p>
           )}
+          {payment && <AutoReminderLine payment={payment} ctx={ctx} />}
         </div>
         {url && (
           <div className="min-w-0 justify-self-start">

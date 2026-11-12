@@ -1,4 +1,5 @@
 import "server-only";
+import { getWorkspacePlan } from "@/modules/billing/server";
 import type { ChangeRequest } from "@/modules/changes";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
@@ -22,6 +23,20 @@ export async function getPaymentMethods(): Promise<{
 }> {
   const { workspace } = await requireWorkspace();
   return methodsWithQr(workspace.workspaceId);
+}
+
+/** Settings → Payments: automatic reminders, and whether the plan has them. */
+export async function getAutoReminderSetting(): Promise<{
+  included: boolean;
+  on: boolean;
+}> {
+  const { workspace } = await requireWorkspace();
+  const ws = workspace.workspaceId;
+  const [{ plan }, on] = await Promise.all([
+    getWorkspacePlan(ws),
+    settingsRepo.findAutoRemindersOn(ws),
+  ]);
+  return { included: plan.features.automaticReminders, on };
 }
 
 /**

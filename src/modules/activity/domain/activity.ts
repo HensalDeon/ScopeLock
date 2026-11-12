@@ -27,12 +27,16 @@ export const ACTIVITY_TYPES = [
   "payment.not_received",
   // Yours only: an email reminder to the client (label: the reminder key).
   "reminder.emailed",
+  // Yours only: an automatic payment reminder (Pro, Agency).
+  "reminder.auto_emailed",
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
 export type ActivityActor =
   | { kind: "member"; userId: string; name: string }
-  | { kind: "client"; name: string; email: string };
+  | { kind: "client"; name: string; email: string }
+  /** ScopeLock itself: automatic reminders. */
+  | { kind: "system" };
 
 export type ActivityData = {
   /** Change request label ("CR-001"), or the invoice number on a payment request. */
@@ -92,15 +96,17 @@ export function describeActivity(
   // Who did it, from the reader's side: "You" for your own actions (the
   // member's, or the client's on their page); otherwise the name.
   const who =
-    actor.kind === "client"
-      ? viewer.kind === "client"
-        ? "You"
-        : actor.name
-      : viewer.kind === "client"
-        ? viewer.businessName
-        : actor.userId === viewer.userId
+    actor.kind === "system"
+      ? "ScopeLock"
+      : actor.kind === "client"
+        ? viewer.kind === "client"
           ? "You"
-          : actor.name;
+          : actor.name
+        : viewer.kind === "client"
+          ? viewer.businessName
+          : actor.userId === viewer.userId
+            ? "You"
+            : actor.name;
   const amount =
     data.amount !== undefined && data.currency
       ? ` (${formatMoney(minor(data.amount), data.currency)})`
@@ -174,6 +180,8 @@ export function describeActivity(
       );
     case "reminder.emailed":
       return line(`${who} emailed a reminder about ${data.title}`);
+    case "reminder.auto_emailed":
+      return line(`${who} emailed an automatic reminder about ${data.title}`);
     case "payment.not_received":
       return line(
         `${who} marked the ${data.title} payment as not received yet`,

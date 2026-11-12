@@ -30,8 +30,12 @@ describe("lineIssue", () => {
     expect(lineIssue(line("Priority support"), pro!)).toBe(
       "Priority support is switched off for this plan.",
     );
-    expect(lineIssue(line("Automatic payment reminders"), pro!)).toBe(
-      "Automatic payment reminders isn't built yet: mark it soon.",
+    expect(
+      lineIssue(line("Revenue recovered reports by client and month"), agency!),
+    ).toBe("Revenue recovered reports isn't built yet: mark it soon.");
+    // Built since: a plan still saying "soon" is flagged.
+    expect(lineIssue(line("Automatic payment reminders", true), pro!)).toBe(
+      "Automatic payment reminders is built: turn off soon.",
     );
     expect(lineIssue(line("Your logo on approval pages", true), pro!)).toBe(
       "Your branding for clients is built: turn off soon.",

@@ -33,8 +33,9 @@ export const FEATURE_LABELS: Record<
   },
   automaticReminders: {
     title: "Automatic payment reminders",
-    detail: "Reminders go out on a schedule without you pressing anything.",
-    built: false,
+    detail:
+      "Unpaid payments are emailed to the client 3, 7 and 14 days after you ask, without you pressing anything.",
+    built: true,
   },
   recoveredReports: {
     title: "Revenue recovered reports",
@@ -106,7 +107,7 @@ export const DEFAULT_PLANS: readonly Plan[] = [
       { label: "Everything in Free" },
       { label: "Your logo on approval pages and PDFs" },
       { label: "No ScopeLock branding for clients" },
-      { label: "Automatic payment reminders", soon: true },
+      { label: "Automatic payment reminders" },
     ],
   },
   {

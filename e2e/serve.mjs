@@ -34,6 +34,8 @@ const env = {
   ADMIN_EMAILS: "e2e-admin@scopelock.test",
   // Each test sends its own visitor IP here (e2e/fixtures.ts).
   CLIENT_IP_HEADER: "x-e2e-client-ip",
+  // The daily jobs' secret (e2e/cron.spec.ts calls them with it).
+  CRON_SECRET: "e2e-cron-secret-0123456789abcdef0123456789",
   // Set but empty: .env.local can't switch these on for the tests.
   SMTP_HOST: "",
   R2_ACCOUNT_ID: "",

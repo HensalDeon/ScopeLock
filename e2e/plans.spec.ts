@@ -82,4 +82,17 @@ test("an admin-only account puts a workspace on Pro", async ({
   await expect(
     p.getByText("ScopeLock put your workspace on Pro, free of charge."),
   ).toBeVisible();
+
+  // Pro includes automatic reminders: on by default, and can be switched off.
+  await p.goto("/settings/payments#reminders");
+  const auto = p.getByRole("switch", {
+    name: "Email clients about unpaid payments",
+  });
+  await expect(auto).toBeChecked();
+  await auto.click();
+  await expect(p.getByText(/Automatic reminders are off\./)).toBeVisible();
+  await p.reload();
+  await expect(auto).not.toBeChecked();
+  await auto.click();
+  await expect(p.getByText("Automatic reminders are on.")).toBeVisible();
 });

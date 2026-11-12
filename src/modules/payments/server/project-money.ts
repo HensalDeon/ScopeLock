@@ -1,7 +1,10 @@
 import "server-only";
+import { listLastReminders } from "@/modules/activity/server";
+import { getWorkspacePlan } from "@/modules/billing/server";
 import type { ChangeRequest } from "@/modules/changes";
 import { gstHints, taxCaseOf } from "@/modules/invoices";
 import { findInvoicing } from "@/modules/invoices/server";
+import { reminderKey } from "@/modules/reminders";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { isIndia } from "@/shared/lib/india";
 import { hasAnyMethod, payByWords } from "../domain/methods";
@@ -30,6 +33,17 @@ export type ProjectMoney = PaymentSchedule & {
   payBy: string;
   /** When this was read (for "asked 3 days ago" style decisions). */
   now: Date;
+  /** Automatic reminders, for the line under each due payment. */
+  autoReminders: AutoRemindersContext;
+};
+
+export type AutoRemindersContext = {
+  /** The plan includes them (Pro, Agency). */
+  included: boolean;
+  /** Settings → Payments: on. */
+  on: boolean;
+  /** The freelancer's own latest email reminder, by payment id. */
+  lastManual: Record<string, Date>;
 };
 
 /** Everything the project page shows about money, for an approved project. */
@@ -45,11 +59,20 @@ export async function getProjectMoney(
 ): Promise<ProjectMoney> {
   const { workspace } = await requireWorkspace();
   const ws = workspace.workspaceId;
-  const [schedule, { methods }, settings] = await Promise.all([
-    getProjectPayments(project, changes),
-    settingsRepo.findMethods(ws),
-    findInvoicing(ws),
-  ]);
+  const [schedule, { methods }, settings, { plan }, on, manual] =
+    await Promise.all([
+      getProjectPayments(project, changes),
+      settingsRepo.findMethods(ws),
+      findInvoicing(ws),
+      getWorkspacePlan(ws),
+      settingsRepo.findAutoRemindersOn(ws),
+      listLastReminders(72),
+    ]);
+  const lastManual: Record<string, Date> = {};
+  for (const p of schedule.payments) {
+    const at = manual.get(reminderKey(project.id, "payment", p.id));
+    if (at) lastManual[p.id] = at;
+  }
   const gst = gstHints(settings, client as Parameters<typeof gstHints>[1]);
   return {
     ...schedule,
@@ -70,6 +93,11 @@ export async function getProjectMoney(
       settings.legalName || settings.address || settings.gstin,
     ),
     now: new Date(),
+    autoReminders: {
+      included: plan.features.automaticReminders,
+      on,
+      lastManual,
+    },
     stateFallback:
       gst.fallbackState && client
         ? {

@@ -5,6 +5,7 @@
 import "server-only";
 
 export {
+  getAutoReminderSetting,
   getPaymentMethods,
   getProjectPayments,
   listOwedPayments,
@@ -21,5 +22,13 @@ export {
   type PortalPayment,
 } from "./server/public";
 export { findPaymentDocs, toPayment } from "./server/repository";
+// For the daily reminder run (reminders module; workspace given).
+export {
+  autoRemindersOnIn,
+  claimAutoReminder,
+  listDuePaymentsIn,
+  releaseAutoReminder,
+  workspacesWithDuePayments,
+} from "./server/reminders";
 // Pure, for server code that must not load the payments UI.
 export { lineBreakdown } from "./domain/payment";

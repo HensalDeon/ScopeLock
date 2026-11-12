@@ -51,6 +51,8 @@ export type ReminderEmailInput = {
   /** "₹8,000" (with GST where it applies). */
   amount: string;
   url: string;
+  /** Payments: when it was asked for ("18 Nov"), said in the email. */
+  askedOn?: string;
 };
 
 /** The reminder email, in the business's voice. */
@@ -96,11 +98,15 @@ export function reminderEmail(input: ReminderEmailInput): {
           preview: `${item} · ${amount}`,
           heading: `${amount} due for ${project}`,
           paragraphs: [
-            `Hi ${client}, a reminder from ${business}: the ${item} payment for ${project} (${amount}) is due.`,
+            input.askedOn
+              ? `Hi ${client}, a reminder from ${business}: the ${item} payment for ${project} (${amount}), asked for on ${input.askedOn}, is still due.`
+              : `Hi ${client}, a reminder from ${business}: the ${item} payment for ${project} (${amount}) is due.`,
             "Open the link to see how to pay (UPI, bank transfer or a payment link). After paying, tap “I've paid” and add the UTR.",
           ],
           action: { label: "See how to pay", url },
-          footnote: `You pay ${business} directly. ScopeLock never holds your money.`,
+          footnote: input.askedOn
+            ? `If you've already paid, tap “I've paid” on the payment page and add the UTR, and these reminders stop. You pay ${business} directly. ScopeLock never holds your money.`
+            : `You pay ${business} directly. ScopeLock never holds your money.`,
         },
       };
   }

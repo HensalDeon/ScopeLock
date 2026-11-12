@@ -92,6 +92,11 @@ async function ProjectDetail({
     methodsReady: money.methodsReady,
     payBy: money.payBy,
     readOnly: archived,
+    autoReminders: {
+      ...money.autoReminders,
+      clientHref: project.client ? `/clients/${project.client.id}` : null,
+    },
+    now: money.now,
   };
 
   const scope = (

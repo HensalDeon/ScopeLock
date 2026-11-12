@@ -6,6 +6,8 @@ import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { TOUCH_LINK } from "@/shared/ui/touch";
 import type { ScheduleItem } from "../domain/payment";
+import type { AutoRemindersContext } from "../server/project-money";
+import { AutoReminderLine } from "./auto-reminder-line";
 import { PaymentActions } from "./payment-actions";
 import { PaymentStateBadge } from "./payment-state-badge";
 
@@ -32,6 +34,10 @@ export type ScheduleRowContext = {
   payBy?: string;
   /** Archived project: show the payments, offer no actions. */
   readOnly?: boolean;
+  /** Automatic reminders (Pro, Agency), and the client's page for an email. */
+  autoReminders?: AutoRemindersContext & { clientHref: string | null };
+  /** When the page was read. */
+  now?: Date;
 };
 
 /**
@@ -137,6 +143,12 @@ export function ScheduleRow({
           ) : (
             <PaymentActions {...paymentActionProps(item, ctx)} />
           )}
+        </div>
+      )}
+      {/* The money strip shows it for the payment it's waiting on. */}
+      {item.payment && actedAbove !== "waiting" && (
+        <div className="pl-[2.5rem]">
+          <AutoReminderLine payment={item.payment} ctx={ctx} />
         </div>
       )}
     </li>

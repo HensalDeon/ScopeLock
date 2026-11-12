@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { IDLE } from "@/shared/lib/form-state";
+import { cn } from "@/shared/lib/utils";
 import { announcing } from "@/shared/ui/announce";
 import { Button } from "@/shared/ui/button";
 import { TOUCH } from "@/shared/ui/touch";
@@ -16,12 +17,14 @@ export function Run({
   label,
   pendingLabel,
   variant = "default",
+  className,
 }: {
   action: Action;
   fields: Record<string, string>;
   label: string;
   pendingLabel: string;
-  variant?: "default" | "outline" | "ghost" | "destructive";
+  variant?: "default" | "outline" | "ghost" | "destructive" | "link";
+  className?: string;
 }) {
   // On success the row moves on and this button is gone: say what happened
   // and put focus on the money strip, which now shows the new state.
@@ -37,7 +40,7 @@ export function Run({
       <Button
         type="submit"
         size="sm"
-        className={TOUCH}
+        className={cn(TOUCH, className)}
         variant={variant}
         disabled={pending}
       >

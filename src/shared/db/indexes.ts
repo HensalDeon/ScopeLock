@@ -67,6 +67,11 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     },
     // The overview: payments still owed across the workspace.
     { key: { workspaceId: 1, status: 1, requestedAt: 1 } },
+    // The daily reminder run: which workspaces have a payment due.
+    {
+      key: { status: 1, requestedAt: 1 },
+      partialFilterExpression: { status: "due" },
+    },
   ],
   [COLLECTIONS.invoicingSettings]: [{ key: { workspaceId: 1 }, unique: true }],
   // Per-workspace sequences ("proposal": P-001, P-002…).

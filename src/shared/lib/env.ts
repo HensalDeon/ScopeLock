@@ -79,6 +79,21 @@ const serverEnvSchema = z
     RAZORPAY_KEY_ID: optional,
     RAZORPAY_KEY_SECRET: optional,
     RAZORPAY_WEBHOOK_SECRET: optional,
+
+    // Scheduled jobs (automatic payment reminders): the secret a scheduler
+    // sends as "Authorization: Bearer <CRON_SECRET>" to /api/cron/*.
+    // Unset = the jobs can't be started.
+    CRON_SECRET: z
+      .string()
+      .trim()
+      .transform((v) => (v === "" ? undefined : v))
+      .pipe(
+        z
+          .string()
+          .min(32, "CRON_SECRET must be at least 32 characters.")
+          .optional(),
+      )
+      .optional(),
   })
   .superRefine((e, ctx) => {
     if (e.NODE_ENV !== "production") return;

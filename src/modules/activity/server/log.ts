@@ -139,6 +139,14 @@ export async function listRecentActivity(
 }
 
 /** Email reminders sent in the last `hours` (reminder key → when). */
+/** Same, for a given workspace (the daily reminder run). */
+export async function lastRemindersIn(
+  workspaceId: string,
+  since: Date,
+): Promise<Map<string, Date>> {
+  return findLastReminders(workspaceId, since);
+}
+
 export async function listLastReminders(
   hours = 24,
 ): Promise<Map<string, Date>> {

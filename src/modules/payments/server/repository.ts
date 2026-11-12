@@ -49,6 +49,8 @@ export type PaymentDoc = WorkspaceOwned & {
     by: { userId: string; name: string };
   } | null;
   history: HistoryEntry[];
+  /** Automatic reminders sent to the client, and the freelancer's pause. */
+  autoReminders?: { sent?: Date[]; paused?: boolean };
 };
 
 const payments = (workspaceId: string) =>
@@ -97,6 +99,12 @@ export function toPayment(doc: PaymentDoc): Payment {
       doc.status === "due" && rejection?.note
         ? { note: rejection.note, at: rejection.at }
         : null,
+    dueSince:
+      doc.history.findLast((h) => h.status === "due")?.at ?? doc.requestedAt,
+    autoReminders: {
+      sent: doc.autoReminders?.sent ?? [],
+      paused: doc.autoReminders?.paused === true,
+    },
   };
 }
 

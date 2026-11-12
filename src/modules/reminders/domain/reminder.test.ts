@@ -65,6 +65,20 @@ describe("reminderEmail", () => {
     expect(e.content.footnote).toContain("You pay Asha Menon Studio directly");
   });
 
+  it("says when an automatic one was asked for, and how to stop them", () => {
+    const e = reminderEmail({
+      ...base,
+      kind: "payment",
+      item: "Advance",
+      amount: "₹28,320",
+      askedOn: "18 Nov",
+    });
+    expect(e.content.paragraphs[0]).toBe(
+      "Hi Rahul, a reminder from Asha Menon Studio: the Advance payment for Website redesign (₹28,320), asked for on 18 Nov, is still due.",
+    );
+    expect(e.content.footnote).toContain("If you've already paid");
+  });
+
   it("points a proposal reminder at the proposal", () => {
     const e = reminderEmail({
       ...base,

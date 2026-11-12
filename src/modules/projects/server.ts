@@ -33,6 +33,11 @@ export {
   type PortalProject,
 } from "./server/portal-repository";
 export { type SentProposal } from "./server/project-docs";
+// For the daily reminder run (no signed-in member; workspace given).
+export {
+  findReminderTarget,
+  type ReminderTarget,
+} from "./server/reminder-target";
 export { PORTAL_TOKEN_PATTERN } from "./server/portal";
 export {
   documentBusiness,
