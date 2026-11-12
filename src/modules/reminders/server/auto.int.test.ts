@@ -100,7 +100,11 @@ describe("runAutoReminders", () => {
       type: "reminder.auto_emailed",
     });
     expect(logged?.actor).toEqual({ kind: "system" });
-    expect(logged?.data).toEqual({ title: "the Before launch payment" });
+    // Keyed like a manual reminder, so neither goes the same day as the other.
+    expect(logged?.data).toEqual({
+      title: "the Before launch payment",
+      label: `${logged?.projectId}:payment:${id.toHexString()}`,
+    });
   });
 
   it("two runs at the same moment still send one", async () => {

@@ -29,14 +29,22 @@ export async function getPaymentMethods(): Promise<{
 export async function getAutoReminderSetting(): Promise<{
   included: boolean;
   on: boolean;
+  /** Owners and admins can switch them; members only see the setting. */
+  canChange: boolean;
+  businessName: string;
 }> {
-  const { workspace } = await requireWorkspace();
+  const { workspace, role } = await requireWorkspace();
   const ws = workspace.workspaceId;
   const [{ plan }, on] = await Promise.all([
     getWorkspacePlan(ws),
     settingsRepo.findAutoRemindersOn(ws),
   ]);
-  return { included: plan.features.automaticReminders, on };
+  return {
+    included: plan.features.automaticReminders,
+    on,
+    canChange: role === "owner" || role === "admin",
+    businessName: workspace.businessName,
+  };
 }
 
 /**

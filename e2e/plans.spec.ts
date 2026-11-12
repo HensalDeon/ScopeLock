@@ -86,7 +86,7 @@ test("an admin-only account puts a workspace on Pro", async ({
   // Pro includes automatic reminders: on by default, and can be switched off.
   await p.goto("/settings/payments#reminders");
   const auto = p.getByRole("switch", {
-    name: "Email clients about unpaid payments",
+    name: "Email clients when a payment is still unpaid",
   });
   await expect(auto).toBeChecked();
   await auto.click();

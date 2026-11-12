@@ -34,7 +34,10 @@ export {
 } from "./domain/auto-reminders";
 export { nextStep, stillToAsk, type NextStep } from "./domain/next-step";
 export { PaymentMethodsForm } from "./ui/methods-form";
-export { AutoRemindersSetting } from "./ui/auto-reminders-setting";
+export {
+  AUTO_REMINDERS_SUMMARY,
+  AutoRemindersSetting,
+} from "./ui/auto-reminders-setting";
 export { PaymentStateBadge, PaymentsPanel } from "./ui/payments-panel";
 export { ProjectMoneyStrip } from "./ui/project-money-strip";
 export type { ScheduleRowContext } from "./ui/schedule-row";

@@ -5,6 +5,7 @@
 export { EmailReminderButton } from "./ui/email-reminder-button";
 export {
   nextReminderAt,
+  reminderEmail,
   reminderKey,
   REMINDER_KINDS,
   type ReminderKind,

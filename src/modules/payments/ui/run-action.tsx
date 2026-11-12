@@ -18,6 +18,7 @@ export function Run({
   pendingLabel,
   variant = "default",
   className,
+  focusId,
 }: {
   action: Action;
   fields: Record<string, string>;
@@ -25,11 +26,13 @@ export function Run({
   pendingLabel: string;
   variant?: "default" | "outline" | "ghost" | "destructive" | "link";
   className?: string;
+  /** Where focus goes after success (default: the money strip). */
+  focusId?: string;
 }) {
   // On success the row moves on and this button is gone: say what happened
   // and put focus on the money strip, which now shows the new state.
   const [state, action, pending] = useActionState<PaymentFormState, FormData>(
-    announcing(run, `money-${fields.projectId}`),
+    announcing(run, focusId ?? `money-${fields.projectId}`),
     IDLE,
   );
   return (

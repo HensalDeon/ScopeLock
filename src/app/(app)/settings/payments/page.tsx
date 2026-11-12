@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import {
+  AUTO_REMINDERS_SUMMARY,
   AutoRemindersSetting,
   methodsFormValues,
   PaymentMethodsForm,
@@ -38,11 +39,13 @@ async function PaymentSettings() {
         qrUrl={qrUrl}
         uploadsEnabled={isStorageConfigured()}
       />
-      <div className="mt-8 border-t pt-8">
-        <Section id="reminders" title="Automatic reminders">
-          <AutoRemindersSetting {...reminders} />
-        </Section>
-      </div>
+      <Section
+        id="reminders"
+        title="Automatic reminders"
+        description={AUTO_REMINDERS_SUMMARY}
+      >
+        <AutoRemindersSetting {...reminders} />
+      </Section>
     </div>
   );
 }

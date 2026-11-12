@@ -6,7 +6,13 @@ import { z } from "zod";
 import { listLastReminders, logActivity } from "@/modules/activity/server";
 import { changeLabel } from "@/modules/changes";
 import { listChanges } from "@/modules/changes/server";
-import { listOwedPayments } from "@/modules/payments/server";
+import { getWorkspacePlan } from "@/modules/billing/server";
+import type { Payment } from "@/modules/payments";
+import {
+  autoRemindersOnIn,
+  claimAutoReminder,
+  listOwedPayments,
+} from "@/modules/payments/server";
 import {
   findProjectWithClient,
   getShareState,
@@ -34,7 +40,13 @@ async function target(
   ref: string,
   project: NonNullable<Awaited<ReturnType<typeof findProjectWithClient>>>,
   portal: string,
-): Promise<{ item: string; amount: string; url: string; since: Date | null }> {
+): Promise<{
+  item: string;
+  amount: string;
+  url: string;
+  since: Date | null;
+  payment?: Payment;
+}> {
   const money = (n: Parameters<typeof formatMoney>[0]) =>
     formatMoney(n, project.currency);
   if (kind === "proposal") {
@@ -67,6 +79,7 @@ async function target(
     amount: money(payment.payable),
     url: `${portal}/pay/${payment.id}`,
     since: payment.requestedAt,
+    payment,
   };
 }
 
@@ -95,7 +108,7 @@ export const emailReminder = workspaceAction(
     const portal = (await getShareState(project.id)).url;
     if (!portal) throw new UserError(GONE);
 
-    const { item, amount, url, since } = await target(
+    const { item, amount, url, since, payment } = await target(
       kind,
       ref,
       project,
@@ -107,7 +120,7 @@ export const emailReminder = workspaceAction(
     if (wait)
       throw new UserError(
         last
-          ? `You emailed a reminder about this in the last day. The next one can go from ${formatDateTime(wait)}.`
+          ? `A reminder about this went to ${client} in the last day. The next one can go from ${formatDateTime(wait)}.`
           : `This went to ${client} less than a day ago. A reminder can go from ${formatDateTime(wait)}.`,
       );
     await sendEmail({
@@ -122,6 +135,17 @@ export const emailReminder = workspaceAction(
         url,
       }),
     });
+    // With automatic reminders on, sending one now is the next of the
+    // three: the schedule carries on from here instead of adding a fourth.
+    if (payment && !payment.autoReminders.paused) {
+      const ws = workspace.workspaceId;
+      const [{ plan }, on] = await Promise.all([
+        getWorkspacePlan(ws),
+        autoRemindersOnIn(ws),
+      ]);
+      if (plan.features.automaticReminders && on)
+        await claimAutoReminder(ws, payment, new Date());
+    }
     await logActivity(workspace.workspaceId, {
       projectId: parseObjectId(project.id) as ObjectId,
       type: "reminder.emailed",

@@ -133,7 +133,10 @@ async function remind(
     type: "reminder.auto_emailed",
     at: now,
     actor: { kind: "system" },
-    data: { title: `the ${payment.label} payment` },
+    data: {
+      title: `the ${payment.label} payment`,
+      label: reminderKey(payment.projectId, "payment", payment.id),
+    },
   });
   return "sent";
 }

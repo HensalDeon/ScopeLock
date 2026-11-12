@@ -18,6 +18,7 @@ export function EmailReminderButton({
   refId,
   sentLabel,
   align = "end",
+  look = "button",
 }: {
   projectId: string;
   kind: "proposal" | "change" | "payment";
@@ -26,9 +27,44 @@ export function EmailReminderButton({
   sentLabel: string | null;
   /** Lines up with its row: right in lists, left in the project strip. */
   align?: "start" | "end";
+  /**
+   * "link": "Send it now" inside the automatic reminder line, which already
+   * says when the next one goes; shows nothing while none can go.
+   */
+  look?: "button" | "link";
 }) {
   const [state, action, pending] = useActionState(emailReminder, IDLE);
   const sent = state.status === "success" ? "Emailed just now" : sentLabel;
+  if (look === "link") {
+    if (state.status === "success")
+      return (
+        <span role="status" className="text-sm text-muted-foreground">
+          Emailed just now
+        </span>
+      );
+    if (sentLabel) return null;
+    return (
+      <form action={action} className="inline-grid gap-1">
+        <input type="hidden" name="projectId" value={projectId} />
+        <input type="hidden" name="kind" value={kind} />
+        <input type="hidden" name="ref" value={refId} />
+        <Button
+          type="submit"
+          variant="link"
+          size="sm"
+          disabled={pending}
+          className="h-auto px-0 font-medium text-foreground underline max-sm:h-11"
+        >
+          {pending ? "Emailing…" : "Send it now"}
+        </Button>
+        {state.status === "error" && state.message && (
+          <p role="alert" className="max-w-72 text-[13px] text-destructive">
+            {state.message}
+          </p>
+        )}
+      </form>
+    );
+  }
   if (sent)
     return (
       <p

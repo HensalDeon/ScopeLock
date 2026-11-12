@@ -1,5 +1,6 @@
 import "server-only";
 import { parseObjectId } from "@/shared/db/ids";
+import { AUTO_REMINDER_DAYS } from "../domain/auto-reminders";
 import type { Payment } from "../domain/payment";
 import * as reminderRepo from "./reminder-repository";
 import { toPayment } from "./repository";
@@ -27,13 +28,9 @@ export async function claimAutoReminder(
   at: Date,
 ): Promise<boolean> {
   const id = parseObjectId(payment.id);
-  return id
-    ? reminderRepo.claimAutoReminder(
-        workspaceId,
-        id,
-        payment.autoReminders.sent.length,
-        at,
-      )
+  const step = payment.autoReminders.sent.length;
+  return id && step < AUTO_REMINDER_DAYS.length
+    ? reminderRepo.claimAutoReminder(workspaceId, id, step, at)
     : false;
 }
 

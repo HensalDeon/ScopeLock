@@ -135,7 +135,11 @@ export async function findLastReminders(
 ): Promise<Map<string, Date>> {
   const docs = await activity(workspaceId)
     .find(
-      { type: "reminder.emailed", at: { $gte: since } },
+      // Yours and ScopeLock's automatic ones: never two in a day.
+      {
+        type: { $in: ["reminder.emailed", "reminder.auto_emailed"] },
+        at: { $gte: since },
+      },
       { sort: { at: 1 }, projection: { at: 1, data: 1 } },
     )
     .toArray();
