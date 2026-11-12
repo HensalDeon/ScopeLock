@@ -8,6 +8,7 @@ import { minor, type Minor } from "@/shared/lib/money";
 import { signedUrls } from "@/shared/storage/r2";
 import type { PaymentMethods } from "../domain/methods";
 import type { Payment } from "../domain/payment";
+import * as received from "./received-repository";
 import * as repo from "./repository";
 import * as settingsRepo from "./settings-repository";
 import {
@@ -89,12 +90,22 @@ export async function listOwedPayments(): Promise<Payment[]> {
   );
 }
 
+/** Received change-request money, per change request (the recovered report). */
+export async function listReceivedChangeLines(): Promise<
+  { changeId: string; amount: Minor }[]
+> {
+  const { workspace } = await requireWorkspace();
+  return (await received.findReceivedChangeLines(workspace.workspaceId)).map(
+    (l) => ({ changeId: l.changeId, amount: minor(l.amount) }),
+  );
+}
+
 /** Change-request money received so far (before GST), for the overview. */
 export async function listReceivedChangeAmounts(): Promise<
   { currency: CurrencyCode; amount: Minor }[]
 > {
   const { workspace } = await requireWorkspace();
-  return (await repo.findReceivedChangeAmounts(workspace.workspaceId)).map(
+  return (await received.findReceivedChangeAmounts(workspace.workspaceId)).map(
     (r) => ({ currency: r.currency, amount: minor(r.amount) }),
   );
 }

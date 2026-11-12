@@ -26,17 +26,20 @@ describe("lineIssue", () => {
     ).toBe("Says 5 team members; the limit is 3.");
   });
 
-  it("catches a feature that's off, unbuilt without soon, or built with soon", () => {
+  it("catches a feature that's off, or built but still marked soon", () => {
     expect(lineIssue(line("Priority support"), pro!)).toBe(
       "Priority support is switched off for this plan.",
     );
-    expect(
-      lineIssue(line("Revenue recovered reports by client and month"), agency!),
-    ).toBe("Revenue recovered reports isn't built yet: mark it soon.");
     // Built since: a plan still saying "soon" is flagged.
     expect(lineIssue(line("Automatic payment reminders", true), pro!)).toBe(
       "Automatic payment reminders is built: turn off soon.",
     );
+    expect(
+      lineIssue(
+        line("Revenue recovered reports by client and month", true),
+        agency!,
+      ),
+    ).toBe("Revenue recovered reports is built: turn off soon.");
     expect(lineIssue(line("Your logo on approval pages", true), pro!)).toBe(
       "Your branding for clients is built: turn off soon.",
     );

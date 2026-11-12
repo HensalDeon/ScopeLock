@@ -10,6 +10,7 @@ export {
   getProjectPayments,
   listOwedPayments,
   listReceivedChangeAmounts,
+  listReceivedChangeLines,
 } from "./server/queries";
 export type { PaymentSchedule, ProjectForSchedule } from "./server/schedule";
 export { getProjectMoney, type ProjectMoney } from "./server/project-money";

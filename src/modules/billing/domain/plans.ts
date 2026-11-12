@@ -39,8 +39,9 @@ export const FEATURE_LABELS: Record<
   },
   recoveredReports: {
     title: "Revenue recovered reports",
-    detail: "Recovered work by client and month, to download.",
-    built: false,
+    detail:
+      "Approved change requests by month and by client for each financial year, with a CSV to download.",
+    built: true,
   },
   prioritySupport: {
     title: "Priority support",
@@ -126,7 +127,7 @@ export const DEFAULT_PLANS: readonly Plan[] = [
     highlights: [
       { label: "15 active projects" },
       { label: "Everything in Pro" },
-      { label: "Revenue recovered reports by client and month", soon: true },
+      { label: "Revenue recovered reports by client and month" },
       { label: "Up to 5 team members", soon: true },
       { label: "Priority support" },
     ],

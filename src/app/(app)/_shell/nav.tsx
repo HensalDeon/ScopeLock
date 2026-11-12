@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChartColumn,
   FolderKanban,
   LayoutGrid,
   Settings2,
@@ -13,7 +14,7 @@ import { cn } from "@/shared/lib/utils";
 import { LinkPending } from "@/shared/ui/link-pending";
 
 type NavItem = {
-  href: "/dashboard" | "/projects" | "/clients" | "/settings";
+  href: "/dashboard" | "/projects" | "/clients" | "/reports" | "/settings";
   label: string;
   icon: LucideIcon;
 };
@@ -22,6 +23,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/clients", label: "Clients", icon: Users },
+  { href: "/reports", label: "Reports", icon: ChartColumn },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 

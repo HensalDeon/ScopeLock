@@ -127,6 +127,16 @@ export function RecoveredStrip({
             on {latest.project}, approved {formatDate(latest.approvedAt)}.
           </p>
         )}
+        {!empty && (
+          <p className="text-[13px]">
+            <Link
+              href="/reports"
+              className="font-medium text-foreground underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
+            >
+              Revenue recovered by client and by month
+            </Link>
+          </p>
+        )}
       </div>
       {!empty && (
         // Phones: one ledger row per figure (label left, amount right, count

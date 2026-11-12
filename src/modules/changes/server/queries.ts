@@ -46,6 +46,7 @@ export async function listOpenChanges(): Promise<ChangeRequest[]> {
 /** Every approved change's value and date, for the overview's "recovered". */
 export async function listApprovedChangeTotals(): Promise<
   {
+    id: string;
     currency: CurrencyCode;
     total: Minor;
     approvedAt: Date;

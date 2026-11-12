@@ -399,7 +399,7 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 
 ## Layout
 
-A left sidebar (canvas grey) holds the workspace switcher and four destinations; the main column is white with a centred content container. Pages open with a title row (title left, the one primary action right), then stacked sections separated by space rather than boxes.
+A left sidebar (canvas grey) holds the workspace switcher and five destinations (Overview, Projects, Clients, Reports, Settings); the main column is white with a centred content container. Pages open with a title row (title left, the one primary action right), then stacked sections separated by space rather than boxes.
 
 Detail pages use a two-column grid on desktop: the working column (scope, payments, change requests, activity) and an 18rem side column (share panel, client card). On phones the side column's main action moves to the top and everything stacks. Forms use a label column (about 14–15rem) beside the fields on desktop, stacking on phones. Client documents are capped at A4 width (210mm) and centred.
 

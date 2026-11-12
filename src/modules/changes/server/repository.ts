@@ -238,6 +238,7 @@ export async function findChangeStatuses(
 /** Approved change requests' value and date, for "revenue recovered". */
 export async function findApprovedChangeTotals(workspaceId: string): Promise<
   {
+    id: string;
     currency: CurrencyCode;
     total: number;
     approvedAt: Date;
@@ -265,6 +266,7 @@ export async function findApprovedChangeTotals(workspaceId: string): Promise<
     d.decision
       ? [
           {
+            id: d._id.toHexString(),
             currency: d.currency,
             total: d.total,
             approvedAt: d.decision.at,
