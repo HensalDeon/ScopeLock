@@ -134,7 +134,7 @@ export function Cover({
               ? "Not sent yet"
               : formatDate(data.issuedOn, { withYear: true })}
           </strong>
-          {data.validUntil && !draft && (
+          {data.validUntil && (
             <>
               <span className="mt-3 block text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">
                 Valid until

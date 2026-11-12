@@ -86,7 +86,7 @@ export function scopeSections(
   });
 
   sections.push({
-    title: "Investment",
+    title: "Price",
     body: (
       // The lines and their prices are in "What's included" just above;
       // the investment is the total, once, without repeating them.

@@ -43,24 +43,6 @@ export function setupSteps(input: {
       action: "Add a client",
     },
     {
-      title: "Add how you get paid",
-      short: "how you get paid",
-      detail:
-        "UPI ID, bank account or a payment link, so clients know where to pay.",
-      done: input.paymentsReady,
-      href: "/settings/payments",
-      action: "Add payment details",
-    },
-    {
-      title: "Add your invoice details",
-      short: "invoice details",
-      detail:
-        "Your legal name and address, and your GSTIN if you're registered for GST. Do it before your first invoice: issued invoices can't be changed.",
-      done: input.invoicingReady,
-      href: "/settings/invoicing",
-      action: "Add invoice details",
-    },
-    {
       title: "Write down a project's scope",
       short: "a project's scope",
       detail: "List what's included, the price, and how the client pays.",
@@ -74,6 +56,24 @@ export function setupSteps(input: {
       detail:
         "Send it to your client. Once they approve, it's locked as the baseline.",
       done: Boolean(approved),
+    },
+    {
+      title: "Add how you get paid",
+      short: "how you get paid",
+      detail:
+        "UPI ID, bank account or a payment link: needed before you ask for your first payment.",
+      done: input.paymentsReady,
+      href: "/settings/payments",
+      action: "Add payment details",
+    },
+    {
+      title: "Add your invoice details",
+      short: "invoice details",
+      detail:
+        "Your legal name and address, and your GSTIN if you're registered for GST. Do it before your first invoice: issued invoices can't be changed.",
+      done: input.invoicingReady,
+      href: "/settings/invoicing",
+      action: "Add invoice details",
     },
     {
       title: "Log extra requests as they come in",
