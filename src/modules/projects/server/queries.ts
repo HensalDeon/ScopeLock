@@ -62,9 +62,7 @@ export async function listProjectsForClient(
 }
 
 /** Projects that could be archived now (for a full plan's notice). */
-export async function listArchivable(): Promise<
-  { id: string; name: string }[]
-> {
+export async function listArchivable(): ReturnType<typeof repo.findArchivable> {
   const { workspace } = await requireWorkspace();
   return repo.findArchivable(workspace.workspaceId);
 }

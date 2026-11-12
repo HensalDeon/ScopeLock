@@ -44,9 +44,9 @@ export function MoneyStrip({ rows }: { rows: CurrencyTotals[] }) {
       label: taxed ? "Total with GST" : "Total",
       amounts: rows.map((r) => ({ c: r.currency, v: r.total })),
       note: taxed
-        ? `${formatMoney(minor(taxed.total - taxed.tax), taxed.currency)} + ${formatMoney(taxed.tax, taxed.currency)} GST · ${plural(approvedCount, "project")}`
+        ? `${formatMoney(minor(taxed.total - taxed.tax), taxed.currency)} + ${formatMoney(taxed.tax, taxed.currency)} GST · ${plural(approvedCount, "approved project")}`
         : approvedCount
-          ? plural(approvedCount, "project")
+          ? plural(approvedCount, "approved project")
           : "None approved yet",
       waiting: false,
     },

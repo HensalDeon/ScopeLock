@@ -5,6 +5,7 @@ import type { ClientSession, ObjectId } from "mongodb";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 import { minor } from "@/shared/lib/money";
 import { containsPattern } from "@/shared/lib/search";
+import { archivableState, type ArchivableState } from "../domain/archive";
 import type { Project } from "../domain/project";
 
 import {
@@ -288,16 +289,28 @@ const ARCHIVABLE = {
 /** Projects that could be archived right now, least recently touched first. */
 export async function findArchivable(
   workspaceId: string,
-  limit = 5,
-): Promise<{ id: string; name: string }[]> {
+  limit = 6,
+): Promise<
+  (Pick<Project, "id" | "name" | "status" | "currency" | "totals"> & {
+    state: ArchivableState;
+  })[]
+> {
   const docs = await projects(workspaceId)
-    .find(ARCHIVABLE, {
-      projection: { name: 1 },
-      sort: { updatedAt: 1 },
-      limit,
-    })
+    .find(ARCHIVABLE, { sort: { updatedAt: 1 }, limit: 50 })
     .toArray();
-  return docs.map((d) => ({ id: d._id.toHexString(), name: d.name }));
+  const order = { paid: 0, draft: 1, to_ask: 2 } as const;
+  return docs
+    .map(toProject)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      status: p.status,
+      currency: p.currency,
+      totals: p.totals,
+      state: archivableState(p),
+    }))
+    .sort((a, b) => order[a.state.kind] - order[b.state.kind])
+    .slice(0, limit);
 }
 
 /**

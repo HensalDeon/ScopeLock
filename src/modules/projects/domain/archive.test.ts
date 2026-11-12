@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { minor } from "@/shared/lib/money";
-import { archiveBlocker, projectLimitReached } from "./archive";
+import {
+  archivableState,
+  archiveBlocker,
+  projectLimitReached,
+} from "./archive";
 import { emptyTotals } from "./project";
 
 const totals = (patch = {}) => ({ ...emptyTotals(minor(8_000_000)), ...patch });
@@ -68,5 +72,25 @@ describe("projectLimitReached", () => {
         to: "restore this one",
       }),
     ).toMatch(/to restore this one\.$/);
+  });
+});
+
+describe("archivableState", () => {
+  it("says what archiving would leave behind", () => {
+    expect(archivableState({ status: "draft", totals: totals() })).toEqual({
+      kind: "draft",
+    });
+    expect(
+      archivableState({
+        status: "active",
+        totals: totals({ paid: minor(5_100_000) }),
+      }),
+    ).toEqual({ kind: "to_ask", amount: 2_900_000 });
+    expect(
+      archivableState({
+        status: "active",
+        totals: totals({ paid: minor(8_000_000) }),
+      }),
+    ).toEqual({ kind: "paid" });
   });
 });

@@ -50,3 +50,22 @@ export function projectLimitReached(input: {
   const to = input.to ?? "start a new one";
   return `You have ${input.active} active project${input.active === 1 ? "" : "s"}, and ${input.planName} allows ${input.limit}. Archive a finished project to ${to}.`;
 }
+
+export type ArchivableState =
+  | { kind: "paid" }
+  | { kind: "draft" }
+  /** Approved work not asked for yet (before GST). */
+  | { kind: "to_ask"; amount: number };
+
+/**
+ * For the "can be archived now" list: what archiving would leave behind,
+ * so nobody hides money they haven't asked for without seeing it.
+ */
+export function archivableState(
+  project: Pick<Project, "status" | "totals">,
+): ArchivableState {
+  if (project.status === "draft") return { kind: "draft" };
+  const { baseline, approvedChanges, paid, due } = project.totals;
+  const toAsk = baseline + approvedChanges - paid - due;
+  return toAsk > 0 ? { kind: "to_ask", amount: toAsk } : { kind: "paid" };
+}

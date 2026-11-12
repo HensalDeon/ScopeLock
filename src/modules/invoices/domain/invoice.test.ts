@@ -258,7 +258,15 @@ describe("gstOutcome", () => {
   it("says GST doesn't apply when you're not registered", () => {
     expect(
       gstOutcome({ gstin: null, state: null }, buyer({ state: "27" }), "Kavya"),
-    ).toMatch(/^You don't charge GST/);
+    ).toBe("No GST on your invoices: you aren't GST-registered.");
+    // Their GSTIN, if they have one, is only printed for their records.
+    expect(
+      gstOutcome(
+        { gstin: null, state: null },
+        buyer({ state: "27", gstin: "27ABCDE1234F1Z5" }),
+        "Kavya",
+      ),
+    ).toMatch(/^You don't charge GST, so their GSTIN/);
   });
 });
 

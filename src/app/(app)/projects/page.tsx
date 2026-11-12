@@ -11,6 +11,7 @@ import {
 } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { Button } from "@/shared/ui/button";
+import { cn } from "@/shared/lib/utils";
 import { parsePage } from "@/shared/lib/pagination";
 import { listHref, parseSearch } from "@/shared/lib/search";
 import { EmptyState, ListSkeleton } from "@/shared/ui/list-states";
@@ -105,9 +106,17 @@ async function Projects({
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-muted-foreground tabular-nums">
-        {active} of {plan.activeProjects} active projects on {plan.name}, drafts
-        included.{" "}
+      <p
+        className={cn(
+          "text-sm tabular-nums",
+          active >= plan.activeProjects
+            ? "rounded-lg bg-warning-soft px-3 py-2 text-warning-ink"
+            : "text-muted-foreground",
+        )}
+      >
+        {active >= plan.activeProjects
+          ? `Your plan is full: ${active} of ${plan.activeProjects} active projects on ${plan.name}, drafts included. Upgrade or archive one to start another.`
+          : `${active} of ${plan.activeProjects} active projects on ${plan.name}, drafts included.`}{" "}
         <Link
           href="/settings/plan"
           className="font-medium text-foreground underline-offset-4 hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"

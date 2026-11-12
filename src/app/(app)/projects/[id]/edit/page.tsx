@@ -15,7 +15,8 @@ import { requireWorkspace } from "@/modules/workspace/server";
 import { BackLink } from "@/shared/ui/back-link";
 import { PageContainer, PageHeader } from "@/shared/ui/page";
 
-export const metadata: Metadata = { title: "Edit project" };
+// The title names the project (set with the form, once it's loaded).
+export const metadata: Metadata = {};
 
 export default function EditProjectPage({
   params,
@@ -27,7 +28,6 @@ export default function EditProjectPage({
           <BackToProject params={params} />
         </Suspense>
       </div>
-      <PageHeader title="Edit project" />
       <Suspense fallback={<div className="h-[36rem] rounded-xl bg-canvas" />}>
         <Form params={params} />
       </Suspense>
@@ -67,17 +67,21 @@ async function Form({
     redirect(`/projects/${project.id}`);
 
   return (
-    <ProjectForm
-      // Fresh from the database after every save; a draft in progress is
-      // kept if the person navigates away and back without saving.
-      key={project.updatedAt.getTime()}
-      mode="edit"
-      projectId={project.id}
-      clients={clientOptions(clients, project, gstFor)}
-      defaultCurrency={workspace.currency}
-      newClientGst={gstFor({ state: null, country: null, gstin: null })}
-      cancelHref={`/projects/${project.id}` as Route}
-      defaults={projectFormValues(project, settings.defaults)}
-    />
+    <>
+      <title>{`Edit ${project.name} · ScopeLock`}</title>
+      <PageHeader title={`Edit ${project.name}`} />
+      <ProjectForm
+        // Fresh from the database after every save; a draft in progress is
+        // kept if the person navigates away and back without saving.
+        key={project.updatedAt.getTime()}
+        mode="edit"
+        projectId={project.id}
+        clients={clientOptions(clients, project, gstFor)}
+        defaultCurrency={workspace.currency}
+        newClientGst={gstFor({ state: null, country: null, gstin: null })}
+        cancelHref={`/projects/${project.id}` as Route}
+        defaults={projectFormValues(project, settings.defaults)}
+      />
+    </>
   );
 }

@@ -202,7 +202,7 @@ export function ScopeLinesEditor({
                       <button
                         type="button"
                         onClick={() => updateItem(item.key, { showNote: true })}
-                        className="py-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        className="py-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline max-sm:min-h-11"
                       >
                         Add a note
                       </button>
@@ -213,7 +213,7 @@ export function ScopeLinesEditor({
                         onClick={() =>
                           updateItem(item.key, { showIncludes: true })
                         }
-                        className="py-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        className="py-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline max-sm:min-h-11"
                       >
                         Add bullet points
                       </button>

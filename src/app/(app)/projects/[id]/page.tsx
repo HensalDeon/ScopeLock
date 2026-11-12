@@ -33,7 +33,8 @@ import { cn } from "@/shared/lib/utils";
 import { PageContainer, TitledSection } from "@/shared/ui/page";
 import { ProjectHistory } from "./_components/project-history";
 
-export const metadata: Metadata = { title: "Project" };
+// The title names the project (set once it's loaded).
+export const metadata: Metadata = {};
 
 /** The project page shows the latest few; the rest have their own pages. */
 const ACTIVITY_SHOWN = 5;
@@ -120,6 +121,7 @@ async function ProjectDetail({
 
   return (
     <div className="grid gap-8">
+      <title>{`${project.name} · ScopeLock`}</title>
       <ProjectHeader
         project={project}
         hasLink={share.hasLink}
