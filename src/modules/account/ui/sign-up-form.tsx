@@ -8,10 +8,12 @@ import { Button } from "@/shared/ui/button";
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/shared/ui/field";
+import { TOUCH_LINK } from "@/shared/ui/touch";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { Input } from "@/shared/ui/input";
 import { authErrorMessage } from "../domain/auth-flow";
@@ -35,24 +37,40 @@ export function SignUpForm({
     exists: boolean;
   } | null>(null);
   const [pending, setPending] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<"name" | "email" | "password", string>>
+  >({});
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const form = new FormData(formEl);
+    const name = String(form.get("name")).trim();
+    const email = String(form.get("email")).trim();
     const password = String(form.get("password"));
-    if (password.length < PASSWORD_MIN_LENGTH) {
-      setError({
-        message: `Use at least ${PASSWORD_MIN_LENGTH} characters for your password.`,
-        exists: false,
-      });
+    // Checked here, in the order of the fields, each under its own field.
+    const errors: typeof fieldErrors = {};
+    if (!name) errors.name = "Add your name, as your clients know you.";
+    if (!email) errors.email = "Add your email address.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      errors.email = "That doesn't look like an email address.";
+    if (password.length < PASSWORD_MIN_LENGTH)
+      errors.password = `Use at least ${PASSWORD_MIN_LENGTH} characters for your password.`;
+    setFieldErrors(errors);
+    const first = (["name", "email", "password"] as const).find(
+      (f) => errors[f],
+    );
+    if (first) {
+      setError(null);
+      formEl.querySelector<HTMLInputElement>(`[name="${first}"]`)?.focus();
       return;
     }
 
     setPending(true);
     setError(null);
     const { error } = await authClient.signUp.email({
-      name: String(form.get("name")).trim(),
-      email: String(form.get("email")).trim(),
+      name,
+      email,
       password,
       callbackURL: "/dashboard",
     });
@@ -88,7 +106,7 @@ export function SignUpForm({
           </FormAlert>
         )}
 
-        <Field>
+        <Field data-invalid={Boolean(fieldErrors.name) || undefined}>
           <FieldLabel htmlFor={`${uid}-name`}>Your name</FieldLabel>
           <Input
             id={`${uid}-name`}
@@ -96,10 +114,12 @@ export function SignUpForm({
             autoComplete="name"
             required
             autoFocus
+            aria-invalid={Boolean(fieldErrors.name) || undefined}
           />
+          <FieldError>{fieldErrors.name}</FieldError>
         </Field>
 
-        <Field>
+        <Field data-invalid={Boolean(fieldErrors.email) || undefined}>
           <FieldLabel htmlFor={`${uid}-email`}>Email</FieldLabel>
           <Input
             id={`${uid}-email`}
@@ -109,10 +129,12 @@ export function SignUpForm({
             inputMode="email"
             defaultValue={defaultEmail}
             required
+            aria-invalid={Boolean(fieldErrors.email) || undefined}
           />
+          <FieldError>{fieldErrors.email}</FieldError>
         </Field>
 
-        <Field>
+        <Field data-invalid={Boolean(fieldErrors.password) || undefined}>
           <FieldLabel htmlFor={`${uid}-password`}>Password</FieldLabel>
           <PasswordInput
             id={`${uid}-password`}
@@ -120,10 +142,15 @@ export function SignUpForm({
             autoComplete="new-password"
             minLength={PASSWORD_MIN_LENGTH}
             required
+            aria-invalid={Boolean(fieldErrors.password) || undefined}
           />
-          <FieldDescription>
-            At least {PASSWORD_MIN_LENGTH} characters.
-          </FieldDescription>
+          {fieldErrors.password ? (
+            <FieldError>{fieldErrors.password}</FieldError>
+          ) : (
+            <FieldDescription>
+              At least {PASSWORD_MIN_LENGTH} characters.
+            </FieldDescription>
+          )}
         </Field>
 
         <Button type="submit" size="lg" className="w-full" disabled={pending}>
@@ -131,11 +158,17 @@ export function SignUpForm({
         </Button>
         <p className="-mt-2 text-[13px] text-muted-foreground">
           By creating an account you agree to the{" "}
-          <Link href="/terms" className="underline underline-offset-4">
+          <Link
+            href="/terms"
+            className={`underline underline-offset-4 ${TOUCH_LINK}`}
+          >
             Terms
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="underline underline-offset-4">
+          <Link
+            href="/privacy"
+            className={`underline underline-offset-4 ${TOUCH_LINK}`}
+          >
             Privacy policy
           </Link>
           .

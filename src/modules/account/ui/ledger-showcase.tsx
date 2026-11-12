@@ -45,10 +45,6 @@ const approved = changes
 export function LedgerShowcase() {
   return (
     <div className="relative hidden flex-col justify-between overflow-hidden bg-brand-ink px-10 py-10 text-[#e8ecf2] lg:flex xl:px-14 xl:py-12">
-      <p className="font-mono text-[11px] tracking-[0.12em] text-[#8b95a7] uppercase">
-        Project ledger · Mehta Interiors
-      </p>
-
       <div className="mx-auto w-full max-w-[26rem] py-10">
         <div className="rounded-xl border border-white/[0.08] bg-[#111a2c] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]">
           <div className="flex items-start justify-between gap-4 border-b border-white/[0.07] px-5 py-4">

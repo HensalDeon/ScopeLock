@@ -12,7 +12,7 @@ export default function SignUpPage({ searchParams }: PageProps<"/sign-up">) {
     <>
       <AuthHeading
         title="Create your account"
-        description="Next you'll add your business name. Clients see it on every approval link and change order."
+        description="Free for 2 active projects. No card needed. Next you'll add your business name; clients see it on every approval link and change order."
       />
       <Suspense fallback={<FormSkeleton fields={3} />}>
         <SignUpWithOptions

@@ -71,6 +71,10 @@ export function WorkspaceFields({
 
       <FieldSet data-invalid={Boolean(errorFor("businessType")) || undefined}>
         <FieldLegend variant="label">How do you work?</FieldLegend>
+        <FieldDescription className="-mt-2">
+          Sets whether your proposals say &ldquo;I&rdquo; or &ldquo;we&rdquo;.
+          You can change it later in Settings.
+        </FieldDescription>
         <RadioGroup
           name="businessType"
           value={values.businessType}
