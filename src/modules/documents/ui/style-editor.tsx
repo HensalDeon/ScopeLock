@@ -132,9 +132,7 @@ export function DocumentStyleEditor({
         />
 
         <fieldset className="grid gap-5">
-          <legend className="mb-2 text-sm font-medium">
-            Logo and cover image
-          </legend>
+          <legend className="sr-only">Logo and cover image</legend>
           <ImageUpload
             kind="logo"
             label="Logo"
@@ -226,8 +224,13 @@ export function DocumentStyleEditor({
             logo.
           </p>
         )}
-        {/* Phones scroll the page, not a box inside it. */}
-        <div className="rounded-lg border bg-[#ebe8e2] p-3 lg:max-h-[78vh] lg:overflow-auto lg:p-5">
+        {/* A window onto the full sample (it's ~4,000px on a phone), so the
+            default-text form below stays within reach. */}
+        <div
+          tabIndex={0}
+          aria-label="Document preview"
+          className="max-h-[70vh] overflow-auto rounded-lg border bg-[#ebe8e2] p-3 lg:max-h-[78vh] lg:p-5"
+        >
           <ClassicDocument
             titleAs="h2"
             data={preview}

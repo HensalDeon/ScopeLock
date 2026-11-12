@@ -463,7 +463,7 @@ The signature container: a white panel with a hairline border and 11px corners, 
 ### Navigation
 
 - **Style:** canvas-grey sidebar; 32px items with 14px text and a 16px line icon, 6px corners; the active item sits on selected fill in ink medium with an emerald icon (the mark's echo), others in muted slate with a selected-fill hover.
-- **Settings tabs:** text tabs on a hairline with a 2px ink underline for the active tab, scrolling sideways on narrow screens.
+- **Settings tabs:** text tabs on a hairline with a 2px ink underline for the active tab. Phones: a two-column grid of 44px rows (a sideways strip hid the later tabs).
 - **Mobile:** the sidebar becomes a sheet from the left.
 
 ### Money strip

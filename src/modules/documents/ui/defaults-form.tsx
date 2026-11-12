@@ -15,6 +15,7 @@ import {
   FieldLabel,
 } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
+import { useUnsavedGuard } from "@/shared/ui/use-unsaved-guard";
 import { Textarea } from "@/shared/ui/textarea";
 import {
   defaultsToFormValues,
@@ -64,6 +65,7 @@ export function ProposalDefaultsForm({
     initial: saved,
     serverState: state,
   });
+  useUnsavedGuard(form.isDirty && !pending);
 
   return (
     <form
