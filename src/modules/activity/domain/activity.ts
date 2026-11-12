@@ -89,10 +89,13 @@ export function describeActivity(
   viewer: Viewer,
 ): ActivityLine {
   const { data, actor } = event;
-  // Who did it: "You" for the member reading it, the business for the client.
+  // Who did it, from the reader's side: "You" for your own actions (the
+  // member's, or the client's on their page); otherwise the name.
   const who =
     actor.kind === "client"
-      ? actor.name
+      ? viewer.kind === "client"
+        ? "You"
+        : actor.name
       : viewer.kind === "client"
         ? viewer.businessName
         : actor.userId === viewer.userId

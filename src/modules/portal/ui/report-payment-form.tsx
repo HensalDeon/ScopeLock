@@ -92,7 +92,7 @@ export function ReportPaymentForm({
     return (
       <p
         role="status"
-        className="rounded-lg border border-brand/25 bg-success-soft px-4 py-3 text-sm font-medium"
+        className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm font-medium text-warning-ink"
       >
         {state.message} {businessName} will check it and confirm.
       </p>

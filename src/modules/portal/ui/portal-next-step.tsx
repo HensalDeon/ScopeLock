@@ -43,7 +43,7 @@ export function PortalNextStep({
     return (
       <div className="grid gap-3 rounded-lg border border-warning/30 bg-warning-soft px-4 py-4 sm:flex sm:items-center sm:justify-between">
         <p className="text-sm font-medium text-pretty text-warning-ink">
-          Next to pay: {item.label},{" "}
+          Next to pay: the “{item.label}” payment,{" "}
           <span className="tabular-nums">{money(item.payable)}</span>.
         </p>
         <Button asChild className={TOUCH}>
@@ -56,7 +56,7 @@ export function PortalNextStep({
   }
   return (
     <p className="rounded-lg border px-4 py-3 text-sm text-pretty text-muted-foreground">
-      Nothing to pay right now. Next: {item.label},{" "}
+      Nothing to pay right now. Next: the “{item.label}” payment,{" "}
       <span className="tabular-nums">{money(item.payable)}</span>, when{" "}
       {business} asks for it.
     </p>

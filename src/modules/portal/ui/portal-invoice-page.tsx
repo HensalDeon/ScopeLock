@@ -52,7 +52,7 @@ export async function PortalInvoicePage({
             Pay {formatMoney(invoice.total, invoice.currency)}
           </Link>
         )}
-        <PrintButton variant="outline" />
+        <PrintButton variant="outline" iconOnPhones />
       </PortalHeader>
       <PrintSetup
         footer={`${invoice.seller.company ?? invoice.seller.name} · ${invoice.title} ${invoice.number}`}

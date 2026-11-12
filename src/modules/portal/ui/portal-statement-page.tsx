@@ -32,7 +32,7 @@ export async function PortalStatementPage({ token }: { token: string }) {
           </Link>
         }
       >
-        <PrintButton variant="outline" />
+        <PrintButton variant="outline" iconOnPhones />
       </PortalHeader>
       <PrintSetup
         footer={`${statement.business.name} · Project statement ${statement.reference}`}

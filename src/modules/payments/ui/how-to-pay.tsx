@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import type { CurrencyCode } from "@/shared/lib/currency";
 import { formatMoney, type Minor } from "@/shared/lib/money";
+import { CopyValue } from "@/shared/ui/copy-value";
 import {
   METHOD_LABELS,
   type MethodKind,
@@ -78,7 +79,9 @@ export function HowToPay({
                 </p>
                 <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1">
                   <dt className="text-muted-foreground">UPI ID</dt>
-                  <dd className="font-mono break-all">{methods.upi.vpa}</dd>
+                  <dd>
+                    <CopyValue value={methods.upi.vpa} label="UPI ID" />
+                  </dd>
                   <dt className="text-muted-foreground">Name</dt>
                   <dd>{methods.upi.payeeName}</dd>
                 </dl>
@@ -90,13 +93,18 @@ export function HowToPay({
               <dt className="text-muted-foreground">Account name</dt>
               <dd>{methods.bank.accountName}</dd>
               <dt className="text-muted-foreground">Account number</dt>
-              <dd className="font-mono break-all">
-                {methods.bank.accountNumber}
+              <dd>
+                <CopyValue
+                  value={methods.bank.accountNumber}
+                  label="account number"
+                />
               </dd>
               {methods.bank.ifsc && (
                 <>
                   <dt className="text-muted-foreground">IFSC</dt>
-                  <dd className="font-mono">{methods.bank.ifsc}</dd>
+                  <dd>
+                    <CopyValue value={methods.bank.ifsc} label="IFSC" />
+                  </dd>
                 </>
               )}
               <dt className="text-muted-foreground">Bank</dt>
@@ -113,7 +121,9 @@ export function HowToPay({
               {methods.bank.iban && (
                 <>
                   <dt className="text-muted-foreground">IBAN</dt>
-                  <dd className="font-mono break-all">{methods.bank.iban}</dd>
+                  <dd>
+                    <CopyValue value={methods.bank.iban} label="IBAN" />
+                  </dd>
                 </>
               )}
               <dt className="text-muted-foreground">Amount</dt>
@@ -125,7 +135,7 @@ export function HowToPay({
               href={methods.link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border px-3 text-sm font-medium hover:bg-muted"
+              className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border px-3 text-sm font-medium hover:bg-muted max-sm:h-11 max-sm:px-4"
             >
               Pay {total} with {methods.link.label}
               <ExternalLink aria-hidden className="size-4" />

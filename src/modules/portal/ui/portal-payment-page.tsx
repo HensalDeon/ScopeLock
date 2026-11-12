@@ -81,9 +81,12 @@ export async function PortalPaymentPage({
               {total}
             </span>
           </h1>
-          <p className="text-sm text-pretty">
-            You pay {businessName} directly. ScopeLock never holds your money.
-          </p>
+          {payment.status === "due" && (
+            <p className="text-sm text-pretty">
+              You pay {businessName} directly.
+              {view.branded ? "" : " ScopeLock never holds your money."}
+            </p>
+          )}
           <ul className="grid gap-1 border-t pt-3 text-sm">
             {payment.lines.map((line) => (
               <li

@@ -71,12 +71,12 @@ export async function PortalChangePage({
         {change.status === "sent" && (
           <a
             href="#answer"
-            className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80"
+            className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 max-sm:h-11 max-sm:px-4"
           >
             Approve or decline
           </a>
         )}
-        <PrintButton variant="outline" />
+        <PrintButton variant="outline" iconOnPhones />
       </PortalHeader>
 
       {change.status === "approved" && decision && (
@@ -131,9 +131,6 @@ export async function PortalChangePage({
             aria-labelledby="answer-heading"
             className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 sm:mt-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden"
           >
-            <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-              Your answer
-            </p>
             <h2
               id="answer-heading"
               className="mt-2 text-xl font-semibold tracking-[-0.01em] text-balance"
