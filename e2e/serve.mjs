@@ -32,6 +32,8 @@ const env = {
     "e2e-placeholder-secret-not-used-anywhere",
   EMAIL_TRANSPORT: "console",
   ADMIN_EMAILS: "e2e-admin@scopelock.test",
+  // Each test sends its own visitor IP here (e2e/fixtures.ts).
+  CLIENT_IP_HEADER: "x-e2e-client-ip",
   // Set but empty: .env.local can't switch these on for the tests.
   SMTP_HOST: "",
   R2_ACCOUNT_ID: "",

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { button, label } from "./helpers";
 
 test("sign-up says which field is wrong", async ({ page }) => {

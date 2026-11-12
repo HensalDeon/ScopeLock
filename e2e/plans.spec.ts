@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { button, codeFor, label, newEmail, signUpFreelancer } from "./helpers";
 
 async function draftProject(p: Page, name: string) {
