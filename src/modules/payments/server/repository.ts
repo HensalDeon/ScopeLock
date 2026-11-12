@@ -50,7 +50,7 @@ export type PaymentDoc = WorkspaceOwned & {
   } | null;
   history: HistoryEntry[];
   /** Automatic reminders sent to the client, and the freelancer's pause. */
-  autoReminders?: { sent?: Date[]; paused?: boolean };
+  autoReminders?: { sent?: Date[]; paused?: boolean; pausedUntil?: Date };
 };
 
 const payments = (workspaceId: string) =>
@@ -104,6 +104,7 @@ export function toPayment(doc: PaymentDoc): Payment {
     autoReminders: {
       sent: doc.autoReminders?.sent ?? [],
       paused: doc.autoReminders?.paused === true,
+      pausedUntil: doc.autoReminders?.pausedUntil ?? null,
     },
   };
 }

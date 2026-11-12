@@ -45,9 +45,29 @@ export type AutoReminderState = {
   dueSince: Date;
   /** Automatic reminders sent so far, oldest first. */
   sent: readonly Date[];
-  /** The freelancer paused them for this payment. */
+  /** The freelancer paused them for this payment, with no end date. */
   paused: boolean;
+  /** Paused until this day ("I'll pay on Friday"): none goes before it. */
+  pausedUntil?: Date | null;
 };
+
+/** "2026-11-20" (a date input's value) → that Indian calendar day. */
+export function indiaDayOfIsoDate(iso: string): number | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return null;
+  const utc = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const day = utc / DAY_MS;
+  // Rejects 2026-02-31 and the like, which Date.UTC rolls over.
+  return new Date(utc).getUTCDate() === Number(m[3]) ? day : null;
+}
+
+/** An Indian calendar day as a date input's value ("2026-11-20"). */
+export function isoDateOfIndiaDay(day: number): string {
+  return new Date(day * DAY_MS).toISOString().slice(0, 10);
+}
+
+/** How far ahead a pause can be set: a client's promised date, not a plan. */
+export const PAUSE_UNTIL_MAX_DAYS = 60;
 
 /**
  * The Indian calendar day the next automatic reminder goes, or null when
@@ -66,7 +86,11 @@ export function nextAutoReminderDay(
       .filter((d): d is Date => d !== null)
       .map(indiaDay),
   );
-  return Math.max(indiaDay(state.requestedAt) + after, lastEmail + 1);
+  return Math.max(
+    indiaDay(state.requestedAt) + after,
+    lastEmail + 1,
+    state.pausedUntil ? indiaDay(state.pausedUntil) : 0,
+  );
 }
 
 /** Whether the daily run should email this one now. */
@@ -86,7 +110,13 @@ export type AutoReminderView =
   | { kind: "off" }
   | { kind: "no_email" }
   | { kind: "paused"; sent: number }
-  | { kind: "next"; on: Date | "today"; sent: number }
+  | {
+      kind: "next";
+      on: Date | "today";
+      sent: number;
+      /** Held back by "pause until": the date it resumes. */
+      heldUntil: Date | null;
+    }
   | { kind: "done"; sent: number; last: Date };
 
 export function autoReminderView(input: {
@@ -114,9 +144,11 @@ export function autoReminderView(input: {
   const today = indiaDay(input.now);
   const earliest = indiaHour(input.now) >= SENDING_HOURS.to ? today + 1 : today;
   const on = Math.max(day, earliest);
+  const until = state.pausedUntil ? indiaDay(state.pausedUntil) : null;
   return {
     kind: "next",
     on: on === today ? "today" : noonOfIndiaDay(on),
     sent,
+    heldUntil: until !== null && until > today ? noonOfIndiaDay(until) : null,
   };
 }

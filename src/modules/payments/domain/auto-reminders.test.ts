@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   autoReminderView,
   indiaDay,
+  indiaDayOfIsoDate,
+  isoDateOfIndiaDay,
   isAutoReminderDue,
   isSendingHour,
   nextAutoReminderDay,
@@ -84,6 +86,18 @@ describe("nextAutoReminderDay", () => {
     );
   });
 
+  it("waits until a paused-until date, then carries on by itself", () => {
+    const friday = noonOfIndiaDay(day("2026-11-27"));
+    expect(nextAutoReminderDay(state({ pausedUntil: friday }), null)).toBe(
+      day("2026-11-27"),
+    );
+    // A date already passed changes nothing.
+    const past = noonOfIndiaDay(day("2026-11-19"));
+    expect(nextAutoReminderDay(state({ pausedUntil: past }), null)).toBe(
+      day("2026-11-21"),
+    );
+  });
+
   it("sends none while paused", () => {
     expect(nextAutoReminderDay(state({ paused: true }), null)).toBeNull();
   });
@@ -135,6 +149,7 @@ describe("autoReminderView", () => {
       kind: "next",
       on: noonOfIndiaDay(day("2026-11-21")),
       sent: 0,
+      heldUntil: null,
     });
   });
 
@@ -145,6 +160,13 @@ describe("autoReminderView", () => {
     expect(autoReminderView(late)).toMatchObject({
       on: noonOfIndiaDay(day("2026-11-22")),
     });
+  });
+
+  it("says when a pause until a date ends", () => {
+    const friday = noonOfIndiaDay(day("2026-11-27"));
+    expect(
+      autoReminderView({ ...base, state: state({ pausedUntil: friday }) }),
+    ).toEqual({ kind: "next", on: friday, sent: 0, heldUntil: friday });
   });
 
   it("reports paused and finished", () => {
@@ -162,5 +184,14 @@ describe("autoReminderView", () => {
       sent: 3,
       last: all[2],
     });
+  });
+});
+
+describe("indiaDayOfIsoDate", () => {
+  it("reads a date input's value as an Indian calendar day, and back", () => {
+    expect(indiaDayOfIsoDate("2026-11-27")).toBe(day("2026-11-27"));
+    expect(isoDateOfIndiaDay(day("2026-11-27"))).toBe("2026-11-27");
+    expect(indiaDayOfIsoDate("2026-02-31")).toBeNull();
+    expect(indiaDayOfIsoDate("27/11/2026")).toBeNull();
   });
 });

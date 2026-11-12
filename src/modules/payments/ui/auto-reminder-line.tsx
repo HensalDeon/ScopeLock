@@ -7,10 +7,14 @@ import { TOUCH_LINK } from "@/shared/ui/touch";
 import {
   AUTO_REMINDER_DAYS,
   autoReminderView,
+  indiaDay,
+  isoDateOfIndiaDay,
+  PAUSE_UNTIL_MAX_DAYS,
   type AutoReminderView,
 } from "../domain/auto-reminders";
 import type { Payment } from "../domain/payment";
 import { setPaymentAutoReminders } from "../server/reminder-actions";
+import { PauseControl } from "./pause-control";
 import { Run } from "./run-action";
 import type { ScheduleRowContext } from "./schedule-row";
 
@@ -38,6 +42,7 @@ export function autoViewOf(
       dueSince: payment.dueSince,
       sent: payment.autoReminders.sent,
       paused: payment.autoReminders.paused,
+      pausedUntil: payment.autoReminders.pausedUntil,
     },
     lastManual: auto.lastManual[payment.id] ?? null,
     now: ctx.now ?? new Date(),
@@ -70,23 +75,35 @@ export function AutoReminderLine({
   const id = `auto-${payment.id}`;
   const name = ctx.client.firstName;
   const date = (d: Date) => formatDate(d, { now });
-  const toggle = (paused: boolean) =>
+  const resume = (label: string) =>
     ctx.readOnly ? null : (
       <Run
-        key={paused ? "pause" : "resume"}
+        key="resume"
         action={setPaymentAutoReminders}
         fields={{
           projectId: ctx.projectId,
           paymentId: payment.id,
-          paused: String(paused),
+          paused: "false",
         }}
-        label={paused ? "Pause" : "Resume"}
-        pendingLabel={paused ? "Pausing…" : "Resuming…"}
+        label={label}
+        pendingLabel="Resuming…"
         variant="link"
         className={INLINE_ACTION}
         focusId={id}
       />
     );
+  const today = indiaDay(now);
+  const pause = ctx.readOnly ? null : (
+    <PauseControl
+      key="pause"
+      projectId={ctx.projectId}
+      paymentId={payment.id}
+      clientName={name}
+      minDate={isoDateOfIndiaDay(today + 1)}
+      maxDate={isoDateOfIndiaDay(today + PAUSE_UNTIL_MAX_DAYS)}
+      focusId={id}
+    />
+  );
 
   let text: React.ReactNode;
   const actions: React.ReactNode[] = [];
@@ -121,11 +138,13 @@ export function AutoReminderLine({
       text = view.sent
         ? `Automatic reminders paused after ${view.sent} of ${OF}.`
         : "Automatic reminders paused.";
-      actions.push(toggle(false));
+      actions.push(resume("Resume"));
       break;
     case "next": {
       const when = view.on === "today" ? "today" : `on ${date(view.on)}`;
-      text = `Reminder ${view.sent + 1} of ${OF} goes to ${name} by email ${when}.`;
+      text = view.heldUntil
+        ? `Paused until ${date(view.heldUntil)}. Then reminder ${view.sent + 1} of ${OF} goes to ${name} by email${view.on === "today" || view.on.getTime() === view.heldUntil.getTime() ? "" : ` ${when}`}.`
+        : `Reminder ${view.sent + 1} of ${OF} goes to ${name} by email ${when}.`;
       if (inStrip && !ctx.readOnly) {
         // Same once-a-day rule as everywhere: hidden while none can go.
         const wait = nextReminderAt(lastManual, now, payment.requestedAt);
@@ -140,7 +159,7 @@ export function AutoReminderLine({
           />,
         );
       }
-      actions.push(toggle(true));
+      actions.push(view.heldUntil ? resume("Resume now") : pause);
       break;
     }
     case "done":

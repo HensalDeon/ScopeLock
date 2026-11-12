@@ -61,7 +61,7 @@ export type Payment = {
   /** When it last became due: asked for, or marked "not received". */
   dueSince: Date;
   /** Automatic reminders sent (oldest first), and whether they're paused. */
-  autoReminders: { sent: Date[]; paused: boolean };
+  autoReminders: { sent: Date[]; paused: boolean; pausedUntil: Date | null };
 };
 
 /** Requested and not cancelled: the slot is taken. */

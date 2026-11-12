@@ -62,16 +62,29 @@ export async function releaseAutoReminder(
   );
 }
 
-/** Pause or resume automatic reminders for one due payment. */
+/**
+ * Pause automatic reminders for one due payment (until a day, or with no
+ * end date), or resume them (neither).
+ */
 export async function setAutoRemindersPaused(
   workspaceId: string,
   projectId: ObjectId,
   id: ObjectId,
-  paused: boolean,
+  pause: { paused: boolean; until: Date | null },
 ): Promise<boolean> {
   const { matchedCount } = await payments(workspaceId).updateOne(
     { _id: id, projectId, status: "due" },
-    { $set: { "autoReminders.paused": paused } },
+    pause.until
+      ? {
+          $set: {
+            "autoReminders.paused": false,
+            "autoReminders.pausedUntil": pause.until,
+          },
+        }
+      : {
+          $set: { "autoReminders.paused": pause.paused },
+          $unset: { "autoReminders.pausedUntil": "" },
+        },
   );
   return matchedCount === 1;
 }

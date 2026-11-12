@@ -89,6 +89,7 @@ async function remindWorkspace(
       dueSince: payment.dueSince,
       sent: payment.autoReminders.sent,
       paused: payment.autoReminders.paused,
+      pausedUntil: payment.autoReminders.pausedUntil,
     };
     if (!isAutoReminderDue(state, manual.get(key) ?? null, now)) continue;
     const sent = await remind(workspaceId, profile.businessName, payment, now);

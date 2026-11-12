@@ -55,7 +55,7 @@ const payment = (p: Partial<Payment>): Payment => ({
   confirmation: null,
   lastRejection: null,
   dueSince: new Date(),
-  autoReminders: { sent: [], paused: false },
+  autoReminders: { sent: [], paused: false, pausedUntil: null },
   ...p,
 });
 const base = {

@@ -148,6 +148,16 @@ describe("runAutoReminders", () => {
     expect(await sentOf(night)).toHaveLength(0);
   });
 
+  it("holds one paused until a date, and sends it once that day comes", async () => {
+    const held = await duePayment("ws_auto_until", 4, {
+      autoReminders: { pausedUntil: new Date(now.getTime() + 2 * DAY) },
+    });
+    await runAutoReminders(now);
+    expect(await sentOf(held)).toHaveLength(0);
+    await runAutoReminders(new Date(now.getTime() + 2 * DAY));
+    expect(await sentOf(held)).toHaveLength(1);
+  });
+
   it("gives the reminder back when the email fails, to try again", async () => {
     const id = await duePayment("ws_auto_fail", 4);
     send.mockRejectedValue(new Error("SMTP down"));
