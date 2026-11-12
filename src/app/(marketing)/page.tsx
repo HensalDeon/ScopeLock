@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getPlans } from "@/modules/billing/server";
+import { isBillingConfigured } from "@/shared/lib/env";
 import {
   Evidence,
   FaqSection,
@@ -39,6 +40,7 @@ const jsonLd = (plans: Awaited<ReturnType<typeof getPlans>>) => ({
 
 export default async function HomePage() {
   const plans = await getPlans();
+  const paidOpen = isBillingConfigured();
   return (
     <>
       <script
@@ -50,8 +52,8 @@ export default async function HomePage() {
       <HowItWorks />
       <Evidence />
       <ManyClients />
-      <PricingSection plans={plans} />
-      <FaqSection />
+      <PricingSection plans={plans} paidOpen={paidOpen} />
+      <FaqSection paidOpen={paidOpen} />
       <FinalCta />
     </>
   );

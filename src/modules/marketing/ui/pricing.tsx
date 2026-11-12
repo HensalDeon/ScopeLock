@@ -12,7 +12,10 @@ export function RateCard({
   plans,
   className,
   planHeading: Heading = "h3",
+  paidOpen = false,
 }: {
+  /** Paid plans can be bought: prices are real, not "planned". */
+  paidOpen?: boolean;
   plans: readonly Plan[];
   className?: string;
   /** "h2" when the card sits right under the page's h1 (/pricing). */
@@ -67,7 +70,9 @@ export function RateCard({
               <span className="mt-1.5 block text-[13px] text-muted-foreground">
                 {plan.monthlyPrice === 0
                   ? `for ${plan.activeProjects} active project${plan.activeProjects === 1 ? "" : "s"}`
-                  : "planned"}
+                  : paidOpen
+                    ? "a month"
+                    : "planned"}
               </span>
             </p>
           </li>

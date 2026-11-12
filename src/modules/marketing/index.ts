@@ -1,4 +1,10 @@
-export { FaqSection, FinalCta, PricingSection } from "./ui/closing";
+export {
+  FaqSection,
+  FinalCta,
+  PricingSection,
+  pricingProof,
+} from "./ui/closing";
+export { SignUpStart } from "./ui/sign-up-start";
 export { Faq, type FaqItem } from "./ui/faq";
 export { Hero } from "./ui/hero";
 export { RateCard } from "./ui/pricing";

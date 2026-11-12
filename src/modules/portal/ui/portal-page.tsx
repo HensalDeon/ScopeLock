@@ -67,8 +67,7 @@ export async function PortalPage({ token }: { token: string }) {
             href="#answer"
             className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 max-sm:h-11 max-sm:px-4"
           >
-            <span className="sm:hidden">Answer</span>
-            <span className="max-sm:hidden">Approve or ask for changes</span>
+            Approve or ask for changes
           </a>
         )}
         <PrintButton label="Save proposal PDF" variant="outline" iconOnPhones />

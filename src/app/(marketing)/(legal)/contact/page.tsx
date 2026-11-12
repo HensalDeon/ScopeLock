@@ -20,6 +20,10 @@ export default function ContactPage() {
         title="Talk to a person."
         intro="Questions about your account, billing or a client link? Email us and a real person replies, usually within one business day."
       />
+      <p className="mt-6 max-w-prose rounded-lg border bg-canvas px-4 py-3 text-[15px] text-pretty">
+        Got a link from your freelancer or studio? Questions about the work or
+        the price go to them: their name and number are on the page you opened.
+      </p>
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
         <div className="grid content-start gap-6">
@@ -55,7 +59,7 @@ export default function ContactPage() {
             </p>
           </div>
         </div>
-        <BusinessDetails />
+        <BusinessDetails compact />
       </div>
     </Container>
   );

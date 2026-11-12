@@ -23,10 +23,8 @@ export function LegalDocument({
 }) {
   return (
     <Container className="py-14 sm:py-20">
-      <header className="grid max-w-3xl gap-4 border-b pb-10">
-        <p className="font-mono text-[11.5px] tracking-[0.14em] text-muted-foreground uppercase">
-          Last updated {legal.lastUpdated}
-        </p>
+      {/* The rule runs the full width; only the text keeps its measure. */}
+      <header className="grid gap-4 border-b pb-10">
         <h1
           className={`${DISPLAY} text-[38px] leading-[1] font-semibold sm:text-[50px]`}
         >
@@ -35,6 +33,9 @@ export function LegalDocument({
         <div className="max-w-[68ch] text-[17px] leading-relaxed text-pretty text-muted-foreground">
           {intro}
         </div>
+        <p className="text-sm text-muted-foreground tabular-nums">
+          Last updated {legal.lastUpdated}
+        </p>
       </header>
 
       <div className="grid gap-12 pt-10 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-16">
@@ -77,7 +78,12 @@ export function LegalDocument({
 }
 
 /** The business details block reused by the legal pages and Contact. */
-export function BusinessDetails() {
+export function BusinessDetails({
+  compact = false,
+}: {
+  /** Leave out email and phone (Contact shows them already). */
+  compact?: boolean;
+}) {
   return (
     <dl className="grid gap-x-6 gap-y-2 rounded-lg border bg-canvas p-5 text-[15px] sm:grid-cols-[10rem_minmax(0,1fr)]">
       <dt className="text-muted-foreground">Business</dt>
@@ -86,10 +92,14 @@ export function BusinessDetails() {
       </dd>
       <dt className="text-muted-foreground">Registered address</dt>
       <dd>{legal.address}</dd>
-      <dt className="text-muted-foreground">Email</dt>
-      <dd>{legal.email}</dd>
-      <dt className="text-muted-foreground">Phone</dt>
-      <dd className="tabular-nums">{legal.phone}</dd>
+      {!compact && (
+        <>
+          <dt className="text-muted-foreground">Email</dt>
+          <dd>{legal.email}</dd>
+          <dt className="text-muted-foreground">Phone</dt>
+          <dd className="tabular-nums">{legal.phone}</dd>
+        </>
+      )}
       <dt className="text-muted-foreground">GSTIN</dt>
       <dd>{legal.gstin}</dd>
     </dl>

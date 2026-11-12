@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalDocument, type LegalSection } from "@/modules/marketing";
 import { legal, site } from "@/shared/config/site";
+import { isBillingConfigured } from "@/shared/lib/env";
 
 export const metadata: Metadata = {
   title: "Refund and cancellation policy",
@@ -123,6 +124,9 @@ export default function RefundsPage() {
         <p>
           Cancel whenever you like. Here&apos;s what happens to your plan when
           you do, and when you get money back.
+          {isBillingConfigured()
+            ? ""
+            : " Paid plans aren't open yet; this applies from the day they open."}
         </p>
       }
       sections={sections}

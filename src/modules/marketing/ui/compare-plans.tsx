@@ -72,11 +72,18 @@ function comparison(plans: readonly Plan[]): { group: string; rows: Row[] }[] {
   ];
 }
 
+const Soon = () => (
+  <span className="rounded border px-1 py-px text-[11px] text-muted-foreground">
+    soon
+  </span>
+);
+
 function Cell({ value }: { value: Value }) {
   if (value === true)
     return (
       <>
-        <Check className="mx-auto size-4 text-brand" aria-hidden />
+        {/* Ink, not emerald: emerald means approved or paid (DESIGN.md). */}
+        <Check className="mx-auto size-4 text-foreground" aria-hidden />
         <span className="sr-only">Included</span>
       </>
     );
@@ -90,16 +97,50 @@ function Cell({ value }: { value: Value }) {
         <span className="sr-only">Not included</span>
       </>
     );
+  if (value === "Soon") return <Soon />;
+  const soon = value.match(/^(.*) \(soon\)$/);
+  if (soon)
+    return (
+      <span className="inline-flex items-center gap-1.5 tabular-nums">
+        {soon[1]} <Soon />
+      </span>
+    );
   return <span className="tabular-nums">{value}</span>;
 }
 
+/** Rows that read the same for every plan, said once above the table. */
+function split(groups: { group: string; rows: Row[] }[]) {
+  const same = (r: Row) => r.values.every((v) => v === r.values[0]);
+  const everyPlan = groups
+    .flatMap((g) => g.rows)
+    .filter(same)
+    .map((r) =>
+      r.values[0] === true
+        ? r.label
+        : `${r.values[0]} ${r.label.toLowerCase()}`,
+    );
+  const differing = groups
+    .map((g) => ({ ...g, rows: g.rows.filter((r) => !same(r)) }))
+    .filter((g) => g.rows.length > 0);
+  return { everyPlan, differing };
+}
+
 export function ComparePlans({ plans }: { plans: readonly Plan[] }) {
+  const { everyPlan, differing } = split(comparison(plans));
   return (
     <section className="border-b bg-canvas">
       <Container className="py-16 sm:py-20">
         <h2 className={`${DISPLAY} text-[30px] leading-none font-semibold`}>
           Compare plans
         </h2>
+        {everyPlan.length > 0 && (
+          <p className="mt-4 max-w-prose text-[15px] text-pretty text-muted-foreground">
+            <span className="font-medium text-foreground">
+              Every plan includes:
+            </span>{" "}
+            {everyPlan.join(", ")}.
+          </p>
+        )}
         <div className="relative mt-8 overflow-x-auto rounded-xl border bg-background">
           <table className="w-full text-[13px] sm:min-w-[40rem] sm:text-[14.5px]">
             <thead>
@@ -121,7 +162,7 @@ export function ComparePlans({ plans }: { plans: readonly Plan[] }) {
                 ))}
               </tr>
             </thead>
-            {comparison(plans).map((group) => (
+            {differing.map((group) => (
               <tbody key={group.group}>
                 <tr className="border-b bg-canvas">
                   <th
