@@ -194,7 +194,7 @@ This is what makes ScopeLock more than a quoting tool. Use it in pitches; keep t
 **Engineering quality**
 
 - A modular codebase: each business area (projects, changes, approvals, portal…) is a self-contained module with tested rules.
-- **283 unit tests**, **44 database integration tests** (against a real MongoDB), and browser tests that drive the whole flow (sign-up → proposal → client approval → change requests → payment requested with its GST invoice → client pays by UPI → confirmed) on desktop and phone widths. All run on every push.
+- **390 unit tests**, **50 database integration tests** (against a real MongoDB), and browser tests (Playwright) that run on every push: sign-up → proposal → client approval on a phone → change request → payment asked for → client pays by UPI → confirmed, plus plan limits and the admin plan override.
 
 ---
 
