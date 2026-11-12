@@ -38,7 +38,10 @@ export function BillingChoice({
   form: FormValidation;
 }) {
   const uid = useId();
-  const options = billingChoices(milestones);
+  const options = billingChoices(
+    milestones,
+    Object.keys(context?.closed ?? {}),
+  );
   const preview = (option: BillingOption) =>
     context
       ? billingPreview(

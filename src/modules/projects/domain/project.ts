@@ -113,6 +113,8 @@ export type Project = {
   totals: ProjectTotals;
   /** Archived: read-only and not counted towards the plan (null: active). */
   archivedAt: Date | null;
+  /** Payments already asked for or received (milestone ids). */
+  closedPaymentKeys: string[];
   createdAt: Date;
   updatedAt: Date;
 };

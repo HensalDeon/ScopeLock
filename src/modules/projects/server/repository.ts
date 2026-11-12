@@ -323,12 +323,18 @@ export async function setProjectArchived(
 export async function setPaymentTotals(
   workspaceId: string,
   id: ObjectId,
-  totals: { paid: number; due: number },
+  totals: { paid: number; due: number; closedKeys?: string[] },
   session?: ClientSession,
 ): Promise<void> {
   await projects(workspaceId).updateOne(
     { _id: id },
-    { $set: { "totals.paid": totals.paid, "totals.due": totals.due } },
+    {
+      $set: {
+        "totals.paid": totals.paid,
+        "totals.due": totals.due,
+        ...(totals.closedKeys ? { closedPaymentKeys: totals.closedKeys } : {}),
+      },
+    },
     { session },
   );
 }

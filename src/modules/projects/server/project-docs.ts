@@ -23,6 +23,8 @@ export type ProjectDoc = WorkspaceOwned & {
   number?: number;
   /** Set while archived (read-only, not counted towards the plan). */
   archivedAt?: Date | null;
+  /** Payments asked for or received (milestone ids): nothing joins them. */
+  closedPaymentKeys?: string[];
   clientId: ObjectId;
   name: string;
   description: string | null;
@@ -130,6 +132,7 @@ export function toProject(doc: ProjectDoc): Project {
       due: minor(doc.totals.due),
     },
     archivedAt: doc.archivedAt ?? null,
+    closedPaymentKeys: doc.closedPaymentKeys ?? [],
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };

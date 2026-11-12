@@ -45,7 +45,11 @@ export function changeOrderData(
     items: change.items,
     total: change.total as ChangeOrderData["total"],
     gstPercent,
-    billing: billingSummary(change.billing, project.milestones),
+    billing: billingSummary(
+      change.billing,
+      project.milestones,
+      project.closedPaymentKeys,
+    ),
     originalTotal: project.baseline.total,
     issuedOn,
   };

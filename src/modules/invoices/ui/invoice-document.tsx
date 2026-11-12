@@ -28,9 +28,12 @@ export function InvoiceDocument({
   accent,
   className,
   replacedBy = null,
+  paidOn = null,
 }: {
   invoice: InvoiceSnapshot;
   status: InvoiceStatus;
+  /** When it was received, for a paid invoice (shown instead of "Due"). */
+  paidOn?: Date | null;
   /** A cancelled invoice: the number of the one issued in its place. */
   replacedBy?: string | null;
   logoUrl: string | null;
@@ -115,7 +118,13 @@ export function InvoiceDocument({
 
       <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 border-y py-4 text-[0.85rem] @md:grid-cols-4">
         <Meta label="Invoice date">{day(invoice.issuedOn)}</Meta>
-        <Meta label="Due">On receipt</Meta>
+        {status === "paid" ? (
+          <Meta label="Received">
+            {paidOn ? formatDate(paidOn, { withYear: true }) : "Paid"}
+          </Meta>
+        ) : (
+          <Meta label="Due">On receipt</Meta>
+        )}
         <Meta label="Project">{invoice.projectName}</Meta>
         {invoice.placeOfSupply ? (
           <Meta label="Place of supply">{invoice.placeOfSupply}</Meta>
@@ -213,7 +222,8 @@ export function InvoiceDocument({
 
       {/* Pay-to and the signature print together, never a lone page. */}
       <div className="[break-inside:avoid]">
-        {invoice.payTo && status !== "cancelled" && (
+        {/* Paid: no "pay to" block, so nobody pays it twice from paper. */}
+        {invoice.payTo && status === "issued" && (
           <InvoicePayToBlock payTo={invoice.payTo} />
         )}
 

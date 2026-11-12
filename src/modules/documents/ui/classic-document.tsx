@@ -28,7 +28,10 @@ export function ClassicDocument({
   titleAs = "h1",
   acceptance = null,
   note = null,
+  draft = false,
 }: {
+  /** Not sent yet: says so on screen and on paper, with no issue date. */
+  draft?: boolean;
   /** A line added after sending (the GST-change note), inside the sheet. */
   note?: string | null;
   /** The client's answer, printed before the footer. */
@@ -78,7 +81,20 @@ export function ClassicDocument({
         images={images}
         headingFont={headingFont}
         titleAs={titleAs}
+        draft={draft}
       />
+      {draft && (
+        <div
+          role="note"
+          className="border-b-2 border-[#1d1f24] bg-white px-6 py-3 text-[#1d1f24] @xl:px-12"
+        >
+          <p className="text-sm font-semibold">Draft, not sent</p>
+          <p className="text-[0.85rem]">
+            Your client hasn&apos;t received this. Send it from ScopeLock so
+            they can approve it; a printed draft isn&apos;t an offer.
+          </p>
+        </div>
+      )}
 
       {data.highlights.length > 0 && (
         <div className="grid grid-cols-2 border-b border-[#e7e4dd] bg-(--doc-soft) @xl:auto-cols-fr @xl:grid-flow-col @xl:grid-cols-none">

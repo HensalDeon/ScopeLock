@@ -89,6 +89,7 @@ async function Preview({
 
       <main className="px-0 py-0 sm:px-4 sm:py-8 print:p-0">
         <ClassicDocument
+          draft={project.status === "draft"}
           note={gstNote}
           acceptance={acceptance}
           data={data}

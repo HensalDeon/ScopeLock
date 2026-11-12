@@ -91,9 +91,9 @@ export function ApprovalCards({
           key={a.id}
           className="grid gap-2 rounded-xl border p-4 text-sm sm:p-5"
         >
-          <p className="min-w-0">
+          <h3 className="min-w-0 text-[15px] font-semibold">
             <ApprovalLabel label={a.label} />
-          </p>
+          </h3>
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <p className="flex items-center gap-2 font-medium">
               <Dot decision={a.decision} />
@@ -106,13 +106,19 @@ export function ApprovalCards({
           {a.comment && (
             <p className="leading-relaxed whitespace-pre-line">“{a.comment}”</p>
           )}
-          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 font-mono text-xs text-muted-foreground">
+          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 text-xs text-muted-foreground">
             <dt>Email</dt>
             <dd className="truncate">{a.decidedBy.email}</dd>
             <dt>IP address</dt>
-            <dd>{a.ip ?? "Not recorded"}</dd>
+            <dd className="font-mono">
+              {!a.ip
+                ? "Not recorded"
+                : ["::1", "127.0.0.1"].includes(a.ip)
+                  ? "This computer (a local test)"
+                  : a.ip}
+            </dd>
             <dt>Fingerprint</dt>
-            <dd className="truncate" title={a.snapshotHash}>
+            <dd className="truncate font-mono" title={a.snapshotHash}>
               {a.snapshotHash.slice(0, 16)}
             </dd>
             <dt>Record check</dt>
@@ -124,7 +130,7 @@ export function ApprovalCards({
           </dl>
           <Link
             href={versionHref(projectId, a.id)}
-            className="justify-self-start font-medium underline-offset-4 hover:underline"
+            className="justify-self-start font-medium underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
           >
             View the version they saw
           </Link>
@@ -135,8 +141,8 @@ export function ApprovalCards({
 }
 
 /**
- * "CR-002 Logo refresh": the reference in mono capitals (it's an id), the
- * client-facing title in normal case beside it, never shouted.
+ * "CR-002 Logo refresh": the card's heading, the reference quieter
+ * beside the title.
  */
 function ApprovalLabel({ label }: { label: string }) {
   const match = /^(CR-\d+)\s+(.*)$/.exec(label);
@@ -144,12 +150,8 @@ function ApprovalLabel({ label }: { label: string }) {
   const title = match ? match[2] : null;
   return (
     <span className="flex min-w-0 items-baseline gap-2">
-      <span className="shrink-0 font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
-        {ref}
-      </span>
-      {title && (
-        <span className="truncate text-xs text-muted-foreground">{title}</span>
-      )}
+      <span className="shrink-0 text-muted-foreground tabular-nums">{ref}</span>
+      {title && <span className="truncate">{title}</span>}
     </span>
   );
 }

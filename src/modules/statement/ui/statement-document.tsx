@@ -44,7 +44,7 @@ export function StatementDocument({
           <h1 className="text-2xl font-semibold tracking-[-0.02em]">
             Project statement
           </h1>
-          <p className="font-mono text-[0.85rem] tabular-nums">
+          <p className="text-[0.85rem] tabular-nums">
             {s.reference} · as of {formatDate(s.asOf, { withYear: true })}
           </p>
         </div>

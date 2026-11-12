@@ -41,7 +41,7 @@ async function Answers({
       </BackLink>
       <PageHeader
         title="Client answers"
-        description={`Every approval and "no" on ${project.name}, each a signed record of exactly what the client saw. Each record is checked against its signature when this page loads.`}
+        description={`Every time your client approved or declined something on ${project.name}, each a signed record of exactly what the client saw. Each record is checked against its signature when this page loads.`}
       />
       <div className="grid max-w-3xl gap-6">
         {answers.total > 0 ? (

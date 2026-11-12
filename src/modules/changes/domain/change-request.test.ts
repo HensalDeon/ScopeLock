@@ -132,6 +132,28 @@ describe("billingSummary and totals", () => {
     ).toBe("Added to the “Design approved” payment.");
   });
 
+  it("never names a payment already asked for or received", () => {
+    // Before launch is paid: the final-payment option lands on the last
+    // open one, and says so (the signed record quotes this line).
+    expect(
+      billingSummary({ option: "final", milestoneId: null }, milestones, [
+        "m3",
+      ]),
+    ).toBe("Added to the “Design approved” payment.");
+    expect(
+      billingSummary({ option: "split", milestoneId: null }, milestones, [
+        "m1",
+      ]),
+    ).toBe("Split across the payments still to come, in the same proportions.");
+    expect(
+      billingSummary({ option: "final", milestoneId: null }, milestones, [
+        "m1",
+        "m2",
+        "m3",
+      ]),
+    ).toMatch(/^Paid as a separate payment/);
+  });
+
   it("counts approved and pending only", () => {
     expect(
       changeTotals([

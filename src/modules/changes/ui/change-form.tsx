@@ -151,7 +151,7 @@ export function ChangeForm({
               name="title"
               value={values.title}
               maxLength={CHANGE_LIMITS.title}
-              placeholder="Blog + WhatsApp chat button"
+              placeholder="e.g. Blog + WhatsApp chat button"
               onChange={(e) => set("title", e.target.value)}
               onBlur={() => form.touch("title")}
               aria-invalid={Boolean(form.errorFor("title")) || undefined}
@@ -171,7 +171,7 @@ export function ChangeForm({
               rows={3}
               value={values.description}
               maxLength={CHANGE_LIMITS.description}
-              placeholder="You asked for a blog with categories and a WhatsApp button on every page. Here's what that adds."
+              placeholder="e.g. You asked for a blog with categories and a WhatsApp button on every page. Here's what that adds."
               onChange={(e) => set("description", e.target.value)}
               onBlur={() => form.touch("description")}
               aria-invalid={Boolean(form.errorFor("description")) || undefined}
@@ -232,7 +232,7 @@ export function ChangeForm({
               name="sourceNote"
               value={values.sourceNote}
               maxLength={CHANGE_LIMITS.sourceNote}
-              placeholder="Wants it before the Diwali sale"
+              placeholder="e.g. Wants it before the Diwali sale"
               onChange={(e) => set("sourceNote", e.target.value)}
               onBlur={() => form.touch("sourceNote")}
               aria-invalid={Boolean(form.errorFor("sourceNote")) || undefined}

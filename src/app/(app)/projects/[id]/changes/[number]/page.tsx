@@ -93,14 +93,14 @@ async function ChangeDetail({
         />
       )}
       <div className="grid gap-3 print:hidden">
-        <BackLink href={base as Route}>Back to project</BackLink>
+        <BackLink href={base as Route}>{project.name}</BackLink>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid min-w-0 gap-1.5">
-            <p className="font-mono text-[11.5px] tracking-[0.14em] text-muted-foreground uppercase">
-              {label} · {project.name}
-            </p>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-semibold tracking-[-0.02em] text-balance">
+                <span className="text-muted-foreground tabular-nums">
+                  {label}
+                </span>{" "}
                 {change.title}
               </h1>
               <ChangeStatusBadge status={change.status} />
@@ -126,6 +126,7 @@ async function ChangeDetail({
           </p>
           <ChangeOrderDocument
             data={data}
+            draft={change.status === "draft"}
             approved={change.status === "approved"}
             withdrawnBy={
               change.status === "withdrawn" ? data.business.name : null
@@ -196,7 +197,7 @@ async function ChangeDetail({
           {change.decision && (
             <Link
               href={`${base}/answers/${change.decision.approvalId}` as Route}
-              className="px-1 text-sm font-medium underline-offset-4 hover:underline"
+              className="px-1 text-sm font-medium underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
             >
               View the signed record
             </Link>

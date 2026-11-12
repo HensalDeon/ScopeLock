@@ -26,7 +26,10 @@ export function ChangeOrderDocument({
   acceptance = null,
   withdrawnBy = null,
   declined = false,
+  draft = false,
 }: {
+  /** Not sent yet: says so on screen and on paper, with no issue date. */
+  draft?: boolean;
   /** The client declined it: the money was never added. */
   declined?: boolean;
   /** Cancelled by the freelancer: who, for the band on the document. */
@@ -147,13 +150,27 @@ export function ChangeOrderDocument({
               Proposal {data.projectReference}
             </span>
           </Meta>
-          <Meta label="Issued">
-            {formatDate(data.issuedOn, { withYear: true })}
+          <Meta label={draft ? "Draft" : "Issued"}>
+            {draft
+              ? "Not sent yet"
+              : formatDate(data.issuedOn, { withYear: true })}
           </Meta>
         </dl>
       </header>
 
       <div className="grid gap-8 px-6 py-8 @xl:px-12 @xl:py-10">
+        {draft && (
+          <div
+            role="note"
+            className="grid gap-1 border-2 border-[#1d1f24] px-4 py-3 text-[#1d1f24]"
+          >
+            <p className="text-base font-semibold">Draft, not sent</p>
+            <p className="text-[0.85rem]">
+              Your client hasn&apos;t received this. Send it from ScopeLock so
+              they can approve it; a printed draft isn&apos;t an offer.
+            </p>
+          </div>
+        )}
         {withdrawnBy && (
           <div
             role="note"

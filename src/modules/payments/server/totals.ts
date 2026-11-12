@@ -1,7 +1,7 @@
 import "server-only";
 import type { ObjectId } from "mongodb";
 import { setPaymentTotals } from "@/modules/projects/server";
-import { paymentTotals } from "../domain/payment";
+import { closedKeys, paymentTotals } from "../domain/payment";
 import { findPaymentDocs, toPayment } from "./repository";
 
 /** Recomputes the project's received / owed totals from its payments. */
@@ -13,7 +13,11 @@ export async function refreshPaymentTotals(
     toPayment,
   );
   const { received, due } = paymentTotals(payments);
-  await setPaymentTotals(workspaceId, projectId, { paid: received, due });
+  await setPaymentTotals(workspaceId, projectId, {
+    paid: received,
+    due,
+    closedKeys: closedKeys(payments),
+  });
 }
 
 /** Emails never break the action they follow. */
