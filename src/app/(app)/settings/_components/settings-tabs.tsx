@@ -6,12 +6,14 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/shared/lib/utils";
 
 // In the order a new freelancer sets things up: who you are, how you get
-// paid, how invoices are taxed, how documents look, then the plan.
+// paid, how invoices are taxed, how documents look, who else works in
+// it, then the plan.
 const TABS = [
   { href: "/settings", label: "Business & account" },
   { href: "/settings/payments", label: "Payments" },
   { href: "/settings/invoicing", label: "Invoices & GST" },
   { href: "/settings/documents", label: "Documents" },
+  { href: "/settings/team", label: "Team" },
   { href: "/settings/plan", label: "Plan & usage" },
 ] as const;
 

@@ -23,6 +23,21 @@ export async function codeFor(to: string): Promise<string> {
   throw new Error(`No code emailed to ${to}`);
 }
 
+/** The latest link to `pathPart` emailed to `to` (e.g. "/invite/"). */
+export async function linkFor(to: string, pathPart: string): Promise<string> {
+  const pattern = new RegExp(`https?://\\S*${pathPart}[A-Za-z0-9_-]+`);
+  for (let i = 0; i < 40; i++) {
+    const log = readFileSync(LOG, "utf8");
+    const blocks = log
+      .split("┌─ Email")
+      .filter((b) => b.includes(`To:      ${to}`));
+    const link = blocks.at(-1)?.match(pattern)?.[0];
+    if (link) return link;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  throw new Error(`No ${pathPart} link emailed to ${to}`);
+}
+
 /** Visible elements only: visited pages stay mounted in the background. */
 export const label = (page: Page, text: string | RegExp, exact = false) =>
   page.getByLabel(text, { exact }).filter({ visible: true });

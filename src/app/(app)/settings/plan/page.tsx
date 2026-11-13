@@ -42,7 +42,7 @@ async function PlanSettings() {
         isBillingConfigured()
           ? {
               open: true,
-              canPay: role === "owner" || role === "admin",
+              canPay: role === "owner",
               keyId: razorpayKeyId(),
               payer: {
                 name: user.name,

@@ -63,7 +63,7 @@ function comparison(plans: readonly Plan[]): { group: string; rows: Row[] }[] {
         {
           label: "Team members",
           values: plans.map((p) =>
-            p.teamMembers === 1 ? "Just you" : `Up to ${p.teamMembers} (soon)`,
+            p.teamMembers === 1 ? "Just you" : `Up to ${p.teamMembers}`,
           ),
         },
         feature("Priority support", "prioritySupport"),

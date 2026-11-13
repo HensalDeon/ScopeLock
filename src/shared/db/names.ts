@@ -27,6 +27,8 @@ export const COLLECTIONS = {
   invoices: "invoices",
   requestLimits: "requestLimits",
   counters: "counters",
+  // Team invitations (Agency): who was invited, as what, by whom.
+  teamInvitations: "teamInvitations",
   // Platform level: plans, their price history, the admin audit log, and
   // each workspace's ScopeLock plan (ScopeLock's own billing record about a
   // workspace, managed by the platform, one per workspace).

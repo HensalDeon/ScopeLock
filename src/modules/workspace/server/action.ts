@@ -55,8 +55,9 @@ export function workspaceAction<Field extends string, Schema extends z.ZodType>(
     if (config.roles && !config.roles.includes(context.role)) {
       return {
         status: "error",
-        message:
-          "Only the workspace owner or an admin can change this. Ask them to make the change.",
+        message: config.roles.includes("admin")
+          ? "Only the workspace owner or an admin can change this. Ask them to make the change."
+          : "Only the workspace owner can change this. Ask them to make the change.",
         values,
       };
     }

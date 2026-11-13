@@ -125,9 +125,12 @@ export function PlanUsage({
                 {plan.teamMembers === 1 ? (
                   "Just you"
                 ) : (
-                  <>
-                    Up to {plan.teamMembers} <Soon />
-                  </>
+                  <Link
+                    href="/settings/team"
+                    className="font-medium underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
+                  >
+                    Up to {plan.teamMembers}
+                  </Link>
                 )}
               </dd>
             </div>

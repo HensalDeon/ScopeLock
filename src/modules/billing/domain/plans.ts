@@ -128,7 +128,7 @@ export const DEFAULT_PLANS: readonly Plan[] = [
       { label: "15 active projects" },
       { label: "Everything in Pro" },
       { label: "Revenue recovered reports by client and month" },
-      { label: "Up to 5 team members", soon: true },
+      { label: "Up to 5 team members" },
       { label: "Priority support" },
     ],
   },

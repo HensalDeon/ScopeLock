@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { canSeeAdmin } from "@/modules/admin/server";
 import { BUSINESS_TYPE_LABELS, BusinessInitials } from "@/modules/workspace";
+import { WorkspaceSwitcher } from "@/modules/team";
+import { listMyWorkspaces } from "@/modules/team/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { initialsOf } from "@/shared/lib/initials";
 import { InstallApp } from "@/shared/pwa/install-app";
@@ -11,10 +13,13 @@ import { UserMenu } from "./user-menu";
 
 /** Sidebar on desktop, top bar + drawer on mobile. Reads the session. */
 export async function Shell() {
-  const { user, workspace } = await requireWorkspace();
+  const [{ user, workspace }, workspaces] = await Promise.all([
+    requireWorkspace(),
+    listMyWorkspaces(),
+  ]);
 
-  const workspaceBlock = (
-    <div className="flex items-center gap-2.5 rounded-lg border bg-background p-2">
+  const card = (
+    <div className="flex items-center gap-2.5 rounded-lg border bg-background p-2 pr-8">
       <BusinessInitials name={workspace.businessName} className="size-8" />
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{workspace.businessName}</p>
@@ -24,6 +29,13 @@ export async function Shell() {
       </div>
     </div>
   );
+  // In more than one workspace (their own and an agency's): switch here.
+  const workspaceBlock =
+    workspaces.length > 1 ? (
+      <WorkspaceSwitcher card={card} workspaces={workspaces} />
+    ) : (
+      card
+    );
 
   const userMenu = (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-2">

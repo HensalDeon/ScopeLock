@@ -26,7 +26,8 @@ import {
 } from "./subscriptions";
 
 /** Only the people who run the workspace pay for it. */
-const OWNERS = ["owner", "admin"] as const;
+// Only the owner changes what the workspace pays for.
+const OWNERS = ["owner"] as const;
 const planSchema = z.object({ planId: z.enum(PLAN_IDS) });
 
 async function target(planId: string) {

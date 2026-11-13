@@ -225,7 +225,7 @@ export function PlanForm({ defaults }: { defaults: PlanFormValues }) {
           {text(
             "teamMembers",
             "Team members",
-            "Including the owner. Inviting a team isn't built yet.",
+            "Including the owner. Over this, the people who joined last lose access until it fits.",
             { inputMode: "numeric", className: "max-w-32 tabular-nums" },
           )}
         </div>

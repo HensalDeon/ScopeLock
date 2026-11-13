@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useId, useState } from "react";
 import { authClient } from "@/shared/auth/client";
 import { PASSWORD_MIN_LENGTH } from "@/shared/auth/policy";
+import { safeNextPath } from "@/shared/auth/redirect";
 import { Button } from "@/shared/ui/button";
 import {
   Field,
@@ -32,6 +34,9 @@ export function SignUpForm({
   // Unique per instance: visited pages stay mounted, so two copies of
   // this form can be in the document at once (CONVENTIONS §5).
   const uid = useId();
+  // Set by a team invite (/invite/…): come back there, not to onboarding.
+  const next = useSearchParams().get("next");
+  const after = next ? safeNextPath(next) : null;
   const [error, setError] = useState<{
     message: string;
     exists: boolean;
@@ -72,7 +77,7 @@ export function SignUpForm({
       name,
       email,
       password,
-      callbackURL: "/dashboard",
+      callbackURL: after ?? "/dashboard",
     });
 
     if (error) {
@@ -83,7 +88,7 @@ export function SignUpForm({
       setPending(false);
       return;
     }
-    crossAuthBoundary("/onboarding");
+    crossAuthBoundary(after ?? "/onboarding");
   }
 
   return (
@@ -96,7 +101,11 @@ export function SignUpForm({
               <>
                 {" "}
                 <Link
-                  href="/sign-in"
+                  href={
+                    after
+                      ? `/sign-in?next=${encodeURIComponent(after)}`
+                      : "/sign-in"
+                  }
                   className="font-medium underline underline-offset-4"
                 >
                   Go to sign in
@@ -178,7 +187,7 @@ export function SignUpForm({
           <>
             <FieldSeparator>or</FieldSeparator>
             <GoogleButton
-              callbackURL="/dashboard"
+              callbackURL={after ?? "/dashboard"}
               label="Sign up with Google"
             />
           </>

@@ -54,6 +54,15 @@ async function loadWorkspace({
   const workspace = await getWorkspaceProfile(membership.workspaceId);
   if (!workspace) redirect("/onboarding");
 
+  // Teams: past the plan's people, everyone but the owner and the earliest
+  // to join is paused (the team module explains why, and offers a way on).
+  // Loaded lazily: the team module itself depends on this one.
+  if (membership.role !== "owner") {
+    const { memberHasSeat } = await import("@/modules/team/server");
+    if (!(await memberHasSeat(membership.workspaceId, user.id)))
+      redirect("/team-access");
+  }
+
   return { user, session, workspace, role: membership.role };
 }
 

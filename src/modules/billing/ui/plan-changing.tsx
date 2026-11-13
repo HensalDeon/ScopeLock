@@ -133,8 +133,8 @@ export function PlanChanging({
               </p>
               {!billing.canPay && (
                 <p className="text-foreground">
-                  Only the workspace&apos;s owner or an admin can pay for or
-                  change its plan.
+                  Only the workspace&apos;s owner can pay for or change its
+                  plan.
                 </p>
               )}
             </>
