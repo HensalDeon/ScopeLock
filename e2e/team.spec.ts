@@ -48,6 +48,8 @@ test("an agency invites a member, who joins from the email", async ({
   await m.waitForURL(/\/invite\//);
   await button(m, "Join Asha Designs").click();
   await m.waitForURL(/\/dashboard/);
+  // Opening the emailed link confirmed her email: no code to enter.
+  await expect(m.getByText(/Confirm your email so/)).toHaveCount(0);
 
   // A member sees the settings but can't change them.
   await m.goto("/settings");

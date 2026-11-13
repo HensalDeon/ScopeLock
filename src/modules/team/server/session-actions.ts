@@ -84,9 +84,17 @@ export async function acceptInvite(
       return gone;
     await addWorkspaceMember(ws, user.id, invite.role);
   }
+  const requestHeaders = await headers();
   await auth.api.setActiveOrganization({
     body: { organizationId: ws },
-    headers: await headers(),
+    headers: requestHeaders,
+  });
+  // Re-read the session from the database last, so the signed-in cookie
+  // carries the email confirmed above (the cached copy still says it
+  // isn't, and the "Confirm your email" bar would show for 5 minutes).
+  await auth.api.getSession({
+    headers: requestHeaders,
+    query: { disableCookieCache: true },
   });
   redirect("/dashboard");
 }
