@@ -49,7 +49,7 @@ export function InviteForm({ roles }: { roles: readonly InviteRole[] }) {
               name="email"
               type="email"
               autoComplete="off"
-              placeholder="e.g. priya@ashadesigns.in"
+              placeholder="e.g. kiran@ashadesigns.in"
               defaultValue={
                 state.status === "error" ? (state.values?.email ?? "") : ""
               }

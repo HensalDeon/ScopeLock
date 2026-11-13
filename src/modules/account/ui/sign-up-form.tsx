@@ -26,8 +26,11 @@ import { PasswordInput } from "./password-input";
 export function SignUpForm({
   googleEnabled,
   defaultEmail = "",
+  next: nextProp,
 }: {
   googleEnabled: boolean;
+  /** Where to go after (a team invite); else `?next=`, else onboarding. */
+  next?: string;
   /** Typed on the landing page; the visitor can still change it. */
   defaultEmail?: string;
 }) {
@@ -35,7 +38,8 @@ export function SignUpForm({
   // this form can be in the document at once (CONVENTIONS §5).
   const uid = useId();
   // Set by a team invite (/invite/…): come back there, not to onboarding.
-  const next = useSearchParams().get("next");
+  const params = useSearchParams();
+  const next = nextProp ?? params.get("next");
   const after = next ? safeNextPath(next) : null;
   // From a team invite: the account must use the invited email.
   const invited =
@@ -141,13 +145,14 @@ export function SignUpForm({
             inputMode="email"
             defaultValue={defaultEmail}
             readOnly={Boolean(invited)}
+            className={invited ? "bg-muted text-muted-foreground" : undefined}
             required
             aria-invalid={Boolean(fieldErrors.email) || undefined}
             aria-describedby={invited ? `${uid}-invited` : undefined}
           />
           {invited && (
             <FieldDescription id={`${uid}-invited`}>
-              You were invited as {invited}, so your account uses this email.
+              The invited email. Your account uses this one.
             </FieldDescription>
           )}
           <FieldError>{fieldErrors.email}</FieldError>

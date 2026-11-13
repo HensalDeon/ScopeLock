@@ -2,6 +2,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { SignOutButton } from "@/modules/account";
 import { Button } from "@/shared/ui/button";
+import { formatDate } from "@/shared/lib/dates";
 import { TOUCH } from "@/shared/ui/touch";
 import { ROLE_LABELS } from "../domain/team";
 import type { InvitePage } from "../server/queries";
@@ -81,18 +82,12 @@ export function InviteView({
     <div className="grid gap-4">
       <Heading>Join {page.business} on ScopeLock</Heading>
       <Lead>
-        {page.inviter} invited you as {role}: {ROLE_LABELS[page.role].detail}
+        {page.inviter} invited you as {role}. {ROLE_LABELS[page.role].detail}
       </Lead>
       {v.kind === "signed_out" && (
         <div className="grid gap-3">
           <Button asChild className={TOUCH}>
-            <Link
-              href={
-                `/sign-up?email=${encodeURIComponent(page.email)}&next=${encodeURIComponent(back)}` as Route
-              }
-            >
-              Create your account
-            </Link>
+            <Link href={`${back}/sign-up` as Route}>Create your account</Link>
           </Button>
           <p className="text-sm text-pretty text-muted-foreground">
             Already use ScopeLock as {page.email}?
@@ -118,8 +113,9 @@ export function InviteView({
       {(v.kind === "ready" || v.kind === "member") &&
         (page.full && v.kind === "ready" ? (
           <p className="text-sm text-pretty">
-            {page.business} has no place left on its plan right now. Ask{" "}
-            {page.inviter} to make room, then open this link again.
+            {page.solo
+              ? `${page.business}'s plan is for one person right now. Ask ${page.inviter} to move to a plan with a team, then open this link again.`
+              : `${page.business} has no place left on its plan right now. Ask ${page.inviter} to make room, then open this link again.`}
           </p>
         ) : (
           <AcceptButton
@@ -133,7 +129,7 @@ export function InviteView({
         ))}
       {v.kind === "signed_out" && (
         <p className="text-[13px] text-pretty text-muted-foreground">
-          This link is for {page.email} only and works once.{" "}
+          This link works once, until {formatDate(page.expiresAt)}.{" "}
           <Link href="/" className={LINK}>
             What is ScopeLock?
           </Link>

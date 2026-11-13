@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 import { IDLE, type FormState } from "@/shared/lib/form-state";
 import { announce, focusAfterUpdate } from "@/shared/ui/announce";
 import { Button } from "@/shared/ui/button";
@@ -27,6 +27,7 @@ export function ActionButton({
   variant = "ghost",
   confirm,
   focusId,
+  danger = false,
 }: {
   action: Action;
   fields: Record<string, string>;
@@ -39,9 +40,12 @@ export function ActionButton({
   confirm?: { question: string; yes: string };
   /** Where focus goes after it worked (the row may be gone). */
   focusId?: string;
+  /** Red text in the row (the filled red is kept for the confirm). */
+  danger?: boolean;
 }) {
   const [state, run, pending] = useActionState(action, IDLE);
   const [asking, setAsking] = useState(false);
+  const qid = useId();
   useEffect(() => {
     if (state.status !== "success") return;
     if (state.message) announce(state.message);
@@ -77,10 +81,14 @@ export function ActionButton({
     return (
       <form
         action={run}
-        className="grid w-full max-w-sm gap-2 rounded-lg border bg-background p-3 text-left"
+        role="group"
+        aria-labelledby={qid}
+        className="grid w-full max-w-sm gap-2 rounded-lg bg-canvas p-3 text-left"
       >
         {hidden}
-        <p className="text-sm text-pretty">{confirm.question}</p>
+        <p id={qid} className="text-sm text-pretty">
+          {confirm.question}
+        </p>
         <div className="flex flex-wrap gap-2">
           <Button
             type="submit"
@@ -88,7 +96,6 @@ export function ActionButton({
             variant="destructive"
             className={TOUCH}
             disabled={pending}
-            autoFocus
           >
             {pending ? pendingLabel : confirm.yes}
           </Button>
@@ -98,6 +105,7 @@ export function ActionButton({
             variant="ghost"
             className={TOUCH}
             onClick={() => setAsking(false)}
+            autoFocus
           >
             Keep
           </Button>
@@ -122,7 +130,11 @@ export function ActionButton({
         type="submit"
         size="sm"
         variant={variant}
-        className={TOUCH}
+        className={
+          danger
+            ? `${TOUCH} text-destructive hover:bg-destructive/10 hover:text-destructive`
+            : TOUCH
+        }
         disabled={pending}
         aria-label={ariaLabel}
       >
@@ -130,6 +142,9 @@ export function ActionButton({
       </Button>
       {error}
       {link}
+      {state.status === "success" && state.message && !link && !confirm && (
+        <p className="text-[13px] text-muted-foreground">{state.message}</p>
+      )}
     </form>
   );
 }

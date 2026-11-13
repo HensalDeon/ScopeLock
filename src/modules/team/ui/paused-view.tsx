@@ -1,13 +1,18 @@
 import { SignOutButton } from "@/modules/account";
+import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import type { PausedAccess } from "../server/queries";
 import { LeaveButton } from "./leave-button";
 import { SwitchWorkspaceButton } from "./switch-workspace-button";
 
-/** /team-access: why this workspace won't open, and where to go instead. */
+/**
+ * /team-access: why this workspace won't open, who can fix it (an email to
+ * the owner first), and other ways on. Leaving is there, but quiet.
+ */
 export function PausedView({ access }: { access: PausedAccess }) {
-  const seats =
-    access.plan.seats === 1 ? "one person" : `${access.plan.seats} people`;
-  const who = access.owner ?? "the owner";
+  const owner = access.owner?.name ?? "the owner";
+  const solo = access.plan.seats <= 1;
+  const subject = `Access to ${access.business} on ScopeLock`;
   return (
     <div className="grid gap-5">
       <div className="grid gap-3">
@@ -15,32 +20,35 @@ export function PausedView({ access }: { access: PausedAccess }) {
           {access.business} isn&apos;t open to you right now
         </h1>
         <p className="text-[15px] text-pretty text-muted-foreground">
-          {`It moved to the ${access.plan.name} plan, which allows ${seats}${access.plan.seats === 1 ? `: ${who}` : ", the owner and the earliest to join"}. You're still in the team. Your access comes back by itself when ${who} moves to a plan with more people, or makes room.`}
+          {solo
+            ? `It's on the ${access.plan.name} plan, which is for one person: ${owner}. You're still in the team, and your access comes back by itself when they move to a plan with a team.`
+            : `It's on the ${access.plan.name} plan, which allows ${access.plan.seats} people: the owner and the earliest to join. You're still in the team, and your access comes back by itself when there's a place for you.`}
         </p>
       </div>
-      {access.others.length > 0 && (
-        <div className="grid gap-2">
-          <p className="text-sm font-medium">Open another workspace</p>
-          <div className="flex flex-wrap gap-2">
-            {access.others.map((w) => (
-              <SwitchWorkspaceButton
-                key={w.workspaceId}
-                workspaceId={w.workspaceId}
-                label={`Open ${w.name}`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      <div className="grid gap-2 border-t pt-5">
+      <div className="flex flex-wrap gap-2">
+        {access.owner && (
+          <Button asChild className={TOUCH}>
+            <a
+              href={`mailto:${access.owner.email}?subject=${encodeURIComponent(subject)}`}
+            >
+              Email {access.owner.name}
+            </a>
+          </Button>
+        )}
+        {access.others.map((w) => (
+          <SwitchWorkspaceButton
+            key={w.workspaceId}
+            workspaceId={w.workspaceId}
+            label={`Open ${w.name}`}
+          />
+        ))}
+      </div>
+      <div className="grid justify-items-start gap-2 border-t pt-5">
         <p className="text-sm text-pretty text-muted-foreground">
-          Not working with {access.business} any more? Leave the team, and you
-          can set up your own workspace.
+          Not working with {access.business} any more?
         </p>
-        <LeaveButton />
-      </div>
-      <div>
-        <SignOutButton />
+        <LeaveButton quiet />
+        <SignOutButton className="px-0" />
       </div>
     </div>
   );

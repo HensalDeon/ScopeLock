@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { ROLE_LABELS, type TeamRole } from "../domain/team";
 import { switchWorkspace } from "../server/session-actions";
 
 /**
@@ -23,7 +24,12 @@ export function WorkspaceSwitcher({
 }: {
   /** The current workspace's card (name, initials, type). */
   card: React.ReactNode;
-  workspaces: { workspaceId: string; name: string; current: boolean }[];
+  workspaces: {
+    workspaceId: string;
+    name: string;
+    current: boolean;
+    role: TeamRole;
+  }[];
 }) {
   const [state, run] = useActionState<FormState<string>, FormData>(
     switchWorkspace,
@@ -69,7 +75,12 @@ export function WorkspaceSwitcher({
                 })
               }
             >
-              <span className="min-w-0 flex-1 truncate">{w.name}</span>
+              <span className="grid min-w-0 flex-1">
+                <span className="truncate">{w.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {ROLE_LABELS[w.role].title}
+                </span>
+              </span>
               {w.current && <Check aria-label="Open now" />}
             </DropdownMenuItem>
           ))}

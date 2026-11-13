@@ -45,7 +45,9 @@ export function TeamSettings({ team }: { team: TeamPage }) {
     <div className="grid gap-2">
       {paused.length > 0 && (
         <p className="mb-6 max-w-prose rounded-lg border border-warning/25 bg-warning-soft px-4 py-3 text-sm text-pretty text-warning-ink">
-          {`On ${plan.name}, only ${people(plan.seats)} can open this workspace, so ${paused.map((m) => m.name).join(", ")} can't right now. They stay in the team and get access back when the plan allows more people${team.teamPlan ? ` (${team.teamPlan.name}: up to ${team.teamPlan.seats}, ${team.teamPlan.price} a month)` : ""}, or when you remove someone.`}
+          {solo
+            ? `${plan.name} is for one person, so ${paused.map((m) => m.name).join(", ")} can't open this workspace right now. They stay in the team and get access back when you move to ${team.teamPlan ? `${team.teamPlan.name} (up to ${team.teamPlan.seats} people, ${team.teamPlan.price} a month)` : "a plan with a team"}.`
+            : `On ${plan.name}, only ${people(plan.seats)} can open this workspace, so ${paused.map((m) => m.name).join(", ")} can't right now. They stay in the team and get access back when the plan allows more people, or when you remove someone.`}
         </p>
       )}
 
@@ -97,7 +99,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                         </span>
                       )}
                     </p>
-                    <p className="text-[13px] break-all text-muted-foreground">
+                    <p className="text-[13px] [overflow-wrap:anywhere] text-muted-foreground">
                       {m.email}
                       {m.role !== "owner" && (
                         <span className="whitespace-nowrap tabular-nums">
@@ -118,16 +120,26 @@ export function TeamSettings({ team }: { team: TeamPage }) {
               >
                 <div className="grid min-w-0 gap-1">
                   <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
-                    <span className="break-all">{i.email}</span>
-                    <span className={cn(PILL, WAITING_PILL)}>
-                      <span
-                        aria-hidden
-                        className="size-1.5 rounded-full bg-warning"
-                      />
-                      Invited as {ROLE_LABELS[i.role].title.toLowerCase()}
-                    </span>
+                    <span className="[overflow-wrap:anywhere]">{i.email}</span>
+                    {team.canJoin ? (
+                      <span className={cn(PILL, WAITING_PILL)}>
+                        <span
+                          aria-hidden
+                          className="size-1.5 rounded-full bg-warning"
+                        />
+                        Invited as {ROLE_LABELS[i.role].title.toLowerCase()}
+                      </span>
+                    ) : (
+                      <span className={cn(PILL, IDLE_PILL)}>
+                        Can&apos;t join on {plan.name}
+                      </span>
+                    )}
                   </p>
                   <p className="text-[13px] text-muted-foreground tabular-nums">
+                    {!team.canJoin &&
+                      (solo
+                        ? `They can join once you're on ${team.teamPlan?.name ?? "a plan with a team"}. `
+                        : "They can join once there's a place. ")}
                     Sent by {i.invitedBy}{" "}
                     <span className="whitespace-nowrap">
                       {formatDate(i.sentAt)}
@@ -155,7 +167,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                       label="Cancel invite"
                       pendingLabel="Cancelling…"
                       ariaLabel={`Cancel the invite for ${i.email}`}
-                      variant="destructive"
+                      danger
                       confirm={{
                         question: `Cancel the invite for ${i.email}? Its link stops working.`,
                         yes: "Cancel the invite",
@@ -254,7 +266,7 @@ function MemberActions({
           label="Remove"
           pendingLabel="Removing…"
           ariaLabel={`Remove ${member.name}`}
-          variant="destructive"
+          danger
           confirm={{
             question: `Remove ${member.name}? They stop seeing this workspace at once. What they did stays in each project's history.`,
             yes: `Remove ${member.name.split(" ")[0]}`,

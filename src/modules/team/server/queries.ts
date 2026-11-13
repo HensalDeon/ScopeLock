@@ -107,6 +107,9 @@ export type InvitePage =
         | { kind: "ready" };
       /** The plan has no place left: accepting would fail. */
       full: boolean;
+      /** The plan is for one person: only a bigger plan makes room. */
+      solo: boolean;
+      expiresAt: Date;
     };
 
 /** /invite/<token>: what the invite is and whether this visitor can use it. */
@@ -143,12 +146,14 @@ export async function getInvitePage(token: string): Promise<InvitePage> {
     email: invite.email,
     viewer,
     full: members.length >= plan.teamMembers,
+    solo: plan.teamMembers <= 1,
+    expiresAt: invite.expiresAt,
   };
 }
 
 /** The sidebar's switcher: every workspace the signed-in person is in. */
 export async function listMyWorkspaces(): Promise<
-  { workspaceId: string; name: string; current: boolean }[]
+  { workspaceId: string; name: string; current: boolean; role: TeamRole }[]
 > {
   const { user, workspace } = await requireWorkspace();
   const mine = await listUserWorkspaces(user.id);
@@ -163,6 +168,7 @@ export async function listMyWorkspaces(): Promise<
             workspaceId: m.workspaceId,
             name: profile.businessName,
             current: m.workspaceId === workspace.workspaceId,
+            role: m.role,
           },
         ]
       : [];
@@ -171,7 +177,7 @@ export async function listMyWorkspaces(): Promise<
 
 export type PausedAccess = {
   business: string;
-  owner: string | null;
+  owner: { name: string; email: string } | null;
   plan: { name: string; seats: number };
   /** Other workspaces this person can open instead. */
   others: { workspaceId: string; name: string }[];
@@ -215,7 +221,9 @@ export async function getPausedAccess(): Promise<PausedAccess | null> {
   );
   return {
     business: profile.businessName,
-    owner: members.find((m) => m.role === "owner")?.name ?? null,
+    owner: ((o) => (o ? { name: o.name, email: o.email } : null))(
+      members.find((m) => m.role === "owner"),
+    ),
     plan: { name: plan.name, seats: plan.teamMembers },
     others: others.flat(),
   };

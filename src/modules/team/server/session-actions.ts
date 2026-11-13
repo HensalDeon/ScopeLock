@@ -75,7 +75,10 @@ export async function acceptInvite(
     if (members.length >= plan.teamMembers)
       return {
         status: "error",
-        message: `This workspace's plan has no place left. Ask ${invite.invitedBy.name} to make room, then open this link again.`,
+        message:
+          plan.teamMembers <= 1
+            ? `This workspace's plan is for one person right now. Ask ${invite.invitedBy.name} to move it to a plan with a team, then open this link again.`
+            : `This workspace's plan has no place left. Ask ${invite.invitedBy.name} to make room, then open this link again.`,
       };
     if (!(await repo.markAccepted(ws, invite._id, user.id, new Date())))
       return gone;
