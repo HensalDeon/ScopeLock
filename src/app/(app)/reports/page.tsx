@@ -39,8 +39,12 @@ async function Report({
       current={result.current}
       asOf={result.asOf}
       query={{
-        page: parsePage(query.page),
-        upage: parsePage(query.upage),
+        // Each currency's own pages (?p-inr=2, ?u-inr=3).
+        pages: Object.fromEntries(
+          Object.entries(query)
+            .filter(([name]) => /^[pu]-[a-z]{3}$/.test(name))
+            .map(([name, value]) => [name, parsePage(value)]),
+        ),
         client: parseObjectIdParam(query.client),
       }}
     />

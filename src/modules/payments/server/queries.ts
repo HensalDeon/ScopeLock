@@ -98,6 +98,7 @@ export async function listChangeLinePayments(): Promise<
     state: "received" | "asked";
     invoice: string | null;
     receivedOn: string | null;
+    askedAt: Date | null;
   }[]
 > {
   const { workspace } = await requireWorkspace();

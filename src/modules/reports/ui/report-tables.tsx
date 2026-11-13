@@ -5,7 +5,6 @@ import { formatMoney, type Minor } from "@/shared/lib/money";
 import type { Page } from "@/shared/lib/pagination";
 import { cn } from "@/shared/lib/utils";
 import { Pagination } from "@/shared/ui/pagination";
-import { owedText } from "./owed";
 import type {
   ClientLine,
   MonthLine,
@@ -41,7 +40,7 @@ function Money({
   return <>{formatMoney(amount, currency)}</>;
 }
 
-/** Client by client, most approved first: who still owes what. */
+/** Client by client, whoever still owes most first. */
 export function ClientTable({
   id,
   page,
@@ -50,6 +49,8 @@ export function ClientTable({
   totalLabel,
   href,
   rowHref,
+  selected,
+  unpaidCount,
 }: {
   id: string;
   page: Page<ClientLine>;
@@ -59,8 +60,19 @@ export function ClientTable({
   href: (page: number) => Route;
   /** A client's row: their change requests not received yet. */
   rowHref: (clientId: string) => Route;
+  /** The client "Not received yet" is narrowed to. */
+  selected: string | null;
+  /** Change requests not received yet, per client. */
+  unpaidCount: ReadonlyMap<string, number>;
 }) {
-  const owed = (line: ReportTotals) => owedText(line, currency);
+  const money = (n: Minor) => formatMoney(n, currency);
+  const asked = (line: ReportTotals) =>
+    line.asked > 0 ? `${money(line.asked)} asked for` : null;
+  // Phones show one figure (still to receive); the rest goes under the name.
+  const phoneLine = (line: ReportTotals) =>
+    [`${money(line.approved)} approved`, asked(line)]
+      .filter(Boolean)
+      .join(", ");
   return (
     <div className="grid gap-3">
       <div className="overflow-hidden rounded-xl border bg-background">
@@ -71,74 +83,87 @@ export function ClientTable({
                 Client
               </th>
               <th scope="col" className={cn(HEAD, NUM)}>
-                Approved
+                Still to receive
               </th>
               <th scope="col" className={cn(HEAD, NUM, WIDE)}>
                 Received
               </th>
               <th scope="col" className={cn(HEAD, NUM, WIDE)}>
-                Still to receive
+                Approved
               </th>
             </tr>
           </thead>
           <tbody className="divide-y">
-            {page.items.map((c) => (
-              // The whole row opens what this client still owes (a 44px+
-              // target on phones).
-              <tr
-                key={c.clientId ?? c.name}
-                className={cn(c.clientId && "group relative hover:bg-muted/40")}
-              >
-                <th scope="row" className={cn(CELL, "text-left font-normal")}>
-                  {c.clientId ? (
-                    <Link
-                      href={rowHref(c.clientId)}
-                      className="font-medium underline-offset-4 group-hover:underline after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring/60 focus-visible:after:ring-inset"
-                    >
-                      {c.name}
-                    </Link>
-                  ) : (
-                    <span className="font-medium">{c.name}</span>
-                  )}
-                  <span className={SUB}>
-                    {changes(c.count)} · {owed(c)}
-                  </span>
-                </th>
-                <td className={cn(CELL, NUM)}>
-                  <Money amount={c.approved} currency={currency} />
-                </td>
-                <td className={cn(CELL, NUM, WIDE)}>
-                  <Money amount={c.received} currency={currency} />
-                </td>
-                <td
+            {page.items.map((c) => {
+              const unpaid = c.clientId
+                ? (unpaidCount.get(c.clientId) ?? 0)
+                : 0;
+              const linked = c.clientId !== null && unpaid > 0;
+              const isSelected = c.clientId !== null && c.clientId === selected;
+              return (
+                // A row with something owed narrows "Not received yet" to
+                // that client (the whole row: a 44px+ target on phones).
+                <tr
+                  key={c.clientId ?? c.name}
+                  aria-current={isSelected ? "true" : undefined}
                   className={cn(
-                    CELL,
-                    NUM,
-                    WIDE,
-                    c.outstanding > 0 && "font-medium",
+                    linked && "group relative hover:bg-muted/40",
+                    isSelected && "bg-muted/60",
                   )}
                 >
-                  <Money amount={c.outstanding} currency={currency} />
-                </td>
-              </tr>
-            ))}
+                  <th scope="row" className={cn(CELL, "text-left font-normal")}>
+                    {linked && c.clientId ? (
+                      <Link
+                        href={rowHref(c.clientId)}
+                        aria-label={`${c.name}: show ${unpaid} change request${unpaid === 1 ? "" : "s"} not received yet`}
+                        className="font-medium underline decoration-foreground/25 underline-offset-4 group-hover:decoration-foreground after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring/60 focus-visible:after:ring-inset"
+                      >
+                        {c.name}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">{c.name}</span>
+                    )}
+                    <span className={SUB}>
+                      {changes(c.count)}
+                      <span className="sm:hidden"> · {phoneLine(c)}</span>
+                    </span>
+                  </th>
+                  <td className={cn(CELL, NUM)}>
+                    <span className={cn(c.outstanding > 0 && "font-medium")}>
+                      <Money amount={c.outstanding} currency={currency} />
+                    </span>
+                    {asked(c) && (
+                      <span className={cn(SUB, WIDE, "text-warning-ink")}>
+                        {asked(c)}
+                      </span>
+                    )}
+                  </td>
+                  <td className={cn(CELL, NUM, WIDE)}>
+                    <Money amount={c.received} currency={currency} />
+                  </td>
+                  <td className={cn(CELL, NUM, WIDE)}>
+                    <Money amount={c.approved} currency={currency} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
           <tfoot className="border-t bg-canvas font-medium">
             <tr>
               <th scope="row" className={cn(CELL, "text-left")}>
                 {totalLabel}
                 <span className={cn(SUB, "sm:hidden")}>
-                  {changes(totals.count)} · {owed(totals)}
+                  {changes(totals.count)} · {phoneLine(totals)}
                 </span>
               </th>
               <td className={cn(CELL, NUM)}>
-                <Money amount={totals.approved} currency={currency} />
+                <Money amount={totals.outstanding} currency={currency} />
               </td>
               <td className={cn(CELL, NUM, WIDE)}>
                 <Money amount={totals.received} currency={currency} />
               </td>
               <td className={cn(CELL, NUM, WIDE)}>
-                <Money amount={totals.outstanding} currency={currency} />
+                <Money amount={totals.approved} currency={currency} />
               </td>
             </tr>
           </tfoot>

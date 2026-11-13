@@ -68,6 +68,7 @@ const report = recoveredReport({
       state: "received",
       invoice: "INV/26-27/004",
       receivedOn: "2026-11-10",
+      askedAt: null,
     },
     // Asked for on the final payment, not paid yet.
     {
@@ -76,6 +77,7 @@ const report = recoveredReport({
       state: "received",
       invoice: "INV/26-27/005",
       receivedOn: "2026-11-11",
+      askedAt: null,
     },
     {
       changeId: "cr3",
@@ -83,6 +85,7 @@ const report = recoveredReport({
       state: "asked",
       invoice: "INV/26-27/006",
       receivedOn: null,
+      askedAt: ist("2026-11-08"),
     },
     // Paid more than approved (a re-price): capped at the approved value.
     {
@@ -91,6 +94,7 @@ const report = recoveredReport({
       state: "received",
       invoice: "INV/26-27/002",
       receivedOn: "2026-08-20",
+      askedAt: null,
     },
   ],
   projects,
@@ -108,6 +112,8 @@ describe("recoveredReport", () => {
     // Of what's still to come: asked for vs not asked yet.
     expect(inr.asked).toBe(1_000_000);
     expect(inr.notAsked).toBe(500_000);
+    const cr3 = report.rows.find((r) => r.changeId === "cr3")!;
+    expect(cr3.askedAt).toEqual(ist("2026-11-08"));
   });
 
   it("goes month by month, April to now", () => {

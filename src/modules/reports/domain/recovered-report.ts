@@ -42,6 +42,8 @@ export type ReportPaymentLine = {
   invoice: string | null;
   /** "2026-11-18", for received lines. */
   receivedOn: string | null;
+  /** When it was asked for, for lines still due. */
+  askedAt: Date | null;
 };
 
 /** One approved change request: a CSV row, and a line in "Not received yet". */
@@ -69,6 +71,8 @@ export type ReportRow = {
   /** Invoice numbers of the payments it's on. */
   invoices: string[];
   lastReceivedOn: string | null;
+  /** The oldest request still out for it: how long it's been waiting. */
+  askedAt: Date | null;
 };
 
 export type ReportTotals = {
@@ -164,6 +168,13 @@ export function recoveredReport(input: {
           ),
         ],
         lastReceivedOn: dates.at(-1) ?? null,
+        askedAt:
+          asked > 0
+            ? (mine
+                .map((l) => l.askedAt)
+                .filter((d): d is Date => d !== null)
+                .sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
+            : null,
       };
     });
 

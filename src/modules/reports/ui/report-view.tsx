@@ -1,39 +1,21 @@
 import { Download } from "lucide-react";
 import Link from "next/link";
-import { currencyLabel } from "@/shared/lib/currency";
 import { formatDate } from "@/shared/lib/dates";
-import { formatMoney } from "@/shared/lib/money";
-import { clampPage, PAGE_SIZE, toPage } from "@/shared/lib/pagination";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { EmptyState } from "@/shared/ui/list-states";
 import { PageHeader } from "@/shared/ui/page";
 import { TOUCH_LINK } from "@/shared/ui/touch";
 import { financialYearLabel } from "../domain/financial-year";
-import type {
-  CurrencyReport,
-  RecoveredReport,
-} from "../domain/recovered-report";
+import type { RecoveredReport } from "../domain/recovered-report";
+import { CurrencySection } from "./currency-section";
 import { reportHref } from "./report-href";
-import { ClientTable, MonthTable } from "./report-tables";
-import { UnpaidList } from "./unpaid-list";
 
-const LABEL =
-  "font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase";
 const changes = (n: number) => `${n} change request${n === 1 ? "" : "s"}`;
 
-function pageOf<T>(items: readonly T[], requested: number) {
-  const page = clampPage(requested, items.length);
-  return toPage(
-    items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    items.length,
-    page,
-  );
-}
-
-type Query = {
-  page: number;
-  upage: number;
+export type Query = {
+  /** Page numbers by param name (?p-inr=2, ?u-inr=3). */
+  pages: Record<string, number>;
   client: string | null;
 };
 
@@ -60,6 +42,10 @@ export function RecoveredReportView({
   asOf: Date;
 }) {
   const year = `FY ${financialYearLabel(report.fy)}`;
+  // The chosen client's name, from whichever currency they bill in.
+  const clientName = query.client
+    ? (report.rows.find((r) => r.clientId === query.client)?.clientName ?? null)
+    : null;
   return (
     <>
       <PageHeader
@@ -122,167 +108,29 @@ export function RecoveredReportView({
           from a project&apos;s page with &ldquo;New change request&rdquo;.
         </EmptyState>
       ) : (
-        <div className="grid max-w-5xl gap-12">
-          {current && (
-            <p className="-mb-8 text-sm text-muted-foreground">
-              {year} so far, as of {formatDate(asOf, { now: asOf })}.
-            </p>
-          )}
-          {report.currencies.map((c) => (
-            <CurrencySection
-              key={c.currency}
-              report={c}
-              rows={report.rows}
-              year={year}
-              fy={report.fy}
-              query={query}
-              titled={report.currencies.length > 1}
-            />
-          ))}
+        <div className="grid max-w-5xl gap-4">
+          <p className="text-sm text-muted-foreground">
+            {current
+              ? `${year} so far, as of ${formatDate(asOf, { now: asOf })}.`
+              : `${year}: 1 April ${report.fy} to 31 March ${report.fy + 1}.`}
+          </p>
+          <div className="grid gap-12">
+            {report.currencies.map((c) => (
+              <CurrencySection
+                key={c.currency}
+                report={c}
+                rows={report.rows}
+                year={year}
+                fy={report.fy}
+                query={query}
+                titled={report.currencies.length > 1}
+                clientName={clientName}
+                now={asOf}
+              />
+            ))}
+          </div>
         </div>
       )}
     </>
-  );
-}
-
-function CurrencySection({
-  report,
-  rows,
-  year,
-  fy,
-  query,
-  titled,
-}: {
-  report: CurrencyReport;
-  rows: RecoveredReport["rows"];
-  year: string;
-  fy: number;
-  query: Query;
-  /** More than one currency: name each. */
-  titled: boolean;
-}) {
-  const money = (n: Parameters<typeof formatMoney>[0]) =>
-    formatMoney(n, report.currency);
-  const id = `recovered-${report.currency}`;
-  const total = `Total, ${year}`;
-  const client = query.client
-    ? (report.clients.find((c) => c.clientId === query.client) ?? null)
-    : null;
-  const unpaid = rows.filter(
-    (r) =>
-      r.currency === report.currency &&
-      r.outstanding > 0 &&
-      (!client || r.clientId === client.clientId),
-  );
-  // Emerald marks money recovered and received (DESIGN.md, Settled Green).
-  const figures = [
-    {
-      label: `Approved in ${year}`,
-      value: money(report.approved),
-      note: changes(report.count),
-      settled: report.approved > 0,
-    },
-    {
-      label: "Received so far",
-      value: money(report.received),
-      note:
-        report.received === report.approved
-          ? "All of it"
-          : `Of ${money(report.approved)} approved`,
-      settled: report.received > 0,
-    },
-    {
-      label: "Still to receive",
-      value: money(report.outstanding),
-      note:
-        report.outstanding === 0
-          ? "Nothing left"
-          : `${money(report.asked)} asked for, ${money(report.notAsked)} not yet`,
-      settled: false,
-    },
-  ];
-  return (
-    <section aria-labelledby={id} className="grid gap-8">
-      <h2 id={id} className={titled ? "text-lg font-semibold" : "sr-only"}>
-        {currencyLabel(report.currency)}
-      </h2>
-      {/* Phones: one ledger row per figure (label left, amount right). */}
-      <dl className="grid rounded-xl border bg-background px-5 py-2 sm:grid-cols-3 sm:px-0 sm:py-0">
-        {figures.map((f) => (
-          <div
-            key={f.label}
-            className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 border-t py-2.5 first:border-t-0 sm:block sm:border-t-0 sm:border-l sm:px-5 sm:py-4 sm:first:border-l-0"
-          >
-            <dt className={LABEL}>{f.label}</dt>
-            <dd
-              className={cn(
-                "text-lg font-semibold tracking-[-0.02em] tabular-nums sm:mt-1 sm:text-2xl",
-                f.settled && "text-success-ink",
-              )}
-            >
-              {f.value}
-            </dd>
-            <dd className="col-span-2 text-sm text-muted-foreground tabular-nums">
-              {f.note}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <div className="grid gap-3">
-        <h3 id={`${id}-clients`} className="text-[15px] font-semibold">
-          By client
-        </h3>
-        <ClientTable
-          id={`${id}-clients`}
-          page={pageOf(report.clients, query.page)}
-          totals={report}
-          currency={report.currency}
-          totalLabel={total}
-          href={(n) => reportHref({ fy, page: n, client: query.client })}
-          rowHref={(clientId) =>
-            reportHref({
-              fy,
-              page: query.page,
-              client: clientId,
-              hash: `${id}-unpaid`,
-            })
-          }
-        />
-      </div>
-      <UnpaidList
-        id={`${id}-unpaid`}
-        page={pageOf(unpaid, query.upage)}
-        currency={report.currency}
-        client={client?.name ?? null}
-        allHref={reportHref({ fy, page: query.page, hash: `${id}-unpaid` })}
-        href={(n) =>
-          reportHref({
-            fy,
-            page: query.page,
-            client: query.client,
-            upage: n,
-            hash: `${id}-unpaid`,
-          })
-        }
-      />
-      <div className="grid gap-3">
-        <div className="grid gap-0.5">
-          <h3 id={`${id}-months`} className="text-[15px] font-semibold">
-            By month
-          </h3>
-          <p className="text-[13px] text-pretty text-muted-foreground">
-            By the month the client approved. Received counts payments for those
-            change requests, whenever they arrived.
-          </p>
-        </div>
-        <MonthTable
-          id={`${id}-months`}
-          months={report.months}
-          totals={report}
-          currency={report.currency}
-          totalLabel={total}
-        />
-      </div>
-    </section>
   );
 }

@@ -42,6 +42,8 @@ export async function findChangeLinePayments(workspaceId: string): Promise<
     invoice: string | null;
     /** "2026-11-18", for received ones. */
     receivedOn: string | null;
+    /** When it was asked for, for ones still due. */
+    askedAt: Date | null;
   }[]
 > {
   const docs = await payments(workspaceId)
@@ -56,6 +58,7 @@ export async function findChangeLinePayments(workspaceId: string): Promise<
           status: 1,
           "invoice.number": 1,
           "confirmation.receivedOn": 1,
+          requestedAt: 1,
         },
       },
     )
@@ -73,6 +76,7 @@ export async function findChangeLinePayments(workspaceId: string): Promise<
           d.status === "confirmed"
             ? (d.confirmation?.receivedOn ?? null)
             : null,
+        askedAt: d.status === "confirmed" ? null : d.requestedAt,
       })),
   );
 }

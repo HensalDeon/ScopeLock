@@ -8,30 +8,35 @@ import { cn } from "@/shared/lib/utils";
 import { Pagination } from "@/shared/ui/pagination";
 import { TOUCH_LINK } from "@/shared/ui/touch";
 import type { ReportRow } from "../domain/recovered-report";
+import { AskBadges } from "./ask-badges";
 
 /**
  * "Not received yet": each approved change request with money still to
- * come, oldest first, saying whether it has been asked for. Each opens its
- * change request, where its payment is asked for or confirmed.
+ * come, oldest first, with whether (and when) it was asked for. Each opens
+ * its change request, where its payment is asked for or confirmed.
  */
 export function UnpaidList({
   id,
   page,
   currency,
   client,
+  empty,
   allHref,
   href,
+  now,
 }: {
   id: string;
   page: Page<ReportRow>;
   currency: CurrencyCode;
   /** Narrowed to one client: their name. */
   client: string | null;
+  /** What to say when nothing is owed ("…in FY 2025–26"). */
+  empty: string;
   /** The list for every client. */
   allHref: Route;
   href: (page: number) => Route;
+  now: Date;
 }) {
-  const money = (n: ReportRow["amount"]) => formatMoney(n, currency);
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -51,11 +56,7 @@ export function UnpaidList({
         )}
       </div>
       {page.total === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {client
-            ? `Everything ${client} approved this year has been paid.`
-            : "Every change request approved this year has been paid."}
-        </p>
+        <p className="text-sm text-muted-foreground">{empty}</p>
       ) : (
         <ul
           aria-labelledby={id}
@@ -64,12 +65,12 @@ export function UnpaidList({
           {page.items.map((r) => (
             <li
               key={r.changeId}
-              className="group relative grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 px-5 py-3 text-sm hover:bg-muted/40"
+              className="group relative grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-2 px-5 py-3 text-sm hover:bg-muted/40"
             >
               <div className="grid min-w-0 gap-0.5">
                 <Link
                   href={`/projects/${r.projectId}/changes/${r.number}` as Route}
-                  className="font-medium underline-offset-4 group-hover:underline after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring/60 focus-visible:after:ring-inset"
+                  className="font-medium underline decoration-foreground/25 underline-offset-4 group-hover:decoration-foreground after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring/60 focus-visible:after:ring-inset"
                 >
                   <span className="font-mono text-[13px] tabular-nums">
                     {r.label}
@@ -79,48 +80,25 @@ export function UnpaidList({
                 <p className="text-[13px] text-pretty text-muted-foreground tabular-nums">
                   {r.projectName}
                   {client ? "" : ` · ${r.clientName}`} · approved{" "}
-                  {formatDate(r.approvedAt)}
+                  {formatDate(r.approvedAt, { now })}
                 </p>
-                <Status row={r} money={money} className="sm:hidden" />
               </div>
-              <div className="grid justify-items-end gap-0.5 text-right tabular-nums">
-                <span className="font-medium">{money(r.outstanding)}</span>
-                <Status row={r} money={money} className="max-sm:hidden" />
-              </div>
+              <span className="text-right font-medium tabular-nums">
+                {formatMoney(r.outstanding, currency)}
+              </span>
+              <AskBadges
+                asked={r.asked}
+                notAsked={r.notAsked}
+                askedAt={r.askedAt}
+                currency={currency}
+                now={now}
+                className="col-span-2"
+              />
             </li>
           ))}
         </ul>
       )}
       <Pagination page={page} noun="change requests" href={href} />
     </div>
-  );
-}
-
-/** Asked for (a payment request is out) or not asked for yet. */
-function Status({
-  row: r,
-  money,
-  className,
-}: {
-  row: ReportRow;
-  money: (n: ReportRow["amount"]) => string;
-  className?: string;
-}) {
-  return (
-    <span className={cn("text-[13px] tabular-nums", className)}>
-      {r.asked > 0 && r.notAsked > 0 ? (
-        <>
-          <span className="text-warning-ink">{money(r.asked)} asked for</span>
-          <span className="text-muted-foreground">
-            {" "}
-            · {money(r.notAsked)} not yet
-          </span>
-        </>
-      ) : r.asked > 0 ? (
-        <span className="text-warning-ink">Asked for</span>
-      ) : (
-        <span className="text-muted-foreground">Not asked for yet</span>
-      )}
-    </span>
   );
 }
