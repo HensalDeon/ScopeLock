@@ -23,12 +23,12 @@ export const ROLE_LABELS: Record<TeamRole, { title: string; detail: string }> =
     },
     admin: {
       title: "Admin",
-      detail: "Project work, settings and inviting members.",
+      detail: "Project work and settings; invites and removes members.",
     },
     member: {
       title: "Member",
       detail:
-        "Project work: proposals, change requests and payments. No settings.",
+        "Project work: proposals, change requests and payments. Settings are read-only.",
     },
   };
 

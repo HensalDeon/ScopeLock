@@ -19,8 +19,8 @@ export function inviteEmail(input: {
         `${input.inviter} invited you to work in ${input.business}'s ScopeLock as ${role === "admin" ? "an admin" : "a member"}: proposals, change requests and payments for their clients.`,
         "Open the link to join. If you don't have a ScopeLock account yet, you'll make one with this email address.",
       ],
-      action: { label: "Accept the invite", url: input.url },
-      footnote: `The link works once and expires in ${INVITE_TTL_DAYS} days. Not expecting this? You can ignore it.`,
+      action: { label: "Open the invite", url: input.url },
+      footnote: `The link works once, for ${INVITE_TTL_DAYS} days. If ${input.inviter} sends it again, use the newest email. Not expecting this? You can ignore it.`,
     },
   };
 }

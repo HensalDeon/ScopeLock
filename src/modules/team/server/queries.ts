@@ -1,5 +1,5 @@
 import "server-only";
-import { getWorkspacePlan } from "@/modules/billing/server";
+import { getPlans, getWorkspacePlan } from "@/modules/billing/server";
 import {
   getWorkspaceProfile,
   requireWorkspace,
@@ -11,6 +11,7 @@ import {
   type WorkspaceMember,
 } from "@/shared/auth/membership";
 import { getSession } from "@/shared/auth/session";
+import { formatINR } from "@/shared/lib/money";
 import { hashToken } from "@/shared/lib/token";
 import { invitationState, sameEmail } from "../domain/invitation";
 import {
@@ -39,6 +40,10 @@ export type TeamPage = {
   }[];
   /** Places left for new invites. */
   placesLeft: number;
+  /** An invite sent now could still be accepted (the plan has room). */
+  canJoin: boolean;
+  /** The plan with teams, to offer on Free and Pro. */
+  teamPlan: { name: string; price: string; seats: number } | null;
 };
 
 /** Settings → Team. */
@@ -46,11 +51,15 @@ export async function getTeamPage(): Promise<TeamPage> {
   const { workspace, user, role } = await requireWorkspace();
   const ws = workspace.workspaceId;
   const now = new Date();
-  const [{ plan }, members, invites] = await Promise.all([
+  const [{ plan }, members, invites, plans] = await Promise.all([
     getWorkspacePlan(ws),
     listWorkspaceMembers(ws),
     findOpenInvitations(ws, now),
+    getPlans(),
   ]);
+  const team = plans
+    .filter((p) => p.teamMembers > 1)
+    .sort((a, b) => a.monthlyPrice - b.monthlyPrice)[0];
   const access = withAccess(members, plan.teamMembers);
   return {
     you: { userId: user.id, role },
@@ -66,12 +75,24 @@ export async function getTeamPage(): Promise<TeamPage> {
       expiresAt: i.expiresAt,
     })),
     placesLeft: placesLeft(plan.teamMembers, members.length, invites.length),
+    canJoin: members.length < plan.teamMembers,
+    teamPlan: team
+      ? {
+          name: team.name,
+          price: formatINR(team.monthlyPrice),
+          seats: team.teamMembers,
+        }
+      : null,
   };
 }
 
 export type InvitePage =
   | { kind: "invalid" }
-  | { kind: "used" | "expired" | "revoked"; business: string }
+  | {
+      kind: "used" | "expired" | "revoked";
+      business: string;
+      inviter: string;
+    }
   | {
       kind: "open";
       business: string;
@@ -82,7 +103,6 @@ export type InvitePage =
       viewer:
         | { kind: "signed_out" }
         | { kind: "other_email"; email: string }
-        | { kind: "unverified"; email: string }
         | { kind: "member" }
         | { kind: "ready" };
       /** The plan has no place left: accepting would fail. */
@@ -98,8 +118,9 @@ export async function getInvitePage(token: string): Promise<InvitePage> {
   if (!profile) return { kind: "invalid" };
   const business = profile.businessName;
   const state = invitationState(invite, new Date());
-  if (state === "accepted") return { kind: "used", business };
-  if (state !== "open") return { kind: state, business };
+  const inviter = invite.invitedBy.name;
+  if (state === "accepted") return { kind: "used", business, inviter };
+  if (state !== "open") return { kind: state, business, inviter };
 
   const [session, { plan }, members] = await Promise.all([
     getSession(),
@@ -113,13 +134,11 @@ export async function getInvitePage(token: string): Promise<InvitePage> {
       ? { kind: "other_email", email: account.email }
       : members.some((m) => m.userId === session?.user.id)
         ? { kind: "member" }
-        : !account.emailVerified
-          ? { kind: "unverified", email: account.email }
-          : { kind: "ready" };
+        : { kind: "ready" };
   return {
     kind: "open",
     business,
-    inviter: invite.invitedBy.name,
+    inviter,
     role: invite.role,
     email: invite.email,
     viewer,

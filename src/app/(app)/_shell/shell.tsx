@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { canSeeAdmin } from "@/modules/admin/server";
 import { BUSINESS_TYPE_LABELS, BusinessInitials } from "@/modules/workspace";
-import { WorkspaceSwitcher } from "@/modules/team";
+import { ROLE_LABELS, WorkspaceSwitcher } from "@/modules/team";
 import { listMyWorkspaces } from "@/modules/team/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { initialsOf } from "@/shared/lib/initials";
@@ -13,7 +13,7 @@ import { UserMenu } from "./user-menu";
 
 /** Sidebar on desktop, top bar + drawer on mobile. Reads the session. */
 export async function Shell() {
-  const [{ user, workspace }, workspaces] = await Promise.all([
+  const [{ user, workspace, role }, workspaces] = await Promise.all([
     requireWorkspace(),
     listMyWorkspaces(),
   ]);
@@ -24,7 +24,9 @@ export async function Shell() {
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{workspace.businessName}</p>
         <p className="text-xs text-muted-foreground">
-          {BUSINESS_TYPE_LABELS[workspace.businessType].title}
+          {role === "owner"
+            ? BUSINESS_TYPE_LABELS[workspace.businessType].title
+            : ROLE_LABELS[role].title}
         </p>
       </div>
     </div>
@@ -63,7 +65,11 @@ export async function Shell() {
         <NavLinks />
         <div className="mt-auto">{userMenu}</div>
       </aside>
-      <MobileNav workspace={workspaceBlock} footer={userMenu} />
+      <MobileNav
+        workspace={workspaceBlock}
+        footer={userMenu}
+        current={workspaces.length > 1 ? workspace.businessName : null}
+      />
     </>
   );
 }

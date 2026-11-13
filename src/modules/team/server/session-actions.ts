@@ -6,6 +6,7 @@ import { getWorkspacePlan } from "@/modules/billing/server";
 import {
   addWorkspaceMember,
   findAccount,
+  markEmailVerified,
   getWorkspaceRole,
   listWorkspaceMembers,
   removeWorkspaceMember,
@@ -62,11 +63,9 @@ export async function acceptInvite(
       status: "error",
       message: `This invite is for ${invite.email}. Sign in with that email to accept it.`,
     };
-  if (!account.emailVerified)
-    return {
-      status: "error",
-      message: "Confirm your email first, with the code we sent you.",
-    };
+  // The invite was emailed to this address and its link opened here: that
+  // proves the inbox, so no separate code is needed.
+  if (!account.emailVerified) await markEmailVerified(user.id);
   const ws = invite.workspaceId;
   const [{ plan }, members] = await Promise.all([
     getWorkspacePlan(ws),

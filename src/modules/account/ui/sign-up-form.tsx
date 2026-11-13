@@ -37,6 +37,9 @@ export function SignUpForm({
   // Set by a team invite (/invite/…): come back there, not to onboarding.
   const next = useSearchParams().get("next");
   const after = next ? safeNextPath(next) : null;
+  // From a team invite: the account must use the invited email.
+  const invited =
+    after?.startsWith("/invite/") && defaultEmail ? defaultEmail : null;
   const [error, setError] = useState<{
     message: string;
     exists: boolean;
@@ -137,9 +140,16 @@ export function SignUpForm({
             autoComplete="email"
             inputMode="email"
             defaultValue={defaultEmail}
+            readOnly={Boolean(invited)}
             required
             aria-invalid={Boolean(fieldErrors.email) || undefined}
+            aria-describedby={invited ? `${uid}-invited` : undefined}
           />
+          {invited && (
+            <FieldDescription id={`${uid}-invited`}>
+              You were invited as {invited}, so your account uses this email.
+            </FieldDescription>
+          )}
           <FieldError>{fieldErrors.email}</FieldError>
         </Field>
 

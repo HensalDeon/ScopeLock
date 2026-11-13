@@ -1,14 +1,13 @@
 import type { Route } from "next";
 import Link from "next/link";
-import { SignOutButton, VerifyEmailForm } from "@/modules/account";
+import { SignOutButton } from "@/modules/account";
 import { Button } from "@/shared/ui/button";
 import { TOUCH } from "@/shared/ui/touch";
 import { ROLE_LABELS } from "../domain/team";
 import type { InvitePage } from "../server/queries";
 import { AcceptButton } from "./accept-button";
 
-const LINK =
-  "font-medium underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center";
+const LINK = "font-medium underline underline-offset-4";
 
 function Heading({ children }: { children: React.ReactNode }) {
   return (
@@ -18,10 +17,16 @@ function Heading({ children }: { children: React.ReactNode }) {
   );
 }
 
+function Lead({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[15px] text-pretty text-muted-foreground">{children}</p>
+  );
+}
+
 /**
  * /invite/<token>: who invited you to what, and the one next step for
- * whoever is looking (make an account, sign in as the right email, confirm
- * the email, or join).
+ * whoever is looking (make an account, sign in as the right email, or
+ * join). Opening the emailed link confirms the email.
  */
 export function InviteView({
   page,
@@ -35,50 +40,49 @@ export function InviteView({
     return (
       <div className="grid gap-3">
         <Heading>This invite link doesn&apos;t work</Heading>
-        <p className="text-[15px] text-pretty text-muted-foreground">
-          It may have been copied only in part. Ask whoever invited you to send
-          it again from ScopeLock.
-        </p>
+        <Lead>
+          If you were sent the invite more than once, use the newest email:
+          sending it again replaces the old link. Otherwise ask whoever invited
+          you to send it again from ScopeLock.
+        </Lead>
+      </div>
+    );
+  if (page.kind === "used")
+    return (
+      <div className="grid gap-3">
+        <Heading>This invite has been used</Heading>
+        <Lead>If it was you, open ScopeLock to work in {page.business}.</Lead>
+        <div>
+          <Button asChild className={TOUCH}>
+            <Link href="/dashboard">Open ScopeLock</Link>
+          </Button>
+        </div>
       </div>
     );
   if (page.kind !== "open")
     return (
       <div className="grid gap-3">
         <Heading>
-          {page.kind === "used"
-            ? "This invite has been used"
-            : page.kind === "expired"
-              ? "This invite has expired"
-              : "This invite was cancelled"}
+          {page.kind === "expired"
+            ? "This invite has expired"
+            : "This invite was cancelled"}
         </Heading>
-        <p className="text-[15px] text-pretty text-muted-foreground">
-          {page.kind === "used"
-            ? `If it was you, open ScopeLock to work in ${page.business}.`
-            : `Invites work for 7 days. Ask ${page.business} to send you a new one.`}
-        </p>
-        {page.kind === "used" && (
-          <div>
-            <Button asChild className={TOUCH}>
-              <Link href="/dashboard">Open ScopeLock</Link>
-            </Button>
-          </div>
-        )}
+        <Lead>
+          {page.kind === "expired"
+            ? `Invite links work for 7 days. Ask ${page.inviter} at ${page.business} for a new one.`
+            : `${page.inviter} cancelled it. If you still need to join ${page.business}, ask them for a new invite.`}
+        </Lead>
       </div>
     );
 
   const role = page.role === "admin" ? "an admin" : "a member";
-  const intro = (
-    <>
-      <Heading>Join {page.business} on ScopeLock</Heading>
-      <p className="text-[15px] text-pretty text-muted-foreground">
-        {page.inviter} invited you as {role}. {ROLE_LABELS[page.role].detail}
-      </p>
-    </>
-  );
   const v = page.viewer;
   return (
     <div className="grid gap-4">
-      {intro}
+      <Heading>Join {page.business} on ScopeLock</Heading>
+      <Lead>
+        {page.inviter} invited you as {role}: {ROLE_LABELS[page.role].detail}
+      </Lead>
       {v.kind === "signed_out" && (
         <div className="grid gap-3">
           <Button asChild className={TOUCH}>
@@ -90,15 +94,14 @@ export function InviteView({
               Create your account
             </Link>
           </Button>
-          <p className="text-sm text-muted-foreground">
-            Already use ScopeLock with {page.email}?{" "}
-            <Link
-              href={`/sign-in?next=${encodeURIComponent(back)}` as Route}
-              className={LINK}
-            >
-              Sign in
-            </Link>
+          <p className="text-sm text-pretty text-muted-foreground">
+            Already use ScopeLock as {page.email}?
           </p>
+          <Button asChild variant="outline" className={TOUCH}>
+            <Link href={`/sign-in?next=${encodeURIComponent(back)}` as Route}>
+              Sign in to join
+            </Link>
+          </Button>
         </div>
       )}
       {v.kind === "other_email" && (
@@ -107,24 +110,15 @@ export function InviteView({
             You&apos;re signed in as{" "}
             <strong className="font-medium">{v.email}</strong>, but this invite
             is for <strong className="font-medium">{page.email}</strong>. Sign
-            out, then open this link again and sign in with that email.
+            out, then sign in or make an account with that email.
           </p>
-          <SignOutButton />
-        </div>
-      )}
-      {v.kind === "unverified" && (
-        <div className="grid gap-3">
-          <p className="text-sm text-pretty">
-            First, confirm your email: enter the 6-digit code we sent to{" "}
-            <strong className="font-medium">{v.email}</strong>.
-          </p>
-          <VerifyEmailForm email={v.email} />
+          <SignOutButton variant="outline" then={back} />
         </div>
       )}
       {(v.kind === "ready" || v.kind === "member") &&
         (page.full && v.kind === "ready" ? (
           <p className="text-sm text-pretty">
-            {page.business}&apos;s plan has no place left right now. Ask{" "}
+            {page.business} has no place left on its plan right now. Ask{" "}
             {page.inviter} to make room, then open this link again.
           </p>
         ) : (
@@ -137,6 +131,14 @@ export function InviteView({
             }
           />
         ))}
+      {v.kind === "signed_out" && (
+        <p className="text-[13px] text-pretty text-muted-foreground">
+          This link is for {page.email} only and works once.{" "}
+          <Link href="/" className={LINK}>
+            What is ScopeLock?
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

@@ -1,13 +1,6 @@
 import { expect, test } from "./fixtures";
 import { setPlanAsAdmin } from "./admin";
-import {
-  button,
-  codeFor,
-  label,
-  linkFor,
-  newEmail,
-  signUpFreelancer,
-} from "./helpers";
+import { button, label, linkFor, newEmail, signUpFreelancer } from "./helpers";
 
 /**
  * Agency teams: the owner invites a member by email; they make an account
@@ -27,13 +20,15 @@ test("an agency invites a member, who joins from the email", async ({
   // The owner invites Priya as a member.
   const priya = newEmail("priya");
   await owner.goto("/settings/team");
-  await expect(owner.getByText(/1 person of 5 on Agency/)).toBeVisible();
-  await label(owner, "Email", true).fill(priya);
+  await expect(owner.getByText(/1 of 5 places used on Agency/)).toBeVisible();
+  await label(owner, "Their email", true).fill(priya);
   await button(owner, "Send invite").click();
-  await expect(owner.getByText(`Invite sent to ${priya}.`)).toBeVisible();
   await expect(
-    owner.getByRole("heading", { name: "Invites not accepted yet" }),
+    owner.getByText(`Invite sent to ${priya}.`, { exact: false }),
   ).toBeVisible();
+  // The link can also go on WhatsApp.
+  await expect(button(owner, "Copy invite link")).toBeVisible();
+  await expect(owner.getByText(/Invited as member/)).toBeVisible();
 
   // Priya opens the emailed link, makes an account, confirms, joins.
   const ctx = await browser.newContext({
@@ -49,12 +44,8 @@ test("an agency invites a member, who joins from the email", async ({
   await expect(label(m, "Email", true)).toHaveValue(priya);
   await label(m, "Password", true).fill("e2e-password-123");
   await button(m, "Create account").click();
+  // Back on the invite; opening the emailed link confirmed the email.
   await m.waitForURL(/\/invite\//);
-  await m
-    .locator("input[autocomplete=one-time-code]")
-    .filter({ visible: true })
-    .first()
-    .fill(await codeFor(priya));
   await button(m, "Join Asha Designs").click();
   await m.waitForURL(/\/dashboard/);
 
@@ -80,12 +71,8 @@ test("an agency invites a member, who joins from the email", async ({
   await m.goto("/dashboard");
   await expect(m).toHaveURL(/\/dashboard/);
   await owner.goto("/settings/team");
-  owner.once("dialog", (d) => d.accept());
-  await owner
-    .getByRole("listitem")
-    .filter({ hasText: "Priya Nair" })
-    .getByRole("button", { name: "Remove" })
-    .click();
+  await button(owner, "Remove Priya Nair").click();
+  await button(owner, "Remove Priya").click();
   await expect(
     owner.getByRole("listitem").filter({ hasText: "Priya Nair" }),
   ).toHaveCount(0);

@@ -12,7 +12,8 @@ export function useSignOut() {
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  async function signOut() {
+  /** `then`: where to go after (default: sign in). */
+  async function signOut(then?: string) {
     setPending(true);
     setFailed(false);
     const { error } = await authClient.signOut();
@@ -21,7 +22,7 @@ export function useSignOut() {
       setFailed(true);
       return;
     }
-    crossAuthBoundary("/sign-in");
+    crossAuthBoundary(then ?? "/sign-in");
   }
 
   return { signOut, pending, failed };

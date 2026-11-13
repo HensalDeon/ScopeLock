@@ -7,7 +7,10 @@ export function SignOutButton({
   variant = "ghost",
   size = "sm",
   className,
+  then,
 }: {
+  /** Where to go after signing out (default: sign in). */
+  then?: string;
   variant?: React.ComponentProps<typeof Button>["variant"];
   size?: React.ComponentProps<typeof Button>["size"];
   className?: string;
@@ -20,7 +23,7 @@ export function SignOutButton({
       size={size}
       className={className}
       disabled={pending}
-      onClick={() => void signOut()}
+      onClick={() => void signOut(then)}
     >
       {pending
         ? "Signing out…"

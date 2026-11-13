@@ -30,14 +30,23 @@ export function WorkspaceSwitcher({
     IDLE,
   );
   const [pending, start] = useTransition();
+  const current = workspaces.find((w) => w.current)?.name ?? "This workspace";
   return (
     <div className="grid gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label="Switch workspace"
+          aria-label={`${current}: switch workspace`}
           className="group relative w-full rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {card}
+          {pending && (
+            <span
+              role="status"
+              className="absolute inset-0 flex items-center rounded-lg bg-background/90 px-3 text-sm text-muted-foreground"
+            >
+              Opening…
+            </span>
+          )}
           <ChevronsUpDown
             aria-hidden
             className="absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -45,7 +54,7 @@ export function WorkspaceSwitcher({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
           <DropdownMenuLabel className="font-normal text-muted-foreground">
-            {pending ? "Opening…" : "Your workspaces"}
+            Your workspaces
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {workspaces.map((w) => (

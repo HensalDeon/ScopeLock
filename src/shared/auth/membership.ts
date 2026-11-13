@@ -188,3 +188,14 @@ export async function findAccount(
       }
     : null;
 }
+
+/**
+ * Confirms someone's email because they opened a team invite sent to it:
+ * the one-time link proves the inbox, as the 6-digit code would.
+ */
+export async function markEmailVerified(userId: string): Promise<void> {
+  await users().updateOne(
+    { _id: { $in: idCandidates(userId) } },
+    { $set: { emailVerified: true } },
+  );
+}

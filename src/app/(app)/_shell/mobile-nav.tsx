@@ -18,9 +18,12 @@ import { NavLinks } from "./nav";
 export function MobileNav({
   workspace,
   footer,
+  current = null,
 }: {
   workspace: React.ReactNode;
   footer: React.ReactNode;
+  /** In several workspaces: the one open now, shown in the top bar. */
+  current?: string | null;
 }) {
   // Open only on the page it was opened on: any navigation from inside it
   // (nav links, Settings in the account menu, switching workspace) closes it.
@@ -37,6 +40,11 @@ export function MobileNav({
       >
         <Logo className="text-base" />
       </Link>
+      {current && (
+        <p className="mx-3 min-w-0 flex-1 truncate text-right text-sm font-medium">
+          {current}
+        </p>
+      )}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button

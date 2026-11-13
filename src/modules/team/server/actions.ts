@@ -102,7 +102,10 @@ export const inviteMember = workspaceAction(
       role,
     });
     refresh();
-    return { message: `Invite sent to ${email}.` };
+    return {
+      message: `Invite sent to ${email}. You can also send them this link on WhatsApp; it works once, for 7 days.`,
+      link: inviteUrl(token),
+    };
   },
 );
 
@@ -120,6 +123,14 @@ export const resendInvite = workspaceAction(
     const invite = await repo.findInvitation(ws, id);
     if (!invite || invite.acceptedAt || invite.revokedAt)
       throw new UserError("This invite isn't open any more. Refresh the page.");
+    const [{ plan }, members] = await Promise.all([
+      getWorkspacePlan(ws),
+      listWorkspaceMembers(ws),
+    ]);
+    if (members.length >= plan.teamMembers)
+      throw new UserError(
+        `There's no place for them on ${plan.name} right now. Cancel the invite, or make room first.`,
+      );
     const token = generateToken();
     const ok = await repo.renewInvitation(
       ws,
@@ -137,7 +148,10 @@ export const resendInvite = workspaceAction(
       role: invite.role,
     });
     refresh();
-    return { message: `Sent again to ${invite.email}, with a new link.` };
+    return {
+      message: `Sent again to ${invite.email}. The old link no longer works; this one does.`,
+      link: inviteUrl(token),
+    };
   },
 );
 
