@@ -24,7 +24,9 @@ test("an agency invites a member, who joins from the email", async ({
   await label(owner, "Their email", true).fill(priya);
   await button(owner, "Send invite").click();
   await expect(
-    owner.getByText(`Invite sent to ${priya}.`, { exact: false }),
+    owner
+      .locator("#content")
+      .getByText(`Invite sent to ${priya}.`, { exact: false }),
   ).toBeVisible();
   // The link can also go on WhatsApp.
   await expect(button(owner, "Copy invite link")).toBeVisible();

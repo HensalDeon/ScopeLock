@@ -49,6 +49,26 @@ export async function findOpenInvitations(
     .toArray();
 }
 
+/** Invites that ran out in the last 30 days, unused: shown to send again. */
+export async function findExpiredInvitations(
+  workspaceId: string,
+  now: Date,
+): Promise<InvitationDoc[]> {
+  return invitations(workspaceId)
+    .find(
+      {
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: {
+          $lte: now,
+          $gt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+        },
+      },
+      { sort: { expiresAt: -1 }, limit: 20 },
+    )
+    .toArray();
+}
+
 export async function findInvitation(
   workspaceId: string,
   id: ObjectId,

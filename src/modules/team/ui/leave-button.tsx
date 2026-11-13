@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { IDLE, type FormState } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
 import { TOUCH } from "@/shared/ui/touch";
@@ -19,6 +19,18 @@ export function LeaveButton({
   );
   const [asking, setAsking] = useState(false);
   const qid = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
+  const reopen = useRef(false);
+  useEffect(() => {
+    if (!asking && reopen.current) {
+      reopen.current = false;
+      trigger.current?.focus();
+    }
+  }, [asking]);
+  const close = () => {
+    reopen.current = true;
+    setAsking(false);
+  };
   const error = state.status === "error" && state.message && (
     <p role="alert" className="text-sm text-destructive">
       {state.message}
@@ -36,6 +48,7 @@ export function LeaveButton({
               : TOUCH
           }
           onClick={() => setAsking(true)}
+          ref={trigger}
         >
           Leave this workspace
         </Button>
@@ -47,6 +60,9 @@ export function LeaveButton({
       action={run}
       role="group"
       aria-labelledby={qid}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") close();
+      }}
       className="grid max-w-md gap-3 rounded-lg bg-canvas p-4"
     >
       <p id={qid} className="text-sm text-pretty">
@@ -65,7 +81,7 @@ export function LeaveButton({
           type="button"
           variant="ghost"
           className={TOUCH}
-          onClick={() => setAsking(false)}
+          onClick={close}
           autoFocus
         >
           Stay

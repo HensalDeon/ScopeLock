@@ -1,5 +1,6 @@
 import { SignOutButton } from "@/modules/account";
 import { Button } from "@/shared/ui/button";
+import { CopyValue } from "@/shared/ui/copy-value";
 import { TOUCH } from "@/shared/ui/touch";
 import type { PausedAccess } from "../server/queries";
 import { LeaveButton } from "./leave-button";
@@ -29,7 +30,7 @@ export function PausedView({ access }: { access: PausedAccess }) {
         {access.owner && (
           <Button asChild className={TOUCH}>
             <a
-              href={`mailto:${access.owner.email}?subject=${encodeURIComponent(subject)}`}
+              href={`mailto:${access.owner.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Hi ${access.owner.name}, ${access.business}'s ScopeLock plan doesn't have a place for me right now, so I can't open its projects. Could you move it to a plan with a team?`)}`}
             >
               Email {access.owner.name}
             </a>
@@ -43,9 +44,16 @@ export function PausedView({ access }: { access: PausedAccess }) {
           />
         ))}
       </div>
+      {access.owner && (
+        <div className="grid gap-1 text-sm">
+          <p className="text-muted-foreground">No email app? Their address:</p>
+          <CopyValue value={access.owner.email} label="email address" />
+        </div>
+      )}
       <div className="grid justify-items-start gap-2 border-t pt-5">
         <p className="text-sm text-pretty text-muted-foreground">
-          Not working with {access.business} any more?
+          Not working with {access.business} any more? Leaving also lets you set
+          up your own workspace.
         </p>
         <LeaveButton quiet />
         <SignOutButton className="px-0" />

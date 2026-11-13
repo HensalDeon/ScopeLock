@@ -19,16 +19,16 @@ export const ROLE_LABELS: Record<TeamRole, { title: string; detail: string }> =
   {
     owner: {
       title: "Owner",
-      detail: "Everything, including the plan and who's an admin.",
+      detail: "everything, including the plan and who's an admin.",
     },
     admin: {
       title: "Admin",
-      detail: "Project work and settings; invites and removes members.",
+      detail: "project work and settings, and inviting and removing members.",
     },
     member: {
       title: "Member",
       detail:
-        "Project work: proposals, change requests and payments. Settings are read-only.",
+        "proposals, change requests and payments; settings are read-only.",
     },
   };
 

@@ -82,7 +82,7 @@ export function InviteView({
     <div className="grid gap-4">
       <Heading>Join {page.business} on ScopeLock</Heading>
       <Lead>
-        {page.inviter} invited you as {role}. {ROLE_LABELS[page.role].detail}
+        {page.inviter} invited you as {role}: {ROLE_LABELS[page.role].detail}
       </Lead>
       {v.kind === "signed_out" && (
         <div className="grid gap-3">
@@ -110,6 +110,16 @@ export function InviteView({
           <SignOutButton variant="outline" then={back} />
         </div>
       )}
+      {v.kind === "ready" && (
+        <p className="text-sm text-pretty text-muted-foreground">
+          Signed in as {v.email}. Your own workspace, if you have one, stays as
+          it is; switch between them from the menu.{" "}
+          <SignOutButton
+            then={back}
+            className="h-auto p-0 align-baseline underline underline-offset-4"
+          />
+        </p>
+      )}
       {(v.kind === "ready" || v.kind === "member") &&
         (page.full && v.kind === "ready" ? (
           <p className="text-sm text-pretty">
@@ -130,7 +140,7 @@ export function InviteView({
       {v.kind === "signed_out" && (
         <p className="text-[13px] text-pretty text-muted-foreground">
           This link works once, until {formatDate(page.expiresAt)}.{" "}
-          <Link href="/" className={LINK}>
+          <Link href="/" className={`${LINK} whitespace-nowrap`}>
             What is ScopeLock?
           </Link>
         </p>

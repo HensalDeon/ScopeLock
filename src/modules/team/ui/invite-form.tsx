@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { IDLE, type FormState } from "@/shared/lib/form-state";
+import { announce } from "@/shared/ui/announce";
 import { Button } from "@/shared/ui/button";
 import {
   Field,
@@ -30,7 +31,9 @@ export function InviteForm({ roles }: { roles: readonly InviteRole[] }) {
   const form = useRef<HTMLFormElement>(null);
   const errors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
   useEffect(() => {
-    if (state.status === "success") form.current?.reset();
+    if (state.status !== "success") return;
+    form.current?.reset();
+    if (state.message) announce(state.message);
   }, [state]);
   return (
     <div className="grid gap-4">
@@ -96,10 +99,7 @@ export function InviteForm({ roles }: { roles: readonly InviteRole[] }) {
         </div>
       </form>
       {state.status === "success" && (
-        <div
-          role="status"
-          className="grid gap-2 rounded-lg border bg-canvas px-4 py-3"
-        >
+        <div className="grid gap-2 rounded-lg border bg-canvas px-4 py-3">
           <p className="text-sm text-pretty">{state.message}</p>
           {state.link && (
             <ShareLink

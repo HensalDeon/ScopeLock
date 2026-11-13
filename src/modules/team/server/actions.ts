@@ -123,11 +123,19 @@ export const resendInvite = workspaceAction(
     const invite = await repo.findInvitation(ws, id);
     if (!invite || invite.acceptedAt || invite.revokedAt)
       throw new UserError("This invite isn't open any more. Refresh the page.");
-    const [{ plan }, members] = await Promise.all([
+    const now = new Date();
+    const [{ plan }, members, open] = await Promise.all([
       getWorkspacePlan(ws),
       listWorkspaceMembers(ws),
+      repo.findOpenInvitations(ws, now),
     ]);
-    if (members.length >= plan.teamMembers)
+    // An expired invite comes back as an open one: it needs a free place.
+    const revived = invite.expiresAt <= now;
+    if (
+      members.length >= plan.teamMembers ||
+      (revived &&
+        placesLeft(plan.teamMembers, members.length, open.length) === 0)
+    )
       throw new UserError(
         `There's no place for them on ${plan.name} right now. Cancel the invite, or make room first.`,
       );

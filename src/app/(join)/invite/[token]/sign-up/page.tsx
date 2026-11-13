@@ -47,7 +47,7 @@ async function InviteSignUp({
         Already have an account?{" "}
         <Link
           href={`/sign-in?next=${encodeURIComponent(back)}` as Route}
-          className="font-medium text-foreground underline-offset-4 hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
+          className="font-medium text-foreground underline underline-offset-4 max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
         >
           Sign in to join
         </Link>

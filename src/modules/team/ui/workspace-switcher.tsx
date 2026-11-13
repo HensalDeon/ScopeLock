@@ -66,14 +66,16 @@ export function WorkspaceSwitcher({
           {workspaces.map((w) => (
             <DropdownMenuItem
               key={w.workspaceId}
-              disabled={w.current || pending}
-              onSelect={() =>
+              disabled={pending}
+              aria-current={w.current ? "true" : undefined}
+              onSelect={() => {
+                if (w.current) return;
                 start(() => {
                   const data = new FormData();
                   data.set("workspaceId", w.workspaceId);
                   run(data);
-                })
-              }
+                });
+              }}
             >
               <span className="grid min-w-0 flex-1">
                 <span className="truncate">{w.name}</span>

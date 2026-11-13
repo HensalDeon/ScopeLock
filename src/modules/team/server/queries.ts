@@ -23,7 +23,10 @@ import {
 } from "../domain/team";
 import { memberHasSeat } from "./access";
 import { findInvitationByTokenHash } from "./invite-lookup";
-import { findOpenInvitations } from "./invitations-repository";
+import {
+  findExpiredInvitations,
+  findOpenInvitations,
+} from "./invitations-repository";
 
 export type TeamPage = {
   you: { userId: string; role: TeamRole };
@@ -37,6 +40,8 @@ export type TeamPage = {
     invitedBy: string;
     sentAt: Date;
     expiresAt: Date;
+    /** Ran out unused (shown so it can be sent again). */
+    expired: boolean;
   }[];
   /** Places left for new invites. */
   placesLeft: number;
@@ -51,10 +56,11 @@ export async function getTeamPage(): Promise<TeamPage> {
   const { workspace, user, role } = await requireWorkspace();
   const ws = workspace.workspaceId;
   const now = new Date();
-  const [{ plan }, members, invites, plans] = await Promise.all([
+  const [{ plan }, members, invites, expired, plans] = await Promise.all([
     getWorkspacePlan(ws),
     listWorkspaceMembers(ws),
     findOpenInvitations(ws, now),
+    findExpiredInvitations(ws, now),
     getPlans(),
   ]);
   const team = plans
@@ -66,13 +72,14 @@ export async function getTeamPage(): Promise<TeamPage> {
     canManage: canManageTeam(role),
     plan: { name: plan.name, seats: plan.teamMembers },
     members: members.map((m) => ({ ...m, hasAccess: access.has(m.userId) })),
-    invites: invites.map((i) => ({
+    invites: [...invites, ...expired].map((i) => ({
       id: i._id.toHexString(),
       email: i.email,
       role: i.role,
       invitedBy: i.invitedBy.name,
       sentAt: i.createdAt,
       expiresAt: i.expiresAt,
+      expired: i.expiresAt <= now,
     })),
     placesLeft: placesLeft(plan.teamMembers, members.length, invites.length),
     canJoin: members.length < plan.teamMembers,
@@ -104,7 +111,7 @@ export type InvitePage =
         | { kind: "signed_out" }
         | { kind: "other_email"; email: string }
         | { kind: "member" }
-        | { kind: "ready" };
+        | { kind: "ready"; email: string };
       /** The plan has no place left: accepting would fail. */
       full: boolean;
       /** The plan is for one person: only a bigger plan makes room. */
@@ -137,7 +144,7 @@ export async function getInvitePage(token: string): Promise<InvitePage> {
       ? { kind: "other_email", email: account.email }
       : members.some((m) => m.userId === session?.user.id)
         ? { kind: "member" }
-        : { kind: "ready" };
+        : { kind: "ready", email: account.email };
   return {
     kind: "open",
     business,

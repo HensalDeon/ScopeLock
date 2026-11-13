@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useId, useState } from "react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { IDLE, type FormState } from "@/shared/lib/form-state";
 import { announce, focusAfterUpdate } from "@/shared/ui/announce";
 import { Button } from "@/shared/ui/button";
@@ -23,7 +23,7 @@ export function ActionButton({
   fields,
   label,
   pendingLabel,
-  ariaLabel,
+  srSuffix,
   variant = "ghost",
   confirm,
   focusId,
@@ -33,8 +33,8 @@ export function ActionButton({
   fields: Record<string, string>;
   label: string;
   pendingLabel: string;
-  /** Names who it acts on ("Remove Priya Nair"). */
-  ariaLabel?: string;
+  /** Read after the label, for screen readers ("Remove" + " Priya Nair"). */
+  srSuffix?: string;
   variant?: "default" | "outline" | "ghost" | "destructive";
   /** Ask first: the question, and the button that goes ahead. */
   confirm?: { question: string; yes: string };
@@ -46,6 +46,19 @@ export function ActionButton({
   const [state, run, pending] = useActionState(action, IDLE);
   const [asking, setAsking] = useState(false);
   const qid = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
+  const reopen = useRef(false);
+  // Closing the question puts focus back on the button that asked it.
+  useEffect(() => {
+    if (!asking && reopen.current) {
+      reopen.current = false;
+      trigger.current?.focus();
+    }
+  }, [asking]);
+  const close = () => {
+    reopen.current = true;
+    setAsking(false);
+  };
   useEffect(() => {
     if (state.status !== "success") return;
     if (state.message) announce(state.message);
@@ -83,6 +96,9 @@ export function ActionButton({
         action={run}
         role="group"
         aria-labelledby={qid}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") close();
+        }}
         className="grid w-full max-w-sm gap-2 rounded-lg bg-canvas p-3 text-left"
       >
         {hidden}
@@ -104,7 +120,7 @@ export function ActionButton({
             size="sm"
             variant="ghost"
             className={TOUCH}
-            onClick={() => setAsking(false)}
+            onClick={close}
             autoFocus
           >
             Keep
@@ -136,9 +152,10 @@ export function ActionButton({
             : TOUCH
         }
         disabled={pending}
-        aria-label={ariaLabel}
+        ref={trigger}
       >
         {pending ? pendingLabel : label}
+        {srSuffix && <span className="sr-only"> {srSuffix}</span>}
       </Button>
       {error}
       {link}

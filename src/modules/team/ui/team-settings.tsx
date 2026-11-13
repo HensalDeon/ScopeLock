@@ -3,24 +3,13 @@ import { formatDate } from "@/shared/lib/dates";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Section } from "@/shared/ui/page";
-import {
-  canChangeRole,
-  canInviteAs,
-  canRemove,
-  INVITE_ROLES,
-  ROLE_LABELS,
-  type TeamRole,
-} from "../domain/team";
-import {
-  cancelInvite,
-  changeMemberRole,
-  removeMember,
-  resendInvite,
-} from "../server/actions";
+import { canInviteAs, INVITE_ROLES, ROLE_LABELS } from "../domain/team";
+import { cancelInvite, resendInvite } from "../server/actions";
 import type { TeamPage } from "../server/queries";
 import { ActionButton } from "./action-button";
 import { InviteForm } from "./invite-form";
 import { LeaveButton } from "./leave-button";
+import { MemberActions } from "./member-actions";
 
 const PILL =
   "inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium whitespace-nowrap";
@@ -40,30 +29,44 @@ export function TeamSettings({ team }: { team: TeamPage }) {
   const solo = plan.seats <= 1;
   const paused = team.members.filter((m) => !m.hasAccess);
   const roles = INVITE_ROLES.filter((r) => canInviteAs(you.role, r));
-  const used = team.members.length + team.invites.length;
+  const open = team.invites.filter((i) => !i.expired);
+  const used = team.members.length + open.length;
   return (
     <div className="grid gap-2">
       {paused.length > 0 && (
-        <p className="mb-6 max-w-prose rounded-lg border border-warning/25 bg-warning-soft px-4 py-3 text-sm text-pretty text-warning-ink">
-          {solo
-            ? `${plan.name} is for one person, so ${paused.map((m) => m.name).join(", ")} can't open this workspace right now. They stay in the team and get access back when you move to ${team.teamPlan ? `${team.teamPlan.name} (up to ${team.teamPlan.seats} people, ${team.teamPlan.price} a month)` : "a plan with a team"}.`
-            : `On ${plan.name}, only ${people(plan.seats)} can open this workspace, so ${paused.map((m) => m.name).join(", ")} can't right now. They stay in the team and get access back when the plan allows more people, or when you remove someone.`}
-        </p>
+        <div className="mb-6 grid max-w-prose justify-items-start gap-3 rounded-lg border border-warning/25 bg-warning-soft px-4 py-3 text-sm text-pretty text-warning-ink">
+          <p>
+            {solo
+              ? `${plan.name} is for one person, so ${paused.map((m) => m.name).join(", ")} can't open this workspace right now. They stay in the team and get access back when you move to ${team.teamPlan ? `${team.teamPlan.name} (up to ${team.teamPlan.seats} people, ${team.teamPlan.price} a month)` : "a plan with a team"}.`
+              : `On ${plan.name}, only ${people(plan.seats)} can open this workspace, so ${paused.map((m) => m.name).join(", ")} can't right now. They stay in the team and get access back when the plan allows more people, or when you remove someone.`}
+          </p>
+          {team.teamPlan && you.role === "owner" && (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/settings/plan">
+                See the {team.teamPlan.name} plan
+              </Link>
+            </Button>
+          )}
+        </div>
       )}
 
       <Section
         title="People"
         description={
-          <span className="grid gap-2">
-            {(["owner", "admin", "member"] as const).map((r) => (
-              <span key={r}>
-                <span className="font-medium text-foreground">
-                  {ROLE_LABELS[r].title}:
-                </span>{" "}
-                {ROLE_LABELS[r].detail}
-              </span>
-            ))}
-          </span>
+          solo ? (
+            `Only you, as the owner. ${team.teamPlan?.name ?? "Agency"} adds admins and members.`
+          ) : (
+            <span className="grid gap-2">
+              {(["owner", "admin", "member"] as const).map((r) => (
+                <span key={r}>
+                  <span className="font-medium text-foreground">
+                    {ROLE_LABELS[r].title}:
+                  </span>{" "}
+                  {ROLE_LABELS[r].detail}
+                </span>
+              ))}
+            </span>
+          )
         }
       >
         <div className="overflow-hidden rounded-xl border bg-background">
@@ -90,11 +93,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                         {ROLE_LABELS[m.role].title}
                       </span>
                       {!m.hasAccess && (
-                        <span className={cn(PILL, WAITING_PILL)}>
-                          <span
-                            aria-hidden
-                            className="size-1.5 rounded-full bg-warning"
-                          />
+                        <span className={cn(PILL, IDLE_PILL)}>
                           Paused on {plan.name}
                         </span>
                       )}
@@ -121,7 +120,11 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                 <div className="grid min-w-0 gap-1">
                   <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
                     <span className="[overflow-wrap:anywhere]">{i.email}</span>
-                    {team.canJoin ? (
+                    {i.expired ? (
+                      <span className={cn(PILL, IDLE_PILL)}>
+                        Expired {formatDate(i.expiresAt)}
+                      </span>
+                    ) : team.canJoin ? (
                       <span className={cn(PILL, WAITING_PILL)}>
                         <span
                           aria-hidden
@@ -137,6 +140,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                   </p>
                   <p className="text-[13px] text-muted-foreground tabular-nums">
                     {!team.canJoin &&
+                      !i.expired &&
                       (solo
                         ? `They can join once you're on ${team.teamPlan?.name ?? "a plan with a team"}. `
                         : "They can join once there's a place. ")}
@@ -144,21 +148,25 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                     <span className="whitespace-nowrap">
                       {formatDate(i.sentAt)}
                     </span>{" "}
-                    · link works until{" "}
-                    <span className="whitespace-nowrap">
-                      {formatDate(i.expiresAt)}
-                    </span>
+                    {!i.expired && (
+                      <>
+                        · link works until{" "}
+                        <span className="whitespace-nowrap">
+                          {formatDate(i.expiresAt)}
+                        </span>
+                      </>
+                    )}
                   </p>
                 </div>
                 {team.canManage && (
                   <div className="flex flex-wrap items-start justify-end gap-1">
-                    {team.canJoin && (
+                    {team.canJoin && (!i.expired || team.placesLeft > 0) && (
                       <ActionButton
                         action={resendInvite}
                         fields={{ inviteId: i.id }}
                         label="Send again"
                         pendingLabel="Sending…"
-                        ariaLabel={`Send the invite to ${i.email} again`}
+                        srSuffix={`to ${i.email}`}
                       />
                     )}
                     <ActionButton
@@ -166,7 +174,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                       fields={{ inviteId: i.id }}
                       label="Cancel invite"
                       pendingLabel="Cancelling…"
-                      ariaLabel={`Cancel the invite for ${i.email}`}
+                      srSuffix={`for ${i.email}`}
                       danger
                       confirm={{
                         question: `Cancel the invite for ${i.email}? Its link stops working.`,
@@ -182,9 +190,15 @@ export function TeamSettings({ team }: { team: TeamPage }) {
           {!solo && (
             <p className="border-t bg-canvas px-4 py-2.5 text-sm tabular-nums sm:px-5">
               {used} of {plan.seats} places used on {plan.name}
-              {team.invites.length > 0 &&
-                `, counting ${team.invites.length === 1 ? "1 invite" : `${team.invites.length} invites`}`}
+              {open.length > 0 &&
+                `, counting ${open.length === 1 ? "1 invite" : `${open.length} invites`}`}
               .
+              {team.canManage && team.invites.length > 0 && (
+                <span className="block text-[13px] text-muted-foreground">
+                  Send again emails a new link and shows it here to copy; the
+                  old link stops working.
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -192,20 +206,22 @@ export function TeamSettings({ team }: { team: TeamPage }) {
 
       {team.canManage &&
         (solo ? (
-          <Section title="Invite someone">
-            <div className="grid justify-items-start gap-3">
-              <p className="text-sm text-pretty text-muted-foreground">
-                {team.teamPlan
-                  ? `${plan.name} is for one person. On ${team.teamPlan.name} (${team.teamPlan.price} a month), up to ${team.teamPlan.seats} people work here, each under their own name.`
-                  : `${plan.name} is for one person.`}
-              </p>
-              <Button asChild variant="outline">
-                <Link href="/settings/plan">
-                  See the {team.teamPlan?.name ?? "Agency"} plan
-                </Link>
-              </Button>
-            </div>
-          </Section>
+          paused.length > 0 ? null : (
+            <Section title="Invite someone">
+              <div className="grid justify-items-start gap-3">
+                <p className="text-sm text-pretty text-muted-foreground">
+                  {team.teamPlan
+                    ? `${plan.name} is for one person. On ${team.teamPlan.name} (${team.teamPlan.price} a month), up to ${team.teamPlan.seats} people work here, each under their own name.`
+                    : `${plan.name} is for one person.`}
+                </p>
+                <Button asChild variant="outline">
+                  <Link href="/settings/plan">
+                    See the {team.teamPlan?.name ?? "Agency"} plan
+                  </Link>
+                </Button>
+              </div>
+            </Section>
+          )
         ) : (
           <Section
             title="Invite someone"
@@ -228,51 +244,6 @@ export function TeamSettings({ team }: { team: TeamPage }) {
         >
           <LeaveButton />
         </Section>
-      )}
-    </div>
-  );
-}
-
-function MemberActions({
-  member,
-  you,
-  isYou,
-}: {
-  member: TeamPage["members"][number];
-  you: TeamRole;
-  isYou: boolean;
-}) {
-  if (isYou) return null;
-  // A paused member can't be made an admin until they're back in.
-  const change = canChangeRole(you, member.role) && member.hasAccess;
-  const remove = canRemove(you, member.role);
-  if (!change && !remove) return null;
-  const to = member.role === "admin" ? "member" : "admin";
-  return (
-    <div className="flex flex-wrap items-start justify-end gap-3">
-      {change && (
-        <ActionButton
-          action={changeMemberRole}
-          fields={{ userId: member.userId, role: to }}
-          label={to === "admin" ? "Make admin" : "Make member"}
-          pendingLabel="Saving…"
-          ariaLabel={`Make ${member.name} ${to === "admin" ? "an admin" : "a member"}`}
-        />
-      )}
-      {remove && (
-        <ActionButton
-          action={removeMember}
-          fields={{ userId: member.userId }}
-          label="Remove"
-          pendingLabel="Removing…"
-          ariaLabel={`Remove ${member.name}`}
-          danger
-          confirm={{
-            question: `Remove ${member.name}? They stop seeing this workspace at once. What they did stays in each project's history.`,
-            yes: `Remove ${member.name.split(" ")[0]}`,
-          }}
-          focusId={PEOPLE_ID}
-        />
       )}
     </div>
   );
