@@ -1,7 +1,7 @@
 import { Download } from "lucide-react";
-import type { Route } from "next";
 import Link from "next/link";
 import { currencyLabel } from "@/shared/lib/currency";
+import { formatDate } from "@/shared/lib/dates";
 import { formatMoney } from "@/shared/lib/money";
 import { clampPage, PAGE_SIZE, toPage } from "@/shared/lib/pagination";
 import { cn } from "@/shared/lib/utils";
@@ -14,38 +14,57 @@ import type {
   CurrencyReport,
   RecoveredReport,
 } from "../domain/recovered-report";
+import { reportHref } from "./report-href";
 import { ClientTable, MonthTable } from "./report-tables";
+import { UnpaidList } from "./unpaid-list";
 
 const LABEL =
   "font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase";
 const changes = (n: number) => `${n} change request${n === 1 ? "" : "s"}`;
 
-const yearHref = (fy: number, page = 1) =>
-  `/reports?year=${fy}${page > 1 ? `&page=${page}` : ""}` as Route;
+function pageOf<T>(items: readonly T[], requested: number) {
+  const page = clampPage(requested, items.length);
+  return toPage(
+    items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    items.length,
+    page,
+  );
+}
+
+type Query = {
+  page: number;
+  upage: number;
+  client: string | null;
+};
 
 /**
  * Revenue recovered for one financial year (Agency): the year's figures,
- * who still owes what, and month by month, per currency, with the CSV.
+ * who still owes what (and which change requests), and month by month,
+ * per currency, with the CSV.
  */
 export function RecoveredReportView({
   report,
   years,
-  page,
+  query,
   previous,
+  current,
+  asOf,
 }: {
   report: RecoveredReport;
   years: number[];
-  /** Page of the by-client table. */
-  page: number;
+  query: Query;
   /** The year before, when it has approvals (offered while this one is empty). */
   previous: { fy: number; count: number } | null;
+  /** This is the year in progress: its figures are "so far". */
+  current: boolean;
+  asOf: Date;
 }) {
   const year = `FY ${financialYearLabel(report.fy)}`;
   return (
     <>
       <PageHeader
         title="Revenue recovered"
-        description="Change requests your clients approved, before GST, and how much of that has been paid. Approval isn't payment, so both are shown."
+        description="Change requests your clients approved, before GST, and how much of that has been received. Approval isn't payment, so both are shown."
         actions={
           report.rows.length > 0 && (
             <Button asChild variant="outline">
@@ -65,7 +84,7 @@ export function RecoveredReportView({
           {years.map((fy) => (
             <Link
               key={fy}
-              href={yearHref(fy)}
+              href={reportHref({ fy })}
               aria-current={fy === report.fy ? "page" : undefined}
               className={cn(
                 "-mb-px border-b-2 py-2 tabular-nums",
@@ -86,7 +105,7 @@ export function RecoveredReportView({
           action={
             previous ? (
               <Button asChild variant="outline">
-                <Link href={yearHref(previous.fy)}>
+                <Link href={reportHref({ fy: previous.fy })}>
                   See FY {financialYearLabel(previous.fy)} (
                   {changes(previous.count)})
                 </Link>
@@ -99,18 +118,24 @@ export function RecoveredReportView({
           }
         >
           When a client approves a change request, its price shows here by
-          client and by month, with how much of it has been paid. Start one from
-          a project&apos;s page with &ldquo;New change request&rdquo;.
+          client and by month, with how much of it has been received. Start one
+          from a project&apos;s page with &ldquo;New change request&rdquo;.
         </EmptyState>
       ) : (
         <div className="grid max-w-5xl gap-12">
+          {current && (
+            <p className="-mb-8 text-sm text-muted-foreground">
+              {year} so far, as of {formatDate(asOf, { now: asOf })}.
+            </p>
+          )}
           {report.currencies.map((c) => (
             <CurrencySection
               key={c.currency}
               report={c}
+              rows={report.rows}
               year={year}
               fy={report.fy}
-              page={page}
+              query={query}
               titled={report.currencies.length > 1}
             />
           ))}
@@ -122,28 +147,33 @@ export function RecoveredReportView({
 
 function CurrencySection({
   report,
+  rows,
   year,
   fy,
-  page,
+  query,
   titled,
 }: {
   report: CurrencyReport;
+  rows: RecoveredReport["rows"];
   year: string;
   fy: number;
-  page: number;
+  query: Query;
   /** More than one currency: name each. */
   titled: boolean;
 }) {
   const money = (n: Parameters<typeof formatMoney>[0]) =>
     formatMoney(n, report.currency);
   const id = `recovered-${report.currency}`;
-  const current = clampPage(page, report.clients.length);
-  const clients = toPage(
-    report.clients.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE),
-    report.clients.length,
-    current,
-  );
   const total = `Total, ${year}`;
+  const client = query.client
+    ? (report.clients.find((c) => c.clientId === query.client) ?? null)
+    : null;
+  const unpaid = rows.filter(
+    (r) =>
+      r.currency === report.currency &&
+      r.outstanding > 0 &&
+      (!client || r.clientId === client.clientId),
+  );
   // Emerald marks money recovered and received (DESIGN.md, Settled Green).
   const figures = [
     {
@@ -165,7 +195,9 @@ function CurrencySection({
       label: "Still to receive",
       value: money(report.outstanding),
       note:
-        report.outstanding === 0 ? "Nothing left" : "Approved, not paid yet",
+        report.outstanding === 0
+          ? "Nothing left"
+          : `${money(report.asked)} asked for, ${money(report.notAsked)} not yet`,
       settled: false,
     },
   ];
@@ -202,13 +234,37 @@ function CurrencySection({
         </h3>
         <ClientTable
           id={`${id}-clients`}
-          page={clients}
+          page={pageOf(report.clients, query.page)}
           totals={report}
           currency={report.currency}
           totalLabel={total}
-          href={(n) => yearHref(fy, n)}
+          href={(n) => reportHref({ fy, page: n, client: query.client })}
+          rowHref={(clientId) =>
+            reportHref({
+              fy,
+              page: query.page,
+              client: clientId,
+              hash: `${id}-unpaid`,
+            })
+          }
         />
       </div>
+      <UnpaidList
+        id={`${id}-unpaid`}
+        page={pageOf(unpaid, query.upage)}
+        currency={report.currency}
+        client={client?.name ?? null}
+        allHref={reportHref({ fy, page: query.page, hash: `${id}-unpaid` })}
+        href={(n) =>
+          reportHref({
+            fy,
+            page: query.page,
+            client: query.client,
+            upage: n,
+            hash: `${id}-unpaid`,
+          })
+        }
+      />
       <div className="grid gap-3">
         <div className="grid gap-0.5">
           <h3 id={`${id}-months`} className="text-[15px] font-semibold">

@@ -29,19 +29,50 @@ export async function findReceivedChangeAmounts(
   );
 }
 
-/** The same lines, each with its change request (the recovered report). */
-export async function findReceivedChangeLines(
-  workspaceId: string,
-): Promise<{ changeId: string; amount: number }[]> {
+/**
+ * Every change-request line on a payment that's asked for or received, for
+ * the recovered report: how much of each change is received, how much is
+ * asked for and still due, its invoice and when it was received.
+ */
+export async function findChangeLinePayments(workspaceId: string): Promise<
+  {
+    changeId: string;
+    amount: number;
+    state: "received" | "asked";
+    invoice: string | null;
+    /** "2026-11-18", for received ones. */
+    receivedOn: string | null;
+  }[]
+> {
   const docs = await payments(workspaceId)
     .find(
-      { status: "confirmed", "lines.kind": "change_request" },
-      { projection: { lines: 1 } },
+      {
+        status: { $in: ["due", "client_reported", "confirmed"] },
+        "lines.kind": "change_request",
+      },
+      {
+        projection: {
+          lines: 1,
+          status: 1,
+          "invoice.number": 1,
+          "confirmation.receivedOn": 1,
+        },
+      },
     )
     .toArray();
   return docs.flatMap((d) =>
     d.lines
       .filter((l) => l.kind === "change_request")
-      .map((l) => ({ changeId: l.refId, amount: l.amount })),
+      .map((l) => ({
+        changeId: l.refId,
+        amount: l.amount,
+        state:
+          d.status === "confirmed" ? ("received" as const) : ("asked" as const),
+        invoice: d.invoice?.number ?? null,
+        receivedOn:
+          d.status === "confirmed"
+            ? (d.confirmation?.receivedOn ?? null)
+            : null,
+      })),
   );
 }

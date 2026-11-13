@@ -16,6 +16,7 @@ const change = (
   over: Partial<ReportChange> = {},
 ): ReportChange => ({
   id,
+  number: 1,
   label: "CR-001",
   title: "Blog + WhatsApp chat button",
   projectId: "p1",
@@ -36,6 +37,7 @@ const projects = new Map<string, ReportProject>([
 const changes = [
   change("cr1"),
   change("cr2", {
+    number: 2,
     label: "CR-002",
     total: minor(800_000),
     approvedAt: ist("2026-06-10"),
@@ -49,6 +51,7 @@ const changes = [
   change("cr0", { approvedAt: ist("2026-03-20") }),
   change("usd", {
     projectId: "p2",
+    number: 2,
     label: "CR-002",
     currency: "USD",
     total: minor(50_000),
@@ -58,11 +61,37 @@ const changes = [
 const report = recoveredReport({
   fy: 2026,
   changes,
-  received: [
-    { changeId: "cr1", amount: minor(1_500_000) },
-    { changeId: "cr3", amount: minor(500_000) },
+  payments: [
+    {
+      changeId: "cr1",
+      amount: minor(1_500_000),
+      state: "received",
+      invoice: "INV/26-27/004",
+      receivedOn: "2026-11-10",
+    },
+    // Asked for on the final payment, not paid yet.
+    {
+      changeId: "cr3",
+      amount: minor(500_000),
+      state: "received",
+      invoice: "INV/26-27/005",
+      receivedOn: "2026-11-11",
+    },
+    {
+      changeId: "cr3",
+      amount: minor(1_000_000),
+      state: "asked",
+      invoice: "INV/26-27/006",
+      receivedOn: null,
+    },
     // Paid more than approved (a re-price): capped at the approved value.
-    { changeId: "cr2", amount: minor(900_000) },
+    {
+      changeId: "cr2",
+      amount: minor(900_000),
+      state: "received",
+      invoice: "INV/26-27/002",
+      receivedOn: "2026-08-20",
+    },
   ],
   projects,
   now,
@@ -76,6 +105,9 @@ describe("recoveredReport", () => {
     expect(inr.approved).toBe(4_300_000);
     expect(inr.received).toBe(2_800_000);
     expect(inr.outstanding).toBe(1_500_000);
+    // Of what's still to come: asked for vs not asked yet.
+    expect(inr.asked).toBe(1_000_000);
+    expect(inr.notAsked).toBe(500_000);
   });
 
   it("goes month by month, April to now", () => {
@@ -100,24 +132,28 @@ describe("recoveredReport", () => {
     expect(inr.months[0]).toMatchObject({ count: 0, approved: 0 });
   });
 
-  it("goes client by client, most approved first", () => {
+  it("goes client by client, whoever still owes most first", () => {
     const inr = report.currencies[0]!;
     expect(inr.clients).toEqual([
-      {
-        clientId: "c1",
-        name: "Rahul Mehta",
-        count: 2,
-        approved: 2_300_000,
-        received: 2_300_000,
-        outstanding: 0,
-      },
       {
         clientId: "c2",
         name: "Priya Nair",
         count: 1,
         approved: 2_000_000,
         received: 500_000,
+        asked: 1_000_000,
+        notAsked: 500_000,
         outstanding: 1_500_000,
+      },
+      {
+        clientId: "c1",
+        name: "Rahul Mehta",
+        count: 2,
+        approved: 2_300_000,
+        received: 2_300_000,
+        asked: 0,
+        notAsked: 0,
+        outstanding: 0,
       },
     ]);
   });
@@ -132,10 +168,10 @@ describe("recoveredCsv", () => {
   it("one row per change request, plain amounts, oldest first", () => {
     const lines = recoveredCsv(report.rows).trim().split("\r\n");
     expect(lines[0]).toBe(
-      "Approved on,Change request,Title,Project,Client,Currency,Amount before GST,Received,Still to receive",
+      "Approved on,Change request,Title,Project,Client,Currency,Amount before GST,Received,Last received on,Asked for (not paid yet),Not asked for yet,Invoices",
     );
     expect(lines[1]).toBe(
-      "2026-06-10,CR-002,Blog + WhatsApp chat button,Website redesign,Rahul Mehta,INR,8000.00,8000.00,0.00",
+      "2026-06-10,CR-002,Blog + WhatsApp chat button,Website redesign,Rahul Mehta,INR,8000.00,8000.00,2026-08-20,0.00,0.00,INV/26-27/002",
     );
     expect(lines).toHaveLength(5);
   });
@@ -144,7 +180,7 @@ describe("recoveredCsv", () => {
     const [row] = recoveredReport({
       fy: 2026,
       changes: [change("x", { title: '=HYPERLINK("evil"), "SEO"' })],
-      received: [],
+      payments: [],
       projects,
       now,
     }).rows;

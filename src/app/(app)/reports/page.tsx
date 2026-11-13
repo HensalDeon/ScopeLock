@@ -36,7 +36,19 @@ async function Report({
       report={result.report}
       years={result.years}
       previous={result.previous}
-      page={parsePage(query.page)}
+      current={result.current}
+      asOf={result.asOf}
+      query={{
+        page: parsePage(query.page),
+        upage: parsePage(query.upage),
+        client: parseObjectIdParam(query.client),
+      }}
     />
   );
+}
+
+/** "?client=<24 hex>" or nothing. */
+function parseObjectIdParam(value: unknown): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return typeof raw === "string" && /^[0-9a-f]{24}$/.test(raw) ? raw : null;
 }

@@ -33,7 +33,7 @@ export function ReportUpgrade({
             : `${year} so far: ${thisYear
                 .map(
                   (t) =>
-                    `${formatMoney(t.approved, t.currency)} approved across ${changes(t.count)}, ${formatMoney(t.received, t.currency)} received`,
+                    `${formatMoney(t.approved, t.currency)} approved across ${changes(t.count)}, ${formatMoney(t.received, t.currency)} received, ${formatMoney(t.outstanding, t.currency)} still to receive`,
                 )
                 .join("; ")}.`}
         </p>
@@ -51,9 +51,13 @@ export function ReportUpgrade({
               been paid.
             </li>
             <li>
+              Which change requests are still unpaid, and whether you&apos;ve
+              asked for them yet.
+            </li>
+            <li>
               A CSV of every approved change request (date, CR number, title,
-              project, client, amount before GST, received) for your accountant
-              or a spreadsheet.
+              project, client, amount before GST, received and when, still to
+              receive, invoice numbers) for your accountant.
             </li>
           </ul>
         </div>

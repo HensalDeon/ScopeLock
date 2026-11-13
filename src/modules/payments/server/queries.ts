@@ -90,13 +90,19 @@ export async function listOwedPayments(): Promise<Payment[]> {
   );
 }
 
-/** Received change-request money, per change request (the recovered report). */
-export async function listReceivedChangeLines(): Promise<
-  { changeId: string; amount: Minor }[]
+/** Change-request lines on asked-for and received payments (the recovered report). */
+export async function listChangeLinePayments(): Promise<
+  {
+    changeId: string;
+    amount: Minor;
+    state: "received" | "asked";
+    invoice: string | null;
+    receivedOn: string | null;
+  }[]
 > {
   const { workspace } = await requireWorkspace();
-  return (await received.findReceivedChangeLines(workspace.workspaceId)).map(
-    (l) => ({ changeId: l.changeId, amount: minor(l.amount) }),
+  return (await received.findChangeLinePayments(workspace.workspaceId)).map(
+    (l) => ({ ...l, amount: minor(l.amount) }),
   );
 }
 

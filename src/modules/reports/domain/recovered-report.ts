@@ -17,6 +17,7 @@ import {
 
 export type ReportChange = {
   id: string;
+  number: number;
   /** "CR-003". */
   label: string;
   title: string;
@@ -33,9 +34,21 @@ export type ReportProject = {
   clientName: string | null;
 };
 
-/** One approved change request: a CSV row. */
+/** A payment's line for a change request: asked for (due) or received. */
+export type ReportPaymentLine = {
+  changeId: string;
+  amount: Minor;
+  state: "received" | "asked";
+  invoice: string | null;
+  /** "2026-11-18", for received lines. */
+  receivedOn: string | null;
+};
+
+/** One approved change request: a CSV row, and a line in "Not received yet". */
 export type ReportRow = {
   changeId: string;
+  projectId: string;
+  number: number;
   label: string;
   title: string;
   approvedAt: Date;
@@ -47,13 +60,23 @@ export type ReportRow = {
   currency: CurrencyCode;
   amount: Minor;
   received: Minor;
+  /** Asked for and still due (on a payment request). */
+  asked: Minor;
+  /** Not asked for yet (e.g. it goes on the final payment). */
+  notAsked: Minor;
+  /** asked + notAsked. */
   outstanding: Minor;
+  /** Invoice numbers of the payments it's on. */
+  invoices: string[];
+  lastReceivedOn: string | null;
 };
 
 export type ReportTotals = {
   count: number;
   approved: Minor;
   received: Minor;
+  asked: Minor;
+  notAsked: Minor;
   outstanding: Minor;
 };
 
@@ -66,7 +89,7 @@ export type ClientLine = ReportTotals & {
 export type CurrencyReport = ReportTotals & {
   currency: CurrencyCode;
   months: MonthLine[];
-  /** Most approved first. */
+  /** Most still to receive first, then most approved. */
   clients: ClientLine[];
 };
 
@@ -85,6 +108,8 @@ function totals(rows: readonly ReportRow[]): ReportTotals {
     count: rows.length,
     approved: sum(rows.map((r) => r.amount)),
     received: sum(rows.map((r) => r.received)),
+    asked: sum(rows.map((r) => r.asked)),
+    notAsked: sum(rows.map((r) => r.notAsked)),
     outstanding: sum(rows.map((r) => r.outstanding)),
   };
 }
@@ -92,24 +117,34 @@ function totals(rows: readonly ReportRow[]): ReportTotals {
 export function recoveredReport(input: {
   fy: number;
   changes: readonly ReportChange[];
-  /** Change-request lines of confirmed payments (before GST). */
-  received: readonly { changeId: string; amount: Minor }[];
+  /** Change-request lines of asked-for and received payments (before GST). */
+  payments: readonly ReportPaymentLine[];
   projects: ReadonlyMap<string, ReportProject>;
   now: Date;
 }): RecoveredReport {
-  const paid = new Map<string, number>();
-  for (const r of input.received)
-    paid.set(r.changeId, (paid.get(r.changeId) ?? 0) + r.amount);
+  const lines = new Map<string, ReportPaymentLine[]>();
+  for (const l of input.payments)
+    lines.set(l.changeId, [...(lines.get(l.changeId) ?? []), l]);
 
   const rows: ReportRow[] = input.changes
     .filter((c) => financialYearOf(c.approvedAt) === input.fy)
     .sort((a, b) => a.approvedAt.getTime() - b.approvedAt.getTime())
     .map((c) => {
       const project = input.projects.get(c.projectId);
+      const mine = lines.get(c.id) ?? [];
+      const of = (state: ReportPaymentLine["state"]) =>
+        sum(mine.filter((l) => l.state === state).map((l) => l.amount));
       // Never more than was approved (a later re-price can't overshoot).
-      const received = minor(Math.min(paid.get(c.id) ?? 0, c.total));
+      const received = minor(Math.min(of("received"), c.total));
+      const asked = minor(Math.min(of("asked"), c.total - received));
+      const dates = mine
+        .map((l) => l.receivedOn)
+        .filter((d): d is string => d !== null)
+        .sort();
       return {
         changeId: c.id,
+        projectId: c.projectId,
+        number: c.number,
         label: c.label,
         title: c.title,
         approvedAt: c.approvedAt,
@@ -120,7 +155,15 @@ export function recoveredReport(input: {
         currency: c.currency,
         amount: c.total,
         received,
+        asked,
+        notAsked: minor(c.total - received - asked),
         outstanding: minor(c.total - received),
+        invoices: [
+          ...new Set(
+            mine.map((l) => l.invoice).filter((n): n is string => n !== null),
+          ),
+        ],
+        lastReceivedOn: dates.at(-1) ?? null,
       };
     });
 
@@ -149,7 +192,10 @@ export function recoveredReport(input: {
             ...totals(list),
           }))
           .sort(
-            (a, b) => b.approved - a.approved || a.name.localeCompare(b.name),
+            (a, b) =>
+              b.outstanding - a.outstanding ||
+              b.approved - a.approved ||
+              a.name.localeCompare(b.name),
           ),
       };
     });

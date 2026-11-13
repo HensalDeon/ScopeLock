@@ -2,7 +2,7 @@ import "server-only";
 import { getPlans, getWorkspacePlan } from "@/modules/billing/server";
 import { changeLabel } from "@/modules/changes";
 import { listApprovedChangeTotals } from "@/modules/changes/server";
-import { listReceivedChangeLines } from "@/modules/payments/server";
+import { listChangeLinePayments } from "@/modules/payments/server";
 import { listProjectSummaries } from "@/modules/projects/server";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { todayInIndia } from "@/shared/lib/dates";
@@ -34,6 +34,9 @@ export type RecoveredReportPage =
       years: number[];
       /** The year before, when it has approvals and this one has none. */
       previous: { fy: number; count: number } | null;
+      /** The year in progress: figures are "so far". */
+      current: boolean;
+      asOf: Date;
     };
 
 /** Everything the report reads, for one financial year. */
@@ -41,9 +44,9 @@ async function load(
   fy: (years: number[], counts: (fy: number) => number) => number,
 ) {
   const now = new Date();
-  const [changes, received, projects] = await Promise.all([
+  const [changes, payments, projects] = await Promise.all([
     listApprovedChangeTotals(),
-    listReceivedChangeLines(),
+    listChangeLinePayments(),
     listProjectSummaries(),
   ]);
   const years = reportYears(changes, now);
@@ -54,7 +57,7 @@ async function load(
     fy: year,
     now,
     changes: changes.map((c) => ({ ...c, label: changeLabel(c.number) })),
-    received,
+    payments,
     projects: new Map<string, ReportProject>(
       projects.map((p) => [
         p.id,
@@ -85,15 +88,16 @@ export async function getRecoveredReport(
     const agency = plans.find((p) => p.features.recoveredReports);
     return {
       kind: "upgrade",
-      thisYear: report.currencies.map(
-        ({ currency, count, approved, received, outstanding }) => ({
-          currency,
-          count,
-          approved,
-          received,
-          outstanding,
-        }),
-      ),
+      // Totals only: the months and clients are what the plan adds.
+      thisYear: report.currencies.map((c) => ({
+        currency: c.currency,
+        count: c.count,
+        approved: c.approved,
+        received: c.received,
+        asked: c.asked,
+        notAsked: c.notAsked,
+        outstanding: c.outstanding,
+      })),
       agency: agency
         ? {
             name: agency.name,
@@ -104,7 +108,7 @@ export async function getRecoveredReport(
     };
   }
 
-  const { report, years, count } = await load((ys, n) => {
+  const { report, years, count, now } = await load((ys, n) => {
     if (requestedYear !== null && ys.includes(requestedYear))
       return requestedYear;
     // Early in a new year (April), the one just closed is what people want.
@@ -119,6 +123,8 @@ export async function getRecoveredReport(
       report.rows.length === 0 && count(before) > 0
         ? { fy: before, count: count(before) }
         : null,
+    current: report.fy === current,
+    asOf: now,
   };
 }
 

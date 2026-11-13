@@ -32,10 +32,16 @@ export const RECOVERED_CSV_HEADER = [
   "Currency",
   "Amount before GST",
   "Received",
-  "Still to receive",
+  "Last received on",
+  "Asked for (not paid yet)",
+  "Not asked for yet",
+  "Invoices",
 ] as const;
 
-/** Every change request approved in the year, oldest first. */
+/**
+ * Every change request approved in the year, oldest first. Amounts are
+ * before GST; the invoice numbers lead to the GST on each.
+ */
 export function recoveredCsv(rows: readonly ReportRow[]): string {
   return toCsv([
     RECOVERED_CSV_HEADER,
@@ -48,7 +54,10 @@ export function recoveredCsv(rows: readonly ReportRow[]): string {
       r.currency,
       plainAmount(r.amount),
       plainAmount(r.received),
-      plainAmount(r.outstanding),
+      r.lastReceivedOn ?? "",
+      plainAmount(r.asked),
+      plainAmount(r.notAsked),
+      r.invoices.join(" "),
     ]),
   ]);
 }
