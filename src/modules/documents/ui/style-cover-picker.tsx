@@ -9,17 +9,23 @@ import {
   type DocumentStyleField,
 } from "../domain/style";
 
-/** Cover style, the decorative rings and the logo switch. */
+/** Cover style and the decorative rings; the photo upload goes under it. */
 export function CoverPicker({
   values,
   accent,
   images,
   set,
+  photoAvailable,
+  children,
 }: {
   values: Record<DocumentStyleField, string>;
   accent: string;
   images: DocumentImages;
   set: (field: DocumentStyleField, value: string) => void;
+  /** A photo can be used (one is uploaded, or uploads work here). */
+  photoAvailable: boolean;
+  /** The cover photo upload, right under the cover choices. */
+  children?: React.ReactNode;
 }) {
   return (
     <fieldset className="grid gap-2">
@@ -31,15 +37,17 @@ export function CoverPicker({
       >
         {COVER_STYLES.map((cover) => {
           const selected = values.cover === cover;
+          const unavailable = cover === "image" && !photoAvailable;
           return (
             <button
               key={cover}
               type="button"
               role="radio"
               aria-checked={selected}
+              disabled={unavailable}
               onClick={() => set("cover", cover)}
               className={cn(
-                "grid gap-1.5 rounded-lg border p-2 text-left text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "grid gap-1.5 rounded-lg border p-2 text-left text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
                 selected
                   ? "border-primary ring-1 ring-primary"
                   : "hover:bg-canvas",
@@ -55,14 +63,20 @@ export function CoverPicker({
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                       }
-                    : {
-                        background:
-                          cover === "dark" || cover === "image"
-                            ? "#15161a"
-                            : cover === "accent"
-                              ? accent
-                              : `${accent}24`,
-                      }
+                    : cover === "image"
+                      ? {
+                          // No photo yet: a hatched placeholder, not "Dark".
+                          background:
+                            "repeating-linear-gradient(135deg, #e7e9ee 0 6px, #f4f5f7 6px 12px)",
+                        }
+                      : {
+                          background:
+                            cover === "dark"
+                              ? "#15161a"
+                              : cover === "accent"
+                                ? accent
+                                : `${accent}24`,
+                        }
                 }
               />
               <span className="font-medium">
@@ -74,23 +88,15 @@ export function CoverPicker({
       </div>
       {values.cover === "image" && !images.coverUrl && (
         <p className="text-sm text-muted-foreground">
-          Upload a cover image below. Until then, the dark cover is used.
+          Upload a cover photo below. Until then, the dark cover is used.
         </p>
       )}
+      {children}
       <label className="mt-2 flex items-center justify-between gap-3 text-sm max-sm:min-h-11">
         Decorative rings on the cover
         <Switch
           checked={values.coverPattern === "true"}
           onCheckedChange={(on) => set("coverPattern", String(on))}
-        />
-      </label>
-      <label className="flex items-center justify-between gap-3 text-sm max-sm:min-h-11">
-        {images.logoUrl
-          ? "Show your logo on the cover"
-          : "Show your initials on the cover"}
-        <Switch
-          checked={values.showLogo === "true"}
-          onCheckedChange={(on) => set("showLogo", String(on))}
         />
       </label>
     </fieldset>

@@ -111,13 +111,29 @@ export type InvitePage =
         | { kind: "signed_out" }
         | { kind: "other_email"; email: string }
         | { kind: "member" }
-        | { kind: "ready"; email: string };
+        | {
+            kind: "ready";
+            email: string;
+            /** Their own workspace's name, if they have one. */
+            own: string | null;
+          };
       /** The plan has no place left: accepting would fail. */
       full: boolean;
       /** The plan is for one person: only a bigger plan makes room. */
       solo: boolean;
       expiresAt: Date;
     };
+
+/** The name of a workspace this person owns, if any. */
+async function ownWorkspaceName(userId: string): Promise<string | null> {
+  if (!userId) return null;
+  const owned = (await listUserWorkspaces(userId)).find(
+    (w) => w.role === "owner",
+  );
+  return owned
+    ? ((await getWorkspaceProfile(owned.workspaceId))?.businessName ?? null)
+    : null;
+}
 
 /** /invite/<token>: what the invite is and whether this visitor can use it. */
 export async function getInvitePage(token: string): Promise<InvitePage> {
@@ -144,7 +160,11 @@ export async function getInvitePage(token: string): Promise<InvitePage> {
       ? { kind: "other_email", email: account.email }
       : members.some((m) => m.userId === session?.user.id)
         ? { kind: "member" }
-        : { kind: "ready", email: account.email };
+        : {
+            kind: "ready",
+            email: account.email,
+            own: await ownWorkspaceName(session?.user.id ?? ""),
+          };
   return {
     kind: "open",
     business,

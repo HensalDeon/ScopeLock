@@ -105,7 +105,9 @@ export function InviteForm({ roles }: { roles: readonly InviteRole[] }) {
             <ShareLink
               url={state.link}
               phone={null}
-              message="Here's your invite to join us on ScopeLock:"
+              message={
+                state.linkText ?? "Here's your invite to join us on ScopeLock:"
+              }
               compact
               primary={false}
               copyLabel="Copy invite link"

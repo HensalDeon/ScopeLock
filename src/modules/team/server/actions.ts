@@ -34,6 +34,9 @@ export type TeamFormState = FormState<string>;
 const MANAGERS = ["owner", "admin"] as const;
 const inviteUrl = (token: string) =>
   new URL(`/invite/${token}`, env().APP_URL).toString();
+/** The WhatsApp message the invite link goes after. */
+const shareText = (inviter: string, business: string) =>
+  `${inviter} invited you to ${business} on ScopeLock. This link works once, for 7 days:`;
 const idField = z
   .string()
   .refine((v) => parseObjectId(v) !== null, "That doesn't exist any more.");
@@ -78,7 +81,7 @@ export const inviteMember = workspaceAction(
       throw new UserError(`${email} is already in this workspace.`);
     if (open.some((i) => sameEmail(i.email, email)))
       throw new UserError(
-        `${email} already has an invite. Send it again from the list below.`,
+        `${email} already has an invite. Send it again from the list above.`,
       );
     if (placesLeft(plan.teamMembers, members.length, open.length) === 0)
       throw new UserError(
@@ -105,6 +108,7 @@ export const inviteMember = workspaceAction(
     return {
       message: `Invite sent to ${email}. You can also send them this link on WhatsApp; it works once, for 7 days.`,
       link: inviteUrl(token),
+      linkText: shareText(user.name, workspace.businessName),
     };
   },
 );
@@ -159,6 +163,7 @@ export const resendInvite = workspaceAction(
     return {
       message: `Sent again to ${invite.email}. The old link no longer works; this one does.`,
       link: inviteUrl(token),
+      linkText: shareText(user.name, workspace.businessName),
     };
   },
 );
@@ -171,14 +176,18 @@ export const cancelInvite = workspaceAction(
     roles: [...MANAGERS],
   },
   async ({ inviteId }, { workspace }) => {
-    const ok = await repo.revokeInvitation(
-      workspace.workspaceId,
-      new ObjectId(inviteId),
-    );
-    if (!ok)
+    const id = new ObjectId(inviteId);
+    const invite = await repo.findInvitation(workspace.workspaceId, id);
+    const ok = await repo.revokeInvitation(workspace.workspaceId, id);
+    if (!ok || !invite)
       throw new UserError("This invite isn't open any more. Refresh the page.");
     refresh();
-    return { message: "Invite cancelled. Its link no longer works." };
+    return {
+      message:
+        invite.expiresAt <= new Date()
+          ? `${invite.email}'s expired invite is off the list.`
+          : `Invite for ${invite.email} cancelled. Its link no longer works.`,
+    };
   },
 );
 
@@ -194,9 +203,12 @@ export const changeMemberRole = workspaceAction(
     if (!target || !canChangeRole(actor, target))
       throw new UserError("That role can't be changed.");
     await setWorkspaceMemberRole(workspace.workspaceId, userId, role);
+    const name = (await listWorkspaceMembers(workspace.workspaceId))
+      .find((m) => m.userId === userId)
+      ?.name.split(" ")[0];
     refresh();
     return {
-      message: role === "admin" ? "Now an admin." : "Now a member.",
+      message: `${name ?? "They"} ${name ? "is" : "are"} now ${role === "admin" ? "an admin" : "a member"}.`,
     };
   },
 );

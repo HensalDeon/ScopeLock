@@ -26,6 +26,8 @@ export type FormState<Field extends string = string> =
       id?: string;
       /** A link to pass on by hand (a team invite, for WhatsApp). */
       link?: string;
+      /** The message that goes before that link. */
+      linkText?: string;
     };
 
 export const IDLE: FormState<never> = { status: "idle" };

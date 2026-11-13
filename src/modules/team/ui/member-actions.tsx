@@ -23,7 +23,7 @@ export function MemberActions({
   if (!change && !remove) return null;
   const to = member.role === "admin" ? "member" : "admin";
   return (
-    <div className="flex flex-wrap items-start justify-end gap-3">
+    <div className="flex flex-wrap items-start gap-3 sm:justify-end">
       {change && (
         <ActionButton
           action={changeMemberRole}

@@ -53,7 +53,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
       <Section
         title="People"
         description={
-          solo ? (
+          solo && team.members.length === 1 && team.invites.length === 0 ? (
             `Only you, as the owner. ${team.teamPlan?.name ?? "Agency"} adds admins and members.`
           ) : (
             <span className="grid gap-2">
@@ -79,7 +79,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
               return (
                 <li
                   key={m.userId}
-                  className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-5"
+                  className="grid gap-x-4 gap-y-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5"
                 >
                   <div className="grid min-w-0 gap-1">
                     <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
@@ -115,7 +115,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
             {team.invites.map((i) => (
               <li
                 key={i.id}
-                className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-5"
+                className="grid gap-x-4 gap-y-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5"
               >
                 <div className="grid min-w-0 gap-1">
                   <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
@@ -159,7 +159,7 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                   </p>
                 </div>
                 {team.canManage && (
-                  <div className="flex flex-wrap items-start justify-end gap-1">
+                  <div className="flex flex-wrap items-start gap-1 sm:justify-end">
                     {team.canJoin && (!i.expired || team.placesLeft > 0) && (
                       <ActionButton
                         action={resendInvite}
@@ -169,19 +169,31 @@ export function TeamSettings({ team }: { team: TeamPage }) {
                         srSuffix={`to ${i.email}`}
                       />
                     )}
-                    <ActionButton
-                      action={cancelInvite}
-                      fields={{ inviteId: i.id }}
-                      label="Cancel invite"
-                      pendingLabel="Cancelling…"
-                      srSuffix={`for ${i.email}`}
-                      danger
-                      confirm={{
-                        question: `Cancel the invite for ${i.email}? Its link stops working.`,
-                        yes: "Cancel the invite",
-                      }}
-                      focusId={PEOPLE_ID}
-                    />
+                    {i.expired ? (
+                      <ActionButton
+                        action={cancelInvite}
+                        fields={{ inviteId: i.id }}
+                        label="Remove"
+                        pendingLabel="Removing…"
+                        srSuffix={`the expired invite for ${i.email}`}
+                        danger
+                        focusId={PEOPLE_ID}
+                      />
+                    ) : (
+                      <ActionButton
+                        action={cancelInvite}
+                        fields={{ inviteId: i.id }}
+                        label="Cancel invite"
+                        pendingLabel="Cancelling…"
+                        srSuffix={`for ${i.email}`}
+                        danger
+                        confirm={{
+                          question: `Cancel the invite for ${i.email}? Its link stops working.`,
+                          yes: "Cancel the invite",
+                        }}
+                        focusId={PEOPLE_ID}
+                      />
+                    )}
                   </div>
                 )}
               </li>

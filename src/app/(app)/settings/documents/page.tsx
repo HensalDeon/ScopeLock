@@ -67,7 +67,7 @@ async function DocumentSettings() {
       <div className="max-w-4xl">
         <Section
           title="Default text"
-          description="Pre-filled on every new project. You can change or clear it per project."
+          description="Pre-filled on new projects only; projects you've already started keep their own text. You can change or clear it per project."
         >
           <ProposalDefaultsForm initial={settings.defaults} />
         </Section>

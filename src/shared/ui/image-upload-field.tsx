@@ -32,6 +32,8 @@ export function ImageUploadField({
   shape,
   emptyText,
   alt,
+  savedText = "Saved. Your clients see the new image now.",
+  removedText = "Removed. Your clients no longer see it.",
 }: {
   label: string;
   hint: string;
@@ -47,6 +49,9 @@ export function ImageUploadField({
   shape: "logo" | "wide" | "square";
   emptyText: string;
   alt: string;
+  /** What's true after an upload (who sees it, and when). */
+  savedText?: string;
+  removedText?: string;
 }) {
   const keepAlpha = shape !== "wide";
   const uid = useId();
@@ -100,7 +105,7 @@ export function ImageUploadField({
       if (result.status === "error") setError(result.message);
       else {
         onChange(result.url);
-        setSaved("Saved. Your clients see the new image now.");
+        setSaved(savedText);
       }
     });
   }
@@ -114,7 +119,7 @@ export function ImageUploadField({
       if (result.status === "error") setError(result.message);
       else {
         onChange(null);
-        setSaved("Removed. Your clients no longer see it.");
+        setSaved(removedText);
       }
     });
   }
@@ -198,7 +203,7 @@ export function ImageUploadField({
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        {enabled ? hint : "Image uploads aren't set up on this server yet."}
+        {enabled ? hint : "Uploads aren't available here yet."}
       </p>
       {error ? (
         <p role="alert" className="text-sm text-destructive">

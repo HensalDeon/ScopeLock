@@ -4,7 +4,6 @@ import { SignOutButton } from "@/modules/account";
 import { Button } from "@/shared/ui/button";
 import { formatDate } from "@/shared/lib/dates";
 import { TOUCH } from "@/shared/ui/touch";
-import { ROLE_LABELS } from "../domain/team";
 import type { InvitePage } from "../server/queries";
 import { AcceptButton } from "./accept-button";
 
@@ -76,13 +75,14 @@ export function InviteView({
       </div>
     );
 
-  const role = page.role === "admin" ? "an admin" : "a member";
   const v = page.viewer;
   return (
     <div className="grid gap-4">
       <Heading>Join {page.business} on ScopeLock</Heading>
       <Lead>
-        {page.inviter} invited you as {role}: {ROLE_LABELS[page.role].detail}
+        {page.role === "admin"
+          ? `${page.inviter} invited you to work on ${page.business}'s proposals, change requests and payments, and its settings, as an admin.`
+          : `${page.inviter} invited you to work on ${page.business}'s proposals, change requests and payments, as a member.`}
       </Lead>
       {v.kind === "signed_out" && (
         <div className="grid gap-3">
@@ -112,8 +112,10 @@ export function InviteView({
       )}
       {v.kind === "ready" && (
         <p className="text-sm text-pretty text-muted-foreground">
-          Signed in as {v.email}. Your own workspace, if you have one, stays as
-          it is; switch between them from the menu.{" "}
+          Signed in as {v.email}.
+          {v.own
+            ? ` Your own workspace, ${v.own}, stays as it is; switch between them from the workspace name in the sidebar.`
+            : ""}{" "}
           <SignOutButton
             then={back}
             className="h-auto p-0 align-baseline underline underline-offset-4"
