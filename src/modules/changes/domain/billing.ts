@@ -59,28 +59,32 @@ export function placeChange(
   }
 }
 
-/** Plain words for the client and the freelancer. */
+/**
+ * Plain words for the client and the freelancer, from where the money
+ * actually goes (placeChange), so the two can never disagree: a payment
+ * already asked for or received is never named.
+ */
 export function billingSummary(
   billing: ChangeBilling,
   milestones: readonly MilestoneRef[],
+  closedMilestoneIds: readonly string[] = [],
 ): string {
-  const sorted = [...milestones].sort((a, b) => a.order - b.order);
-  const name = (m: MilestoneRef | undefined) =>
-    m ? `the “${m.name}” payment` : "a separate payment, due now";
-  switch (billing.option) {
-    case "pay_now":
-      return "Paid as a separate payment, due once approved.";
-    case "final":
-      return `Added to ${name(sorted.at(-1))}.`;
-    case "next_milestone":
-      return `Added to the next payment due.`;
-    case "milestone":
-      return `Added to ${name(sorted.find((m) => m.id === billing.milestoneId))}.`;
-    case "split":
-      return sorted.length > 1
-        ? `Split across the remaining payments, in the same proportions.`
-        : `Added to ${name(sorted[0])}.`;
-  }
+  if (billing.option === "pay_now")
+    return "Paid as a separate payment, due once approved.";
+  const parts = placeChange(
+    minor(100),
+    billing,
+    milestones,
+    closedMilestoneIds,
+  );
+  const targets = parts
+    .map((p) => milestones.find((m) => m.id === p.milestoneId))
+    .filter((m): m is MilestoneRef => Boolean(m));
+  if (targets.length === 0)
+    return "Paid as a separate payment, due once approved: the payments it could join are already asked for or received.";
+  if (targets.length > 1)
+    return "Split across the payments still to come, in the same proportions.";
+  return `Added to the “${targets[0]?.name}” payment.`;
 }
 
 export type ScheduleRow = MilestoneRef & {
@@ -175,8 +179,13 @@ export function changeSummary(
  * (upfront billing) only "separate payment" and "add to it" make sense.
  */
 export function billingChoices(
-  milestones: readonly { name: string }[],
+  milestones: readonly { id?: string; name: string }[],
+  /** Payments already asked for or received (nothing joins them). */
+  closedMilestoneIds: readonly string[] = [],
 ): { value: BillingOption; label: string; detail: string }[] {
+  const open = milestones.filter(
+    (m) => !m.id || !closedMilestoneIds.includes(m.id),
+  );
   const separate = {
     value: "pay_now" as const,
     label: "Ask for it as a separate payment",
@@ -192,12 +201,14 @@ export function billingChoices(
       },
     ];
   }
-  const last = milestones.at(-1);
+  const last = open.at(-1);
   return [
     {
       value: "final",
-      label: "Add to the final payment",
-      detail: last ? `Goes on “${last.name}”.` : "",
+      label: "Add to the last unpaid payment",
+      detail: last
+        ? `Goes on “${last.name}”.`
+        : "Every payment is asked for or received: it becomes a separate payment.",
     },
     {
       value: "next_milestone",

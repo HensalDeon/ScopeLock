@@ -28,7 +28,8 @@ import { EmptyState } from "@/shared/ui/list-states";
 import { PageContainer, Section } from "@/shared/ui/page";
 import { Pagination } from "@/shared/ui/pagination";
 
-export const metadata: Metadata = { title: "Client" };
+// The title names the client (set once it's loaded).
+export const metadata: Metadata = {};
 
 export default function ClientPage({
   params,
@@ -61,6 +62,7 @@ async function ClientDetail({
 
   return (
     <div className="grid gap-8">
+      <title>{`${client.name} · ScopeLock`}</title>
       <div className="grid gap-3">
         <BackLink href="/clients">Clients</BackLink>
         <div className="flex flex-wrap items-end justify-between gap-4">

@@ -25,7 +25,7 @@ export function PortalTotals({
   return (
     <section aria-labelledby="totals-heading" className="grid gap-2">
       <h2 id="totals-heading" className="text-base font-semibold">
-        Project total
+        Totals
       </h2>
       <dl className="grid gap-1.5 text-sm">
         <Row label="Approved proposal">{money(proposalTotal)}</Row>
@@ -48,7 +48,7 @@ export function PortalTotals({
             {money(total)}
           </Row>
         )}
-        {paid > 0 && <Row label="Received">{money(paid)}</Row>}
+        {paid > 0 && <Row label="You've paid">{money(paid)}</Row>}
         {due > 0 && (
           <Row label="Due now" tone="waiting">
             {money(due)}

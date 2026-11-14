@@ -86,7 +86,7 @@ export function scopeSections(
   });
 
   sections.push({
-    title: "Investment",
+    title: "Price",
     body: (
       // The lines and their prices are in "What's included" just above;
       // the investment is the total, once, without repeating them.
@@ -133,8 +133,8 @@ export function scopeSections(
         <thead>
           <tr className="border-b border-[#1d1f24] text-left text-[11px] tracking-[0.14em] text-[#6b6f78] uppercase">
             <th className="py-2 font-medium">Payment</th>
-            <th className="py-2 text-right font-medium">Share</th>
-            <th className="py-2 text-right font-medium">Amount</th>
+            <th className="py-2 pl-4 text-right font-medium">Share</th>
+            <th className="py-2 pl-4 text-right font-medium">Amount</th>
           </tr>
         </thead>
         <tbody>
@@ -146,8 +146,8 @@ export function scopeSections(
                   Before work starts
                 </span>
               </td>
-              <td className="py-2.5 text-right tabular-nums">100%</td>
-              <td className="py-2.5 text-right font-semibold tabular-nums">
+              <td className="py-2.5 pl-4 text-right tabular-nums">100%</td>
+              <td className="py-2.5 pl-4 text-right font-semibold whitespace-nowrap tabular-nums">
                 {money(data.total)}
                 {gstLine(data.total)}
               </td>
@@ -163,8 +163,10 @@ export function scopeSections(
                     </span>
                   )}
                 </td>
-                <td className="py-2.5 text-right tabular-nums">{m.percent}%</td>
-                <td className="py-2.5 text-right font-semibold tabular-nums">
+                <td className="py-2.5 pl-4 text-right tabular-nums">
+                  {m.percent}%
+                </td>
+                <td className="py-2.5 pl-4 text-right font-semibold whitespace-nowrap tabular-nums">
                   {money(m.amount)}
                   {gstLine(m.amount)}
                 </td>

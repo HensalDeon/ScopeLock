@@ -1,10 +1,15 @@
 import "server-only";
 import {
-  listRecentActivity,
   type ActivityItem,
+  listLastReminders,
+  listRecentActivity,
 } from "@/modules/activity/server";
 import { changeLabel } from "@/modules/changes";
-import { listChanges, listOpenChanges } from "@/modules/changes/server";
+import {
+  listApprovedChangeTotals,
+  listChanges,
+  listOpenChanges,
+} from "@/modules/changes/server";
 import { countClients } from "@/modules/clients/server";
 import { getInvoicing } from "@/modules/invoices/server";
 import { hasAnyMethod, nextStep, stillToAsk } from "@/modules/payments";
@@ -12,6 +17,7 @@ import {
   getPaymentMethods,
   getProjectPayments,
   listOwedPayments,
+  listReceivedChangeAmounts,
 } from "@/modules/payments/server";
 import {
   findProjectWithClient,
@@ -28,7 +34,13 @@ import {
   type OverviewPayment,
   type ProjectMoneyFigures,
 } from "../domain/overview";
+import { nextReminderAt } from "@/modules/reminders";
 import { needsYou } from "../domain/needs-you";
+import {
+  latestApproved,
+  revenueRecovered,
+  type RecoveredTotals,
+} from "../domain/recovered";
 import { setupSteps, type SetupStep } from "../domain/setup";
 import {
   dueByClient,
@@ -43,6 +55,16 @@ export type OverviewData = {
   setupHidden: boolean;
   hasProjects: boolean;
   money: CurrencyTotals[];
+  /** Approved change requests: this month and all time, per currency. */
+  recovered: RecoveredTotals[];
+  /** The latest approved change, to name what "recovered" is made of. */
+  recoveredLatest: {
+    label: string;
+    title: string;
+    project: string;
+    href: string;
+    approvedAt: Date;
+  } | null;
   waiting: AttentionItem[];
   needs: AttentionItem[];
   activity: (ActivityItem & {
@@ -61,6 +83,9 @@ export async function getOverview(): Promise<OverviewData> {
     { methods },
     invoicing,
     projects,
+    approvedChanges,
+    reminded,
+    receivedChanges,
   ] = await Promise.all([
     requireWorkspace(),
     countClients(),
@@ -70,6 +95,9 @@ export async function getOverview(): Promise<OverviewData> {
     getPaymentMethods(),
     getInvoicing(),
     listProjectSummaries().then(withMoney),
+    listApprovedChangeTotals(),
+    listLastReminders(),
+    listReceivedChangeAmounts(),
   ]);
   const payments: OverviewPayment[] = owed.flatMap((p) =>
     p.status === "due" || p.status === "client_reported"
@@ -125,7 +153,26 @@ export async function getOverview(): Promise<OverviewData> {
     setupHidden: workspace.setupHidden,
     hasProjects: projects.length > 0,
     money: portfolioTotals(projects),
-    waiting: waitingOnClients(projects, open, links, new Date(), payments),
+    recovered: revenueRecovered(approvedChanges, new Date(), receivedChanges),
+    recoveredLatest: ((latest) =>
+      latest
+        ? {
+            label: changeLabel(latest.number),
+            title: latest.title,
+            project: names.get(latest.projectId) ?? "a project",
+            href: `/projects/${latest.projectId}/changes/${latest.number}`,
+            approvedAt: latest.approvedAt,
+          }
+        : null)(latestApproved(approvedChanges)),
+    waiting: waitingOnClients(
+      projects,
+      open,
+      links,
+      new Date(),
+      payments,
+      reminded,
+      nextReminderAt,
+    ),
     needs: needsYou(
       projects,
       open,
@@ -175,8 +222,9 @@ async function withMoney(
           toAsk: stillToAsk(items),
           total: shown.total,
           tax: totals.gst?.tax ?? minor(0),
+          // An archived project is read-only: nothing to ask for from it.
           nextAsk:
-            step?.kind === "ask"
+            !s.archived && step?.kind === "ask"
               ? { label: step.item.label, amount: step.item.payable }
               : null,
         },

@@ -13,7 +13,7 @@ export default function NewClientPage({
   searchParams,
 }: PageProps<"/clients/new">) {
   return (
-    <PageContainer className="max-w-2xl">
+    <PageContainer>
       <BackLink href="/clients" className="mb-3">
         Clients
       </BackLink>

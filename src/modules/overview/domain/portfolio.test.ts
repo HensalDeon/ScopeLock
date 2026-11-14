@@ -3,7 +3,7 @@ import { minor } from "@/shared/lib/money";
 import { dueByClient, portfolioTotals } from "./portfolio";
 
 const p = (
-  status: "draft" | "awaiting_approval" | "active" | "completed" | "archived",
+  status: "draft" | "awaiting_approval" | "active" | "completed",
   total: number,
   extra: {
     approvedChanges?: number;
@@ -37,7 +37,6 @@ describe("portfolioTotals", () => {
       p("awaiting_approval", 2_000_000),
       p("draft", 4_000_000),
       p("draft", 1_800_000),
-      p("archived", 9_900_000),
       p("active", 120_000, { currency: "USD" }),
     ]);
     expect(rows.map((r) => r.currency)).toEqual(["INR", "USD"]);

@@ -20,6 +20,7 @@ import {
   countActivity,
   findActivity,
   findDeletedChanges,
+  findLastReminders,
   findRecentActivity,
   insertActivity,
   type NewActivity,
@@ -135,4 +136,23 @@ export async function listRecentActivity(
     link: changeLinkOf(e, deleted),
     ...describeActivity(e, viewer),
   }));
+}
+
+/** Email reminders sent in the last `hours` (reminder key → when). */
+/** Same, for a given workspace (the daily reminder run). */
+export async function lastRemindersIn(
+  workspaceId: string,
+  since: Date,
+): Promise<Map<string, Date>> {
+  return findLastReminders(workspaceId, since);
+}
+
+export async function listLastReminders(
+  hours = 24,
+): Promise<Map<string, Date>> {
+  const { workspace } = await requireWorkspace();
+  return findLastReminders(
+    workspace.workspaceId,
+    new Date(Date.now() - hours * 60 * 60 * 1000),
+  );
 }

@@ -32,7 +32,7 @@ export async function PortalStatementPage({ token }: { token: string }) {
           </Link>
         }
       >
-        <PrintButton variant="outline" />
+        <PrintButton variant="outline" iconOnPhones />
       </PortalHeader>
       <PrintSetup
         footer={`${statement.business.name} · Project statement ${statement.reference}`}
@@ -44,7 +44,7 @@ export async function PortalStatementPage({ token }: { token: string }) {
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
       </main>
-      <Footer />
+      <Footer branded={view.branded} />
     </>
   );
 }

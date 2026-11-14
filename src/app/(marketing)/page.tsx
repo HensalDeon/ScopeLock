@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { PLANS } from "@/modules/billing";
+import { getPlans } from "@/modules/billing/server";
+import { isBillingConfigured } from "@/shared/lib/env";
 import {
   Evidence,
   FaqSection,
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 /** Structured data so search engines understand what ScopeLock is and costs. */
-const jsonLd = {
+const jsonLd = (plans: Awaited<ReturnType<typeof getPlans>>) => ({
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: site.name,
@@ -29,28 +30,30 @@ const jsonLd = {
   operatingSystem: "Web",
   description: site.description,
   url: site.url,
-  offers: PLANS.map((plan) => ({
+  offers: plans.map((plan) => ({
     "@type": "Offer",
     name: plan.name,
     price: (plan.monthlyPrice / 100).toFixed(2),
     priceCurrency: "INR",
   })),
-};
+});
 
-export default function HomePage() {
+export default async function HomePage() {
+  const plans = await getPlans();
+  const paidOpen = isBillingConfigured();
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(plans)) }}
       />
       <Hero />
       <SmallRequests />
       <HowItWorks />
       <Evidence />
       <ManyClients />
-      <PricingSection />
-      <FaqSection />
+      <PricingSection plans={plans} paidOpen={paidOpen} />
+      <FaqSection paidOpen={paidOpen} />
       <FinalCta />
     </>
   );

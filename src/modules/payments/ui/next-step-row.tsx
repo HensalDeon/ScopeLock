@@ -5,6 +5,8 @@ import { cn } from "@/shared/lib/utils";
 import Link from "next/link";
 import { Button } from "@/shared/ui/button";
 import { ShareLink } from "@/shared/ui/share-link";
+import { EmailReminderButton, nextReminderAt } from "@/modules/reminders";
+import { AutoReminderLine, autoViewOf } from "./auto-reminder-line";
 import { TOUCH, TOUCH_LINK } from "@/shared/ui/touch";
 import { isReminder, type NextStep } from "../domain/next-step";
 import { PaymentActions } from "./payment-actions";
@@ -111,9 +113,10 @@ export function NextStepRow({
               {ctx.client.email ? ` · emailed to ${ctx.client.email}` : ""}
             </p>
           )}
+          {payment && <AutoReminderLine payment={payment} ctx={ctx} inStrip />}
         </div>
         {url && (
-          <div className="justify-self-start">
+          <div className="min-w-0 justify-self-start">
             <ShareLink
               url={url}
               phone={ctx.client.phone}
@@ -129,6 +132,36 @@ export function NextStepRow({
             />
           </div>
         )}
+        {/* Same reminder as the overview's (once a day; not in the first).
+            With automatic reminders scheduled, "Send it now" on their line
+            does this instead. */}
+        {url &&
+          payment &&
+          ctx.client.email &&
+          autoViewOf(payment, ctx).kind !== "next" && (
+            <div className="justify-self-start">
+              {(() => {
+                const next = nextReminderAt(
+                  ctx.autoReminders?.lastManual[payment.id] ?? null,
+                  now,
+                  payment.requestedAt,
+                );
+                return (
+                  <EmailReminderButton
+                    projectId={ctx.projectId}
+                    kind="payment"
+                    refId={payment.id}
+                    align="start"
+                    sentLabel={
+                      next
+                        ? `Email reminder from ${formatDateTime(next, { now })}`
+                        : null
+                    }
+                  />
+                );
+              })()}
+            </div>
+          )}
       </div>
     );
   }
@@ -164,17 +197,20 @@ export function NextStepRow({
         ) : (
           !setup.invoicingReady && (
             <p className="text-sm text-pretty text-muted-foreground">
-              Invoices will show just your business name.{" "}
+              Invoices will show just your business name. To show your address
+              or GSTIN, add them first: issued invoices can&apos;t be changed.{" "}
+              {/* On its own line on phones, so it can be a full-size target
+                  without breaking the sentence. */}
               <Link
                 href="/settings/invoicing"
                 className={cn(
                   "font-medium text-foreground underline underline-offset-4",
                   TOUCH_LINK,
+                  "max-sm:flex max-sm:w-fit",
                 )}
               >
                 Add your address or GSTIN
-              </Link>{" "}
-              first if you need them: issued invoices can&apos;t be changed.
+              </Link>
             </p>
           )
         )}

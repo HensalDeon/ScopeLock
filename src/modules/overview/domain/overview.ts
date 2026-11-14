@@ -1,5 +1,5 @@
 import type { CurrencyCode } from "@/shared/lib/currency";
-import { formatAgo } from "@/shared/lib/dates";
+import { formatAgo, formatDateTime } from "@/shared/lib/dates";
 import { isReminder } from "@/shared/lib/reminder";
 import { formatMoney, type Minor } from "@/shared/lib/money";
 import { whatsappLink } from "@/shared/lib/phone";
@@ -10,8 +10,7 @@ import { whatsappLink } from "@/shared/lib/phone";
  * server query loads the data; the UI only renders what these return.
  */
 
-type Status =
-  "draft" | "awaiting_approval" | "active" | "completed" | "archived";
+type Status = "draft" | "awaiting_approval" | "active" | "completed";
 
 /** What the money strip needs from a project. */
 export type ProjectFigures = {
@@ -46,7 +45,7 @@ export type ProjectMoneyFigures = {
 export type OverviewProject = ProjectFigures & {
   id: string;
   name: string;
-  client: { name: string; phone: string | null } | null;
+  client: { name: string; phone: string | null; email?: string | null } | null;
   sentAt: Date | null;
   lastDecision: {
     decision: "approved" | "rejected";
@@ -101,7 +100,28 @@ export type AttentionItem = {
   remindLabel?: string;
   /** An in-app next action ("Add payment details"). */
   action?: { label: string; href: string } | null;
+  /** Email reminder (the client has an email saved). */
+  email?: EmailReminder | null;
 };
+
+export type EmailReminder = {
+  projectId: string;
+  kind: "proposal" | "change" | "payment";
+  /** The change number or payment id ("" for the proposal). */
+  ref: string;
+  /**
+   * Why no reminder can go yet, when one can't: "Emailed today, 2:46 pm ·
+   * next from 11 Nov, 2:46 pm", or "Email reminder from 11 Nov, 2:45 pm".
+   */
+  sentLabel: string | null;
+};
+
+/** When the next email reminder can go (reminders' rule), or null if now. */
+export type NextReminder = (
+  last: Date | null,
+  now: Date,
+  since: Date | null,
+) => Date | null;
 
 export const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 
@@ -128,8 +148,31 @@ export function waitingOnClients(
   links: ReadonlyMap<string, string | null>,
   now: Date = new Date(),
   payments: readonly OverviewPayment[] = [],
+  /** Last email reminder per item in the last day ("projectId:kind:ref"). */
+  reminded: ReadonlyMap<string, Date> = new Map(),
+  nextReminder: NextReminder = () => null,
 ): AttentionItem[] {
   const byId = new Map(projects.map((p) => [p.id, p]));
+  const email = (
+    p: OverviewProject,
+    kind: EmailReminder["kind"],
+    ref: string,
+    since: Date | null,
+  ): EmailReminder | null => {
+    if (!p.client?.email) return null;
+    const last = reminded.get(`${p.id}:${kind}:${ref || "-"}`) ?? null;
+    const next = nextReminder(last, now, since);
+    return {
+      projectId: p.id,
+      kind,
+      ref: ref || "-",
+      sentLabel: !next
+        ? null
+        : last
+          ? `Emailed ${formatAgo(last, { now })} · next from ${formatDateTime(next, { now })}`
+          : `Email reminder from ${formatDateTime(next, { now })}`,
+    };
+  };
   const who = (p: OverviewProject) =>
     p.client ? firstName(p.client.name) : "there";
   const sent = (at: Date | null) =>
@@ -155,6 +198,7 @@ export function waitingOnClients(
             ? `Hi ${who(p)}, just checking whether you've had a chance to look at the proposal for ${p.name} (${amount}). Here's the link:`
             : `Hi ${who(p)}, here's the proposal for ${p.name} (${amount}):`,
         ),
+        email: email(p, "proposal", "", p.sentAt),
       },
       since: p.sentAt?.getTime() ?? 0,
     });
@@ -181,6 +225,7 @@ export function waitingOnClients(
             ? `Hi ${who(p)}, just checking whether you've had a chance to look at ${c.label} for ${p.name}: ${c.title} (${amount}). Here's the link:`
             : `Hi ${who(p)}, here's ${c.label} for ${p.name}: ${c.title} (${amount}). You can approve or decline it here:`,
         ),
+        email: email(p, "change", String(c.number), c.sentAt),
       },
       since: c.sentAt?.getTime() ?? 0,
     });
@@ -209,6 +254,7 @@ export function waitingOnClients(
             ? `Hi ${who(p)}, a gentle reminder that the ${pay.label} payment for ${p.name} (${amount}) is due. You can pay here:`
             : `Hi ${who(p)}, here's the pay link for the ${pay.label} payment on ${p.name} (${amount}):`,
         ),
+        email: email(p, "payment", pay.id, pay.requestedAt),
       },
       since: pay.requestedAt.getTime(),
     });

@@ -130,6 +130,18 @@ describe("describeActivity", () => {
         .text,
     ).toBe("Asha Designs marked the Advance payment as not received yet");
   });
+
+  it("says ScopeLock sent an automatic reminder, and keeps it from the client", () => {
+    const auto = ev({
+      type: "reminder.auto_emailed",
+      actor: { kind: "system" },
+      data: { title: "the Before launch payment" },
+    });
+    expect(describeActivity(auto, { kind: "member", userId: "u1" }).text).toBe(
+      "ScopeLock emailed an automatic reminder about the Before launch payment",
+    );
+    expect(isClientVisible("reminder.auto_emailed")).toBe(false);
+  });
 });
 
 describe("changeLinkOf", () => {

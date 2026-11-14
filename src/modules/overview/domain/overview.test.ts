@@ -161,16 +161,27 @@ describe("setupSteps", () => {
       invoicingReady: true,
       projects: [{ id: "p1", status: "active", changeCount: 0 }],
     });
+    // The first project and its approval come before the settings: payment
+    // and invoice details are only needed once there's money to ask for.
+    expect(steps.map((s) => s.title)).toEqual([
+      "Set up your workspace",
+      "Add your first client",
+      "Write down a project's scope",
+      "Get the scope approved",
+      "Add how you get paid",
+      "Add your invoice details",
+      "Log extra requests as they come in",
+    ]);
     expect(steps.map((s) => s.done)).toEqual([
       true,
       true,
+      true,
+      true,
       false,
-      true,
-      true,
       true,
       false,
     ]);
-    expect(steps[2]?.href).toBe("/settings/payments");
+    expect(steps[4]?.href).toBe("/settings/payments");
     // Logging an extra request goes to the approved project's new CR page.
     expect(steps[6]?.href).toBe("/projects/p1/changes/new");
   });

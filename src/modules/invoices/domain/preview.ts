@@ -69,7 +69,9 @@ export function gstOutcome(
   const half = GST_RATE_PERCENT / 2;
   switch (tax.kind) {
     case "none":
-      return "You don't charge GST, so their GSTIN is only printed on invoices for their records.";
+      return buyer.gstin
+        ? "You don't charge GST, so their GSTIN is only printed on invoices for their records."
+        : "No GST on your invoices: you aren't GST-registered.";
     case "export":
       return `Invoices to ${who}: no GST. They're export invoices, zero-rated under your LUT.`;
     case "intra":

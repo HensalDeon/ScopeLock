@@ -41,6 +41,18 @@ export const PRODUCT_FAQ: FaqItem[] = [
   },
 ];
 
+/** The product FAQ, true for today: paid plans open, or not yet. */
+export function productFaq(paidOpen: boolean): FaqItem[] {
+  return PRODUCT_FAQ.map((item) =>
+    item.q === "Can I cancel any time?" && !paidOpen
+      ? {
+          ...item,
+          a: "Paid plans aren't open yet, so there's nothing to cancel. When they open, you'll cancel from Settings and keep your plan until the end of the month you've paid for.",
+        }
+      : item,
+  );
+}
+
 export function Faq({ items }: { items: FaqItem[] }) {
   return (
     <div className="divide-y border-y">

@@ -14,7 +14,8 @@ export function PortalHeader({
 }) {
   return (
     <header className="sticky top-0 z-10 border-b border-black/10 bg-white/95 backdrop-blur print:hidden">
-      <div className="mx-auto flex max-w-[210mm] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+      {/* One row on phones too: the header stays out of the way. */}
+      <div className="mx-auto flex max-w-[210mm] items-center justify-between gap-x-3 px-4 py-2.5 sm:gap-x-4 sm:py-3">
         <div className="flex min-w-0 items-center gap-2">
           {back}
           <div className="min-w-0">
@@ -24,7 +25,7 @@ export function PortalHeader({
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">{children}</div>
+        <div className="flex shrink-0 items-center gap-2">{children}</div>
       </div>
     </header>
   );
@@ -73,7 +74,9 @@ export function Notice({
   );
 }
 
-export function Footer() {
+/** "Sent with ScopeLock", on Free. Pro and Agency show only their own brand. */
+export function Footer({ branded }: { branded: boolean }) {
+  if (branded) return <div className="py-4 print:hidden" aria-hidden />;
   return (
     <footer className="flex items-center justify-center gap-2 px-4 py-8 text-xs text-[#4f535b] print:hidden">
       <LogoMark className="size-3.5" />

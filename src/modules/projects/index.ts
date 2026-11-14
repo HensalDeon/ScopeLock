@@ -12,9 +12,15 @@ export {
   type ProjectDecision,
   type ProjectStatus,
 } from "./domain/project";
+export {
+  ARCHIVED_READ_ONLY,
+  archiveBlocker,
+  type ArchiveBlocker,
+} from "./domain/archive";
 export { unlockingSteps } from "./domain/payment-timing";
 export { EMPTY_PROPOSAL, type ProposalContent } from "./domain/proposal";
 export { DeleteProjectButton } from "./ui/delete-project-button";
+export { PlanFullNotice } from "./ui/plan-full-notice";
 export {
   clientOptions,
   newProjectValues,

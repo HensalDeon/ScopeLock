@@ -9,6 +9,8 @@ type SettingsDoc = WorkspaceOwned & {
   methods?: Omit<PaymentMethods, "qr"> & { qr: { label: string } | null };
   /** R2 key of the uploaded QR image (private bucket). */
   qrKey?: string | null;
+  /** Automatic payment reminders (Pro and Agency). Absent = on. */
+  autoReminders?: boolean;
 };
 
 const settings = (workspaceId: string) =>
@@ -55,4 +57,26 @@ export async function setQrKey(
     { upsert: true, returnDocument: "before" },
   );
   return before?.qrKey ?? null;
+}
+
+/** Automatic payment reminders: on unless switched off. */
+export async function findAutoRemindersOn(
+  workspaceId: string,
+): Promise<boolean> {
+  const doc = await settings(workspaceId).findOne(
+    {},
+    { projection: { autoReminders: 1 } },
+  );
+  return doc?.autoReminders !== false;
+}
+
+export async function saveAutoRemindersOn(
+  workspaceId: string,
+  on: boolean,
+): Promise<void> {
+  await settings(workspaceId).updateOne(
+    {},
+    { $set: { autoReminders: on } },
+    { upsert: true },
+  );
 }

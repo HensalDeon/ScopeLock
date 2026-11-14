@@ -20,8 +20,10 @@ import {
   type ProjectField,
   type ProjectInput,
 } from "../domain/project-input";
+import { ARCHIVED_READ_ONLY } from "../domain/archive";
 import { emptyTotals } from "../domain/project";
 import { currentProposalData } from "./document";
+import { projectLimitMessage } from "./limits";
 import { newPortalLink } from "./portal";
 import * as repo from "./repository";
 import * as portalRepo from "./portal-repository";
@@ -81,6 +83,8 @@ export const createProject = workspaceAction(
     failureMessage: "The project wasn't saved. Please try again.",
   },
   async (input, { workspace, user }) => {
+    const full = await projectLimitMessage(workspace.workspaceId);
+    if (full) throw new UserError(full);
     const data = await toProjectData(input);
     const id = await repo.insertProject(workspace.workspaceId, data);
     await logActivity(workspace.workspaceId, {
@@ -101,6 +105,7 @@ export const updateProject = workspaceAction(
   async ({ id, ...input }, { workspace }) => {
     const existing = await repo.findProject(workspace.workspaceId, id);
     if (!existing) throw new UserError(GONE);
+    if (existing.archivedAt) throw new UserError(ARCHIVED_READ_ONLY);
     if (existing.status !== "draft") throw new UserError(LOCKED);
     const data = await toProjectData(input, {
       allowArchivedClientId: existing.clientId,
@@ -157,6 +162,7 @@ export const sendProposal = workspaceAction(
   async ({ id }, context) => {
     if (!context.user.emailVerified) throw new UserError(VERIFY_FIRST);
     const project = await getProjectOrNotFound(id.toHexString());
+    if (project.archivedAt) throw new UserError(ARCHIVED_READ_ONLY);
     if (project.status !== "draft") {
       throw new UserError(
         "This proposal has already been sent. Refresh the page to see where it is.",

@@ -39,10 +39,10 @@ export function planSections(
                 <h3 className="text-[0.9rem] font-semibold">
                   {step.phase}
                   {step.isMilestone && (
-                    <span className="ml-2 rounded-full bg-(--doc-soft) px-2 py-0.5 text-[11px] font-medium tracking-wide text-(--doc-soft-text) uppercase">
+                    <span className="ml-2 inline-block rounded-full bg-(--doc-soft) px-2 py-0.5 text-[11px] font-medium text-(--doc-soft-text)">
                       Milestone
                       {step.payment
-                        ? ` · ${money(step.payment.amount)} due`
+                        ? ` · ${money(step.payment.amount)} payment`
                         : ""}
                     </span>
                   )}

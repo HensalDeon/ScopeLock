@@ -10,6 +10,7 @@ import { useUnsavedGuard } from "@/shared/ui/use-unsaved-guard";
 import { Button } from "@/shared/ui/button";
 import { FormAlert } from "@/shared/ui/form-alert";
 import { TOUCH } from "@/shared/ui/touch";
+import { cn } from "@/shared/lib/utils";
 import type { ProposalDocumentData } from "../domain/document-data";
 import type { DocumentImages } from "../domain/images";
 import {
@@ -27,6 +28,7 @@ import { ClassicDocument } from "./classic-document";
 import { AccentPicker, HeadingPicker } from "./style-pickers";
 import { CoverPicker } from "./style-cover-picker";
 import { ImageUpload } from "./image-upload";
+import { LogoControls } from "./style-logo";
 
 type Values = Record<DocumentStyleField, string>;
 
@@ -39,15 +41,19 @@ export function DocumentStyleEditor({
   preview,
   images: initialImages,
   uploadsEnabled,
+  branded,
 }: {
   initial: DocumentStyle;
   preview: ProposalDocumentData;
   images: DocumentImages;
   uploadsEnabled: boolean;
+  /** The plan shows the logo to clients (Pro, Agency). */
+  branded: boolean;
 }) {
   // Kept locally so the preview shows a new image the moment it's uploaded.
   const [images, setImages] = useState(initialImages);
   const uid = useId();
+  const [fullSample, setFullSample] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState<
     DocumentStyleFormState,
@@ -102,13 +108,6 @@ export function DocumentStyleEditor({
           <FormAlert>{state.message}</FormAlert>
         )}
 
-        <a
-          href={`#${uid}-preview`}
-          className="-mt-3 inline-flex min-h-11 items-center text-sm font-medium underline-offset-4 hover:underline lg:hidden"
-        >
-          See the preview
-        </a>
-
         <AccentPicker
           uid={uid}
           value={values.accent}
@@ -121,56 +120,76 @@ export function DocumentStyleEditor({
           error={form.errorFor("accent")}
         />
 
-        <CoverPicker
-          values={values}
-          accent={accent}
-          images={images}
-          set={set}
-        />
-
-        <fieldset className="grid gap-5">
-          <legend className="mb-2 text-sm font-medium">
-            Logo and cover image
-          </legend>
-          <ImageUpload
-            kind="logo"
-            label="Logo"
-            hint="PNG, JPG or WebP, up to 5 MB. A transparent PNG looks best."
-            url={images.logoUrl}
-            enabled={uploadsEnabled}
-            onChange={(logoUrl) => setImages((i) => ({ ...i, logoUrl }))}
-          />
-          <ImageUpload
-            kind="cover"
-            label="Cover image"
-            hint="PNG, JPG or WebP, up to 5 MB. A wide photo of your work works well."
-            url={images.coverUrl}
-            enabled={uploadsEnabled}
-            onChange={(coverUrl) => {
-              setImages((i) => ({ ...i, coverUrl }));
-              // A new photo is meant to be seen: switch the cover to it.
-              if (coverUrl) set("cover", "image");
-              else if (values.cover === "image") set("cover", "dark");
-            }}
-          />
-        </fieldset>
-
         <HeadingPicker
           value={values.headingFont}
           onChange={(font) => set("headingFont", font)}
         />
 
+        <CoverPicker
+          values={values}
+          accent={accent}
+          images={images}
+          set={set}
+          photoAvailable={uploadsEnabled || Boolean(images.coverUrl)}
+        >
+          {uploadsEnabled && (
+            <ImageUpload
+              kind="cover"
+              label="Cover photo"
+              hint="PNG, JPG or WebP, up to 5 MB. A wide photo of your work works well."
+              url={images.coverUrl}
+              enabled
+              onChange={(coverUrl) => {
+                setImages((i) => ({ ...i, coverUrl }));
+                // A new photo is meant to be seen: choose it (saved with
+                // the style, as the message says).
+                if (coverUrl) set("cover", "image");
+                else if (values.cover === "image") set("cover", "dark");
+              }}
+              savedText={
+                initial.cover === "image"
+                  ? "Uploaded. Clients see the new cover photo now."
+                  : "Uploaded and chosen as your cover. Save the style to show it to clients."
+              }
+              removedText={
+                initial.cover === "image"
+                  ? "Removed. Clients see the dark cover until you choose another."
+                  : "Removed."
+              }
+            />
+          )}
+        </CoverPicker>
+
+        <LogoControls
+          logoUrl={images.logoUrl}
+          showLogo={values.showLogo === "true"}
+          onShowLogo={(on) => set("showLogo", String(on))}
+          uploadsEnabled={uploadsEnabled}
+          branded={branded}
+          onUploaded={(logoUrl) => setImages((i) => ({ ...i, logoUrl }))}
+        />
+
+        {!uploadsEnabled && (
+          <p className="text-sm text-pretty text-muted-foreground">
+            Logos and cover photos can&apos;t be uploaded here yet, so your
+            initials and the cover colours above are used.
+          </p>
+        )}
+
         <div className="flex flex-wrap items-center gap-3 border-t pt-5">
           <Button
             type="submit"
             className={TOUCH}
+            variant={form.isDirty ? "default" : "outline"}
             disabled={pending || !form.isDirty}
           >
             {pending ? "Saving…" : "Save style"}
           </Button>
           {!pending && !form.isDirty && (
             <p role="status" className="text-sm text-muted-foreground">
-              {state.status === "success" ? state.message : "No changes yet"}
+              {state.status === "success"
+                ? state.message
+                : "Matches what clients see"}
             </p>
           )}
         </div>
@@ -178,7 +197,7 @@ export function DocumentStyleEditor({
 
       <div
         id={`${uid}-preview`}
-        className="min-w-0 scroll-mt-20 lg:sticky lg:top-6"
+        className="min-w-0 scroll-mt-20 max-lg:order-first lg:sticky lg:top-6"
       >
         <p className="mb-2 font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
           Live preview
@@ -213,16 +232,48 @@ export function DocumentStyleEditor({
             </div>
           </div>
         )}
-        {/* Phones scroll the page, not a box inside it. */}
-        <div className="rounded-lg border bg-[#ebe8e2] p-3 lg:max-h-[78vh] lg:overflow-auto lg:p-5">
+        {!branded && images.logoUrl && (
+          <p className="text-sm text-pretty text-muted-foreground">
+            The preview shows what clients see on Free: your initials, not your
+            logo.
+          </p>
+        )}
+        {/* A window onto the full sample (it's ~4,000px on a phone), so the
+            default-text form below stays within reach. */}
+        {/* Desktop: a scrolling window onto the full sample, beside the
+            controls. Phones: above the controls, cut to the cover (what
+            the colour and cover choices change), with the rest on request,
+            so the page doesn't scroll inside itself. */}
+        <div
+          tabIndex={0}
+          aria-label="Document preview"
+          className={cn(
+            "relative rounded-lg border bg-[#ebe8e2] p-3 lg:max-h-[78vh] lg:overflow-auto lg:p-5",
+            !fullSample && "max-lg:max-h-[26rem] max-lg:overflow-hidden",
+          )}
+        >
           <ClassicDocument
             titleAs="h2"
             data={preview}
             style={style}
-            images={images}
+            // What clients see: no logo unless the plan includes branding.
+            images={branded ? images : { ...images, logoUrl: null }}
             className="mx-auto max-w-[210mm] rounded-[2px] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] lg:[zoom:0.72]"
           />
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className={cn(
+            TOUCH,
+            "mt-1 px-0 underline underline-offset-4 lg:hidden",
+          )}
+          aria-expanded={fullSample}
+          onClick={() => setFullSample((v) => !v)}
+        >
+          {fullSample ? "Show just the cover" : "Show the full sample"}
+        </Button>
       </div>
     </div>
   );

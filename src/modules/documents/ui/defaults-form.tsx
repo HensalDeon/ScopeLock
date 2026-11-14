@@ -15,6 +15,7 @@ import {
   FieldLabel,
 } from "@/shared/ui/field";
 import { FormAlert } from "@/shared/ui/form-alert";
+import { useUnsavedGuard } from "@/shared/ui/use-unsaved-guard";
 import { Textarea } from "@/shared/ui/textarea";
 import {
   defaultsToFormValues,
@@ -64,6 +65,7 @@ export function ProposalDefaultsForm({
     initial: saved,
     serverState: state,
   });
+  useUnsavedGuard(form.isDirty && !pending);
 
   return (
     <form
@@ -94,7 +96,8 @@ export function ProposalDefaultsForm({
             <Textarea
               id={`${uid}-${field.name}`}
               name={field.name}
-              rows={5}
+              // Tall enough for the starting text without scrolling.
+              rows={Math.max(5, values[field.name].split("\n").length + 2)}
               value={values[field.name]}
               onChange={(e) => {
                 setValues((v) => ({ ...v, [field.name]: e.target.value }));
@@ -110,12 +113,18 @@ export function ProposalDefaultsForm({
           </Field>
         ))}
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending || !form.isDirty}>
+          <Button
+            type="submit"
+            variant={form.isDirty ? "default" : "outline"}
+            disabled={pending || !form.isDirty}
+          >
             {pending ? "Saving…" : "Save defaults"}
           </Button>
           {!pending && !form.isDirty && (
             <p role="status" className="text-sm text-muted-foreground">
-              {state.status === "success" ? state.message : "No changes yet"}
+              {state.status === "success"
+                ? state.message
+                : "Matches what new projects get"}
             </p>
           )}
         </div>

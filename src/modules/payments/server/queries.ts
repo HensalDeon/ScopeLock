@@ -1,11 +1,14 @@
 import "server-only";
+import { getWorkspacePlan } from "@/modules/billing/server";
 import type { ChangeRequest } from "@/modules/changes";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
-import { minor } from "@/shared/lib/money";
+import type { CurrencyCode } from "@/shared/lib/currency";
+import { minor, type Minor } from "@/shared/lib/money";
 import { signedUrls } from "@/shared/storage/r2";
 import type { PaymentMethods } from "../domain/methods";
 import type { Payment } from "../domain/payment";
+import * as received from "./received-repository";
 import * as repo from "./repository";
 import * as settingsRepo from "./settings-repository";
 import {
@@ -21,6 +24,28 @@ export async function getPaymentMethods(): Promise<{
 }> {
   const { workspace } = await requireWorkspace();
   return methodsWithQr(workspace.workspaceId);
+}
+
+/** Settings → Payments: automatic reminders, and whether the plan has them. */
+export async function getAutoReminderSetting(): Promise<{
+  included: boolean;
+  on: boolean;
+  /** Owners and admins can switch them; members only see the setting. */
+  canChange: boolean;
+  businessName: string;
+}> {
+  const { workspace, role } = await requireWorkspace();
+  const ws = workspace.workspaceId;
+  const [{ plan }, on] = await Promise.all([
+    getWorkspacePlan(ws),
+    settingsRepo.findAutoRemindersOn(ws),
+  ]);
+  return {
+    included: plan.features.automaticReminders,
+    on,
+    canChange: role === "owner" || role === "admin",
+    businessName: workspace.businessName,
+  };
 }
 
 /**
@@ -62,5 +87,32 @@ export async function listOwedPayments(): Promise<Payment[]> {
   const { workspace } = await requireWorkspace();
   return (await repo.findOwedPaymentDocs(workspace.workspaceId)).map(
     repo.toPayment,
+  );
+}
+
+/** Change-request lines on asked-for and received payments (the recovered report). */
+export async function listChangeLinePayments(): Promise<
+  {
+    changeId: string;
+    amount: Minor;
+    state: "received" | "asked";
+    invoice: string | null;
+    receivedOn: string | null;
+    askedAt: Date | null;
+  }[]
+> {
+  const { workspace } = await requireWorkspace();
+  return (await received.findChangeLinePayments(workspace.workspaceId)).map(
+    (l) => ({ ...l, amount: minor(l.amount) }),
+  );
+}
+
+/** Change-request money received so far (before GST), for the overview. */
+export async function listReceivedChangeAmounts(): Promise<
+  { currency: CurrencyCode; amount: Minor }[]
+> {
+  const { workspace } = await requireWorkspace();
+  return (await received.findReceivedChangeAmounts(workspace.workspaceId)).map(
+    (r) => ({ currency: r.currency, amount: minor(r.amount) }),
   );
 }

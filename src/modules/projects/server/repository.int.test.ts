@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { describe, expect, it } from "vitest";
 import { collection } from "@/shared/db/collections";
+import { minor } from "@/shared/lib/money";
 import { buildProjectPlan, projectInputSchema } from "../domain/project-input";
 import { emptyTotals } from "../domain/project";
 import * as repo from "./repository";
@@ -162,5 +163,36 @@ describe("projects repository", () => {
     });
     expect(summary).not.toHaveProperty("baseline");
     expect(summary).not.toHaveProperty("proposal");
+  });
+});
+
+describe("archiving projects", () => {
+  it("waits for the client, then stops counting and can be restored", async () => {
+    const ws = "ws_archive";
+    const id = new ObjectId(await repo.insertProject(ws, rahulsProject()));
+    await repo.insertProject(ws, rahulsProject());
+    expect(await repo.countActiveProjects(ws)).toBe(2);
+
+    // A payment is still owed: archiving doesn't match.
+    await repo.setPaymentTotals(ws, id, {
+      paid: minor(0),
+      due: minor(2_400_000),
+    });
+    expect(await repo.setProjectArchived(ws, id, true)).toBe(false);
+
+    await repo.setPaymentTotals(ws, id, {
+      paid: minor(2_400_000),
+      due: minor(0),
+    });
+    expect(await repo.setProjectArchived(ws, id, true)).toBe(true);
+    expect(await repo.countActiveProjects(ws)).toBe(1);
+    expect((await repo.findProject(ws, id))?.archivedAt).toBeInstanceOf(Date);
+    expect(await repo.countProjects(ws, { archived: true })).toBe(1);
+    // Already archived: a second archive changes nothing.
+    expect(await repo.setProjectArchived(ws, id, true)).toBe(false);
+
+    expect(await repo.setProjectArchived(ws, id, false)).toBe(true);
+    expect(await repo.countActiveProjects(ws)).toBe(2);
+    expect((await repo.findProject(ws, id))?.archivedAt).toBe(null);
   });
 });

@@ -18,15 +18,19 @@ export async function SignInWithOptions() {
 
 export async function SignUpWithOptions({
   email,
+  next,
 }: {
-  /** From `/sign-up?email=…` (the landing page's form). */
-  email?: Promise<string>;
+  /** From `/sign-up?email=…` (the landing page's form), or a team invite. */
+  email?: Promise<string> | string;
+  /** Where to go after (a team invite); otherwise onboarding. */
+  next?: string;
 }) {
   await connection();
   return (
     <SignUpForm
       googleEnabled={isGoogleAuthEnabled()}
       defaultEmail={(await email) ?? ""}
+      next={next}
     />
   );
 }

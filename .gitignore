@@ -42,3 +42,9 @@ next-env.d.ts
 
 # allow the env template
 !.env.example
+
+# Stray screenshots from local browser test runs
+/*.png
+
+# Browser test output (server log, traces, report)
+/e2e/.output/

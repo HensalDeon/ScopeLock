@@ -81,7 +81,11 @@ export function ChangeLinesEditor({
                 <div className="grid grid-cols-[minmax(0,1fr)_2.25rem] items-start gap-2 sm:grid-cols-[minmax(0,1fr)_9.5rem_2.25rem]">
                   <Input
                     aria-label={`Line ${index + 1}`}
-                    placeholder={index === 0 ? "Blog with categories" : "Work"}
+                    placeholder={
+                      index === 0
+                        ? "e.g. Blog with categories"
+                        : "What the work is"
+                    }
                     value={row.title}
                     maxLength={CHANGE_LIMITS.itemTitle}
                     onChange={(e) => {
@@ -128,7 +132,7 @@ export function ChangeLinesEditor({
                   <>
                     <Textarea
                       aria-label={`Note for line ${index + 1}`}
-                      placeholder="A sentence about this work"
+                      placeholder="e.g. A sentence about this work"
                       rows={2}
                       value={row.description}
                       maxLength={CHANGE_LIMITS.itemDescription}
@@ -149,7 +153,7 @@ export function ChangeLinesEditor({
                 ) : (
                   <button
                     type="button"
-                    className="mt-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                    className="mt-2 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
                     onClick={() => updateRow(row.key, { showNote: true })}
                   >
                     Add a note

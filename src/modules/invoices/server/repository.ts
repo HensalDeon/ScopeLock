@@ -84,6 +84,8 @@ type InvoiceDoc = WorkspaceOwned &
     status: InvoiceStatus;
     issuedAt: Date;
     snapshotHash: string;
+    /** When it became paid or cancelled (missing on older invoices). */
+    statusAt?: Date;
   };
 
 const invoices = (workspaceId: string) =>
@@ -96,6 +98,7 @@ function toInvoice(doc: InvoiceDoc): Invoice {
   return {
     ...doc,
     id: doc._id.toHexString(),
+    paidAt: doc.status === "paid" ? (doc.statusAt ?? doc.updatedAt) : null,
     projectId: doc.projectId.toHexString(),
     paymentId: doc.paymentId.toHexString(),
     subtotal: m(doc.subtotal),
@@ -134,7 +137,7 @@ export async function setInvoiceStatus(
 ): Promise<void> {
   await invoices(workspaceId).updateOne(
     { paymentId },
-    { $set: { status } },
+    { $set: { status, statusAt: new Date() } },
     { session },
   );
 }

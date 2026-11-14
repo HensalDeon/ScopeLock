@@ -93,7 +93,7 @@ export function ProjectMoneyStrip({
           </div>
         ))}
       </dl>
-      {step && (
+      {step && !ctx.readOnly && (
         <NextStepRow
           step={step}
           ctx={ctx}

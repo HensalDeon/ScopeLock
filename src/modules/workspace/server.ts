@@ -11,3 +11,5 @@ export {
   requireWorkspaceForWrite,
   type WorkspaceContext,
 } from "./server/context";
+// For jobs that run without a signed-in member (workspace given).
+export { getWorkspaceProfile } from "./server/repository";

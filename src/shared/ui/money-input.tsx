@@ -29,7 +29,6 @@ export function MoneyInput({
       </span>
       <Input
         inputMode="decimal"
-        placeholder="0"
         {...props}
         className={cn("text-right tabular-nums", className)}
         // Room for the symbol, however long it is ("₹" vs "AED").

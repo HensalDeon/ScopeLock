@@ -399,7 +399,7 @@ A near-monochrome ink-and-paper palette with two signal colours that are never u
 
 ## Layout
 
-A left sidebar (canvas grey) holds the workspace switcher and four destinations; the main column is white with a centred content container. Pages open with a title row (title left, the one primary action right), then stacked sections separated by space rather than boxes.
+A left sidebar (canvas grey) holds the workspace switcher and five destinations (Overview, Projects, Clients, Reports, Settings); the main column is white with a centred content container. Pages open with a title row (title left, the one primary action right), then stacked sections separated by space rather than boxes.
 
 Detail pages use a two-column grid on desktop: the working column (scope, payments, change requests, activity) and an 18rem side column (share panel, client card). On phones the side column's main action moves to the top and everything stacks. Forms use a label column (about 14–15rem) beside the fields on desktop, stacking on phones. Client documents are capped at A4 width (210mm) and centred.
 
@@ -432,7 +432,7 @@ Gently rounded and consistent. Controls (buttons, inputs, selects) use an 8px ra
 
 Precise and restrained: compact, crisp, one clear next step.
 
-- **Shape:** gently rounded (8px), 32px tall (28px small, 24px extra-small), 14px medium text. On phones, actions in rows and side cards grow to 44px tall to tap (`TOUCH`, `TOUCH_LINK`).
+- **Shape:** gently rounded (8px), 32px tall (28px small, 24px extra-small), 14px medium text. On phones every button size is at least 44px to tap (built into the Button; `TOUCH` and `TOUCH_LINK` for links and custom controls).
 - **Primary:** ink navy fill, white text; at most one per view, for the next step ("Send for approval", "Ask for ₹33,984").
 - **Hover / Focus:** primary lightens to 80% ink; focus shows a 3px emerald ring at 50% plus an emerald border; pressing nudges the button down 1px.
 - **Outline:** white with a hairline border, quiet fill on hover; the default for secondary actions ("Ask for payment", "+ Add a line").
@@ -463,12 +463,12 @@ The signature container: a white panel with a hairline border and 11px corners, 
 ### Navigation
 
 - **Style:** canvas-grey sidebar; 32px items with 14px text and a 16px line icon, 6px corners; the active item sits on selected fill in ink medium with an emerald icon (the mark's echo), others in muted slate with a selected-fill hover.
-- **Settings tabs:** text tabs on a hairline with a 2px ink underline for the active tab, scrolling sideways on narrow screens.
+- **Settings tabs:** text tabs on a hairline with a 2px ink underline for the active tab. Phones: a two-column grid of 44px rows (a sideways strip hid the later tabs).
 - **Mobile:** the sidebar becomes a sheet from the left.
 
 ### Money strip
 
-Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Approved work, Received, Due now, Awaiting approval. At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in"). The strip is the only place that step's button appears; the payment's own row keeps its details and points up ("Next step, at the top of the page").
+Four figure cells, each a mono label, a large tabular figure and a one-line caption that says what the number means. A cell turns waiting ink only when there is money waiting. On the overview: Received, Due now, Still to ask for, Total (with GST when any), with a "Revenue recovered" strip under it: approved change requests this month and all time, and how much of it is received, in emerald figures on a faint settled wash (the one place emerald marks money recovered). Before anything is approved it is neutral (white, grey dot). On phones its figures become ledger rows (label left, amount right, count under it). At the top of an approved project's page: Received, Due now, Still to ask for, Total (with GST when there is any), followed by a canvas-grey row with the project's one next step (confirm a payment the client reported, wait on a request that's out, ask for the next payment, or "Every payment is in"). The strip is the only place that step's button appears; the payment's own row keeps its details and points up ("Next step, at the top of the page").
 
 ### Thread log (landing page)
 

@@ -27,12 +27,16 @@ export async function listProjects(
   page: number,
   /** From parseSearch: the project's name or its client's. */
   search: string | null = null,
+  archived = false,
 ): Promise<Page<ProjectWithClient>> {
   const { workspace } = await requireWorkspace();
   const ws = workspace.workspaceId;
-  const filter = search
-    ? { search: { text: search, clientIds: await searchClientIds(search) } }
-    : {};
+  const filter = {
+    archived,
+    ...(search
+      ? { search: { text: search, clientIds: await searchClientIds(search) } }
+      : {}),
+  };
   const result = await paginate(
     page,
     () => repo.countProjects(ws, filter),
@@ -57,6 +61,18 @@ export async function listProjectsForClient(
   );
 }
 
+/** Projects that could be archived now (for a full plan's notice). */
+export async function listArchivable(): ReturnType<typeof repo.findArchivable> {
+  const { workspace } = await requireWorkspace();
+  return repo.findArchivable(workspace.workspaceId);
+}
+
+/** Archived projects (for the "Archived (3)" link). */
+export async function countArchivedProjects(): Promise<number> {
+  const { workspace } = await requireWorkspace();
+  return repo.countProjects(workspace.workspaceId, { archived: true });
+}
+
 export async function countProjects(): Promise<number> {
   const { workspace } = await requireWorkspace();
   return repo.countProjects(workspace.workspaceId);
@@ -69,10 +85,10 @@ export async function countProjectsByClient(): Promise<Map<string, number>> {
 }
 
 export type ProjectSummaryWithClient = repo.ProjectSummary & {
-  client: Pick<Client, "name" | "phone"> | null;
+  client: Pick<Client, "name" | "phone" | "email"> | null;
 };
 
-/** Light rows for every live project, with client name and phone (overview). */
+/** Light rows for every live project, with client name, phone and email (overview). */
 export async function listProjectSummaries(): Promise<
   ProjectSummaryWithClient[]
 > {
@@ -85,7 +101,9 @@ export async function listProjectSummaries(): Promise<
     const client = clients.get(r.clientId);
     return {
       ...r,
-      client: client ? { name: client.name, phone: client.phone } : null,
+      client: client
+        ? { name: client.name, phone: client.phone, email: client.email }
+        : null,
     };
   });
 }

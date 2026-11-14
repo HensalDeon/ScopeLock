@@ -1,16 +1,22 @@
-import { PLANS } from "@/modules/billing";
+import type { Plan } from "@/modules/billing";
 import { formatINR } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { DISPLAY } from "./primitives";
 
 /**
  * The plans as a rate card: one ruled row per plan, the monthly price in the
- * figure column. Paid prices are planned (pricing opens at launch).
+ * figure column. Plans and prices come from the admin page (getPlans());
+ * paid prices are planned until paid plans open.
  */
 export function RateCard({
+  plans,
   className,
-  planHeading: Plan = "h3",
+  planHeading: Heading = "h3",
+  paidOpen = false,
 }: {
+  /** Paid plans can be bought: prices are real, not "planned". */
+  paidOpen?: boolean;
+  plans: readonly Plan[];
   className?: string;
   /** "h2" when the card sits right under the page's h1 (/pricing). */
   planHeading?: "h2" | "h3";
@@ -26,23 +32,23 @@ export function RateCard({
         <span className="text-right">Per month</span>
       </div>
       <ul aria-label="Plans">
-        {PLANS.map((plan) => (
+        {plans.map((plan) => (
           <li
             key={plan.id}
             className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-3 border-b py-6 md:grid-cols-[13rem_minmax(0,1fr)_11rem]"
           >
             <div className="grid content-start gap-1">
-              <Plan
+              <Heading
                 className={`${DISPLAY} text-[26px] leading-none font-semibold`}
               >
                 {plan.name}
-              </Plan>
+              </Heading>
               <p className="text-[14px] text-pretty text-muted-foreground">
                 {plan.summary}
               </p>
             </div>
             <ul className="col-span-full row-start-2 flex flex-wrap gap-x-5 gap-y-1.5 text-[15px] md:col-span-1 md:col-start-2 md:row-start-1 md:pt-1">
-              {plan.features.map((f) => (
+              {plan.highlights.map((f) => (
                 <li key={f.label} className="flex items-center gap-2">
                   <span
                     aria-hidden
@@ -62,7 +68,11 @@ export function RateCard({
                 {formatINR(plan.monthlyPrice)}
               </span>
               <span className="mt-1.5 block text-[13px] text-muted-foreground">
-                {plan.monthlyPrice === 0 ? "for 2 active projects" : "planned"}
+                {plan.monthlyPrice === 0
+                  ? `for ${plan.activeProjects} active project${plan.activeProjects === 1 ? "" : "s"}`
+                  : paidOpen
+                    ? "a month"
+                    : "planned"}
               </span>
             </p>
           </li>

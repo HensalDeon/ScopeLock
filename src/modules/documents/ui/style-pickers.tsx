@@ -5,7 +5,7 @@ import { cn } from "@/shared/lib/utils";
 import { FieldError, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import { accentNeedsDarkening, ACCENT_PRESETS } from "../domain/style";
-import { isHex } from "../domain/color";
+import { isHex, readableShade } from "../domain/color";
 import type { DocumentStyle } from "../domain/style";
 
 /** Accent colour: presets, a colour picker and a hex field. */
@@ -46,7 +46,7 @@ export function AccentPicker({
               title={preset.label}
               onClick={() => onChange(preset.hex)}
               className={cn(
-                "flex size-9 items-center justify-center rounded-full ring-offset-2 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex size-9 items-center justify-center rounded-full ring-offset-2 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring max-sm:size-11",
                 selected && "ring-2 ring-foreground",
               )}
               style={{ background: preset.hex }}
@@ -67,7 +67,7 @@ export function AccentPicker({
           type="color"
           value={shown}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 w-11 cursor-pointer rounded-md border bg-background p-1"
+          className="h-9 w-11 cursor-pointer rounded-md border bg-background p-1 max-sm:h-11"
         />
         <FieldLabel htmlFor={`${uid}-hex`} className="sr-only">
           Colour code
@@ -77,19 +77,35 @@ export function AccentPicker({
           value={value}
           maxLength={7}
           spellCheck={false}
-          onChange={(e) => onChange(e.target.value.trim())}
+          onChange={(e) => {
+            // "1E3A8A" pasted without the # is the same colour.
+            const typed = e.target.value.trim();
+            onChange(/^[0-9a-f]{6}$/i.test(typed) ? `#${typed}` : typed);
+          }}
           onBlur={onBlur}
           aria-invalid={Boolean(error) || undefined}
-          className="h-9 w-28 font-mono text-sm uppercase"
+          aria-describedby={error ? `${uid}-hex-error` : undefined}
+          className="h-9 w-28 font-mono text-sm uppercase max-sm:h-11"
         />
       </div>
-      {error && <FieldError>{error}</FieldError>}
-      {isHex(value) && accentNeedsDarkening(value) && (
-        <p className="text-sm text-muted-foreground">
-          This colour is light, so a slightly darker shade of it is used for
-          text to keep it readable.
-        </p>
-      )}
+      {error && <FieldError id={`${uid}-hex-error`}>{error}</FieldError>}
+      {/* Only for a colour they chose: the presets are already balanced. */}
+      {isHex(value) &&
+        accentNeedsDarkening(value) &&
+        !ACCENT_PRESETS.some((p) => p.hex === value) && (
+          <p className="text-sm text-pretty text-muted-foreground">
+            <span
+              aria-hidden
+              className="mr-1.5 inline-block size-3 rounded-sm border align-[-1px]"
+              style={{ background: readableShade(value, "#ffffff") }}
+            />
+            Text on white uses a darker shade (
+            <span className="font-mono uppercase">
+              {readableShade(value, "#ffffff")}
+            </span>
+            ) so it stays readable.
+          </p>
+        )}
     </fieldset>
   );
 }

@@ -14,12 +14,14 @@ export function Cover({
   images,
   headingFont,
   titleAs: Title,
+  draft = false,
 }: {
   data: ProposalDocumentData;
   style: DocumentStyle;
   images: DocumentImages;
   headingFont: string;
   titleAs: "h1" | "h2";
+  draft?: boolean;
 }) {
   // The photo sits under a dark layer so text stays readable even on a very
   // bright photo (a pure white image ends up around #525254: white text
@@ -126,8 +128,12 @@ export function Cover({
           {data.business.email && <em>{data.business.email}</em>}
           {data.business.phone && <em>{formatPhone(data.business.phone)}</em>}
         </CoverItem>
-        <CoverItem label="Issued">
-          <strong>{formatDate(data.issuedOn, { withYear: true })}</strong>
+        <CoverItem label={draft ? "Draft" : "Issued"}>
+          <strong>
+            {draft
+              ? "Not sent yet"
+              : formatDate(data.issuedOn, { withYear: true })}
+          </strong>
           {data.validUntil && (
             <>
               <span className="mt-3 block text-[11px] tracking-[0.2em] text-(--doc-cover-label) uppercase">

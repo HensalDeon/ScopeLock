@@ -32,8 +32,15 @@ export function EmptyState({
 }
 
 /** Placeholder rows with the same shape as a list, while it streams in. */
-export function ListSkeleton({ rows = 3 }: { rows?: number }) {
-  return (
+export function ListSkeleton({
+  rows = 3,
+  search = false,
+}: {
+  rows?: number;
+  /** The list has a search box above it: hold its place. */
+  search?: boolean;
+}) {
+  const list = (
     <div aria-hidden className="divide-y rounded-xl border bg-background">
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} className="flex items-center gap-4 px-5 py-4">
@@ -45,5 +52,13 @@ export function ListSkeleton({ rows = 3 }: { rows?: number }) {
         </div>
       ))}
     </div>
+  );
+  return search ? (
+    <div aria-hidden className="grid gap-4">
+      <div className="h-8 rounded-lg border bg-background max-sm:h-11" />
+      {list}
+    </div>
+  ) : (
+    list
   );
 }

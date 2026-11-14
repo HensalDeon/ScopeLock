@@ -117,7 +117,8 @@ const text = (max: number) =>
     .max(max, `Keep it under ${max} characters.`)
     .transform((v) => v || null);
 
-const VPA = /^[a-zA-Z0-9._-]{2,256}@[a-zA-Z][a-zA-Z0-9.-]{1,63}$/;
+/** A UPI ID: name@bank. */
+export const VPA = /^[a-zA-Z0-9._-]{2,256}@[a-zA-Z][a-zA-Z0-9.-]{1,63}$/;
 const IFSC = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 const SWIFT = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
 const IBAN = /^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/;

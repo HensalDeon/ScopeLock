@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, Settings2 } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSignOut } from "@/modules/account";
 import {
@@ -16,10 +16,13 @@ export function UserMenu({
   name,
   email,
   initials,
+  admin = false,
 }: {
   name: string;
   email: string;
   initials: string;
+  /** A platform admin: show the way to the admin pages. */
+  admin?: boolean;
 }) {
   const { signOut, pending } = useSignOut();
   return (
@@ -53,6 +56,14 @@ export function UserMenu({
             Settings
           </Link>
         </DropdownMenuItem>
+        {admin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/plans">
+              <ShieldCheck aria-hidden />
+              Admin
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem disabled={pending} onSelect={() => void signOut()}>
           <LogOut aria-hidden />
           {pending ? "Signing out…" : "Sign out"}

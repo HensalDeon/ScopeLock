@@ -46,8 +46,14 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
   [COLLECTIONS.changeRequests]: [
     // CR-001, CR-002… are unique within a project.
     { key: { workspaceId: 1, projectId: 1, number: 1 }, unique: true },
+    // The overview: open changes, and approved ones for "revenue recovered".
+    { key: { workspaceId: 1, status: 1, updatedAt: -1 } },
   ],
-  [COLLECTIONS.activity]: [{ key: { workspaceId: 1, projectId: 1, at: -1 } }],
+  [COLLECTIONS.activity]: [
+    { key: { workspaceId: 1, projectId: 1, at: -1 } },
+    // The overview: when each item was last reminded by email.
+    { key: { workspaceId: 1, type: 1, at: -1 } },
+  ],
   [COLLECTIONS.paymentSettings]: [{ key: { workspaceId: 1 }, unique: true }],
   [COLLECTIONS.payments]: [
     { key: { workspaceId: 1, projectId: 1, requestedAt: -1 } },
@@ -61,10 +67,20 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     },
     // The overview: payments still owed across the workspace.
     { key: { workspaceId: 1, status: 1, requestedAt: 1 } },
+    // The daily reminder run: which workspaces have a payment due.
+    {
+      key: { status: 1, requestedAt: 1 },
+      partialFilterExpression: { status: "due" },
+    },
   ],
   [COLLECTIONS.invoicingSettings]: [{ key: { workspaceId: 1 }, unique: true }],
   // Per-workspace sequences ("proposal": P-001, P-002…).
   [COLLECTIONS.counters]: [{ key: { workspaceId: 1, name: 1 }, unique: true }],
+  [COLLECTIONS.teamInvitations]: [
+    // The invite link is looked up by its hash only.
+    { key: { tokenHash: 1 }, unique: true },
+    { key: { workspaceId: 1, email: 1, createdAt: -1 } },
+  ],
   [COLLECTIONS.invoices]: [
     // Rule 46(b): a number is used once (it carries the financial year).
     { key: { workspaceId: 1, number: 1 }, unique: true },
@@ -93,6 +109,26 @@ export const INDEXES: Partial<Record<CollectionName, IndexDescription[]>> = {
     },
     { key: { workspaceId: 1, updatedAt: -1 } },
     { key: { workspaceId: 1, clientId: 1, updatedAt: -1 } },
+  ],
+  // Platform level: a plan's price history, newest first; the admin log.
+  [COLLECTIONS.planPrices]: [{ key: { planId: 1, createdAt: -1 } }],
+  // Webhooks map Razorpay's plan id back to ours.
+  [COLLECTIONS.razorpayPlans]: [{ key: { razorpayPlanId: 1 } }],
+  [COLLECTIONS.adminAudit]: [
+    { key: { at: -1 } },
+    { key: { action: 1, at: -1 } },
+    { key: { href: 1, at: -1 } },
+  ],
+  // One ScopeLock plan per workspace.
+  [COLLECTIONS.subscriptions]: [
+    { key: { workspaceId: 1 }, unique: true },
+    // Webhooks find the workspace by Razorpay's subscription id.
+    {
+      key: { "razorpay.subscriptionId": 1 },
+      partialFilterExpression: {
+        "razorpay.subscriptionId": { $type: "string" },
+      },
+    },
   ],
 };
 

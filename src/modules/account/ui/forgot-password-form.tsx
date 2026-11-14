@@ -21,6 +21,8 @@ import { authErrorMessage } from "../domain/auth-flow";
 import { crossAuthBoundary } from "./cross-auth-boundary";
 import { PasswordInput } from "./password-input";
 import { useResendTimer } from "./use-resend-timer";
+import { TOUCH_LINK } from "@/shared/ui/touch";
+import { AuthHeading } from "./auth-heading";
 
 /**
  * Two steps on one page: email → code + new password. On success the person
@@ -29,10 +31,20 @@ import { useResendTimer } from "./use-resend-timer";
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState<string | null>(null);
 
+  // Each step has its own heading, so step 2 never reads as step 1.
   return email ? (
-    <CodeStep email={email} onChangeEmail={() => setEmail(null)} />
+    <>
+      <AuthHeading title="Check your email" />
+      <CodeStep email={email} onChangeEmail={() => setEmail(null)} />
+    </>
   ) : (
-    <EmailStep onSent={setEmail} />
+    <>
+      <AuthHeading
+        title="Reset your password"
+        description="Enter the email you signed up with. We'll send a 6‑digit code so you can choose a new password."
+      />
+      <EmailStep onSent={setEmail} />
+    </>
   );
 }
 
@@ -194,7 +206,7 @@ function CodeStep({
             type="button"
             onClick={resend}
             disabled={resending || timer.secondsLeft > 0}
-            className="text-muted-foreground tabular-nums underline-offset-4 hover:text-foreground hover:underline disabled:pointer-events-none"
+            className={`text-muted-foreground tabular-nums underline-offset-4 hover:text-foreground hover:underline disabled:pointer-events-none ${TOUCH_LINK}`}
           >
             {resending
               ? "Sending…"
@@ -205,7 +217,7 @@ function CodeStep({
           <button
             type="button"
             onClick={onChangeEmail}
-            className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className={`text-muted-foreground underline-offset-4 hover:text-foreground hover:underline ${TOUCH_LINK}`}
           >
             Use a different email
           </button>

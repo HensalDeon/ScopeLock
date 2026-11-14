@@ -9,6 +9,8 @@ export type SetupStep = {
   detail: string;
   done: boolean;
   href?: string;
+  /** The button when it's the next step ("Add a client"). */
+  action?: string;
 };
 
 export function setupSteps(input: {
@@ -38,22 +40,7 @@ export function setupSteps(input: {
       detail: "Their name, company and WhatsApp number.",
       done: input.clientCount > 0,
       href: "/clients/new",
-    },
-    {
-      title: "Add how you get paid",
-      short: "how you get paid",
-      detail:
-        "UPI ID, bank account or a payment link, so clients know where to pay.",
-      done: input.paymentsReady,
-      href: "/settings/payments",
-    },
-    {
-      title: "Add your invoice details",
-      short: "invoice details",
-      detail:
-        "Your legal name and address, and your GSTIN if you're registered for GST. Do it before your first invoice: issued invoices can't be changed.",
-      done: input.invoicingReady,
-      href: "/settings/invoicing",
+      action: "Add a client",
     },
     {
       title: "Write down a project's scope",
@@ -61,6 +48,7 @@ export function setupSteps(input: {
       detail: "List what's included, the price, and how the client pays.",
       done: projects.length > 0,
       href: "/projects/new",
+      action: "Start a project",
     },
     {
       title: "Get the scope approved",
@@ -70,12 +58,31 @@ export function setupSteps(input: {
       done: Boolean(approved),
     },
     {
+      title: "Add how you get paid",
+      short: "how you get paid",
+      detail:
+        "UPI ID, bank account or a payment link: needed before you ask for your first payment.",
+      done: input.paymentsReady,
+      href: "/settings/payments",
+      action: "Add payment details",
+    },
+    {
+      title: "Add your invoice details",
+      short: "invoice details",
+      detail:
+        "Your legal name and address, and your GSTIN if you're registered for GST. Do it before your first invoice: issued invoices can't be changed.",
+      done: input.invoicingReady,
+      href: "/settings/invoicing",
+      action: "Add invoice details",
+    },
+    {
       title: "Log extra requests as they come in",
       short: "your first change request",
       detail:
         "Each one becomes a priced change request your client approves before you start.",
       done: projects.some((p) => p.changeCount > 0),
       href: approved ? `/projects/${approved.id}/changes/new` : undefined,
+      action: "Log a change request",
     },
   ];
 }

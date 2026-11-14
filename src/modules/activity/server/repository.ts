@@ -124,3 +124,24 @@ export async function findDeletedChanges(
     docs.map((d) => `${d.projectId.toHexString()}:${d.data.label ?? ""}`),
   );
 }
+
+/**
+ * When each item was last reminded by email since `since` (reminder key →
+ * time), so the overview can say "Emailed today" and hold off a second one.
+ */
+export async function findLastReminders(
+  workspaceId: string,
+  since: Date,
+): Promise<Map<string, Date>> {
+  const docs = await activity(workspaceId)
+    .find(
+      // Yours and ScopeLock's automatic ones: never two in a day.
+      {
+        type: { $in: ["reminder.emailed", "reminder.auto_emailed"] },
+        at: { $gte: since },
+      },
+      { sort: { at: 1 }, projection: { at: 1, data: 1 } },
+    )
+    .toArray();
+  return new Map(docs.map((d) => [d.data.label ?? "", d.at]));
+}

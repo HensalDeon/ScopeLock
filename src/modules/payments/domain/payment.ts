@@ -58,6 +58,10 @@ export type Payment = {
   } | null;
   /** Why the freelancer said "not received" last time, if they did. */
   lastRejection: { note: string; at: Date } | null;
+  /** When it last became due: asked for, or marked "not received". */
+  dueSince: Date;
+  /** Automatic reminders sent (oldest first), and whether they're paused. */
+  autoReminders: { sent: Date[]; paused: boolean; pausedUntil: Date | null };
 };
 
 /** Requested and not cancelled: the slot is taken. */

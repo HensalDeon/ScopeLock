@@ -213,6 +213,8 @@ export type Invoice = InvoiceSnapshot & {
   paymentId: string;
   status: InvoiceStatus;
   issuedAt: Date;
+  /** When the payment was received (paid invoices only). */
+  paidAt: Date | null;
   /** sha256 of the snapshot as issued, to show it hasn't changed. */
   snapshotHash: string;
 };

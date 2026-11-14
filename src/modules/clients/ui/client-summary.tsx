@@ -1,6 +1,5 @@
 import { gstOutcome, type InvoicingSettings } from "@/modules/invoices";
 import { gstinState, isIndia, stateName } from "@/shared/lib/india";
-import { formatPhone } from "@/shared/lib/phone";
 import { clientFirstName, type Client } from "../domain/client";
 
 /** The client's contact and billing details, read-only, as a ledger. */
@@ -18,8 +17,9 @@ export function ClientSummary({
     (client.gstin && gstinState(client.gstin)) || client.state || "",
   );
   const rows: [string, string][] = [
-    ["Phone", client.phone ? formatPhone(client.phone) : "Not added"],
-    ["Email", client.email ?? "Not added"],
+    // Phone and email sit under the client's name; here only when missing.
+    ...(client.phone ? [] : ([["Phone", "Not added"]] as [string, string][])),
+    ...(client.email ? [] : ([["Email", "Not added"]] as [string, string][])),
     ["Bills in", client.currency ?? `Your default (${defaultCurrency})`],
     [
       "Billed to",

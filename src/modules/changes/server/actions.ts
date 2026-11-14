@@ -7,11 +7,13 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { logActivity } from "@/modules/activity/server";
 import {
+  claimActiveProject,
   findProjectWithClient,
   getShareState,
   nextChangeNumber,
   type ProjectWithClient,
 } from "@/modules/projects/server";
+import { ARCHIVED_READ_ONLY } from "@/modules/projects";
 import {
   workspaceAction,
   type WorkspaceContext,
@@ -51,6 +53,7 @@ const NOT_ACTIVE =
 async function activeProject(projectId: ObjectId): Promise<ProjectWithClient> {
   const project = await findProjectWithClient(projectId.toHexString());
   if (!project) throw new UserError("This project doesn't exist any more.");
+  if (project.archivedAt) throw new UserError(ARCHIVED_READ_ONLY);
   if (project.status !== "active") throw new UserError(NOT_ACTIVE);
   return project;
 }
@@ -209,6 +212,9 @@ export const sendChange = workspaceAction(
         "This change request was already sent. Refresh the page.",
       );
     }
+    // Archived meanwhile (another tab): nothing is sent.
+    if (!(await claimActiveProject(ws, projectId)))
+      throw new UserError(ARCHIVED_READ_ONLY);
     const now = new Date();
     const sent = await repo.markChangeSent(ws, doc._id, {
       data: changeOrderData(project, doc, context, {

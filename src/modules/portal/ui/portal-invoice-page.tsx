@@ -52,7 +52,7 @@ export async function PortalInvoicePage({
             Pay {formatMoney(invoice.total, invoice.currency)}
           </Link>
         )}
-        <PrintButton variant="outline" />
+        <PrintButton variant="outline" iconOnPhones />
       </PortalHeader>
       <PrintSetup
         footer={`${invoice.seller.company ?? invoice.seller.name} · ${invoice.title} ${invoice.number}`}
@@ -62,12 +62,13 @@ export async function PortalInvoicePage({
           invoice={invoice}
           replacedBy={view.replacedBy}
           status={invoice.status}
+          paidOn={invoice.paidAt}
           logoUrl={view.logoUrl}
           accent={view.accent}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"
         />
       </main>
-      <Footer />
+      <Footer branded={view.branded} />
     </>
   );
 }

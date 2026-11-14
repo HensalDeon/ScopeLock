@@ -25,6 +25,7 @@ import {
   clientSeesLine,
   METHOD_LABELS,
   methodsInputSchema,
+  VPA,
   type MethodField,
   type MethodKind,
 } from "../domain/methods";
@@ -94,7 +95,10 @@ export function PaymentMethodsForm({
 
   // Which methods are filled in (the default must be one of them).
   const filled: MethodKind[] = [
-    ...(values.upiVpa && values.upiPayee ? (["upi"] as const) : []),
+    // Only a UPI ID that looks right is repeated back as what clients see.
+    ...(values.upiVpa && values.upiPayee && VPA.test(values.upiVpa.trim())
+      ? (["upi"] as const)
+      : []),
     ...(values.bankAccountName && values.bankAccountNumber
       ? (["bank"] as const)
       : []),
@@ -139,7 +143,9 @@ export function PaymentMethodsForm({
         description="Clients paying in rupees scan a QR with the amount filled in, or tap to open their UPI app."
       >
         <div className="grid gap-5 sm:grid-cols-2">
-          {row("upiVpa", "UPI ID", undefined, { placeholder: "asha@okhdfc" })}
+          {row("upiVpa", "UPI ID", undefined, {
+            placeholder: "e.g. asha@okhdfc",
+          })}
           {row(
             "upiPayee",
             "Name on UPI",
@@ -156,8 +162,12 @@ export function PaymentMethodsForm({
           {row("bankAccountNumber", "Account number", undefined, {
             inputMode: "numeric",
           })}
-          {row("bankIfsc", "IFSC", undefined, { placeholder: "HDFC0001234" })}
-          {row("bankName", "Bank", undefined, { placeholder: "HDFC Bank" })}
+          {row("bankIfsc", "IFSC", undefined, {
+            placeholder: "e.g. HDFC0001234",
+          })}
+          {row("bankName", "Bank", undefined, {
+            placeholder: "e.g. HDFC Bank",
+          })}
           {row("bankBranch", "Branch (optional)")}
           {row(
             "bankSwift",
@@ -169,10 +179,12 @@ export function PaymentMethodsForm({
       </Section>
       <Section
         title="Payment link"
-        description="A Razorpay, PayPal, Wise or Stripe link. Works for any currency."
+        description="A Razorpay, PayPal, Wise or Stripe link. PayPal, Wise and Stripe take other currencies; a Razorpay link takes rupees unless international payments are on."
       >
         <div className="grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)]">
-          {row("linkLabel", "Name", undefined, { placeholder: "Razorpay" })}
+          {row("linkLabel", "Name", undefined, {
+            placeholder: "e.g. Razorpay",
+          })}
           {row("linkUrl", "Link", undefined, {
             placeholder: "https://rzp.io/l/your-page",
           })}
@@ -197,7 +209,7 @@ export function PaymentMethodsForm({
             alt="Your payment QR code"
           />
           {row("qrLabel", "Caption", "Shown above the QR.", {
-            placeholder: "Scan with GPay",
+            placeholder: "e.g. Scan with GPay",
           })}
         </div>
       </Section>

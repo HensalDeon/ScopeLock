@@ -6,6 +6,8 @@ import { formatMoney, type Minor } from "@/shared/lib/money";
 import { cn } from "@/shared/lib/utils";
 import { TOUCH_LINK } from "@/shared/ui/touch";
 import type { ScheduleItem } from "../domain/payment";
+import type { AutoRemindersContext } from "../server/project-money";
+import { AutoReminderLine } from "./auto-reminder-line";
 import { PaymentActions } from "./payment-actions";
 import { PaymentStateBadge } from "./payment-state-badge";
 
@@ -30,6 +32,12 @@ export type ScheduleRowContext = {
   methodsReady?: boolean;
   /** How this client can pay, in words ("UPI or bank transfer"). */
   payBy?: string;
+  /** Archived project: show the payments, offer no actions. */
+  readOnly?: boolean;
+  /** Automatic reminders (Pro, Agency), and the client's page for an email. */
+  autoReminders?: AutoRemindersContext & { clientHref: string | null };
+  /** When the page was read. */
+  now?: Date;
 };
 
 /**
@@ -104,37 +112,45 @@ export function ScheduleRow({
           {money(item.payable)}
         </p>
       </div>
-      <div className="pl-[2.5rem]">
-        {actedAbove === "waiting" ? (
-          // The strip sends the reminder; the row keeps the bookkeeping.
-          <div className="grid gap-1">
-            <a
-              href={`#money-${ctx.projectId}`}
-              className={cn(
-                "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
-                TOUCH_LINK,
-              )}
-            >
-              Its pay link is at the top of the page
-            </a>
-            <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
-          </div>
-        ) : actedAbove ? (
-          <div className="grid gap-1">
-            <a
-              href={`#money-${ctx.projectId}`}
-              className={cn(
-                "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
-                TOUCH_LINK,
-              )}
-            >
-              Next step, at the top of the page
-            </a>
-          </div>
-        ) : (
-          <PaymentActions {...paymentActionProps(item, ctx)} />
-        )}
-      </div>
+      {!ctx.readOnly && (
+        <div className="pl-[2.5rem]">
+          {actedAbove === "waiting" ? (
+            // The strip sends the reminder; the row keeps the bookkeeping.
+            <div className="grid gap-1">
+              <a
+                href={`#money-${ctx.projectId}`}
+                className={cn(
+                  "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+                  TOUCH_LINK,
+                )}
+              >
+                Its pay link is at the top of the page
+              </a>
+              <PaymentActions {...paymentActionProps(item, ctx)} share={null} />
+            </div>
+          ) : actedAbove ? (
+            <div className="grid gap-1">
+              <a
+                href={`#money-${ctx.projectId}`}
+                className={cn(
+                  "text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+                  TOUCH_LINK,
+                )}
+              >
+                Next step, at the top of the page
+              </a>
+            </div>
+          ) : (
+            <PaymentActions {...paymentActionProps(item, ctx)} />
+          )}
+        </div>
+      )}
+      {/* The money strip shows it for the payment it's waiting on. */}
+      {item.payment && actedAbove !== "waiting" && (
+        <div className="pl-[2.5rem]">
+          <AutoReminderLine payment={item.payment} ctx={ctx} />
+        </div>
+      )}
     </li>
   );
 }

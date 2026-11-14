@@ -5,6 +5,7 @@ import type { ClientSession, ObjectId } from "mongodb";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 import { minor } from "@/shared/lib/money";
 import { containsPattern } from "@/shared/lib/search";
+import { archivableState, type ArchivableState } from "../domain/archive";
 import type { Project } from "../domain/project";
 
 import {
@@ -18,12 +19,20 @@ export type { PortalLink, ProjectData, SentProposal } from "./project-docs";
 
 type ProjectFilter = {
   clientId?: ObjectId;
+  /** Archived projects only (default: the active ones). */
+  archived?: boolean;
   /** Project name contains it, or the project is for one of `clientIds`. */
   search?: { text: string; clientIds: ObjectId[] } | null;
 };
 
-function projectQuery({ clientId, search }: ProjectFilter) {
-  const base = clientId ? { clientId } : {};
+function projectQuery({ clientId, archived, search }: ProjectFilter) {
+  const base = {
+    ...(clientId ? { clientId } : {}),
+    // A client's page lists all their projects; the projects list splits.
+    ...(archived === undefined
+      ? {}
+      : { archivedAt: archived ? { $ne: null } : null }),
+  };
   if (!search) return base;
   return {
     ...base,
@@ -68,16 +77,23 @@ export type ProjectSummary = Pick<
   | "lastDecision"
   | "updatedAt"
   | "changeCount"
-> & { baselineTotal: Project["baseline"]["total"] };
+> & {
+  baselineTotal: Project["baseline"]["total"];
+  /** Archived: still in the money totals, never asked to act on. */
+  archived: boolean;
+};
 
 export async function findProjectSummaries(
   workspaceId: string,
 ): Promise<ProjectSummary[]> {
   const docs = await projects(workspaceId)
     .find(
-      { status: { $ne: "archived" } },
+      // Archived projects keep their money in the totals (archiving only
+      // frees a place on the plan); an archived draft has no money to show.
+      { $or: [{ archivedAt: null }, { status: { $ne: "draft" } }] },
       {
         projection: {
+          archivedAt: 1,
           name: 1,
           status: 1,
           currency: 1,
@@ -101,6 +117,7 @@ export async function findProjectSummaries(
     currency: doc.currency ?? DEFAULT_CURRENCY,
     clientId: doc.clientId.toHexString(),
     baselineTotal: minor(doc.baseline.total),
+    archived: Boolean(doc.archivedAt),
     totals: {
       baseline: minor(doc.totals.baseline),
       approvedChanges: minor(doc.totals.approvedChanges),
@@ -133,6 +150,13 @@ export async function countProjects(
   filter: ProjectFilter = {},
 ): Promise<number> {
   return projects(workspaceId).countDocuments(projectQuery(filter));
+}
+
+/** Projects that count towards the plan's limit: anything not archived. */
+export async function countActiveProjects(
+  workspaceId: string,
+): Promise<number> {
+  return projects(workspaceId).countDocuments({ archivedAt: null });
 }
 
 /** How many projects each client has (for the clients list). */
@@ -236,16 +260,94 @@ export async function setChangeTotals(
   );
 }
 
+/**
+ * Holds the project as not archived for a write that's about to ask the
+ * client for something (a payment, a change request). Inside a transaction
+ * it also blocks an archive racing it. False if it's archived (or gone).
+ */
+export async function claimActiveProject(
+  workspaceId: string,
+  id: ObjectId,
+  session?: ClientSession,
+): Promise<boolean> {
+  const r = await projects(workspaceId).updateOne(
+    { _id: id, archivedAt: null },
+    { $set: { archivedAt: null } },
+    { session },
+  );
+  return r.matchedCount === 1;
+}
+
+/** Not archived, and nothing waits on the client (as archiveBlocker). */
+const ARCHIVABLE = {
+  archivedAt: null,
+  status: { $ne: "awaiting_approval" as const },
+  "totals.pendingChanges": 0,
+  "totals.due": 0,
+};
+
+/** Projects that could be archived right now, least recently touched first. */
+export async function findArchivable(
+  workspaceId: string,
+  limit = 6,
+): Promise<
+  (Pick<Project, "id" | "name" | "status" | "currency" | "totals"> & {
+    state: ArchivableState;
+  })[]
+> {
+  const docs = await projects(workspaceId)
+    .find(ARCHIVABLE, { sort: { updatedAt: 1 }, limit: 50 })
+    .toArray();
+  const order = { paid: 0, draft: 1, to_ask: 2 } as const;
+  return docs
+    .map(toProject)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      status: p.status,
+      currency: p.currency,
+      totals: p.totals,
+      state: archivableState(p),
+    }))
+    .sort((a, b) => order[a.state.kind] - order[b.state.kind])
+    .slice(0, limit);
+}
+
+/**
+ * Archive or restore. Archiving only matches while nothing waits on the
+ * client (checked again here, so a proposal or request sent meanwhile wins).
+ * Returns false if the project is gone or no longer qualifies.
+ */
+export async function setProjectArchived(
+  workspaceId: string,
+  id: ObjectId,
+  archived: boolean,
+): Promise<boolean> {
+  const result = await projects(workspaceId).updateOne(
+    archived
+      ? { _id: id, ...ARCHIVABLE }
+      : { _id: id, archivedAt: { $ne: null } },
+    { $set: { archivedAt: archived ? new Date() : null } },
+  );
+  return result.matchedCount === 1;
+}
+
 /** Keeps the project's received / owed totals in step with its payments. */
 export async function setPaymentTotals(
   workspaceId: string,
   id: ObjectId,
-  totals: { paid: number; due: number },
+  totals: { paid: number; due: number; closedKeys?: string[] },
   session?: ClientSession,
 ): Promise<void> {
   await projects(workspaceId).updateOne(
     { _id: id },
-    { $set: { "totals.paid": totals.paid, "totals.due": totals.due } },
+    {
+      $set: {
+        "totals.paid": totals.paid,
+        "totals.due": totals.due,
+        ...(totals.closedKeys ? { closedPaymentKeys: totals.closedKeys } : {}),
+      },
+    },
     { session },
   );
 }

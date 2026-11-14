@@ -32,6 +32,7 @@ import type {
 import {
   getDocumentImages,
   getPortalDocumentSettings,
+  isBranded,
   gstChangeNote,
 } from "@/modules/documents/server";
 import type { Invoice } from "@/modules/invoices";
@@ -94,7 +95,12 @@ async function openPortalUncached(token: string): Promise<Opened | "limited"> {
 
 async function look(workspaceId: string) {
   const settings = await getPortalDocumentSettings(workspaceId);
-  return { style: settings.style, images: await getDocumentImages(settings) };
+  return {
+    style: settings.style,
+    images: await getDocumentImages(settings),
+    /** Pro/Agency: their logo, and no "Sent with ScopeLock". */
+    branded: settings.branded,
+  };
 }
 
 export type PortalView =
@@ -114,6 +120,7 @@ export type PortalView =
       payments: PaymentSchedule | null;
       /** Approved, but GST now differs from what the proposal showed. */
       gstNote: string | null;
+      branded: boolean;
     };
 
 async function loadPortalView(token: string): Promise<PortalView> {
@@ -122,14 +129,15 @@ async function loadPortalView(token: string): Promise<PortalView> {
   const { workspaceId, project, sent, projectId } = opened;
   const state = portalState(project, sent.sentAt);
   const clientId = parseObjectId(project.clientId);
-  const [{ style, images }, changeDocs, history, client] = await Promise.all([
-    look(workspaceId),
-    state === "approved" ? findChangeDocs(workspaceId, projectId) : [],
-    listClientHistory(workspaceId, projectId, sent.data.business.name),
-    state === "approved" && clientId
-      ? findClientInWorkspace(workspaceId, clientId)
-      : null,
-  ]);
+  const [{ style, images, branded }, changeDocs, history, client] =
+    await Promise.all([
+      look(workspaceId),
+      state === "approved" ? findChangeDocs(workspaceId, projectId) : [],
+      listClientHistory(workspaceId, projectId, sent.data.business.name),
+      state === "approved" && clientId
+        ? findClientInWorkspace(workspaceId, clientId)
+        : null,
+    ]);
   const changes = changeDocs.map(toChange);
   const payments =
     state === "approved"
@@ -140,6 +148,7 @@ async function loadPortalView(token: string): Promise<PortalView> {
     data: sent.data,
     style,
     images,
+    branded,
     sentAt: sent.sentAt,
     decision: project.lastDecision,
     changes: changes.filter((c) => c.everSent),
@@ -177,6 +186,7 @@ export type PortalChangeView =
       data: ChangeOrderData | null;
       style: DocumentStyle;
       images: DocumentImages;
+      branded: boolean;
       businessName: string;
       projectTitle: string;
     };
@@ -212,6 +222,7 @@ export type PortalPaymentView =
       reference: string;
       /** Its invoice is an export: no GST, zero-rated under LUT. */
       isExport: boolean;
+      branded: boolean;
     } & PortalPayment);
 
 /** One payment request on the portal: /c/[token]/pay/[id]. */
@@ -254,6 +265,7 @@ async function loadPortalPayment(
     : found;
   return {
     state: "ok",
+    branded: await isBranded(opened.workspaceId),
     isExport: invoice?.tax.kind === "export",
     businessName: opened.sent.data.business.name,
     projectTitle: opened.sent.data.title,
@@ -272,6 +284,7 @@ export type PortalInvoiceView =
       projectTitle: string;
       logoUrl: string | null;
       accent: string;
+      branded: boolean;
     };
 
 /** An invoice on the portal: /c/[token]/invoice/[id], this project's only. */
@@ -283,7 +296,7 @@ async function loadPortalInvoice(
   if (opened === "limited") return { state: "limited" };
   const id = parseObjectId(invoiceIdParam);
   if (!id) notFound();
-  const [invoice, { style, images }] = await Promise.all([
+  const [invoice, { style, images, branded }] = await Promise.all([
     findInvoice(opened.workspaceId, id, opened.projectId),
     look(opened.workspaceId),
   ]);
@@ -295,6 +308,7 @@ async function loadPortalInvoice(
     projectTitle: opened.sent.data.title,
     logoUrl: style.showLogo ? images.logoUrl : null,
     accent: style.accent,
+    branded,
   };
 }
 
@@ -368,7 +382,8 @@ export async function portalTitle(
 }
 
 export type PortalStatementView =
-  { state: "limited" } | { state: "ok"; statement: Statement; accent: string };
+  | { state: "limited" }
+  | { state: "ok"; statement: Statement; accent: string; branded: boolean };
 
 /** The project statement on the portal: /c/[token]/statement. */
 async function loadPortalStatement(
@@ -387,6 +402,7 @@ async function loadPortalStatement(
       asOf: new Date(),
     }),
     accent: view.style.accent,
+    branded: view.branded,
   };
 }
 

@@ -37,7 +37,16 @@ export function InvoicePayToBlock({ payTo }: { payTo: InvoicePayTo }) {
         {rows.map(([label, value]) => (
           <div key={label} className="contents">
             <dt className="text-[#6b6f78]">{label}</dt>
-            <dd className="font-mono break-all">{value}</dd>
+            {/* Codes and numbers in mono; names and words in text. */}
+            <dd
+              className={
+                /^(Account name|Bank|Name)$/.test(label)
+                  ? "break-words"
+                  : "font-mono break-all"
+              }
+            >
+              {value}
+            </dd>
           </div>
         ))}
       </dl>

@@ -24,6 +24,10 @@ export type FormState<Field extends string = string> =
       values?: Partial<Record<Field, string>>;
       /** Id of a created record, when the caller needs to link to it. */
       id?: string;
+      /** A link to pass on by hand (a team invite, for WhatsApp). */
+      link?: string;
+      /** The message that goes before that link. */
+      linkText?: string;
     };
 
 export const IDLE: FormState<never> = { status: "idle" };

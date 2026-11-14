@@ -6,8 +6,8 @@ import {
   sampleProposal,
 } from "@/modules/documents";
 import {
-  getDocumentImages,
   getDocumentSettings,
+  getEditorImages,
 } from "@/modules/documents/server";
 import { isStorageConfigured } from "@/shared/lib/env";
 import { BUSINESS_TYPE_LABELS } from "@/modules/workspace";
@@ -39,7 +39,8 @@ async function DocumentSettings() {
   // A full sample, so every section can be seen in the chosen style. It uses
   // the saved default text, so saving defaults below shows up here too.
   const preview = sampleProposal(business, voice, settings.defaults);
-  const images = await getDocumentImages(settings);
+  // The editor shows what's uploaded; the preview notes what clients see.
+  const images = await getEditorImages(settings);
 
   return (
     <div className="grid gap-12">
@@ -59,13 +60,14 @@ async function DocumentSettings() {
           preview={preview}
           images={images}
           uploadsEnabled={isStorageConfigured()}
+          branded={settings.branded}
         />
       </section>
 
       <div className="max-w-4xl">
         <Section
           title="Default text"
-          description="Pre-filled on every new project. You can change or clear it per project."
+          description="Pre-filled on new projects only; projects you've already started keep their own text. You can change or clear it per project."
         >
           <ProposalDefaultsForm initial={settings.defaults} />
         </Section>

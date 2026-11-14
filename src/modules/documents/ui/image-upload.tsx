@@ -12,6 +12,8 @@ export function ImageUpload({
   url,
   enabled,
   onChange,
+  savedText,
+  removedText,
 }: {
   kind: "logo" | "cover";
   label: string;
@@ -19,6 +21,9 @@ export function ImageUpload({
   url: string | null;
   enabled: boolean;
   onChange: (url: string | null) => void;
+  /** What's true for clients after an upload or removal. */
+  savedText: string;
+  removedText: string;
 }) {
   return (
     <ImageUploadField
@@ -44,6 +49,8 @@ export function ImageUpload({
           : "No cover image yet"
       }
       alt={kind === "logo" ? "Your logo" : "Your cover image"}
+      savedText={savedText}
+      removedText={removedText}
     />
   );
 }

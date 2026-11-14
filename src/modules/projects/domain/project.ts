@@ -9,7 +9,6 @@ export const PROJECT_STATUSES = [
   "awaiting_approval",
   "active",
   "completed",
-  "archived",
 ] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
@@ -18,7 +17,6 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   awaiting_approval: "Waiting for approval",
   active: "Scope approved",
   completed: "Completed",
-  archived: "Archived",
 };
 
 /** The client has approved the baseline (change requests can follow). */
@@ -113,6 +111,10 @@ export type Project = {
   /** How many change requests were ever created (CR numbers used). */
   changeCount: number;
   totals: ProjectTotals;
+  /** Archived: read-only and not counted towards the plan (null: active). */
+  archivedAt: Date | null;
+  /** Payments already asked for or received (milestone ids). */
+  closedPaymentKeys: string[];
   createdAt: Date;
   updatedAt: Date;
 };

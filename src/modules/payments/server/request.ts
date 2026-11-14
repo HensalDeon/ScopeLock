@@ -7,7 +7,11 @@ import {
   projectStatement,
 } from "@/modules/invoices";
 import { findInvoicing, issueInvoice } from "@/modules/invoices/server";
-import type { ProjectWithClient } from "@/modules/projects/server";
+import { ARCHIVED_READ_ONLY } from "@/modules/projects";
+import {
+  claimActiveProject,
+  type ProjectWithClient,
+} from "@/modules/projects/server";
 import { withTransaction } from "@/shared/db/transaction";
 import { UserError } from "@/shared/lib/form-state";
 import { minor, sum, type Minor } from "@/shared/lib/money";
@@ -103,6 +107,9 @@ export async function createRequest(input: {
   const paymentId = new ObjectId();
   try {
     const invoice = await withTransaction(async (session) => {
+      // Archived meanwhile (another tab): nothing is asked for.
+      if (!(await claimActiveProject(ws, input.projectId, session)))
+        throw new UserError(ARCHIVED_READ_ONLY);
       const issued = await issueInvoice(
         ws,
         { projectId: input.projectId, paymentId },

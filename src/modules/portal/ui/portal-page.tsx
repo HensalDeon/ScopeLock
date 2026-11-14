@@ -6,7 +6,7 @@ import { ClassicDocument, approvalAmount } from "@/modules/documents";
 import { PortalNextStep } from "./portal-next-step";
 import { ChangeRow, PaymentRow } from "./portal-rows";
 import { PortalTotals } from "./portal-totals";
-import { formatDateTime } from "@/shared/lib/dates";
+import { formatDate, formatDateTime } from "@/shared/lib/dates";
 import { formatMoney, minor, sum } from "@/shared/lib/money";
 import { PrintButton } from "@/shared/ui/print-button";
 import { decideProposal } from "../server/actions";
@@ -55,14 +55,12 @@ export async function PortalPage({ token }: { token: string }) {
   return (
     <>
       <PortalHeader
-        title={`Proposal from ${business}`}
-        detail={`${data.title} · ${money(headline)} ${
-          state !== "approved"
-            ? "proposal"
-            : gstTax > 0
-              ? "project total with GST"
-              : "project total"
-        }`}
+        title={state === "approved" ? data.title : `Proposal from ${business}`}
+        detail={
+          state === "approved"
+            ? `${business} · ${money(headline)} ${gstTax > 0 ? "total with GST" : "total"}`
+            : `${data.title} · ${money(headline)} proposal`
+        }
       >
         {state === "awaiting" && (
           <a
@@ -72,7 +70,7 @@ export async function PortalPage({ token }: { token: string }) {
             Approve or ask for changes
           </a>
         )}
-        <PrintButton label="Save proposal PDF" variant="outline" />
+        <PrintButton label="Save proposal PDF" variant="outline" iconOnPhones />
       </PortalHeader>
 
       {state === "approved" && decision && (
@@ -198,6 +196,12 @@ export async function PortalPage({ token }: { token: string }) {
           </div>
         )}
 
+        {state === "approved" && decision && (
+          <h2 className="mx-auto mt-8 max-w-[210mm] px-5 text-base font-semibold sm:px-0 print:hidden">
+            The proposal you approved on{" "}
+            {formatDate(decision.at, { withYear: true })}
+          </h2>
+        )}
         <ClassicDocument
           note={view.gstNote}
           data={data}
@@ -224,12 +228,9 @@ export async function PortalPage({ token }: { token: string }) {
             aria-labelledby="answer-heading"
             className="mx-auto mt-0 max-w-[210mm] scroll-mt-20 border-t bg-white px-5 py-8 outline-none sm:mt-6 sm:rounded-[2px] sm:border sm:px-10 print:hidden"
           >
-            <p className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-              Your answer
-            </p>
             <h2
               id="answer-heading"
-              className="mt-2 text-xl font-semibold tracking-[-0.01em] text-balance"
+              className="text-xl font-semibold tracking-[-0.01em] text-balance"
             >
               Approve this proposal, or ask for changes
             </h2>
@@ -255,7 +256,7 @@ export async function PortalPage({ token }: { token: string }) {
           </section>
         )}
       </main>
-      <Footer />
+      <Footer branded={view.branded} />
     </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChartColumn,
   FolderKanban,
   LayoutGrid,
   Settings2,
@@ -10,9 +11,10 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/shared/lib/utils";
+import { LinkPending } from "@/shared/ui/link-pending";
 
 type NavItem = {
-  href: "/dashboard" | "/projects" | "/clients" | "/settings";
+  href: "/dashboard" | "/projects" | "/clients" | "/reports" | "/settings";
   label: string;
   icon: LucideIcon;
 };
@@ -21,6 +23,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/clients", label: "Clients", icon: Users },
+  { href: "/reports", label: "Reports", icon: ChartColumn },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
 
@@ -47,7 +50,8 @@ export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               className={cn("size-4", active && "text-brand")}
               aria-hidden
             />
-            {label}
+            <span className="flex-1">{label}</span>
+            <LinkPending />
           </Link>
         );
       })}

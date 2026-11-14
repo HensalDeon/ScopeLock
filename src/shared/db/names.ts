@@ -27,6 +27,19 @@ export const COLLECTIONS = {
   invoices: "invoices",
   requestLimits: "requestLimits",
   counters: "counters",
+  // Team invitations (Agency): who was invited, as what, by whom.
+  teamInvitations: "teamInvitations",
+  // Platform level: plans, their price history, the admin audit log, and
+  // each workspace's ScopeLock plan (ScopeLock's own billing record about a
+  // workspace, managed by the platform, one per workspace).
+  plans: "plans",
+  subscriptions: "subscriptions",
+  // The Razorpay plan each price is sold as, per mode (test or live).
+  razorpayPlans: "razorpayPlans",
+  // Razorpay webhook events already handled (one row per event id).
+  billingEvents: "billingEvents",
+  planPrices: "planPrices",
+  adminAudit: "adminAudit",
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

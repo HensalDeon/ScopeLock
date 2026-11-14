@@ -444,3 +444,17 @@
 .sl-site [tabindex="-1"]:focus {
   outline: none;
 }
+
+/* A link's loading hint (LinkPending): hidden for the first 120ms so fast
+   navigations don't flicker. */
+.sl-pending-hint {
+  opacity: 0;
+  animation:
+    sl-pending-hint 1ms linear 120ms forwards,
+    spin 1s linear infinite;
+}
+@keyframes sl-pending-hint {
+  to {
+    opacity: 1;
+  }
+}

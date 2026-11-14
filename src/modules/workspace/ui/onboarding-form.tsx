@@ -32,8 +32,13 @@ export function OnboardingForm({ suggestedName }: { suggestedName: string }) {
           </div>
         </FieldGroup>
       </form>
-      <div className="lg:sticky lg:top-10">
-        <ClientViewPreview businessName={values.businessName} />
+      {/* Beside the form on wide screens; on phones it would only show up
+          after the button, so it's left out there. */}
+      <div className="hidden lg:sticky lg:top-10 lg:block">
+        <ClientViewPreview
+          businessName={values.businessName}
+          phone={values.phone}
+        />
       </div>
     </div>
   );

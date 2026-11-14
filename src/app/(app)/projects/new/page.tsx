@@ -6,8 +6,13 @@ import { getDocumentSettings } from "@/modules/documents/server";
 import {
   clientOptions,
   newProjectValues,
+  PlanFullNotice,
   ProjectForm,
 } from "@/modules/projects";
+import { listArchivable, projectLimitMessage } from "@/modules/projects/server";
+import { getPlans, getWorkspacePlan } from "@/modules/billing/server";
+import { isBillingConfigured } from "@/shared/lib/env";
+import { formatINR } from "@/shared/lib/money";
 import { FreshOnEachVisit } from "@/shared/ui/fresh-on-each-visit";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { BackLink } from "@/shared/ui/back-link";
@@ -47,6 +52,35 @@ async function Form({
       requireWorkspace(),
       getGstRule(),
     ]);
+  const full = await projectLimitMessage(workspace.workspaceId);
+  if (full) {
+    // The next plan up, only when paid plans can actually be bought.
+    const [{ plan }, plans, ready] = await Promise.all([
+      getWorkspacePlan(workspace.workspaceId),
+      getPlans(),
+      listArchivable(),
+    ]);
+    const next = isBillingConfigured()
+      ? plans.find(
+          (p) => p.monthlyPrice > 0 && p.activeProjects > plan.activeProjects,
+        )
+      : undefined;
+    return (
+      <PlanFullNotice
+        message={full}
+        ready={ready}
+        upgrade={
+          next
+            ? {
+                name: next.name,
+                price: formatINR(next.monthlyPrice),
+                projects: next.activeProjects,
+              }
+            : null
+        }
+      />
+    );
+  }
   return (
     <FreshOnEachVisit>
       <ProjectForm

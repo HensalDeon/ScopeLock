@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { ChangeOrderData } from "@/modules/documents";
 import { requireWorkspace } from "@/modules/workspace/server";
 import { parseObjectId } from "@/shared/db/ids";
+import type { CurrencyCode } from "@/shared/lib/currency";
+import { minor, type Minor } from "@/shared/lib/money";
 import {
   parseChangeNumber,
   type ChangeRequest,
@@ -38,5 +40,23 @@ export async function listOpenChanges(): Promise<ChangeRequest[]> {
   const { workspace } = await requireWorkspace();
   return (await repo.findOpenChangeDocs(workspace.workspaceId)).map(
     repo.toChange,
+  );
+}
+
+/** Every approved change's value and date, for the overview's "recovered". */
+export async function listApprovedChangeTotals(): Promise<
+  {
+    id: string;
+    currency: CurrencyCode;
+    total: Minor;
+    approvedAt: Date;
+    projectId: string;
+    number: number;
+    title: string;
+  }[]
+> {
+  const { workspace } = await requireWorkspace();
+  return (await repo.findApprovedChangeTotals(workspace.workspaceId)).map(
+    (c) => ({ ...c, total: minor(c.total) }),
   );
 }

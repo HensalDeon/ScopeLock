@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { IDLE } from "@/shared/lib/form-state";
 import { Button } from "@/shared/ui/button";
+import { TOUCH } from "@/shared/ui/touch";
 import {
   INLINE_PANEL_FOCUS,
   useInlinePanel,
@@ -31,7 +32,12 @@ export function ArchiveClientButton({
 
   if (!archived && !panel.open) {
     return (
-      <Button type="button" variant="outline" {...panel.trigger("open")}>
+      <Button
+        type="button"
+        variant="outline"
+        className={TOUCH}
+        {...panel.trigger("open")}
+      >
         Archive client
       </Button>
     );
@@ -57,7 +63,12 @@ export function ArchiveClientButton({
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" variant="outline" disabled={pending}>
+        <Button
+          type="submit"
+          variant="outline"
+          className={TOUCH}
+          disabled={pending}
+        >
           {archived
             ? pending
               ? "Restoring…"
@@ -67,7 +78,12 @@ export function ArchiveClientButton({
               : `Archive ${clientName}`}
         </Button>
         {!archived && (
-          <Button type="button" variant="ghost" onClick={panel.close}>
+          <Button
+            type="button"
+            variant="ghost"
+            className={TOUCH}
+            onClick={panel.close}
+          >
             Don&apos;t archive
           </Button>
         )}

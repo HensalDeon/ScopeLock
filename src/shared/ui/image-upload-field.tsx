@@ -32,6 +32,8 @@ export function ImageUploadField({
   shape,
   emptyText,
   alt,
+  savedText = "Saved. Your clients see the new image now.",
+  removedText = "Removed. Your clients no longer see it.",
 }: {
   label: string;
   hint: string;
@@ -47,11 +49,16 @@ export function ImageUploadField({
   shape: "logo" | "wide" | "square";
   emptyText: string;
   alt: string;
+  /** What's true after an upload (who sees it, and when). */
+  savedText?: string;
+  removedText?: string;
 }) {
   const keepAlpha = shape !== "wide";
   const uid = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+  // Images are saved the moment they're uploaded (no Save button): say so.
+  const [saved, setSaved] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [action, setAction] = useState<"upload" | "remove" | null>(null);
 
@@ -87,6 +94,7 @@ export function ImageUploadField({
     event.target.value = ""; // allow picking the same file again
     if (!file) return;
     setError(null);
+    setSaved(null);
     setAction("upload");
     startTransition(async () => {
       const prepared = await prepare(file);
@@ -95,17 +103,24 @@ export function ImageUploadField({
       data.set("file", prepared);
       const result = await upload(data);
       if (result.status === "error") setError(result.message);
-      else onChange(result.url);
+      else {
+        onChange(result.url);
+        setSaved(savedText);
+      }
     });
   }
 
   function onRemove() {
     setError(null);
+    setSaved(null);
     setAction("remove");
     startTransition(async () => {
       const result = await remove();
       if (result.status === "error") setError(result.message);
-      else onChange(null);
+      else {
+        onChange(null);
+        setSaved(removedText);
+      }
     });
   }
 
@@ -188,11 +203,15 @@ export function ImageUploadField({
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        {enabled ? hint : "Image uploads aren't set up on this server yet."}
+        {enabled ? hint : "Uploads aren't available here yet."}
       </p>
-      {error && (
+      {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}
+        </p>
+      ) : (
+        <p role="status" className="text-sm text-muted-foreground">
+          {saved ?? ""}
         </p>
       )}
     </div>

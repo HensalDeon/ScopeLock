@@ -15,7 +15,9 @@ export default function DashboardPage() {
       <PageHeader
         title="Overview"
         actions={
-          <Button asChild>
+          // Outline: the overview's next step (the setup checklist's, or a
+          // row's) is the one filled button.
+          <Button asChild variant="outline">
             <Link href="/projects/new">
               <Plus aria-hidden />
               New project

@@ -133,19 +133,28 @@ export function InvoicingForm({
         title="GST"
         description="Fill this in only if you're registered for GST. Leave the GSTIN blank and your invoices carry no GST."
       >
-        {/* What each invoice will charge, so nobody has to remember the rule. */}
-        <dl className="mb-5 grid gap-x-6 gap-y-1.5 rounded-lg border bg-canvas px-4 py-3 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
-          <dt className="text-muted-foreground">Client in your state</dt>
-          <dd className="tabular-nums">CGST 9% + SGST 9%</dd>
-          <dt className="text-muted-foreground">Client in another state</dt>
-          <dd className="tabular-nums">IGST 18%</dd>
-          <dt className="text-muted-foreground">Client outside India</dt>
-          <dd>No GST, with your LUT (below)</dd>
-        </dl>
-        <p className="mb-5 text-sm text-muted-foreground">
-          The client&apos;s state comes from their GSTIN or the state on their
-          client page; without either, yours is used.
-        </p>
+        {/* What each invoice will charge, so nobody has to remember the
+            rule. Only with a GSTIN: without one, invoices carry no GST. */}
+        {registered && (
+          <>
+            <dl className="mb-5 grid gap-x-6 gap-y-1.5 rounded-lg border bg-canvas px-4 py-3 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
+              <dt className="text-muted-foreground">Client in your state</dt>
+              <dd className="tabular-nums">CGST 9% + SGST 9%</dd>
+              <dt className="text-muted-foreground">Client in another state</dt>
+              <dd className="tabular-nums">IGST 18%</dd>
+              <dt className="text-muted-foreground">Client outside India</dt>
+              <dd>
+                {values.lutArn.trim()
+                  ? "No GST, under your LUT"
+                  : "Add your LUT ARN to bill clients abroad"}
+              </dd>
+            </dl>
+            <p className="mb-5 text-sm text-muted-foreground">
+              The client&apos;s state comes from their GSTIN or the state on
+              their client page; without either, yours is used.
+            </p>
+          </>
+        )}
         <div className="grid gap-5 sm:grid-cols-2">
           {row(
             "gstin",
@@ -218,7 +227,7 @@ export function InvoicingForm({
       </Section>
       <Section
         title="Invoice numbers"
-        description="Numbers run in order and restart each financial year (April to March), as GST requires."
+        description="Numbers run in order and start again each April, so each one is unique within the financial year, as GST needs."
       >
         <div className="grid gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
@@ -231,16 +240,27 @@ export function InvoicingForm({
                 className: "font-mono uppercase",
               },
             )}
-            {row(
-              "startNumber",
-              "Start this year from",
-              series.lastSerial > 0
-                ? "You've issued invoices this year, so the series continues from the last one."
-                : "If you've issued invoices elsewhere this year, continue from the next number.",
-              {
-                inputMode: "numeric",
-                readOnly: series.lastSerial > 0,
-              },
+            {series.lastSerial > 0 ? (
+              // Not editable once invoices exist: say it, don't show a field.
+              <div className="grid content-start gap-1.5 text-sm">
+                <p className="font-medium">This year&apos;s numbers</p>
+                <p className="text-muted-foreground">
+                  You&apos;ve issued invoices this year, so the series continues
+                  from the last one.
+                </p>
+                <input
+                  type="hidden"
+                  name="startNumber"
+                  value={values.startNumber}
+                />
+              </div>
+            ) : (
+              row(
+                "startNumber",
+                "Start this year from",
+                "If you've issued invoices elsewhere this year, continue from the next number.",
+                { inputMode: "numeric" },
+              )
             )}
           </div>
           <p className="text-sm text-muted-foreground">

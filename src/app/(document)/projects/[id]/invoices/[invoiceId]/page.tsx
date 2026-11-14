@@ -104,6 +104,7 @@ async function InvoiceView({
           invoice={invoice}
           replacedBy={replacedBy}
           status={invoice.status}
+          paidOn={invoice.paidAt}
           logoUrl={settings.style.showLogo ? images.logoUrl : null}
           accent={settings.style.accent}
           className="mx-auto max-w-[210mm] shadow-[0_10px_40px_-20px_rgba(0,0,0,0.35)] sm:rounded-[2px] print:max-w-none print:shadow-none"

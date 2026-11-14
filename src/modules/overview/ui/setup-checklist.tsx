@@ -1,7 +1,10 @@
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { LinkChevron } from "@/shared/ui/link-pending";
+import { TOUCH } from "@/shared/ui/touch";
 import type { SetupStep } from "../domain/setup";
 import { SetupVisibility } from "./setup-visibility";
 
@@ -72,48 +75,77 @@ export function SetupChecklist({
 }
 
 function Steps({ steps }: { steps: SetupStep[] }) {
+  // The first open step with a page to go to is the one to do next.
+  const next = steps.findIndex((s) => !s.done && s.href);
   return (
     <ol className="divide-y">
-      {steps.map((step, index) => (
-        <li key={step.title} className="flex gap-4 px-5 py-4">
-          <span
-            aria-hidden
-            className={cn(
-              "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium tabular-nums",
-              step.done
-                ? "border-brand bg-brand text-white"
-                : "bg-background text-muted-foreground",
-            )}
-          >
-            {step.done ? <Check className="size-3.5" /> : index + 1}
-          </span>
-          <div className="min-w-0">
-            <p
+      {steps.map((step, index) => {
+        const open = !step.done && step.href;
+        const body = (
+          <>
+            <span
+              aria-hidden
               className={cn(
-                "text-sm font-medium",
-                step.done && "text-muted-foreground",
+                "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium tabular-nums",
+                step.done
+                  ? "border-brand bg-brand text-white"
+                  : "bg-background text-muted-foreground",
               )}
             >
-              {step.href && !step.done ? (
-                <Link
-                  href={step.href as Route}
-                  className="underline-offset-4 hover:underline max-sm:inline-flex max-sm:min-h-11 max-sm:items-center"
-                >
-                  {step.title}
-                </Link>
-              ) : (
-                step.title
-              )}
-              <span className="sr-only">
-                {step.done ? " (done)" : " (to do)"}
+              {step.done ? <Check className="size-3.5" /> : index + 1}
+            </span>
+            <span className="grid min-w-0 flex-1 gap-0.5">
+              <span
+                className={cn(
+                  "text-sm font-medium",
+                  step.done && "text-muted-foreground",
+                  open &&
+                    index !== next &&
+                    "underline-offset-4 group-hover:underline",
+                )}
+              >
+                {step.title}
+                <span className="sr-only">
+                  {step.done ? " (done)" : " (to do)"}
+                </span>
               </span>
-            </p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {step.detail}
-            </p>
-          </div>
-        </li>
-      ))}
+              <span className="text-sm text-muted-foreground">
+                {step.detail}
+              </span>
+            </span>
+          </>
+        );
+        if (index === next)
+          return (
+            <li
+              key={step.title}
+              className="grid gap-3 bg-canvas px-5 py-4 sm:flex sm:items-center sm:gap-4"
+            >
+              <span className="flex flex-1 gap-4">{body}</span>
+              <Button asChild className={cn("sm:shrink-0", TOUCH)}>
+                <Link href={step.href as Route}>
+                  {step.action ?? "Start"}
+                  <ChevronRight aria-hidden />
+                </Link>
+              </Button>
+            </li>
+          );
+        return (
+          <li key={step.title}>
+            {open ? (
+              <Link
+                href={step.href as Route}
+                className="group flex gap-4 px-5 py-4 transition-colors hover:bg-canvas"
+              >
+                {body}
+                <LinkChevron className="mt-0.5" />
+              </Link>
+            ) : (
+              <div className="flex gap-4 px-5 py-4">{body}</div>
+            )}
+          </li>
+        );
+      })}
     </ol>
   );
 }

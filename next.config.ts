@@ -18,12 +18,15 @@ const isDev = process.env.NODE_ENV !== "production";
  */
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // Razorpay Checkout (paying for ScopeLock's own plans) loads its script
+  // and opens its payment window in a frame.
+  `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   // Signed URLs from the private R2 bucket (logo, cover image).
-  "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com",
+  "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://cdn.razorpay.com",
+  "frame-src https://api.razorpay.com https://checkout.razorpay.com",
   "font-src 'self'",
-  `connect-src 'self'${isDev ? " ws:" : ""}`,
+  `connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com${isDev ? " ws:" : ""}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -43,7 +46,8 @@ const securityHeaders = [
   {
     key: "Permissions-Policy",
     value:
-      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+      // payment: only Razorpay's checkout frame (paying for ScopeLock plans).
+      'camera=(), microphone=(), geolocation=(), payment=(self "https://api.razorpay.com"), usb=(), interest-cohort=()',
   },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   // HSTS only in production; a plain Node host won't add it for us.
@@ -83,6 +87,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
+      {
+        // The service worker: always re-checked, so updates reach people.
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
+          },
+        ],
+      },
       {
         // Client portal (Phase 3): secret-link pages. Never leak the token in
         // the Referer, never index, never cache in shared caches.
