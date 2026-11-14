@@ -29,6 +29,9 @@ export function MobileNav({
   // (nav links, Settings in the account menu, switching workspace) closes it.
   const pathname = usePathname();
   const [openOn, setOpenOn] = useState<string | null>(null);
+  // Forget it once the page changes, so coming back to that page later
+  // (e.g. the logo back to Overview) doesn't open the menu by itself.
+  if (openOn !== null && openOn !== pathname) setOpenOn(null);
   const open = openOn === pathname;
   const setOpen = (next: boolean) => setOpenOn(next ? pathname : null);
   return (

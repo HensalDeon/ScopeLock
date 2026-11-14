@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { site } from "@/shared/config/site";
+import { splashStartupImages } from "@/shared/config/splash";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -37,6 +38,8 @@ export const metadata: Metadata = {
     capable: true,
     title: site.name,
     statusBarStyle: "default",
+    // The installed app's start-up screen on iPhone (else it's blank white).
+    startupImage: splashStartupImages(),
   },
   formatDetection: { telephone: false },
 };
